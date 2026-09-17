@@ -1,0 +1,65 @@
+# Local development environment (14 §2.1, §38 LOCAL DEVELOPMENT AND MOCKS).
+#
+# `docker compose up` starts only `postgres`, satisfying the Phase 0
+# gate ("DB starts") without pretending the api/worker/web containers
+# already do anything beyond a toolchain boot proof. Start those too
+# explicitly with the `app` profile:
+#   docker compose --profile app up
+#
+# MockProvider (14 §38) is an in-process adapter
+# (`packages/ai_gateway/adapters/providers/mock.py`, PKG-19) — no
+# separate mock-provider container exists at this build phase.
+
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-nquiry}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nquiry_local_dev_only}
+      POSTGRES_DB: ${POSTGRES_DB:-nquiry}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - nquiry_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nquiry}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    profiles: ["app"]
+    build:
+      context: .
+      dockerfile: infra/local/api.Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://nquiry:nquiry_local_dev_only@postgres:5432/nquiry}
+    ports:
+      - "8000:8000"
+
+  worker:
+    profiles: ["app"]
+    build:
+      context: .
+      dockerfile: infra/local/worker.Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://nquiry:nquiry_local_dev_only@postgres:5432/nquiry}
+
+  web:
+    profiles: ["app"]
+    build:
+      context: .
+      dockerfile: infra/local/web.Dockerfile
+    depends_on:
+      - api
+    ports:
+      - "3000:3000"
+
+volumes:
+  nquiry_postgres_data:

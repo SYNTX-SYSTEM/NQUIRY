@@ -1,0 +1,129 @@
+name: CI
+
+# Ordered pipeline per 14_IMPLEMENTATION_SEQUENCE.md §51. Steps 9-19
+# (T1 through T11) run against directories that are intentionally
+# empty at Phase 0 (14 §44 PHASE 0: only the toolchain skeleton
+# exists). `pytest`'s "no tests collected" exit code (5) is treated as
+# a pass for those specific steps ONLY — any other non-zero exit code
+# still fails the job. This is an honest reflection of "this suite
+# does not exist yet", not a masked failure (14 §45 forbids "weaken
+# tests to fit code"; leaving these steps out entirely would instead
+# silently drop §51's mandated step ordering).
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+env:
+  DATABASE_URL: postgresql+psycopg://nquiry:nquiry_ci@localhost:5432/nquiry
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: nquiry
+          POSTGRES_PASSWORD: nquiry_ci
+          POSTGRES_DB: nquiry
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U nquiry"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install project (editable, with dev extras)
+        run: pip install -e ".[dev]"
+
+      # 1. format
+      - name: Format check (ruff format)
+        run: ruff format --check .
+
+      # 2. lint
+      - name: Lint (ruff check)
+        run: ruff check .
+
+      # 3. typecheck
+      - name: Typecheck (mypy)
+        env:
+          MYPYPATH: packages:apps/api/src:apps/worker/src:scripts
+        run: mypy packages apps/api/src apps/worker/src scripts
+
+      # 4. architecture dependency tests
+      - name: Architecture dependency check
+        run: python scripts/check_architecture_dependencies.py
+
+      # 5. provider SDK import restriction
+      - name: Provider SDK import check
+        run: python scripts/check_provider_sdk_imports.py
+
+      # 6. test-only import restriction
+      - name: Test-only import check
+        run: python scripts/check_test_only_imports.py
+
+      # 7. migration validation
+      - name: Migration validation
+        run: python scripts/verify_migrations.py
+
+      # 8. T0 semantic tests
+      - name: T0 semantic tests
+        run: pytest tests/semantic apps/api/tests
+
+      # 9-19: T1 through T11. Empty at Phase 0 — see header note.
+      - name: T1 domain tests
+        run: pytest tests/domain || [ $? -eq 5 ]
+      - name: T2 transitions tests
+        run: pytest tests/transitions || [ $? -eq 5 ]
+      - name: T3 authority/governance tests
+        run: pytest tests/authority tests/governance || [ $? -eq 5 ]
+      - name: T4 boundaries tests
+        run: pytest tests/boundaries || [ $? -eq 5 ]
+      - name: T5 evidence/provenance tests
+        run: pytest tests/evidence || [ $? -eq 5 ]
+      - name: T6 AI contracts tests
+        run: pytest tests/ai || [ $? -eq 5 ]
+      - name: T7 command/commit/event tests
+        run: pytest tests/command_commit_event || [ $? -eq 5 ]
+      - name: T8 recovery tests
+        run: pytest tests/recovery || [ $? -eq 5 ]
+      - name: T9 security/isolation tests
+        run: pytest tests/security
+      - name: T10 E2E architectural proof
+        run: pytest tests/e2e || [ $? -eq 5 ]
+      - name: T11 mutation tests
+        run: pytest tests/mutation || [ $? -eq 5 ]
+
+      # 20. T12 recursive regression
+      - name: T12 recursive regression
+        run: pytest tests/regression
+
+      # 21. proof report generation (placeholder location; PKG-00 keeps
+      # this manual — docs/implementation/proof-reports/PKG-00.md)
+      - name: Report blocked hard dependencies
+        run: |
+          echo "HARD-DEP-001 (legitimate first Workspace governance-root bootstrap): BLOCKED, not closed by CI."
+          echo "HARD-DEP-002 (provider/privacy eligibility): BLOCKED, not closed by CI."
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm install
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test

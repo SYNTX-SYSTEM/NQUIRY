@@ -1,0 +1,107 @@
+[project]
+name = "nquiry"
+version = "0.0.0"
+description = "NQUIRY architectural prototype — Phase 0 repository and toolchain skeleton (PKG-00)."
+requires-python = ">=3.13"
+readme = "README.md"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "pydantic>=2.9",
+    "sqlalchemy>=2.0",
+    "alembic>=1.13",
+    "psycopg[binary]>=3.2",
+    "opentelemetry-api>=1.27",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3",
+    "pytest-cov>=5.0",
+    "hypothesis>=6.112",
+    "ruff>=0.7",
+    "mypy>=1.13",
+]
+
+# --- Python packaging: expose packages/*, apps/api/src/nquiry_api and
+# --- apps/worker/src/nquiry_worker as flat, top-level import names.
+# --- This matches 14_IMPLEMENTATION_SEQUENCE.md §3.1 and §4, which refer
+# --- to package names bare ("domain", "authority", "ai_gateway", ...),
+# --- never namespaced under a shared "packages." prefix.
+[tool.setuptools]
+package-dir = { "" = "packages", "nquiry_api" = "apps/api/src/nquiry_api", "nquiry_worker" = "apps/worker/src/nquiry_worker" }
+
+# Explicit, not `find`: `[tool.setuptools.packages.find]` only walks
+# the roots it is given, so a `where = ["packages"]` find silently
+# dropped `nquiry_api`/`nquiry_worker` from the wheel even though
+# `package-dir` above maps them correctly (caught by
+# `infra/local/api.Dockerfile`'s container boot smoke test). Every
+# package below must be added explicitly as later phases add real
+# subpackages (14 §45: a missing entry here is a packaging bug, not
+# something to paper over with `find`).
+packages = [
+    "semantic_types",
+    "domain",
+    "governance",
+    "authority",
+    "boundaries",
+    "evidence",
+    "ai_contracts",
+    "ai_gateway",
+    "ai_gateway.adapters",
+    "ai_gateway.adapters.providers",
+    "command",
+    "commit",
+    "audit",
+    "events",
+    "projection",
+    "recovery",
+    "security",
+    "observability",
+    "application",
+    "persistence",
+    "test_support",
+    "nquiry_api",
+    "nquiry_api.http",
+    "nquiry_api.auth",
+    "nquiry_api.dispatch",
+    "nquiry_worker",
+]
+
+# --- Ruff (format + lint) ---
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+extend-exclude = ["apps/web", "migrations/versions"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+# UP017 ("datetime.UTC alias") is disabled deliberately: `timezone.utc`
+# is fully correct on the declared target (Python 3.13) and this
+# repository's sandbox verification interpreter is 3.10, where the
+# `datetime.UTC` alias does not exist (added in 3.11). See
+# docs/implementation/proof-reports/PKG-00.md, KNOWN_LIMITATIONS.
+ignore = ["UP017"]
+
+# --- mypy ---
+# MYPYPATH must include packages/, apps/api/src, apps/worker/src for
+# these flat top-level names to resolve; scripts/run_static_checks.sh
+# sets this explicitly rather than relying on ambient environment state.
+[tool.mypy]
+python_version = "3.13"
+warn_unused_ignores = true
+warn_redundant_casts = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+exclude = ["apps/web/", "migrations/versions/"]
+
+# --- pytest ---
+# `pythonpath` (built into pytest >= 7) makes packages/* and the two
+# apps/*/src trees importable by their flat top-level names without
+# requiring `pip install -e .` — needed in this sandbox where the
+# available interpreter (3.10) cannot satisfy this project's
+# `requires-python = ">=3.13"` for an editable install. See
+# docs/implementation/proof-reports/PKG-00.md, KNOWN_LIMITATIONS.
+[tool.pytest.ini_options]
+pythonpath = ["packages", "apps/api/src", "apps/worker/src", "scripts"]
+testpaths = ["tests", "apps/api/tests"]

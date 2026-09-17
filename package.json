@@ -1,0 +1,16 @@
+{
+  "name": "nquiry",
+  "private": true,
+  "version": "0.0.0",
+  "description": "NQUIRY architectural prototype — Node/TypeScript toolchain root (PKG-00).",
+  "workspaces": [
+    "apps/web"
+  ],
+  "scripts": {
+    "web:dev": "npm run dev --workspace apps/web",
+    "web:build": "npm run build --workspace apps/web",
+    "web:lint": "npm run lint --workspace apps/web",
+    "web:typecheck": "npm run typecheck --workspace apps/web",
+    "web:test": "npm run test --workspace apps/web"
+  }
+}

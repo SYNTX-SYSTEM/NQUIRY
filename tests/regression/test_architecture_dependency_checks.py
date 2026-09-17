@@ -1,0 +1,98 @@
+"""T12 regression: `scripts/check_architecture_dependencies.py` correctness.
+
+Covers 14 §41 (DEPENDENCY ENFORCEMENT) and the PKG-00 mandatory attack
+"controlled forbidden import fixture" (PKG-00 COPY-PASTE prompt,
+PRE_IMPLEMENTATION_ATTACK_MODEL). Fixtures are built in `tmp_path`, not
+committed as real violations in production code — the fixture *is* the
+proof, not a note that one should exist.
+"""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+import pytest
+from check_architecture_dependencies import check
+
+
+def _write(root: Path, relative: str, content: str) -> None:
+    path = root / relative
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content, encoding="utf-8")
+
+
+def test_real_repository_has_no_dependency_violations() -> None:
+    """Regression run: the actual current repository must stay clean."""
+    violations = check()
+    assert violations == [], "\n".join(str(v) for v in violations)
+
+
+def test_detects_import_not_on_the_allow_list(tmp_path: Path) -> None:
+    """`authority` may depend on {governance, domain, semantic_types}
+    (14 §3.1) but must never treat a projection as an authoritative
+    source (14 §3.1 forbidden: "projection as authoritative source").
+    """
+    packages_root = tmp_path / "packages"
+    _write(packages_root, "authority/__init__.py", "")
+    _write(packages_root, "authority/resolver.py", "import projection\n")
+    _write(packages_root, "projection/__init__.py", "")
+
+    violations = check(roots=(packages_root,))
+
+    assert len(violations) == 1
+    assert violations[0].owner_package == "authority"
+    assert violations[0].imported == "projection"
+
+
+def test_detects_forbidden_external_framework_dependency(tmp_path: Path) -> None:
+    """14 §4 forbidden-dependency matrix: `domain` must never import FastAPI."""
+    packages_root = tmp_path / "packages"
+    _write(packages_root, "domain/__init__.py", "")
+    _write(packages_root, "domain/session.py", "import fastapi\n")
+
+    violations = check(roots=(packages_root,))
+
+    assert len(violations) == 1
+    assert violations[0].owner_package == "domain"
+    assert violations[0].imported == "fastapi"
+
+
+def test_allows_a_legitimate_dependency(tmp_path: Path) -> None:
+    """Negative control: the checker must not flag a dependency that IS
+    on the 14 §3.1 allow list — otherwise it would be useless noise,
+    not a proof.
+    """
+    packages_root = tmp_path / "packages"
+    _write(packages_root, "domain/__init__.py", "")
+    _write(packages_root, "domain/session.py", "import semantic_types\n")
+    _write(packages_root, "semantic_types/__init__.py", "")
+
+    violations = check(roots=(packages_root,))
+
+    assert violations == []
+
+
+def test_allows_provider_sdk_only_inside_the_adapter_boundary(tmp_path: Path) -> None:
+    packages_root = tmp_path / "packages"
+    _write(packages_root, "ai_gateway/__init__.py", "")
+    _write(packages_root, "ai_gateway/adapters/__init__.py", "")
+    _write(packages_root, "ai_gateway/adapters/providers/__init__.py", "")
+    _write(packages_root, "ai_gateway/adapters/providers/mock.py", "import openai\n")
+
+    violations = check(roots=(packages_root,))
+
+    assert violations == []
+
+
+@pytest.mark.parametrize("relative_path", ["ai_gateway/context.py", "ai_gateway/prompt.py"])
+def test_rejects_provider_sdk_outside_the_adapter_boundary(
+    tmp_path: Path, relative_path: str
+) -> None:
+    packages_root = tmp_path / "packages"
+    _write(packages_root, "ai_gateway/__init__.py", "")
+    _write(packages_root, relative_path, "import openai\n")
+
+    violations = check(roots=(packages_root,))
+
+    assert len(violations) == 1
+    assert violations[0].imported == "openai"

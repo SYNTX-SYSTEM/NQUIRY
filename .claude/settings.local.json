@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(docker --version)",
+      "Bash(docker compose *)",
+      "Bash(git --version)",
+      "Bash(git -C /home/codi/Entwicklung/nquiry branch --show-current)",
+      "Bash(timeout 5 curl -sI https://pypi.org)",
+      "Bash(apt list *)",
+      "Bash(apt-cache policy *)",
+      "Bash(apt-cache search *)",
+      "Read(//etc/apt/**)",
+      "Read(//etc/apt/sources.list.d/**)",
+      "Bash(git status *)",
+      "Bash(git grep *)",
+      "Bash(cd *)",
+      "Bash(npm view *)",
+      "Bash(POSTGRES_PORT=55432 docker compose --profile app build api worker)",
+      "Bash(POSTGRES_PORT=55432 docker compose --profile app up -d api worker)",
+      "Bash(curl -s http://localhost:8000/healthz)",
+      "Bash(npm run *)"
+    ]
+  }
+}
