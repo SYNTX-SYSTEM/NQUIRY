@@ -127,6 +127,41 @@ def test_governance_still_cannot_depend_on_persistence(tmp_path: Path) -> None:
     assert violations[0].imported == "persistence"
 
 
+def test_allows_authority_to_depend_on_persistence_for_reads(tmp_path: Path) -> None:
+    """PKG-03: `authority` may depend on `persistence` so
+    `AuthorityResolver` can be constructed against
+    `MembershipRepository`/`AuthorityBindingRepository` -- see
+    `check_architecture_dependencies.INTERNAL_ALLOWED["authority"]` for
+    the citation. Not a forbidden-dependency violation.
+    """
+    packages_root = tmp_path / "packages"
+    _write(packages_root, "authority/__init__.py", "")
+    _write(packages_root, "authority/resolver.py", "import persistence\n")
+    _write(packages_root, "persistence/__init__.py", "")
+
+    violations = check(roots=(packages_root,))
+
+    assert violations == []
+
+
+def test_persistence_still_cannot_depend_on_authority(tmp_path: Path) -> None:
+    """Negative control for the extension above: `persistence -> authority`
+    must remain forbidden. `persistence` implements storage adapters
+    (14 §3.1) and must not reach up into the resolution layer built on
+    top of it -- that would be a real circular dependency.
+    """
+    packages_root = tmp_path / "packages"
+    _write(packages_root, "persistence/__init__.py", "")
+    _write(packages_root, "persistence/oops.py", "import authority\n")
+    _write(packages_root, "authority/__init__.py", "")
+
+    violations = check(roots=(packages_root,))
+
+    assert len(violations) == 1
+    assert violations[0].owner_package == "persistence"
+    assert violations[0].imported == "authority"
+
+
 def test_application_still_cannot_depend_on_commit(tmp_path: Path) -> None:
     """Negative control for the extension above: allowing `application ->
     persistence` for reads must not have quietly opened `application ->

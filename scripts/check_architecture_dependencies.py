@@ -49,7 +49,21 @@ INTERNAL_ALLOWED: dict[str, frozenset[str]] = {
     "semantic_types": frozenset(),
     "domain": frozenset({"semantic_types"}),
     "governance": frozenset({"domain", "semantic_types"}),
-    "authority": frozenset({"governance", "domain", "semantic_types"}),
+    "authority": frozenset(
+        {
+            "governance",
+            "domain",
+            "semantic_types",
+            # PKG-03: `persistence` added so `AuthorityResolver` can be
+            # constructed against the PKG-02 `MembershipRepository`/
+            # `AuthorityBindingRepository` Protocol types (14 §16:
+            # "Commit-time resolver reloads current authoritative
+            # state" -- it must read through the real repositories, not
+            # a copy). Read-only use: `authority` never imports `commit`
+            # and has no write method to call.
+            "persistence",
+        }
+    ),
     "boundaries": frozenset({"domain", "authority", "governance", "evidence", "semantic_types"}),
     "evidence": frozenset({"domain", "semantic_types"}),
     "ai_contracts": frozenset({"semantic_types", "evidence"}),

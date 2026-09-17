@@ -6,11 +6,11 @@ Architectural ownership (14_IMPLEMENTATION_SEQUENCE.md §3.1):
     Must not depend on : UI roles, AI, projection.
     Canonical write    : no.
 
-PKG-00 SCOPE NOTE: this build phase (Phase 0, "Repository and
-architecture skeleton") materializes only the package boundary and
-its place in the dependency-enforcement graph
-(`scripts/check_architecture_dependencies.py`). No domain, authority,
-or persistence behavior is implemented here. Implementation lands in
-the build phase assigned to this package by
-14_IMPLEMENTATION_SEQUENCE.md §46 (CODING PACKAGE MANIFEST).
+PKG-03 SCOPE NOTE: `actor.py` (Actor Identity Model, 04 §3) and
+`resolver.py` (`AuthorityResolver`, 14 §16) materialize current,
+operation-specific authority resolution over PKG-02's read
+repositories. No boundary evaluator consumes this yet (BND-005/BND-006
+land with PKG-09); this package only produces the
+`GRANTED`/`DENIED`/`UNRESOLVED` resolution with proof refs that a
+future boundary will call.
 """
