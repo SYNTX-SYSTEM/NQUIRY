@@ -72,6 +72,45 @@ def test_allows_a_legitimate_dependency(tmp_path: Path) -> None:
     assert violations == []
 
 
+def test_allows_application_to_depend_on_persistence_for_reads(tmp_path: Path) -> None:
+    """PKG-01: `application` may depend on `persistence` for read-only
+    `CanonicalReadPort` use (14 §11) -- e.g.
+    `application.workspace_context` calling
+    `persistence.workspace_repository.WorkspaceRepository.get`. This is
+    a deliberate, disclosed extension of the 14 §3.1 checkable subset
+    (see `check_architecture_dependencies.INTERNAL_ALLOWED["application"]`
+    for the citation), not a forbidden-dependency violation.
+    """
+    packages_root = tmp_path / "packages"
+    _write(packages_root, "application/__init__.py", "")
+    _write(packages_root, "application/workspace_context.py", "import persistence\n")
+    _write(packages_root, "persistence/__init__.py", "")
+
+    violations = check(roots=(packages_root,))
+
+    assert violations == []
+
+
+def test_application_still_cannot_depend_on_commit(tmp_path: Path) -> None:
+    """Negative control for the extension above: allowing `application ->
+    persistence` for reads must not have quietly opened `application ->
+    commit` (the exclusive governed writer, 14 §3.1). Writes stay
+    `commit`-only; `application` reaching `commit` directly would be
+    exactly the "no direct write" collapse 14 §3.1 forbids for this
+    layer.
+    """
+    packages_root = tmp_path / "packages"
+    _write(packages_root, "application/__init__.py", "")
+    _write(packages_root, "application/oops.py", "import commit\n")
+    _write(packages_root, "commit/__init__.py", "")
+
+    violations = check(roots=(packages_root,))
+
+    assert len(violations) == 1
+    assert violations[0].owner_package == "application"
+    assert violations[0].imported == "commit"
+
+
 def test_allows_provider_sdk_only_inside_the_adapter_boundary(tmp_path: Path) -> None:
     packages_root = tmp_path / "packages"
     _write(packages_root, "ai_gateway/__init__.py", "")

@@ -1,14 +1,15 @@
 name: CI
 
-# Ordered pipeline per 14_IMPLEMENTATION_SEQUENCE.md §51. Steps 9-19
-# (T1 through T11) run against directories that are intentionally
-# empty at Phase 0 (14 §44 PHASE 0: only the toolchain skeleton
-# exists). `pytest`'s "no tests collected" exit code (5) is treated as
-# a pass for those specific steps ONLY — any other non-zero exit code
-# still fails the job. This is an honest reflection of "this suite
-# does not exist yet", not a masked failure (14 §45 forbids "weaken
-# tests to fit code"; leaving these steps out entirely would instead
-# silently drop §51's mandated step ordering).
+# Ordered pipeline per 14_IMPLEMENTATION_SEQUENCE.md §51. Steps 10-19
+# (T2 through T11) still run against directories that are intentionally
+# empty as of PKG-01 (later packages add their content). `pytest`'s "no
+# tests collected" exit code (5) is treated as a pass for those specific
+# steps ONLY — any other non-zero exit code still fails the job. This is
+# an honest reflection of "this suite does not exist yet", not a masked
+# failure (14 §45 forbids "weaken tests to fit code"; leaving these
+# steps out entirely would instead silently drop §51's mandated step
+# ordering). T1 (step 9) has real content as of PKG-01 and is no longer
+# exit-5-tolerant.
 
 on:
   push:
@@ -78,9 +79,12 @@ jobs:
       - name: T0 semantic tests
         run: pytest tests/semantic apps/api/tests
 
-      # 9-19: T1 through T11. Empty at Phase 0 — see header note.
+      # 9. T1 domain tests (real content as of PKG-01: WorkspaceRepository,
+      # request Workspace context — requires DATABASE_URL, set above)
       - name: T1 domain tests
-        run: pytest tests/domain || [ $? -eq 5 ]
+        run: pytest tests/domain
+
+      # 10-19: T2 through T11. Empty until later packages — see header note.
       - name: T2 transitions tests
         run: pytest tests/transitions || [ $? -eq 5 ]
       - name: T3 authority/governance tests

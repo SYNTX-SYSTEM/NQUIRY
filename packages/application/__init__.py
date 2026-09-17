@@ -6,11 +6,11 @@ Architectural ownership (14_IMPLEMENTATION_SEQUENCE.md §3.1):
     Must not depend on : ORM mutation, provider SDK.
     Canonical write    : no direct write.
 
-PKG-00 SCOPE NOTE: this build phase (Phase 0, "Repository and
-architecture skeleton") materializes only the package boundary and
-its place in the dependency-enforcement graph
-(`scripts/check_architecture_dependencies.py`). No domain, authority,
-or persistence behavior is implemented here. Implementation lands in
-the build phase assigned to this package by
-14_IMPLEMENTATION_SEQUENCE.md §46 (CODING PACKAGE MANIFEST).
+PKG-01 SCOPE NOTE: `workspace_context.py` materializes "request
+Workspace context" (14 PKG-01 OBJECTIVE) by pairing an
+`AuthenticatedPrincipal` with a proven `WorkspaceRecord` read through
+`persistence.WorkspaceRepository` (a `CanonicalReadPort` use, 14 §11 —
+see `scripts/check_architecture_dependencies.py`'s `INTERNAL_ALLOWED`
+extension for `application -> persistence`, read-only). No Command/
+Query dispatch is implemented yet.
 """

@@ -81,6 +81,14 @@ INTERNAL_ALLOWED: dict[str, frozenset[str]] = {
             "security",
             "observability",
             "semantic_types",
+            # PKG-01: `persistence` added for read-only `CanonicalReadPort`
+            # use (14 §11: "Commit evaluation... use canonical reads";
+            # `WorkspaceRepository.get` never returns an authority
+            # conclusion, 14 §10). Writes remain forbidden at this layer —
+            # `persistence`'s repositories exposed to `application` must
+            # stay read-only; any write path still goes through `commit`,
+            # which `application` does not import.
+            "persistence",
         }
     ),
     "persistence": frozenset({"semantic_types"}),
