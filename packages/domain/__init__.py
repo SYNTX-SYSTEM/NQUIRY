@@ -29,6 +29,29 @@ PKG-06 (Build Phase 2) added:
 - `question_lineage.LineageTransformationType` — 09 §32's REFRAME /
                                FOLLOW_UP
 
+PKG-07 (Build Phase 2) added:
+
+- `burst.BurstState`/`BurstMode`/`QuestionBurst` — 03 §19 4-state
+                               machine; `mode` restricted to
+                               `HUMAN_ONLY` in this package (08 §12.2/
+                               12.3, Mode B/C are successor scope)
+- `burst_membership.QuestionBurstMembership` — 02 §17 / 09 §30 frozen
+                               raw-capture relation
+- `burst_membership.compute_frozen_membership_fingerprint` — 14 §19's
+                               `[IMPLEMENTATION CHOICE]` fingerprint
+                               algorithm, pure and DB-free
+- `burst_transitions`         — 03 §20's TRN-BURST-001..005, reusing
+                               `session_transitions`'s generic
+                               `BoundaryDependency`/`TransitionProofType`/
+                               `ProofObligation`/`ProofRequirement`
+                               rather than duplicating them
+
+Note: the BND-008 contamination-guard function (`evaluate_burst_contamination_guard`)
+is *not* here — it needs `authority.actor.ActorClass`, which `domain`
+may not import (14 §3.1); it lives in `packages/application/burst_contamination.py`
+instead, the lowest layer in PKG-07's authorized scope that may depend
+on both `domain` and `authority`.
+
 `domain` still holds no canonical write capability (14 §3.1: "Canonical
 write: no") and depends on nothing but `semantic_types`. Every type
 here is frozen; a changed canonical record is a new value produced by a

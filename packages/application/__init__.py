@@ -13,4 +13,17 @@ Workspace context" (14 PKG-01 OBJECTIVE) by pairing an
 see `scripts/check_architecture_dependencies.py`'s `INTERNAL_ALLOWED`
 extension for `application -> persistence`, read-only). No Command/
 Query dispatch is implemented yet.
+
+PKG-07 added `burst_operations.py` (`check_burst_operation_readiness` —
+composes `domain.burst_transitions`' topology check with a genuine,
+current `authority.resolver.AuthorityResolver.resolve()` call; the
+first real, non-test authority resolution outside PKG-03/04's own
+proofs) and `burst_contamination.py` (`evaluate_burst_contamination_guard`
+— 06 §14 BND-008's one testable invariant, computed as a pure function;
+lives here rather than in `domain` because it needs `authority.actor.ActorClass`).
+Both remain strictly read-only per this package's own topology row
+("Canonical write: no direct write") — neither calls any
+`persistence.burst_repository.BurstRepository` mutating method; those
+are exercised only by tests, mirroring PKG-06's disclosed-unwired
+`QuestionRepository` pattern.
 """

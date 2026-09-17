@@ -29,6 +29,14 @@ See the PKG-06 migration's docstring for `questions`/`question_lineage`
 `question_lineage`'s `ai_generation_id` has no foreign key (its target
 table does not exist until migration `007_ai_operational`), and for
 the immutability triggers on both tables, likewise invisible here.
+See the PKG-07 migration's docstring for `question_bursts`/
+`burst_question_memberships` — including the retrofitted
+`uq_sessions_id_workspace` anchor on `sessions` (added by that
+migration, not `d467112ce46d`, because PKG-05 had no consumer for it
+yet), why `mode`/`capture_origin` are each CHECK-constrained twice
+(once to 09's full approved vocabulary, once to this package's own
+Human-only scope restriction), and for the freeze-enforcement
+triggers, likewise invisible here.
 """
 
 from __future__ import annotations
@@ -190,6 +198,10 @@ sessions_table = sa.Table(
         name="fk_sessions_challenge_workspace",
         ondelete="RESTRICT",
     ),
+    # Retrofitted by PKG-07's migration (not d467112ce46d, which had no
+    # consumer for it yet): anchor for question_bursts' own composite
+    # FK into sessions.
+    sa.UniqueConstraint("id", "workspace_id", name="uq_sessions_id_workspace"),
 )
 
 questions_table = sa.Table(
@@ -264,6 +276,69 @@ question_lineage_table = sa.Table(
     ),
 )
 
+question_bursts_table = sa.Table(
+    "question_bursts",
+    metadata,
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column("session_id", sa.Uuid(), nullable=False),
+    sa.Column(
+        "workspace_id",
+        sa.Uuid(),
+        sa.ForeignKey("workspaces.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    sa.Column("state", sa.Text(), nullable=False),
+    sa.Column("mode", sa.Text(), nullable=False),
+    sa.Column("started_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("paused_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("completed_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("frozen_membership_fingerprint", sa.Text(), nullable=True),
+    sa.Column("record_version", sa.BigInteger(), nullable=False),
+    sa.UniqueConstraint("id", "workspace_id", name="uq_question_bursts_id_workspace"),
+    sa.ForeignKeyConstraint(
+        ["session_id", "workspace_id"],
+        ["sessions.id", "sessions.workspace_id"],
+        name="fk_question_bursts_session_workspace",
+        ondelete="RESTRICT",
+    ),
+)
+
+burst_question_memberships_table = sa.Table(
+    "burst_question_memberships",
+    metadata,
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column("question_burst_id", sa.Uuid(), nullable=False),
+    sa.Column("question_id", sa.Uuid(), nullable=False, unique=True),
+    sa.Column(
+        "workspace_id",
+        sa.Uuid(),
+        sa.ForeignKey("workspaces.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    sa.Column("captured_order", sa.Integer(), nullable=False),
+    sa.Column("captured_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column(
+        "capture_actor_user_id",
+        sa.Uuid(),
+        sa.ForeignKey("users.id", ondelete="RESTRICT"),
+        nullable=True,
+    ),
+    sa.Column("capture_origin", sa.Text(), nullable=False),
+    sa.Column("record_version", sa.BigInteger(), nullable=False),
+    sa.ForeignKeyConstraint(
+        ["question_burst_id", "workspace_id"],
+        ["question_bursts.id", "question_bursts.workspace_id"],
+        name="fk_burst_memberships_burst_workspace",
+        ondelete="RESTRICT",
+    ),
+    sa.ForeignKeyConstraint(
+        ["question_id", "workspace_id"],
+        ["questions.id", "questions.workspace_id"],
+        name="fk_burst_memberships_question_workspace",
+        ondelete="RESTRICT",
+    ),
+)
+
 __all__ = [
     "metadata",
     "users_table",
@@ -275,4 +350,6 @@ __all__ = [
     "sessions_table",
     "questions_table",
     "question_lineage_table",
+    "question_bursts_table",
+    "burst_question_memberships_table",
 ]
