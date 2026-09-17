@@ -24,6 +24,11 @@ to and unaffected by this module). See
 `emotional_temperature` exists on `challenges`, why `sessions` carries
 a *composite* foreign key into `challenges`, and for the two further
 triggers enforcing 03's transition topology, likewise invisible here.
+See the PKG-06 migration's docstring for `questions`/`question_lineage`
+— including why neither `text` nor `status` exists on `questions`, why
+`question_lineage`'s `ai_generation_id` has no foreign key (its target
+table does not exist until migration `007_ai_operational`), and for
+the immutability triggers on both tables, likewise invisible here.
 """
 
 from __future__ import annotations
@@ -187,6 +192,78 @@ sessions_table = sa.Table(
     ),
 )
 
+questions_table = sa.Table(
+    "questions",
+    metadata,
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column(
+        "challenge_id",
+        sa.Uuid(),
+        sa.ForeignKey("challenges.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    sa.Column(
+        "workspace_id",
+        sa.Uuid(),
+        sa.ForeignKey("workspaces.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    sa.Column("original_text", sa.Text(), nullable=False),
+    sa.Column("normalized_text", sa.Text(), nullable=True),
+    sa.Column("origin", sa.Text(), nullable=False),
+    sa.Column(
+        "author_user_id", sa.Uuid(), sa.ForeignKey("users.id", ondelete="RESTRICT"), nullable=True
+    ),
+    sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("record_version", sa.BigInteger(), nullable=False),
+    sa.UniqueConstraint("id", "workspace_id", name="uq_questions_id_workspace"),
+    # 02 §14.4 / 09 §27.1-style constrained denormalization: `workspace_id`
+    # must equal the Challenge's own Workspace.
+    sa.ForeignKeyConstraint(
+        ["challenge_id", "workspace_id"],
+        ["challenges.id", "challenges.workspace_id"],
+        name="fk_questions_challenge_workspace",
+        ondelete="RESTRICT",
+    ),
+)
+
+question_lineage_table = sa.Table(
+    "question_lineage",
+    metadata,
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column("parent_question_id", sa.Uuid(), nullable=False),
+    sa.Column("child_question_id", sa.Uuid(), nullable=False),
+    sa.Column(
+        "workspace_id",
+        sa.Uuid(),
+        sa.ForeignKey("workspaces.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    sa.Column("transformation_type", sa.Text(), nullable=False),
+    sa.Column("producer_origin", sa.Text(), nullable=False),
+    # No ForeignKey: `ai_generations` (14 §9 migration 007_ai_operational)
+    # does not exist yet. Plain nullable reference, same disclosed
+    # limitation as `human_authority_bindings.scope_id` (PKG-02).
+    sa.Column("ai_generation_id", sa.Uuid(), nullable=True),
+    sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+    # Both composite FKs reference the *same* `workspace_id` column on
+    # this row, which structurally forces parent and child to share one
+    # Workspace -- this is what makes cross-Workspace lineage
+    # unrepresentable, not application logic.
+    sa.ForeignKeyConstraint(
+        ["parent_question_id", "workspace_id"],
+        ["questions.id", "questions.workspace_id"],
+        name="fk_question_lineage_parent_workspace",
+        ondelete="RESTRICT",
+    ),
+    sa.ForeignKeyConstraint(
+        ["child_question_id", "workspace_id"],
+        ["questions.id", "questions.workspace_id"],
+        name="fk_question_lineage_child_workspace",
+        ondelete="RESTRICT",
+    ),
+)
+
 __all__ = [
     "metadata",
     "users_table",
@@ -196,4 +273,6 @@ __all__ = [
     "human_authority_bindings_table",
     "challenges_table",
     "sessions_table",
+    "questions_table",
+    "question_lineage_table",
 ]
