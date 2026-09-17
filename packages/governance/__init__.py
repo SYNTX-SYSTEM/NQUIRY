@@ -6,11 +6,12 @@ Architectural ownership (14_IMPLEMENTATION_SEQUENCE.md §3.1):
     Must not depend on : UI, provider SDK.
     Canonical write    : only through CommitUnit.
 
-PKG-00 SCOPE NOTE: this build phase (Phase 0, "Repository and
-architecture skeleton") materializes only the package boundary and
-its place in the dependency-enforcement graph
-(`scripts/check_architecture_dependencies.py`). No domain, authority,
-or persistence behavior is implemented here. Implementation lands in
-the build phase assigned to this package by
-14_IMPLEMENTATION_SEQUENCE.md §46 (CODING PACKAGE MANIFEST).
+PKG-02 SCOPE NOTE: `membership.py` and `authority_binding.py` materialize
+the closed vocabularies for WorkspaceMembership/RoleAssignment (02 §7,
+09 §23-24) and HumanAuthorityBinding (04 §6/§9, 05 §8). No governed
+mutation (grant/revoke) is executed here — no CommitUnit exists yet
+(that lands with PKG-04/PKG-10/PKG-13). "Governed mutation ports" (14
+PKG-02 OBJECTIVE) refers to the repository Protocols in
+`packages/persistence` (14 §10 is literally titled "REPOSITORY PORTS"),
+not a separate plan type.
 """

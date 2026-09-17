@@ -91,6 +91,42 @@ def test_allows_application_to_depend_on_persistence_for_reads(tmp_path: Path) -
     assert violations == []
 
 
+def test_allows_persistence_to_depend_on_governance_for_typed_records(tmp_path: Path) -> None:
+    """PKG-02: `persistence` may depend on `governance` (type-only use:
+    `WorkspaceRole`, `MembershipStatus`, `AuthorityClass`,
+    `AuthorityBindingState`) -- see
+    `check_architecture_dependencies.INTERNAL_ALLOWED["persistence"]`
+    for the citation. Not a forbidden-dependency violation.
+    """
+    packages_root = tmp_path / "packages"
+    _write(packages_root, "persistence/__init__.py", "")
+    _write(packages_root, "persistence/membership_repository.py", "import governance\n")
+    _write(packages_root, "governance/__init__.py", "")
+
+    violations = check(roots=(packages_root,))
+
+    assert violations == []
+
+
+def test_governance_still_cannot_depend_on_persistence(tmp_path: Path) -> None:
+    """Negative control for the extension above: the new
+    `persistence -> governance` edge must not have quietly become
+    bidirectional. `governance` owns "governance state" (14 §3.1) and
+    must not reach back into the storage adapter that implements it --
+    that would be a real circular dependency, not a read-only type use.
+    """
+    packages_root = tmp_path / "packages"
+    _write(packages_root, "governance/__init__.py", "")
+    _write(packages_root, "governance/oops.py", "import persistence\n")
+    _write(packages_root, "persistence/__init__.py", "")
+
+    violations = check(roots=(packages_root,))
+
+    assert len(violations) == 1
+    assert violations[0].owner_package == "governance"
+    assert violations[0].imported == "persistence"
+
+
 def test_application_still_cannot_depend_on_commit(tmp_path: Path) -> None:
     """Negative control for the extension above: allowing `application ->
     persistence` for reads must not have quietly opened `application ->

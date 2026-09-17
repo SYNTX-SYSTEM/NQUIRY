@@ -76,12 +76,14 @@ extend-exclude = ["apps/web", "migrations/versions"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
-# UP017 ("datetime.UTC alias") is disabled deliberately: `timezone.utc`
-# is fully correct on the declared target (Python 3.13) and this
-# repository's sandbox verification interpreter is 3.10, where the
-# `datetime.UTC` alias does not exist (added in 3.11). See
-# docs/implementation/proof-reports/PKG-00.md, KNOWN_LIMITATIONS.
-ignore = ["UP017"]
+# UP017 ("datetime.UTC alias") and UP042 ("inherit from enum.StrEnum")
+# are disabled deliberately: `timezone.utc` and `class X(str, Enum)` are
+# both fully correct on the declared target (Python 3.13), but this
+# repository's sandbox verification interpreter is 3.10, where
+# `datetime.UTC` (added 3.11) and `enum.StrEnum` (added 3.11) do not
+# exist. See docs/implementation/proof-reports/PKG-00.md,
+# KNOWN_LIMITATIONS.
+ignore = ["UP017", "UP042"]
 
 # --- mypy ---
 # MYPYPATH must include packages/, apps/api/src, apps/worker/src for

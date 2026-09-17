@@ -91,7 +91,21 @@ INTERNAL_ALLOWED: dict[str, frozenset[str]] = {
             "persistence",
         }
     ),
-    "persistence": frozenset({"semantic_types"}),
+    "persistence": frozenset(
+        {
+            "semantic_types",
+            # PKG-02: `governance` added so persistence's Record dataclasses
+            # can be typed with governance's closed vocabularies
+            # (`WorkspaceRole`, `MembershipStatus`, `AuthorityClass`,
+            # `AuthorityBindingState`) instead of falling back to raw
+            # strings. Type-only use: persistence still implements the
+            # storage adapter, governance still owns "governance state"
+            # (14 §3.1) — no mutation authority flows the other way,
+            # since governance's own allowed set (above) does not include
+            # `persistence`.
+            "governance",
+        }
+    ),
     "test_support": frozenset(KNOWN_INTERNAL_PACKAGES - {"test_support"}),
     "nquiry_api": frozenset({"application", "semantic_types"}),
     "nquiry_worker": frozenset(
