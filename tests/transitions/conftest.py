@@ -1,0 +1,37 @@
+"""Shared fixtures for T2 transition tests.
+
+`test_session_transition_registry.py` is pure-Python (no DB). The live
+PostgreSQL constraint proof lives in
+`test_session_transition_constraints.py` and mirrors the identical
+`SKIPPED_NO_DATABASE` convention used across
+`tests/domain/conftest.py` / `tests/regression/conftest.py`.
+"""
+
+from __future__ import annotations
+
+import os
+from collections.abc import Iterator
+
+import pytest
+import sqlalchemy as sa
+
+
+@pytest.fixture
+def db_connection() -> Iterator[sa.Connection]:
+    database_url = os.environ.get("DATABASE_URL")
+    if not database_url:
+        pytest.skip(
+            "DATABASE_URL not set; this test requires a live PostgreSQL 17 instance "
+            "with migration 003 applied. Start one with `docker compose up -d postgres` "
+            "and set DATABASE_URL."
+        )
+
+    engine = sa.create_engine(database_url)
+    connection = engine.connect()
+    transaction = connection.begin()
+    try:
+        yield connection
+    finally:
+        transaction.rollback()
+        connection.close()
+        engine.dispose()

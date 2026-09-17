@@ -118,6 +118,16 @@ INTERNAL_ALLOWED: dict[str, frozenset[str]] = {
             # since governance's own allowed set (above) does not include
             # `persistence`.
             "governance",
+            # PKG-05: `domain` added so `challenge_session_mapping` can
+            # map an already-fetched row into the frozen `Challenge`/
+            # `Session` canonical types instead of handing callers raw
+            # dicts and a text `state` column (14 §3.1: `persistence`
+            # may depend on "semantic contracts" — `domain` owns
+            # "Things, Relations, state specs, invariants"). Read-only,
+            # one-directional use: `domain` itself may depend on
+            # `semantic_types` only, so it cannot reach back into
+            # persistence, and this module performs no write.
+            "domain",
         }
     ),
     "test_support": frozenset(KNOWN_INTERNAL_PACKAGES - {"test_support"}),

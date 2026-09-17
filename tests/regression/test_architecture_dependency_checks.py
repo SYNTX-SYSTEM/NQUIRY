@@ -182,6 +182,42 @@ def test_application_still_cannot_depend_on_commit(tmp_path: Path) -> None:
     assert violations[0].imported == "commit"
 
 
+def test_allows_persistence_to_depend_on_domain_for_row_mapping(tmp_path: Path) -> None:
+    """PKG-05: `persistence` may depend on `domain` so
+    `challenge_session_mapping` can map an already-fetched row into
+    the frozen `Challenge`/`Session` canonical types -- see
+    `check_architecture_dependencies.INTERNAL_ALLOWED["persistence"]`
+    for the citation. Not a forbidden-dependency violation.
+    """
+    packages_root = tmp_path / "packages"
+    _write(packages_root, "persistence/__init__.py", "")
+    _write(packages_root, "persistence/challenge_session_mapping.py", "import domain\n")
+    _write(packages_root, "domain/__init__.py", "")
+
+    violations = check(roots=(packages_root,))
+
+    assert violations == []
+
+
+def test_domain_still_cannot_depend_on_persistence(tmp_path: Path) -> None:
+    """Negative control for the extension above: the new
+    `persistence -> domain` edge must not have quietly become
+    bidirectional. `domain`'s only permitted dependency remains
+    `semantic_types` (14 §3.1) -- it must never reach into the storage
+    adapter built on top of it.
+    """
+    packages_root = tmp_path / "packages"
+    _write(packages_root, "domain/__init__.py", "")
+    _write(packages_root, "domain/oops.py", "import persistence\n")
+    _write(packages_root, "persistence/__init__.py", "")
+
+    violations = check(roots=(packages_root,))
+
+    assert len(violations) == 1
+    assert violations[0].owner_package == "domain"
+    assert violations[0].imported == "persistence"
+
+
 def test_allows_provider_sdk_only_inside_the_adapter_boundary(tmp_path: Path) -> None:
     packages_root = tmp_path / "packages"
     _write(packages_root, "ai_gateway/__init__.py", "")

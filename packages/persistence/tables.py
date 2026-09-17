@@ -18,7 +18,12 @@ Column set matches the migration exactly. See
 for the two triggers that migration attaches to
 `human_authority_bindings` (not representable as SQLAlchemy Core
 `Table` metadata — they are pure database-side enforcement, invisible
-to and unaffected by this module).
+to and unaffected by this module). See
+`d467112ce46d_challenge_session.py`'s docstring for `challenges`/
+`sessions` — including why neither `status` nor
+`emotional_temperature` exists on `challenges`, why `sessions` carries
+a *composite* foreign key into `challenges`, and for the two further
+triggers enforcing 03's transition topology, likewise invisible here.
 """
 
 from __future__ import annotations
@@ -131,6 +136,57 @@ human_authority_bindings_table = sa.Table(
     sa.Column("record_version", sa.BigInteger(), nullable=False),
 )
 
+challenges_table = sa.Table(
+    "challenges",
+    metadata,
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column(
+        "workspace_id",
+        sa.Uuid(),
+        sa.ForeignKey("workspaces.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    sa.Column("title", sa.Text(), nullable=False),
+    sa.Column("description", sa.Text(), nullable=True),
+    sa.Column("context", sa.Text(), nullable=True),
+    sa.Column("desired_outcome", sa.Text(), nullable=True),
+    sa.Column("constraints", sa.Text(), nullable=True),
+    sa.Column("stakeholders", sa.Text(), nullable=True),
+    sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("record_version", sa.BigInteger(), nullable=False),
+    sa.UniqueConstraint("id", "workspace_id", name="uq_challenges_id_workspace"),
+)
+
+sessions_table = sa.Table(
+    "sessions",
+    metadata,
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column("challenge_id", sa.Uuid(), nullable=False),
+    sa.Column(
+        "workspace_id",
+        sa.Uuid(),
+        sa.ForeignKey("workspaces.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    sa.Column("applied_method_key", sa.Text(), nullable=False),
+    sa.Column("applied_method_version", sa.Text(), nullable=False),
+    sa.Column("state", sa.Text(), nullable=False),
+    sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("closed_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("record_version", sa.BigInteger(), nullable=False),
+    # The composite FK, not a plain `challenge_id` reference: 09 §27.1
+    # permits the denormalized `workspace_id` only under the constraint
+    # that it equals the Challenge's Workspace.
+    sa.ForeignKeyConstraint(
+        ["challenge_id", "workspace_id"],
+        ["challenges.id", "challenges.workspace_id"],
+        name="fk_sessions_challenge_workspace",
+        ondelete="RESTRICT",
+    ),
+)
+
 __all__ = [
     "metadata",
     "users_table",
@@ -138,4 +194,6 @@ __all__ = [
     "workspace_memberships_table",
     "role_assignments_table",
     "human_authority_bindings_table",
+    "challenges_table",
+    "sessions_table",
 ]
