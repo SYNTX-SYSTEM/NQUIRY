@@ -14,6 +14,7 @@ from boundaries.bnd_007_state_transition import Bnd007Input, Bnd007StateTransiti
 from boundaries.types import BoundaryContext, BoundaryId, BoundaryResult
 from domain.burst import BurstState
 from domain.burst_transitions import resolve_burst_transition_to_state
+from domain.decision import DecisionState, resolve_decision_transition_to_state
 from domain.question_selection import SelectionTransitionId, resolve_selection_transition
 from domain.session import SessionState
 from domain.session_transitions import resolve_session_transition_to_state
@@ -177,6 +178,40 @@ def test_denies_a_question_from_a_different_challenge() -> None:
 
     assert proof.result is BoundaryResult.DENY
     assert proof.reason_code == "DENIED_QUESTION_WRONG_CHALLENGE"
+
+
+def test_allows_a_legal_decision_transition() -> None:
+    """PKG-15: unlike PKG-14's QuestionSelection, Decision has genuine
+    `from_state != to_state` pairs -- proven with a real
+    `DecisionTransitionResolution`, not a stub.
+    """
+    context = _context()
+    resolution = resolve_decision_transition_to_state(
+        current_state=None, target_state=DecisionState.UNDER_CONSIDERATION
+    )
+    evaluator = Bnd007StateTransitionEvaluator()
+    boundary_input = Bnd007Input(
+        boundary_id=BoundaryId.BND_007, context=context, resolution=resolution
+    )
+
+    proof = evaluator.evaluate(boundary_input, context)
+
+    assert proof.result is BoundaryResult.ALLOW
+
+
+def test_denies_an_illegal_decision_transition() -> None:
+    context = _context()
+    resolution = resolve_decision_transition_to_state(
+        current_state=DecisionState.DECIDED, target_state=DecisionState.UNDER_CONSIDERATION
+    )
+    evaluator = Bnd007StateTransitionEvaluator()
+    boundary_input = Bnd007Input(
+        boundary_id=BoundaryId.BND_007, context=context, resolution=resolution
+    )
+
+    proof = evaluator.evaluate(boundary_input, context)
+
+    assert proof.result is BoundaryResult.DENY
 
 
 def test_rejects_a_resolution_of_the_wrong_type() -> None:

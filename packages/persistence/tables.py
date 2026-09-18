@@ -67,6 +67,10 @@ including why `human_authority_binding_id` carries no foreign key, and
 for the cardinality-enforcing trigger and partial unique index
 (neither representable as SQLAlchemy Core `Table` metadata), likewise
 invisible here.
+See the PKG-15 migration's docstring for `decisions` — including why
+`decision_authority_binding_id` carries no foreign key, and for the two
+triggers enforcing 03's Decision transition topology (making `DECIDED`
+terminal at the database layer too), likewise invisible here.
 """
 
 from __future__ import annotations
@@ -618,6 +622,72 @@ question_selections_table = sa.Table(
     ),
 )
 
+decisions_table = sa.Table(
+    "decisions",
+    metadata,
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column(
+        "workspace_id",
+        sa.Uuid(),
+        sa.ForeignKey("workspaces.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    sa.Column("challenge_id", sa.Uuid(), nullable=False),
+    sa.Column("decision_question_ref", sa.Uuid(), nullable=True),
+    sa.Column("decision_question_text", sa.Text(), nullable=True),
+    sa.Column("options", sa.ARRAY(sa.Text()), nullable=False),
+    sa.Column("criteria", sa.ARRAY(sa.Text()), nullable=False),
+    sa.Column("selected_option", sa.Text(), nullable=True),
+    sa.Column("rationale", sa.Text(), nullable=True),
+    sa.Column("confidence", sa.Text(), nullable=True),
+    sa.Column("state", sa.Text(), nullable=False),
+    sa.Column(
+        "opened_by_user_id",
+        sa.Uuid(),
+        sa.ForeignKey("users.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    # No foreign key: same disclosed treatment as
+    # `question_selections.human_authority_binding_id` (PKG-14) --
+    # `human_authority_bindings` has no `UNIQUE(id, workspace_id)`
+    # anchor, and this is a proof reference, not a live authorization
+    # join.
+    sa.Column("decision_authority_binding_id", sa.Uuid(), nullable=False),
+    sa.Column(
+        "decided_by_user_id",
+        sa.Uuid(),
+        sa.ForeignKey("users.id", ondelete="RESTRICT"),
+        nullable=True,
+    ),
+    sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("decided_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("record_version", sa.BigInteger(), nullable=False),
+    sa.Column("provenance_ref", sa.Uuid(), nullable=True),
+    sa.ForeignKeyConstraint(
+        ["challenge_id", "workspace_id"],
+        ["challenges.id", "challenges.workspace_id"],
+        name="fk_decisions_challenge_workspace",
+        ondelete="RESTRICT",
+    ),
+    sa.ForeignKeyConstraint(
+        ["decision_question_ref", "workspace_id"],
+        ["questions.id", "questions.workspace_id"],
+        name="fk_decisions_question_workspace",
+        ondelete="RESTRICT",
+    ),
+    sa.CheckConstraint(
+        "state IN ('UNDER_CONSIDERATION', 'DECIDED')",
+        name="ck_decisions_state_vocabulary",
+    ),
+    sa.CheckConstraint(
+        "(state = 'DECIDED' AND decided_by_user_id IS NOT NULL "
+        "AND decided_at IS NOT NULL AND selected_option IS NOT NULL) "
+        "OR (state = 'UNDER_CONSIDERATION' AND decided_by_user_id IS NULL "
+        "AND decided_at IS NULL)",
+        name="ck_decisions_decided_attribution",
+    ),
+)
+
 __all__ = [
     "metadata",
     "users_table",
@@ -638,4 +708,5 @@ __all__ = [
     "outbox_events_table",
     "commit_units_table",
     "question_selections_table",
+    "decisions_table",
 ]

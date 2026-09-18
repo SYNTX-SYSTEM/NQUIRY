@@ -44,6 +44,18 @@ as a third tagged-union member is not a new boundary and not new
 authority; it is the same translation this evaluator already performs
 for the other two state machines, extended to a third one this
 boundary's own purpose statement already covers.
+
+PKG-15 EXTENSION: `DecisionTransitionResolution`
+------------------------------------------------------------
+Unlike PKG-14's Decision is a genuine `CANONICAL_DOMAIN_OBJECT` (02
+§26.1), not a relation, with real `from_state != to_state` pairs (03
+§36 TRN-DEC-001/002: absent -> UNDER_CONSIDERATION -> DECIDED) --
+squarely the *first* half of 06 §13's own disjunction, the same shape
+`SessionTransitionResolution`/`BurstTransitionResolution` already use.
+Adding it as a fourth tagged-union member is, again, not a new
+boundary: 06 §13's own generic "BOUNDARY SUBJECT: State-owning
+object/process" wording already covers Decision as one more
+03-defined state machine.
 """
 
 from __future__ import annotations
@@ -51,6 +63,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from domain.burst_transitions import BurstTransitionResolution, BurstTransitionVerdict
+from domain.decision import DecisionTransitionResolution, DecisionTransitionVerdict
 from domain.question_selection import SelectionTransitionResolution, SelectionTransitionVerdict
 from domain.session_transitions import SessionTransitionResolution, SessionTransitionVerdict
 from semantic_types.versions import ContractVersion
@@ -61,6 +74,21 @@ _RESOLUTION_TYPES = (
     SessionTransitionResolution,
     BurstTransitionResolution,
     SelectionTransitionResolution,
+    DecisionTransitionResolution,
+)
+
+_AnyResolution = (
+    SessionTransitionResolution
+    | BurstTransitionResolution
+    | SelectionTransitionResolution
+    | DecisionTransitionResolution
+)
+
+_AnyVerdict = (
+    SessionTransitionVerdict
+    | BurstTransitionVerdict
+    | SelectionTransitionVerdict
+    | DecisionTransitionVerdict
 )
 
 
@@ -68,9 +96,7 @@ _RESOLUTION_TYPES = (
 class Bnd007Input:
     boundary_id: BoundaryId
     context: BoundaryContext
-    resolution: (
-        SessionTransitionResolution | BurstTransitionResolution | SelectionTransitionResolution
-    )
+    resolution: _AnyResolution
 
     def __post_init__(self) -> None:
         if self.boundary_id is not BoundaryId.BND_007:
@@ -78,8 +104,8 @@ class Bnd007Input:
         if not isinstance(self.resolution, _RESOLUTION_TYPES):
             raise TypeError(
                 "Bnd007Input.resolution must be a SessionTransitionResolution, "
-                f"BurstTransitionResolution or SelectionTransitionResolution, "
-                f"got {type(self.resolution)!r}"
+                "BurstTransitionResolution, SelectionTransitionResolution or "
+                f"DecisionTransitionResolution, got {type(self.resolution)!r}"
             )
 
 
@@ -89,9 +115,7 @@ class Bnd007StateTransitionEvaluator:
 
     def evaluate(self, boundary_input: Bnd007Input, context: BoundaryContext) -> BoundaryProof:
         resolution = boundary_input.resolution
-        verdict: SessionTransitionVerdict | BurstTransitionVerdict | SelectionTransitionVerdict = (
-            resolution.verdict
-        )
+        verdict: _AnyVerdict = resolution.verdict
         result = BoundaryResult.ALLOW if resolution.is_state_eligible else BoundaryResult.DENY
         return BoundaryProof(
             boundary_id=self.boundary_id,
