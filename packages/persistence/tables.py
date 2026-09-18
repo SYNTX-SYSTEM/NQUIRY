@@ -55,6 +55,13 @@ the second half of the conceptual "009_commit_audit_outbox" bucket),
 why `audit_events` is immutable against both UPDATE and DELETE, and for
 `outbox_events`' identity-immutability/delivery-status-transition
 triggers, likewise invisible here.
+See the PKG-13 migration's docstring for `commit_units` — including why
+its `target_refs`/`relation_refs`/`governance_refs`/`audit_event_ids`/
+`outbox_ids` array columns carry no foreign keys, and for the
+retrofitted composite `commit_id` foreign keys this same migration adds
+to `command_attempts`, `idempotency_records`, `audit_events`, and
+`outbox_events` (each column already existed nullable with no FK,
+disclosed forward-reference gaps their own migrations named explicitly).
 """
 
 from __future__ import annotations
@@ -398,6 +405,12 @@ command_attempts_table = sa.Table(
         name="fk_command_attempts_command_workspace",
         ondelete="RESTRICT",
     ),
+    sa.ForeignKeyConstraint(
+        ["commit_id", "workspace_id"],
+        ["commit_units.id", "commit_units.workspace_id"],
+        name="fk_command_attempts_commit_workspace",
+        ondelete="RESTRICT",
+    ),
 )
 
 idempotency_records_table = sa.Table(
@@ -432,6 +445,12 @@ idempotency_records_table = sa.Table(
         ["latest_attempt_id"],
         ["command_attempts.id"],
         name="fk_idempotency_records_latest_attempt",
+        ondelete="RESTRICT",
+    ),
+    sa.ForeignKeyConstraint(
+        ["commit_id", "workspace_id"],
+        ["commit_units.id", "commit_units.workspace_id"],
+        name="fk_idempotency_records_commit_workspace",
         ondelete="RESTRICT",
     ),
 )
@@ -471,6 +490,12 @@ audit_events_table = sa.Table(
         name="fk_audit_events_command_workspace",
         ondelete="RESTRICT",
     ),
+    sa.ForeignKeyConstraint(
+        ["commit_id", "workspace_id"],
+        ["commit_units.id", "commit_units.workspace_id"],
+        name="fk_audit_events_commit_workspace",
+        ondelete="RESTRICT",
+    ),
 )
 
 outbox_events_table = sa.Table(
@@ -492,6 +517,44 @@ outbox_events_table = sa.Table(
     sa.Column("next_attempt_at", sa.DateTime(timezone=True), nullable=True),
     sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
     sa.Column("delivered_at", sa.DateTime(timezone=True), nullable=True),
+    sa.ForeignKeyConstraint(
+        ["commit_id", "workspace_id"],
+        ["commit_units.id", "commit_units.workspace_id"],
+        name="fk_outbox_events_commit_workspace",
+        ondelete="RESTRICT",
+    ),
+)
+
+commit_units_table = sa.Table(
+    "commit_units",
+    metadata,
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column(
+        "workspace_id",
+        sa.Uuid(),
+        sa.ForeignKey("workspaces.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    sa.Column("command_id", sa.Uuid(), nullable=False),
+    sa.Column("attempt_id", sa.Uuid(), nullable=False),
+    sa.Column("target_refs", sa.ARRAY(sa.Text()), nullable=False),
+    sa.Column("relation_refs", sa.ARRAY(sa.Text()), nullable=False),
+    sa.Column("governance_refs", sa.ARRAY(sa.Text()), nullable=False),
+    sa.Column("audit_event_ids", sa.ARRAY(sa.Uuid()), nullable=False),
+    sa.Column("outbox_ids", sa.ARRAY(sa.Uuid()), nullable=False),
+    sa.Column("commit_time_proof_ref", sa.Uuid(), nullable=True),
+    sa.Column("committed_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("outcome", sa.Text(), nullable=False),
+    sa.ForeignKeyConstraint(
+        ["command_id", "workspace_id"],
+        ["commands.id", "commands.workspace_id"],
+        name="fk_commit_units_command_workspace",
+        ondelete="RESTRICT",
+    ),
+    sa.ForeignKeyConstraint(
+        ["attempt_id"], ["command_attempts.id"], name="fk_commit_units_attempt", ondelete="RESTRICT"
+    ),
+    sa.UniqueConstraint("id", "workspace_id", name="uq_commit_units_id_workspace"),
 )
 
 __all__ = [
@@ -512,4 +575,5 @@ __all__ = [
     "idempotency_records_table",
     "audit_events_table",
     "outbox_events_table",
+    "commit_units_table",
 ]

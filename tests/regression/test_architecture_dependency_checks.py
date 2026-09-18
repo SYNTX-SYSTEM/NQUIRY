@@ -198,6 +198,105 @@ def test_persistence_still_cannot_depend_on_boundaries(tmp_path: Path) -> None:
     assert violations[0].imported == "boundaries"
 
 
+def test_allows_commit_to_depend_on_authority_for_actor_identity(tmp_path: Path) -> None:
+    """PKG-13: `commit` may depend on `authority` so `coordinator.py`
+    can construct a real `authority.actor.ActorIdentity` for
+    `boundaries.types.BoundaryContext.actor` when invoking BND-014 --
+    see `check_architecture_dependencies.INTERNAL_ALLOWED["commit"]`
+    for the citation. Type-only use: `commit` never constructs an
+    `AuthorityResolver` itself. Not a forbidden-dependency violation.
+    """
+    packages_root = tmp_path / "packages"
+    _write(packages_root, "commit/__init__.py", "")
+    _write(packages_root, "commit/coordinator.py", "import authority\n")
+    _write(packages_root, "authority/__init__.py", "")
+
+    violations = check(roots=(packages_root,))
+
+    assert violations == []
+
+
+def test_authority_still_cannot_depend_on_commit(tmp_path: Path) -> None:
+    """Negative control for the extension above: the new
+    `commit -> authority` edge must not have quietly become
+    bidirectional. `authority`'s permitted dependencies remain
+    `governance`, `domain`, `semantic_types`, `persistence` (14 §3.1)
+    -- it must never reach into the write-coordination layer built on
+    top of it.
+    """
+    packages_root = tmp_path / "packages"
+    _write(packages_root, "authority/__init__.py", "")
+    _write(packages_root, "authority/oops.py", "import commit\n")
+    _write(packages_root, "commit/__init__.py", "")
+
+    violations = check(roots=(packages_root,))
+
+    assert len(violations) == 1
+    assert violations[0].owner_package == "authority"
+    assert violations[0].imported == "commit"
+
+
+def test_allows_commit_to_depend_on_governance_for_authority_class(tmp_path: Path) -> None:
+    """PKG-13: `commit` may depend on `governance` so
+    `coordinator.py`'s own `commit()` method can type its
+    `required_authority_class` parameter as the real
+    `governance.authority_binding.AuthorityClass` -- see
+    `check_architecture_dependencies.INTERNAL_ALLOWED["commit"]` for
+    the citation. Type-only use. Not a forbidden-dependency violation.
+    """
+    packages_root = tmp_path / "packages"
+    _write(packages_root, "commit/__init__.py", "")
+    _write(packages_root, "commit/coordinator.py", "import governance\n")
+    _write(packages_root, "governance/__init__.py", "")
+
+    violations = check(roots=(packages_root,))
+
+    assert violations == []
+
+
+def test_governance_still_cannot_depend_on_commit(tmp_path: Path) -> None:
+    """Negative control for the extension above: the new
+    `commit -> governance` edge must not have quietly become
+    bidirectional. `governance`'s permitted dependencies remain
+    `domain`, `semantic_types` (14 §3.1) -- it must never reach into
+    the write-coordination layer built on top of it.
+    """
+    packages_root = tmp_path / "packages"
+    _write(packages_root, "governance/__init__.py", "")
+    _write(packages_root, "governance/oops.py", "import commit\n")
+    _write(packages_root, "commit/__init__.py", "")
+
+    violations = check(roots=(packages_root,))
+
+    assert len(violations) == 1
+    assert violations[0].owner_package == "governance"
+    assert violations[0].imported == "commit"
+
+
+def test_allows_persistence_to_depend_on_commit_for_typed_records(tmp_path: Path) -> None:
+    """PKG-13: `persistence` may depend on `commit` so
+    `commit_repository.py` can store/reconstruct real
+    `CommitUnit`/`CommitOutcome` instances -- see
+    `check_architecture_dependencies.INTERNAL_ALLOWED["persistence"]`
+    for the citation. This is the reverse direction of the
+    already-existing `commit -> persistence` edge (`commit/idempotency.py`
+    reads/writes through persistence's repositories); it does not
+    create an actual Python-level circular import because the two
+    directions are exercised by disjoint submodules
+    (`commit/idempotency.py` vs. `commit/coordinator.py` +
+    `persistence/commit_repository.py`), and `commit/__init__.py`
+    itself has no imports. Not a forbidden-dependency violation.
+    """
+    packages_root = tmp_path / "packages"
+    _write(packages_root, "persistence/__init__.py", "")
+    _write(packages_root, "persistence/commit_repository.py", "import commit\n")
+    _write(packages_root, "commit/__init__.py", "")
+
+    violations = check(roots=(packages_root,))
+
+    assert violations == []
+
+
 def test_application_still_cannot_depend_on_commit(tmp_path: Path) -> None:
     """Negative control for the extension above: allowing `application ->
     persistence` for reads must not have quietly opened `application ->

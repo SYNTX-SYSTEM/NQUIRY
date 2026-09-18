@@ -22,7 +22,25 @@ PKG-11 SCOPE (Build Phase 4, "Idempotency"):
                        PKG-10; no new INTERNAL_ALLOWED extension was
                        needed for this package).
 
-`coordinator.py` (BND-014, CommitUnit transaction orchestration) remains
-PKG-13's scope -- nothing here performs a canonical mutation, resolves
-authority, or evaluates a boundary.
+PKG-13 SCOPE (Build Phase 4, "Commit coordinator and BND-014"):
+    coordinator.py -- CommitCoordinator (14 PUBLIC INTERFACES), CommitUnit
+                       (09 section 13's exact field list), CommitOutcome
+                       (09 section 13's own 3-value closed vocabulary,
+                       distinct from both command.envelope.CommandOutcome
+                       and this package's own IdempotencyOutcome -- see
+                       that module's docstring), FailureInjectionPort
+                       (14 section 40's 11 named deterministic hook
+                       points, as a production-importable Protocol --
+                       the concrete deterministic double lives in
+                       `test_support.failure_injector`, mirroring
+                       `semantic_types.clock.Clock`/`test_support.clock.
+                       FixedClock`). `packages/boundaries/bnd_014_commit.py`
+                       implements the actual BND-014 evaluator this
+                       package's coordinator holds and calls.
+                       `packages/persistence/commit_repository.py`
+                       implements the durable storage for
+                       `CommitRepository`, a deliberate split from this
+                       package (unlike PKG-11's single-file idempotency
+                       design) -- 14 PKG-13's own FILES_ALLOWED_TO_CREATE
+                       names them as two distinct creation targets.
 """

@@ -18,6 +18,14 @@ proves this is not swallowed as a false "race"). Every other test
 therefore records the command first, exactly mirroring the real
 two-step flow: `CommandRepository.record_attempt` then
 `IdempotencyPort.begin`.
+
+WHY `mark_committed` CALLS NOW ALSO RECORD A REAL `commit_units` ROW
+--------------------------------------------------------------------
+PKG-13's migration (`b06f9a5b3d1b`) retrofits a composite FK from
+`idempotency_records.commit_id` to `commit_units(id, workspace_id)` --
+the same forward reference this table's own PKG-11 migration disclosed
+as pending. See `tests/command_commit_event/test_audit.py`'s own
+module docstring for the identical fix applied there.
 """
 
 from __future__ import annotations
@@ -29,6 +37,7 @@ from datetime import datetime, timezone
 import pytest
 import sqlalchemy as sa
 from command.envelope import CommandEnvelope, compute_payload_fingerprint
+from commit.coordinator import CommitOutcome, CommitUnit
 from commit.idempotency import (
     IdempotencyAlreadyCommitted,
     IdempotencyDecision,
@@ -41,6 +50,7 @@ from commit.idempotency import (
     decide_idempotency_action,
 )
 from persistence.command_repository import SqlAlchemyCommandRepository
+from persistence.commit_repository import SqlAlchemyCommitRepository
 from persistence.tables import idempotency_records_table
 from semantic_types.id_generator import SystemIdGenerator
 from semantic_types.ids import AttemptId, CommandId, CommitId, CorrelationId, WorkspaceId
@@ -273,6 +283,30 @@ def _begin(
     return idempotency_repo.begin(envelope, seen_at=seen_at)
 
 
+def _record_real_commit(db_connection: sa.Connection, *, envelope: CommandEnvelope) -> CommitId:
+    """A real `commit_units` row for `envelope`'s own command/attempt --
+    `idempotency_records.commit_id` (and `command_attempts.commit_id`)
+    both carry a composite FK to it since PKG-13's migration.
+    """
+    commit_id = CommitId(uuid.uuid4())
+    SqlAlchemyCommitRepository(db_connection).append(
+        CommitUnit(
+            commit_id=commit_id,
+            command_id=envelope.command_id,
+            attempt_id=envelope.attempt_id,
+            workspace_id=envelope.workspace_scope_ref,
+            target_refs=(),
+            relation_refs=(),
+            governance_refs=(),
+            audit_event_ids=(),
+            outbox_ids=(),
+            committed_at=_NOW,
+            outcome=CommitOutcome.COMMITTED,
+        )
+    )
+    return commit_id
+
+
 def test_begin_creates_a_new_in_progress_record(db_connection: sa.Connection) -> None:
     workspace_id = _workspace(db_connection, email="idem-new@nonproof.test")
     repo = SqlAlchemyIdempotencyRepository(db_connection)
@@ -364,11 +398,12 @@ def test_begin_denies_committed_duplicate_and_returns_prior_result(
         payload=payload,
     )
     _begin(db_connection, repo, envelope, seen_at=_NOW)
+    commit_id = _record_real_commit(db_connection, envelope=envelope)
     repo.mark_committed(
         workspace_id=workspace_id,
         command_type="CMD_TEST_OPERATION",
         idempotency_key="idem-1",
-        commit_id=CommitId(uuid.uuid4()),
+        commit_id=commit_id,
         result_ref="result-ref-1",
     )
 
@@ -685,11 +720,12 @@ def test_committed_outcome_is_terminal_at_the_database_layer(db_connection: sa.C
         workspace_id=workspace_id,
     )
     _begin(db_connection, repo, envelope, seen_at=_NOW)
+    commit_id = _record_real_commit(db_connection, envelope=envelope)
     repo.mark_committed(
         workspace_id=workspace_id,
         command_type="CMD_TEST_OPERATION",
         idempotency_key="idem-1",
-        commit_id=CommitId(uuid.uuid4()),
+        commit_id=commit_id,
         result_ref="result-1",
     )
 

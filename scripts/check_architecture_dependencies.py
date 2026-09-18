@@ -95,7 +95,32 @@ INTERNAL_ALLOWED: dict[str, frozenset[str]] = {
     "ai_gateway": frozenset({"ai_contracts", "security", "persistence", "semantic_types"}),
     "command": frozenset({"domain", "semantic_types"}),
     "commit": frozenset(
-        {"command", "boundaries", "persistence", "audit", "events", "semantic_types"}
+        {
+            "command",
+            "boundaries",
+            "persistence",
+            "audit",
+            "events",
+            "semantic_types",
+            # PKG-13: `authority` added so `coordinator.py` can construct
+            # a real `authority.actor.ActorIdentity` for
+            # `boundaries.types.BoundaryContext.actor` when invoking
+            # BND-014 (14 §3.1's own row for `boundaries` already
+            # requires the identical import for the same reason).
+            # Type-only use: `commit` never constructs an
+            # `AuthorityResolver` itself, it only carries the identity
+            # value through to the boundary evaluator it holds.
+            "authority",
+            # PKG-13: `governance` added so `coordinator.py`'s own
+            # `commit()` method can type its `required_authority_class`
+            # parameter as the real `governance.authority_binding.
+            # AuthorityClass` closed enum instead of an untyped string
+            # (14 PKG-13 PUBLIC_INTERFACES: "unversioned consequential
+            # dict payloads are forbidden where they erase semantics") --
+            # the identical reason `boundaries/bnd_005_human_authority.py`
+            # already imports it.
+            "governance",
+        }
     ),
     "audit": frozenset({"semantic_types"}),
     "events": frozenset({"semantic_types"}),
@@ -178,6 +203,25 @@ INTERNAL_ALLOWED: dict[str, frozenset[str]] = {
             # pattern: `events`'s own allowed set (14 §3.1: "semantic_types")
             # does not include `persistence`, so no cycle is created.
             "events",
+            # PKG-13: `commit` added so `commit_repository.py` can
+            # store/reconstruct real `CommitUnit`/`CommitOutcome`
+            # instances (14 §10: "CommitRepository: CommitUnit proof
+            # records"). Unlike every extension above, `commit`'s own
+            # allowed set (14 §3.1) *does* already include `persistence`
+            # (needed by `commit/idempotency.py`, PKG-11) -- this is
+            # therefore not a one-directional pattern the way the others
+            # are. It is still safe: `commit/idempotency.py` (the only
+            # `commit` submodule that imports `persistence`) and
+            # `commit/coordinator.py` (the only one `persistence.
+            # commit_repository` imports from) are disjoint submodules,
+            # so no actual Python import cycle exists at module-load
+            # time -- only a package-level "ceiling" permission exists in
+            # both directions, exactly as 14 PKG-13's own
+            # FILES_ALLOWED_TO_CREATE explicitly separates "packages/commit
+            # coordinator" from "persistence commit repository" as two
+            # distinct targets, unlike PKG-11's single-file idempotency
+            # design.
+            "commit",
         }
     ),
     "test_support": frozenset(KNOWN_INTERNAL_PACKAGES - {"test_support"}),
