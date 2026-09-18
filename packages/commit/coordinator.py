@@ -155,15 +155,22 @@ class NullFailureInjector:
 
 @dataclass(frozen=True, slots=True)
 class MutationOutcome:
-    """The one fact `CommitCoordinator` needs back from a caller-supplied
+    """The facts `CommitCoordinator` needs back from a caller-supplied
     `MutationExecutor` beyond "it did not raise": opaque before/after
-    state references for the AuditEvent this coordinator writes. Deliberately
+    state references for the AuditEvent this coordinator writes, and
+    (PKG-14) any relation refs the mutation created -- 09 section 14's
+    own AC-09-002 distinguishes "canonical state mutation" from
+    "required relation mutation"; `target_refs` (from the envelope)
+    covers the former, `relation_refs` covers the latter. Deliberately
     minimal -- 09's own `state_before_ref`/`state_after_ref` are themselves
-    optional opaque references, not structured objects.
+    optional opaque references, not structured objects, and every
+    existing caller (PKG-13's own tests) leaves `relation_refs` at its
+    default empty tuple, matching a mutation that touches no relation.
     """
 
     state_before_ref: str | None = None
     state_after_ref: str | None = None
+    relation_refs: tuple[str, ...] = ()
 
 
 class StaleVersionConflict(Exception):
@@ -407,7 +414,7 @@ class CommitCoordinator:
                 attempt_id=envelope.attempt_id,
                 workspace_id=envelope.workspace_scope_ref,
                 target_refs=envelope.target_refs,
-                relation_refs=(),
+                relation_refs=mutation_outcome.relation_refs,
                 governance_refs=(),
                 audit_event_ids=(audit_event_id,),
                 outbox_ids=(outbox_id,),

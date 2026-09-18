@@ -297,24 +297,44 @@ def test_allows_persistence_to_depend_on_commit_for_typed_records(tmp_path: Path
     assert violations == []
 
 
-def test_application_still_cannot_depend_on_commit(tmp_path: Path) -> None:
-    """Negative control for the extension above: allowing `application ->
-    persistence` for reads must not have quietly opened `application ->
-    commit` (the exclusive governed writer, 14 §3.1). Writes stay
-    `commit`-only; `application` reaching `commit` directly would be
-    exactly the "no direct write" collapse 14 §3.1 forbids for this
-    layer.
+def test_allows_application_to_depend_on_commit_for_the_command_processor(
+    tmp_path: Path,
+) -> None:
+    """PKG-14: `application` may depend on `commit` so
+    `question_selection_handler.py` can construct and invoke a real
+    `CommitCoordinator` -- see
+    `check_architecture_dependencies.INTERNAL_ALLOWED["application"]`
+    for the citation (14 §3.1's own "may depend on: public ports
+    above"). Not a forbidden-dependency violation.
     """
     packages_root = tmp_path / "packages"
     _write(packages_root, "application/__init__.py", "")
-    _write(packages_root, "application/oops.py", "import commit\n")
+    _write(packages_root, "application/question_selection_handler.py", "import commit\n")
     _write(packages_root, "commit/__init__.py", "")
 
     violations = check(roots=(packages_root,))
 
+    assert violations == []
+
+
+def test_commit_still_cannot_depend_on_application(tmp_path: Path) -> None:
+    """Negative control for the extension above: the new
+    `application -> commit` edge must not have quietly become
+    bidirectional. `commit`'s permitted dependencies remain `command`,
+    `boundaries`, `persistence`, `audit`, `events`, `authority`,
+    `governance`, `semantic_types` (14 §3.1) -- it must never reach up
+    into the use-case orchestration layer built on top of it.
+    """
+    packages_root = tmp_path / "packages"
+    _write(packages_root, "commit/__init__.py", "")
+    _write(packages_root, "commit/oops.py", "import application\n")
+    _write(packages_root, "application/__init__.py", "")
+
+    violations = check(roots=(packages_root,))
+
     assert len(violations) == 1
-    assert violations[0].owner_package == "application"
-    assert violations[0].imported == "commit"
+    assert violations[0].owner_package == "commit"
+    assert violations[0].imported == "application"
 
 
 def test_allows_persistence_to_depend_on_domain_for_row_mapping(tmp_path: Path) -> None:

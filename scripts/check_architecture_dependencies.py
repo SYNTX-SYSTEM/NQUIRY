@@ -150,9 +150,26 @@ INTERNAL_ALLOWED: dict[str, frozenset[str]] = {
             # `WorkspaceRepository.get` never returns an authority
             # conclusion, 14 §10). Writes remain forbidden at this layer —
             # `persistence`'s repositories exposed to `application` must
-            # stay read-only; any write path still goes through `commit`,
-            # which `application` does not import.
+            # stay read-only; the one write path is through `commit`
+            # (see below).
             "persistence",
+            # PKG-14: `commit` added so `application.question_selection_handler`
+            # can construct and invoke a real `commit.coordinator.CommitCoordinator`
+            # -- 14 §3.1's own "May depend on" column for `application` reads
+            # "public ports above" (`commit` appears above `application` in
+            # that same table), and 14 §14's own COMMAND PROCESSOR pipeline
+            # places "RUN PRECOMMIT BOUNDARIES" and "ENTER COMMIT COORDINATOR"
+            # as adjacent steps of the same orchestration -- `application`'s
+            # own directory-ownership row ("use-case orchestration and
+            # Query/Command dispatch") is exactly this orchestrating layer.
+            # No earlier package needed this edge: PKG-07's own
+            # `burst_operations.py` predates both `boundaries`/`commit`
+            # existing at all, and every package since (PKG-08 through
+            # PKG-13) built only the generic engine, never a caller. This is
+            # the first application-layer module to invoke a governed write
+            # for real; `application` still never imports `persistence` for
+            # anything but reads (see comment above).
+            "commit",
         }
     ),
     "persistence": frozenset(

@@ -62,6 +62,11 @@ retrofitted composite `commit_id` foreign keys this same migration adds
 to `command_attempts`, `idempotency_records`, `audit_events`, and
 `outbox_events` (each column already existed nullable with no FK,
 disclosed forward-reference gaps their own migrations named explicitly).
+See the PKG-14 migration's docstring for `question_selections` —
+including why `human_authority_binding_id` carries no foreign key, and
+for the cardinality-enforcing trigger and partial unique index
+(neither representable as SQLAlchemy Core `Table` metadata), likewise
+invisible here.
 """
 
 from __future__ import annotations
@@ -557,6 +562,62 @@ commit_units_table = sa.Table(
     sa.UniqueConstraint("id", "workspace_id", name="uq_commit_units_id_workspace"),
 )
 
+question_selections_table = sa.Table(
+    "question_selections",
+    metadata,
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column(
+        "workspace_id",
+        sa.Uuid(),
+        sa.ForeignKey("workspaces.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    sa.Column("session_id", sa.Uuid(), nullable=False),
+    sa.Column("question_id", sa.Uuid(), nullable=False),
+    sa.Column("selection_type", sa.Text(), nullable=False),
+    sa.Column(
+        "selected_by_user_id",
+        sa.Uuid(),
+        sa.ForeignKey("users.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    # No foreign key: `human_authority_bindings` carries no
+    # `UNIQUE(id, workspace_id)` anchor (same disclosed treatment as
+    # `audit_events.authority_source_ref`, PKG-12) -- 09 §33.1's own
+    # wording, "That stored binding reference does not authorize future
+    # changes", confirms this is a proof reference, not a live
+    # authorization join.
+    sa.Column("human_authority_binding_id", sa.Uuid(), nullable=False),
+    sa.Column("selected_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("record_version", sa.BigInteger(), nullable=False),
+    sa.ForeignKeyConstraint(
+        ["session_id", "workspace_id"],
+        ["sessions.id", "sessions.workspace_id"],
+        name="fk_question_selections_session_workspace",
+        ondelete="RESTRICT",
+    ),
+    sa.ForeignKeyConstraint(
+        ["question_id", "workspace_id"],
+        ["questions.id", "questions.workspace_id"],
+        name="fk_question_selections_question_workspace",
+        ondelete="RESTRICT",
+    ),
+    sa.CheckConstraint(
+        "selection_type IN ('COMPELLING', 'PRIMARY')",
+        name="ck_question_selections_selection_type",
+    ),
+    # 09 §33: literal duplicate selection (same Question, same type,
+    # same Session) is structurally impossible, not just checked in
+    # code -- mandatory adversarial attack "duplicate selection where
+    # relation semantics forbid it".
+    sa.UniqueConstraint(
+        "session_id",
+        "question_id",
+        "selection_type",
+        name="uq_question_selections_session_question_type",
+    ),
+)
+
 __all__ = [
     "metadata",
     "users_table",
@@ -576,4 +637,5 @@ __all__ = [
     "audit_events_table",
     "outbox_events_table",
     "commit_units_table",
+    "question_selections_table",
 ]
