@@ -71,11 +71,20 @@ See the PKG-15 migration's docstring for `decisions` — including why
 `decision_authority_binding_id` carries no foreign key, and for the two
 triggers enforcing 03's Decision transition topology (making `DECIDED`
 terminal at the database layer too), likewise invisible here.
+See the PKG-16 migration's docstring for `source_references`,
+`evidence`, `claim_anchors`, `evidence_relations`, and
+`evidence_set_references` — including why `claim_anchors.target_id`
+carries no foreign key (a polymorphic reference, same treatment as
+`human_authority_bindings.scope_id`), why `evidence_relations.ai_generation_id`
+carries no foreign key (its target table does not exist until a future
+AI-operational migration), and for the validation-state transition
+trigger on `evidence`, likewise invisible here.
 """
 
 from __future__ import annotations
 
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 
 metadata = sa.MetaData()
 
@@ -688,6 +697,172 @@ decisions_table = sa.Table(
     ),
 )
 
+source_references_table = sa.Table(
+    "source_references",
+    metadata,
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column(
+        "workspace_id",
+        sa.Uuid(),
+        sa.ForeignKey("workspaces.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    sa.Column("source_type", sa.Text(), nullable=False),
+    sa.Column("locator", sa.Text(), nullable=False),
+    sa.Column("external_id", sa.Text(), nullable=True),
+    sa.Column("title", sa.Text(), nullable=True),
+    sa.Column("retrieved_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("source_published_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("content_fingerprint", sa.Text(), nullable=True),
+    sa.Column("snapshot_ref", sa.Text(), nullable=True),
+    sa.Column("created_by_ref", sa.Text(), nullable=False),
+    sa.Column("origin", sa.Text(), nullable=False),
+    sa.Column("validation_status", sa.Text(), nullable=False),
+    sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("record_version", sa.BigInteger(), nullable=False),
+    sa.CheckConstraint(
+        "origin IN ('HUMAN', 'AI', 'IMPORTED', 'INFERRED', 'SYSTEM_DERIVED')",
+        name="ck_source_references_origin",
+    ),
+    sa.UniqueConstraint("id", "workspace_id", name="uq_source_references_id_workspace"),
+)
+
+evidence_table = sa.Table(
+    "evidence",
+    metadata,
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column(
+        "workspace_id",
+        sa.Uuid(),
+        sa.ForeignKey("workspaces.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    sa.Column("type", sa.Text(), nullable=False),
+    sa.Column("content", sa.Text(), nullable=False),
+    sa.Column("source_reference_id", sa.Uuid(), nullable=True),
+    sa.Column(
+        "human_source_user_id",
+        sa.Uuid(),
+        sa.ForeignKey("users.id", ondelete="RESTRICT"),
+        nullable=True,
+    ),
+    sa.Column("reliability", sa.Text(), nullable=True),
+    sa.Column("captured_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("validation_state", sa.Text(), nullable=False),
+    sa.Column("content_version", sa.BigInteger(), nullable=False),
+    sa.Column("record_version", sa.BigInteger(), nullable=False),
+    sa.Column("supersedes_evidence_id", sa.Uuid(), nullable=True),
+    sa.Column("provenance_ref", sa.Uuid(), nullable=True),
+    sa.ForeignKeyConstraint(
+        ["source_reference_id", "workspace_id"],
+        ["source_references.id", "source_references.workspace_id"],
+        name="fk_evidence_source_reference_workspace",
+        ondelete="RESTRICT",
+    ),
+    sa.ForeignKeyConstraint(
+        ["supersedes_evidence_id", "workspace_id"],
+        ["evidence.id", "evidence.workspace_id"],
+        name="fk_evidence_supersedes_workspace",
+        ondelete="RESTRICT",
+    ),
+    sa.CheckConstraint(
+        "type IN ('SYSTEM_PROOF', 'DOMAIN_EVIDENCE', 'AI_VALIDATION_PROOF')",
+        name="ck_evidence_type",
+    ),
+    sa.CheckConstraint(
+        "validation_state IN ('UNVALIDATED', 'STRUCTURALLY_VALID', 'INVALIDATED', 'UNAVAILABLE')",
+        name="ck_evidence_validation_state",
+    ),
+    sa.UniqueConstraint("id", "workspace_id", name="uq_evidence_id_workspace"),
+)
+
+claim_anchors_table = sa.Table(
+    "claim_anchors",
+    metadata,
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column(
+        "workspace_id",
+        sa.Uuid(),
+        sa.ForeignKey("workspaces.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    sa.Column("target_type", sa.Text(), nullable=False),
+    # No foreign key: polymorphic reference, same treatment as
+    # `human_authority_bindings.scope_id` (PKG-02) -- 07 §10.1's own
+    # examples span object classes that do not exist yet
+    # (Assumption/Experiment/Insight).
+    sa.Column("target_id", sa.Uuid(), nullable=False),
+    sa.Column("claim_field_or_fragment", sa.Text(), nullable=False),
+    sa.Column("target_content_version", sa.BigInteger(), nullable=False),
+    sa.Column("content_fingerprint", sa.Text(), nullable=True),
+    sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+    sa.UniqueConstraint("id", "workspace_id", name="uq_claim_anchors_id_workspace"),
+)
+
+evidence_relations_table = sa.Table(
+    "evidence_relations",
+    metadata,
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column(
+        "workspace_id",
+        sa.Uuid(),
+        sa.ForeignKey("workspaces.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    sa.Column("evidence_id", sa.Uuid(), nullable=False),
+    sa.Column("evidence_content_version", sa.BigInteger(), nullable=False),
+    sa.Column("claim_anchor_id", sa.Uuid(), nullable=False),
+    sa.Column("relation_type", sa.Text(), nullable=False),
+    sa.Column("origin", sa.Text(), nullable=False),
+    sa.Column("producer_ref", sa.Text(), nullable=False),
+    # No foreign key: `ai_generations` (14 §9 migration
+    # `007_ai_operational`) does not exist yet -- same disclosed
+    # limitation as `question_lineage.ai_generation_id` (PKG-06).
+    sa.Column("ai_generation_id", sa.Uuid(), nullable=True),
+    sa.Column("human_adoption_ref", sa.Uuid(), nullable=True),
+    sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("record_version", sa.BigInteger(), nullable=False),
+    sa.ForeignKeyConstraint(
+        ["evidence_id", "workspace_id"],
+        ["evidence.id", "evidence.workspace_id"],
+        name="fk_evidence_relations_evidence_workspace",
+        ondelete="RESTRICT",
+    ),
+    sa.ForeignKeyConstraint(
+        ["claim_anchor_id", "workspace_id"],
+        ["claim_anchors.id", "claim_anchors.workspace_id"],
+        name="fk_evidence_relations_claim_anchor_workspace",
+        ondelete="RESTRICT",
+    ),
+    sa.CheckConstraint(
+        "relation_type IN "
+        "('UNASSESSED', 'SUPPORTS', 'CONTRADICTS', 'CONTEXTUAL', 'DOES_NOT_SUPPORT')",
+        name="ck_evidence_relations_relation_type",
+    ),
+    sa.CheckConstraint(
+        "origin IN ('HUMAN', 'AI', 'IMPORTED', 'INFERRED', 'SYSTEM_DERIVED')",
+        name="ck_evidence_relations_origin",
+    ),
+)
+
+evidence_set_references_table = sa.Table(
+    "evidence_set_references",
+    metadata,
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column(
+        "workspace_id",
+        sa.Uuid(),
+        sa.ForeignKey("workspaces.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    sa.Column("consumer_type", sa.Text(), nullable=False),
+    sa.Column("consumer_id", sa.Text(), nullable=True),
+    sa.Column("member_evidence_id_and_version_list", postgresql.JSONB(), nullable=False),
+    sa.Column("claim_anchor_refs", sa.ARRAY(sa.Uuid()), nullable=False),
+    sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("fingerprint", sa.Text(), nullable=False),
+)
+
 __all__ = [
     "metadata",
     "users_table",
@@ -709,4 +884,9 @@ __all__ = [
     "commit_units_table",
     "question_selections_table",
     "decisions_table",
+    "source_references_table",
+    "evidence_table",
+    "claim_anchors_table",
+    "evidence_relations_table",
+    "evidence_set_references_table",
 ]

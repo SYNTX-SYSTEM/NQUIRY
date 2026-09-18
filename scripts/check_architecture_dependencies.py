@@ -239,6 +239,16 @@ INTERNAL_ALLOWED: dict[str, frozenset[str]] = {
             # distinct targets, unlike PKG-11's single-file idempotency
             # design.
             "commit",
+            # PKG-16: `evidence` added so `evidence_repository.py` can
+            # store/reconstruct real `Evidence`/`SourceReference`/
+            # `ClaimAnchor`/`EvidenceRelation`/`EvidenceSetReference`
+            # instances (14 §10: "EvidenceRepository: authoritative
+            # versioned Evidence and relation reads, governed writes").
+            # Same one-directional pattern as `persistence -> audit`/
+            # `persistence -> events`: `evidence`'s own allowed set
+            # (14 §3.1: "domain, semantic_types") does not include
+            # `persistence`, so no cycle is created.
+            "evidence",
         }
     ),
     "test_support": frozenset(KNOWN_INTERNAL_PACKAGES - {"test_support"}),
