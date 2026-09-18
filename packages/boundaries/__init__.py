@@ -19,12 +19,28 @@ PKG-08 (Build Phase 3) materialized the generic boundary ENGINE only:
                               non-ALLOW result is final; nothing later
                               in the chain is even invoked
 
-No concrete BND-001..018 evaluator lives here. 14's own package DAG
-assigns those explicitly to PKG-09 ("Prototype boundaries 001-008",
-`PUBLIC INTERFACES: BND-001..008`) and later packages — implementing
-one here would be exactly the "successor behavior" the package
-boundary forbids. This package proves the engine's composition
-semantics against real predecessor logic (PKG-03's `AuthorityResolver`,
-PKG-05's `session_transitions`) only through test-only evaluator
-fixtures that are never registered by production code.
+PKG-09 (Build Phase 3) added the first 8 concrete evaluators, each its
+own file/class (14 PKG-09: "Do not compress to one authorization
+function"):
+
+- `bnd_001_identity.Bnd001IdentityEvaluator`         — actor-class check
+- `bnd_002_workspace.Bnd002WorkspaceEvaluator`        — real `WorkspaceRepository`
+- `bnd_003_membership.Bnd003MembershipEvaluator`      — real `MembershipRepository`
+- `bnd_004_role_context.Bnd004RoleContextEvaluator`   — real current-role read
+- `bnd_005_human_authority.Bnd005HumanAuthorityEvaluator` — real `AuthorityResolver`
+- `bnd_006_human_decision.Bnd006HumanDecisionEvaluator` — decision-origin check
+- `bnd_007_state_transition.Bnd007StateTransitionEvaluator` — consumes real
+                            `session_transitions`/`burst_transitions` resolutions
+- `bnd_008_question_burst.Bnd008QuestionBurstEvaluator` — AI-exclusion during
+                            protected Burst states
+
+None of these is wired into any production caller (no Command/Query
+dispatch exists yet, Phase 4+) — each is proven directly, and in real
+cross-layer chains, by `tests/boundaries/`/`tests/security/`. BND-009
+through BND-018 remain unbuilt; later packages own those explicitly.
+
+Extension: `INTERNAL_ALLOWED["boundaries"]` now also includes
+`persistence` (read-only use by BND-002/003/004 only — BND-005 takes an
+already-constructed `AuthorityResolver` via injection and never imports
+`persistence` itself).
 """

@@ -64,7 +64,32 @@ INTERNAL_ALLOWED: dict[str, frozenset[str]] = {
             "persistence",
         }
     ),
-    "boundaries": frozenset({"domain", "authority", "governance", "evidence", "semantic_types"}),
+    "boundaries": frozenset(
+        {
+            "domain",
+            "authority",
+            "governance",
+            "evidence",
+            "semantic_types",
+            # PKG-09: `persistence` added so BND-002/003/004 evaluators
+            # can read live `WorkspaceRecord`/`MembershipRecord`/
+            # `RoleAssignmentRecord` state through the PKG-01/02
+            # read-only Protocol repositories (06 §8/§9/§10's own
+            # EVIDENCE REQUIREMENT: "SYSTEM_PROOF of object-to-Workspace
+            # resolution" / "of active membership" / "of active
+            # role/context" -- a caller-claimed value is explicitly not
+            # sufficient, 06 §8: "Claimed Workspace IDs are not
+            # authoritative by themselves"). Read-only use, same
+            # disclosed-extension pattern as `application persistence`
+            # (PKG-01), `persistence governance` (PKG-02),
+            # `authority persistence` (PKG-03), `persistence domain`
+            # (PKG-06). BND-005 does not need this extension itself: it
+            # receives an already-constructed `authority.resolver.
+            # AuthorityResolver` via constructor injection rather than
+            # holding repositories directly.
+            "persistence",
+        }
+    ),
     "evidence": frozenset({"domain", "semantic_types"}),
     "ai_contracts": frozenset({"semantic_types", "evidence"}),
     "ai_gateway": frozenset({"ai_contracts", "security", "persistence", "semantic_types"}),
