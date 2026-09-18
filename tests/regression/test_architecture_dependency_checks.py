@@ -290,6 +290,106 @@ def test_command_still_cannot_depend_on_persistence(tmp_path: Path) -> None:
     assert violations[0].imported == "persistence"
 
 
+def test_allows_persistence_to_depend_on_audit_for_typed_records(tmp_path: Path) -> None:
+    """PKG-12: `persistence` may depend on `audit` so
+    `audit_repository.py` can store/reconstruct real `AuditEvent`
+    instances -- see
+    `check_architecture_dependencies.INTERNAL_ALLOWED["persistence"]`
+    for the citation. Not a forbidden-dependency violation.
+    """
+    packages_root = tmp_path / "packages"
+    _write(packages_root, "persistence/__init__.py", "")
+    _write(packages_root, "persistence/audit_repository.py", "import audit\n")
+    _write(packages_root, "audit/__init__.py", "")
+
+    violations = check(roots=(packages_root,))
+
+    assert violations == []
+
+
+def test_audit_still_cannot_depend_on_persistence(tmp_path: Path) -> None:
+    """Negative control for the extension above: the new
+    `persistence -> audit` edge must not have quietly become
+    bidirectional. `audit`'s only permitted dependency remains
+    `semantic_types` (14 §3.1) -- it must never reach into the storage
+    adapter built on top of it.
+    """
+    packages_root = tmp_path / "packages"
+    _write(packages_root, "audit/__init__.py", "")
+    _write(packages_root, "audit/oops.py", "import persistence\n")
+    _write(packages_root, "persistence/__init__.py", "")
+
+    violations = check(roots=(packages_root,))
+
+    assert len(violations) == 1
+    assert violations[0].owner_package == "audit"
+    assert violations[0].imported == "persistence"
+
+
+def test_allows_persistence_to_depend_on_events_for_typed_records(tmp_path: Path) -> None:
+    """PKG-12: `persistence` may depend on `events` so
+    `outbox_repository.py` can store/reconstruct real
+    `OutboxRecord`/`DeliveryStatus` instances -- see
+    `check_architecture_dependencies.INTERNAL_ALLOWED["persistence"]`
+    for the citation. Not a forbidden-dependency violation.
+    """
+    packages_root = tmp_path / "packages"
+    _write(packages_root, "persistence/__init__.py", "")
+    _write(packages_root, "persistence/outbox_repository.py", "import events\n")
+    _write(packages_root, "events/__init__.py", "")
+
+    violations = check(roots=(packages_root,))
+
+    assert violations == []
+
+
+def test_events_still_cannot_depend_on_persistence(tmp_path: Path) -> None:
+    """Negative control for the extension above: the new
+    `persistence -> events` edge must not have quietly become
+    bidirectional. `events`'s only permitted dependency remains
+    `semantic_types` (14 §3.1) -- it must never reach into the storage
+    adapter built on top of it.
+    """
+    packages_root = tmp_path / "packages"
+    _write(packages_root, "events/__init__.py", "")
+    _write(packages_root, "events/oops.py", "import persistence\n")
+    _write(packages_root, "persistence/__init__.py", "")
+
+    violations = check(roots=(packages_root,))
+
+    assert len(violations) == 1
+    assert violations[0].owner_package == "events"
+    assert violations[0].imported == "persistence"
+
+
+def test_rejects_a_db_driver_import_from_audit(tmp_path: Path) -> None:
+    """PKG-12 hardening: `audit`'s own directory-ownership row (14
+    §3.1: "semantic_types" only) already implies no ORM code belongs
+    here; this is the independently checkable half.
+    """
+    packages_root = tmp_path / "packages"
+    _write(packages_root, "audit/__init__.py", "")
+    _write(packages_root, "audit/oops.py", "import sqlalchemy\n")
+
+    violations = check(roots=(packages_root,))
+
+    assert len(violations) == 1
+    assert violations[0].owner_package == "audit"
+    assert violations[0].imported == "sqlalchemy"
+
+
+def test_rejects_a_db_driver_import_from_events(tmp_path: Path) -> None:
+    packages_root = tmp_path / "packages"
+    _write(packages_root, "events/__init__.py", "")
+    _write(packages_root, "events/oops.py", "import sqlalchemy\n")
+
+    violations = check(roots=(packages_root,))
+
+    assert len(violations) == 1
+    assert violations[0].owner_package == "events"
+    assert violations[0].imported == "sqlalchemy"
+
+
 def test_allows_provider_sdk_only_inside_the_adapter_boundary(tmp_path: Path) -> None:
     packages_root = tmp_path / "packages"
     _write(packages_root, "ai_gateway/__init__.py", "")

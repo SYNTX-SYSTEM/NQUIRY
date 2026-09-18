@@ -6,11 +6,14 @@ Architectural ownership (14_IMPLEMENTATION_SEQUENCE.md §3.1):
     Must not depend on : domain mutation.
     Canonical write    : append only.
 
-PKG-00 SCOPE NOTE: this build phase (Phase 0, "Repository and
-architecture skeleton") materializes only the package boundary and
-its place in the dependency-enforcement graph
-(`scripts/check_architecture_dependencies.py`). No domain, authority,
-or persistence behavior is implemented here. Implementation lands in
-the build phase assigned to this package by
-14_IMPLEMENTATION_SEQUENCE.md §46 (CODING PACKAGE MANIFEST).
+PKG-12 SCOPE (Build Phase 4, "Audit and outbox contracts"):
+    models.py -- AuditEvent (09 section 58's exact field list),
+                 AuditRepository (append-only port; no update/delete
+                 method exists on the Protocol at all).
+
+`packages/persistence/audit_repository.py` implements the durable
+storage for `AuditRepository`, depending on this package's types the
+same one-directional way `persistence` already depends on `command`/
+`domain`/`governance` -- this package still performs no direct write of
+its own.
 """

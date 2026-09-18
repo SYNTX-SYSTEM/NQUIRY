@@ -48,6 +48,13 @@ command_type, idempotency_key)` rather than a surrogate id, why its
 `outcome` vocabulary deliberately differs from `command_attempts.outcome`,
 and for the identity-immutability/outcome-transition triggers, likewise
 invisible here.
+See the PKG-12 migration's docstring for `audit_events`/`outbox_events`
+— including why `audit_events` has no foreign key from `commit_id`
+(`commit_units` does not exist until PKG-13's own migration revision,
+the second half of the conceptual "009_commit_audit_outbox" bucket),
+why `audit_events` is immutable against both UPDATE and DELETE, and for
+`outbox_events`' identity-immutability/delivery-status-transition
+triggers, likewise invisible here.
 """
 
 from __future__ import annotations
@@ -429,6 +436,64 @@ idempotency_records_table = sa.Table(
     ),
 )
 
+audit_events_table = sa.Table(
+    "audit_events",
+    metadata,
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column(
+        "workspace_id",
+        sa.Uuid(),
+        sa.ForeignKey("workspaces.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    sa.Column("event_type", sa.Text(), nullable=False),
+    sa.Column("event_schema_version", sa.Text(), nullable=False),
+    sa.Column("occurred_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("actor_type", sa.Text(), nullable=False),
+    sa.Column("actor_id", sa.Text(), nullable=False),
+    sa.Column("command_type", sa.Text(), nullable=False),
+    sa.Column("command_id", sa.Uuid(), nullable=False),
+    sa.Column("commit_id", sa.Uuid(), nullable=False),
+    sa.Column("correlation_id", sa.Uuid(), nullable=False),
+    sa.Column("causation_id", sa.Uuid(), nullable=True),
+    sa.Column("target_refs", sa.ARRAY(sa.Text()), nullable=False),
+    sa.Column("authority_source_ref", sa.Uuid(), nullable=False),
+    sa.Column("result", sa.Text(), nullable=False),
+    sa.Column("human_decision_ref", sa.Uuid(), nullable=True),
+    sa.Column("evidence_set_ref", sa.Uuid(), nullable=True),
+    sa.Column("state_before_ref", sa.Text(), nullable=True),
+    sa.Column("state_after_ref", sa.Text(), nullable=True),
+    sa.Column("failure_code", sa.Text(), nullable=True),
+    sa.Column("metadata_ref", sa.Text(), nullable=True),
+    sa.ForeignKeyConstraint(
+        ["command_id", "workspace_id"],
+        ["commands.id", "commands.workspace_id"],
+        name="fk_audit_events_command_workspace",
+        ondelete="RESTRICT",
+    ),
+)
+
+outbox_events_table = sa.Table(
+    "outbox_events",
+    metadata,
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column("event_id", sa.Uuid(), nullable=False, unique=True),
+    sa.Column(
+        "workspace_id",
+        sa.Uuid(),
+        sa.ForeignKey("workspaces.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    sa.Column("commit_id", sa.Uuid(), nullable=False),
+    sa.Column("event_type", sa.Text(), nullable=False),
+    sa.Column("event_payload_ref", sa.Text(), nullable=True),
+    sa.Column("delivery_status", sa.Text(), nullable=False),
+    sa.Column("delivery_attempt_count", sa.Integer(), nullable=False),
+    sa.Column("next_attempt_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("delivered_at", sa.DateTime(timezone=True), nullable=True),
+)
+
 __all__ = [
     "metadata",
     "users_table",
@@ -445,4 +510,6 @@ __all__ = [
     "commands_table",
     "command_attempts_table",
     "idempotency_records_table",
+    "audit_events_table",
+    "outbox_events_table",
 ]

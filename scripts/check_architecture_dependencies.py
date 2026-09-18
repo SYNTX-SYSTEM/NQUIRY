@@ -164,6 +164,20 @@ INTERNAL_ALLOWED: dict[str, frozenset[str]] = {
             # and this module performs the one write `command` itself is
             # forbidden from performing ("no direct write").
             "command",
+            # PKG-12: `audit` added so `audit_repository.py` can
+            # store/reconstruct real `AuditEvent` instances (14 §10:
+            # "AuditRepository: append only") instead of duplicating
+            # that type as an untyped row. Same one-directional
+            # pattern: `audit`'s own allowed set (14 §3.1: "semantic_types")
+            # does not include `persistence`, so no cycle is created.
+            "audit",
+            # PKG-12: `events` added so `outbox_repository.py` can
+            # store/reconstruct real `OutboxRecord`/`DeliveryStatus`
+            # instances (14 §10: "OutboxRepository: append in CommitUnit,
+            # delivery-state update by worker"). Same one-directional
+            # pattern: `events`'s own allowed set (14 §3.1: "semantic_types")
+            # does not include `persistence`, so no cycle is created.
+            "events",
         }
     ),
     "test_support": frozenset(KNOWN_INTERNAL_PACKAGES - {"test_support"}),
@@ -191,6 +205,13 @@ EXTERNAL_FORBIDDEN: dict[str, frozenset[str]] = {
     "ai_gateway": PROVIDER_SDK_MODULES,  # exempted for adapters/providers/, see below
     "command": _WEB_FRAMEWORK | PROVIDER_SDK_MODULES,
     "commit": PROVIDER_SDK_MODULES,
+    # PKG-12: explicit DB-driver hardening, matching `application`'s own
+    # entry below -- `audit`/`events` allowed-imports (14 §3.1:
+    # "semantic_types") already implies no ORM code belongs here; this
+    # makes that implication independently checkable rather than
+    # relying only on the INTERNAL_ALLOWED table ever staying correct.
+    "audit": _DB_DRIVER | PROVIDER_SDK_MODULES,
+    "events": _DB_DRIVER | PROVIDER_SDK_MODULES,
     "application": _DB_DRIVER | PROVIDER_SDK_MODULES,
     "nquiry_api": _DB_DRIVER | PROVIDER_SDK_MODULES,
 }
