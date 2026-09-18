@@ -37,6 +37,11 @@ yet), why `mode`/`capture_origin` are each CHECK-constrained twice
 (once to 09's full approved vocabulary, once to this package's own
 Human-only scope restriction), and for the freeze-enforcement
 triggers, likewise invisible here.
+See the PKG-10 migration's docstring for `commands`/`command_attempts`
+— including why `commands` has no foreign key from `command_attempts`'
+`commit_id` column (`commit_units` does not exist until migration
+`009_commit_audit_outbox`, PKG-13), and for the immutability triggers
+on both tables, likewise invisible here.
 """
 
 from __future__ import annotations
@@ -339,6 +344,49 @@ burst_question_memberships_table = sa.Table(
     ),
 )
 
+commands_table = sa.Table(
+    "commands",
+    metadata,
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column(
+        "workspace_id",
+        sa.Uuid(),
+        sa.ForeignKey("workspaces.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    sa.Column("command_type", sa.Text(), nullable=False),
+    sa.Column("contract_version", sa.Text(), nullable=False),
+    sa.Column("payload_fingerprint", sa.Text(), nullable=False),
+    sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+    sa.UniqueConstraint("id", "workspace_id", name="uq_commands_id_workspace"),
+)
+
+command_attempts_table = sa.Table(
+    "command_attempts",
+    metadata,
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column("command_id", sa.Uuid(), nullable=False),
+    sa.Column(
+        "workspace_id",
+        sa.Uuid(),
+        sa.ForeignKey("workspaces.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    sa.Column("actor_ref", sa.Text(), nullable=False),
+    sa.Column("received_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("boundary_evaluation_summary_ref", sa.Uuid(), nullable=True),
+    sa.Column("commit_id", sa.Uuid(), nullable=True),
+    sa.Column("outcome", sa.Text(), nullable=True),
+    sa.Column("completed_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("failure_code", sa.Text(), nullable=True),
+    sa.ForeignKeyConstraint(
+        ["command_id", "workspace_id"],
+        ["commands.id", "commands.workspace_id"],
+        name="fk_command_attempts_command_workspace",
+        ondelete="RESTRICT",
+    ),
+)
+
 __all__ = [
     "metadata",
     "users_table",
@@ -352,4 +400,6 @@ __all__ = [
     "question_lineage_table",
     "question_bursts_table",
     "burst_question_memberships_table",
+    "commands_table",
+    "command_attempts_table",
 ]

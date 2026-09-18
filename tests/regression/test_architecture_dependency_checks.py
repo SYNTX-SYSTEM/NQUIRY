@@ -254,6 +254,42 @@ def test_domain_still_cannot_depend_on_persistence(tmp_path: Path) -> None:
     assert violations[0].imported == "persistence"
 
 
+def test_allows_persistence_to_depend_on_command_for_typed_records(tmp_path: Path) -> None:
+    """PKG-10: `persistence` may depend on `command` so
+    `command_repository.py` can store/reconstruct real
+    `CommandEnvelope`/`CommandOutcome` instances -- see
+    `check_architecture_dependencies.INTERNAL_ALLOWED["persistence"]`
+    for the citation. Not a forbidden-dependency violation.
+    """
+    packages_root = tmp_path / "packages"
+    _write(packages_root, "persistence/__init__.py", "")
+    _write(packages_root, "persistence/command_repository.py", "import command\n")
+    _write(packages_root, "command/__init__.py", "")
+
+    violations = check(roots=(packages_root,))
+
+    assert violations == []
+
+
+def test_command_still_cannot_depend_on_persistence(tmp_path: Path) -> None:
+    """Negative control for the extension above: the new
+    `persistence -> command` edge must not have quietly become
+    bidirectional. `command`'s only permitted dependencies remain
+    `domain` and `semantic_types` (14 §3.1: "no direct write") -- it
+    must never reach into the storage adapter built on top of it.
+    """
+    packages_root = tmp_path / "packages"
+    _write(packages_root, "command/__init__.py", "")
+    _write(packages_root, "command/oops.py", "import persistence\n")
+    _write(packages_root, "persistence/__init__.py", "")
+
+    violations = check(roots=(packages_root,))
+
+    assert len(violations) == 1
+    assert violations[0].owner_package == "command"
+    assert violations[0].imported == "persistence"
+
+
 def test_allows_provider_sdk_only_inside_the_adapter_boundary(tmp_path: Path) -> None:
     packages_root = tmp_path / "packages"
     _write(packages_root, "ai_gateway/__init__.py", "")

@@ -153,6 +153,17 @@ INTERNAL_ALLOWED: dict[str, frozenset[str]] = {
             # `semantic_types` only, so it cannot reach back into
             # persistence, and this module performs no write.
             "domain",
+            # PKG-10: `command` added so `command_repository.py` can
+            # store/reconstruct real `CommandEnvelope`/`CommandOutcome`
+            # instances (14 §10: "CommandRepository: immutable Command
+            # plus attempt records") instead of duplicating those types
+            # as untyped rows. Same one-directional pattern as
+            # `persistence domain`/`persistence governance`: `command`'s
+            # own allowed set (14 §3.1: "domain contracts, semantic_types")
+            # does not include `persistence`, so no cycle is created,
+            # and this module performs the one write `command` itself is
+            # forbidden from performing ("no direct write").
+            "command",
         }
     ),
     "test_support": frozenset(KNOWN_INTERNAL_PACKAGES - {"test_support"}),
