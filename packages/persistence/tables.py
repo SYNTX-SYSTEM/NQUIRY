@@ -42,6 +42,12 @@ See the PKG-10 migration's docstring for `commands`/`command_attempts`
 `commit_id` column (`commit_units` does not exist until migration
 `009_commit_audit_outbox`, PKG-13), and for the immutability triggers
 on both tables, likewise invisible here.
+See the PKG-11 migration's docstring for `idempotency_records` —
+including why its primary key is the composite `(workspace_id,
+command_type, idempotency_key)` rather than a surrogate id, why its
+`outcome` vocabulary deliberately differs from `command_attempts.outcome`,
+and for the identity-immutability/outcome-transition triggers, likewise
+invisible here.
 """
 
 from __future__ import annotations
@@ -387,6 +393,42 @@ command_attempts_table = sa.Table(
     ),
 )
 
+idempotency_records_table = sa.Table(
+    "idempotency_records",
+    metadata,
+    sa.Column("workspace_id", sa.Uuid(), nullable=False),
+    sa.Column("command_type", sa.Text(), nullable=False),
+    sa.Column("idempotency_key", sa.Text(), nullable=False),
+    sa.Column("command_id", sa.Uuid(), nullable=False),
+    sa.Column("payload_fingerprint", sa.Text(), nullable=False),
+    sa.Column("first_seen_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("latest_attempt_id", sa.Uuid(), nullable=False),
+    sa.Column("outcome", sa.Text(), nullable=False),
+    sa.Column("commit_id", sa.Uuid(), nullable=True),
+    sa.Column("result_ref", sa.Text(), nullable=True),
+    sa.PrimaryKeyConstraint(
+        "workspace_id", "command_type", "idempotency_key", name="pk_idempotency_records"
+    ),
+    sa.ForeignKeyConstraint(
+        ["workspace_id"],
+        ["workspaces.id"],
+        name="fk_idempotency_records_workspace",
+        ondelete="RESTRICT",
+    ),
+    sa.ForeignKeyConstraint(
+        ["command_id", "workspace_id"],
+        ["commands.id", "commands.workspace_id"],
+        name="fk_idempotency_records_command_workspace",
+        ondelete="RESTRICT",
+    ),
+    sa.ForeignKeyConstraint(
+        ["latest_attempt_id"],
+        ["command_attempts.id"],
+        name="fk_idempotency_records_latest_attempt",
+        ondelete="RESTRICT",
+    ),
+)
+
 __all__ = [
     "metadata",
     "users_table",
@@ -402,4 +444,5 @@ __all__ = [
     "burst_question_memberships_table",
     "commands_table",
     "command_attempts_table",
+    "idempotency_records_table",
 ]

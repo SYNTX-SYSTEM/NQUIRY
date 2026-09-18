@@ -6,11 +6,23 @@ Architectural ownership (14_IMPLEMENTATION_SEQUENCE.md §3.1):
     Must not depend on : frontend, provider SDK.
     Canonical write    : exclusive governed writer.
 
-PKG-00 SCOPE NOTE: this build phase (Phase 0, "Repository and
-architecture skeleton") materializes only the package boundary and
-its place in the dependency-enforcement graph
-(`scripts/check_architecture_dependencies.py`). No domain, authority,
-or persistence behavior is implemented here. Implementation lands in
-the build phase assigned to this package by
-14_IMPLEMENTATION_SEQUENCE.md §46 (CODING PACKAGE MANIFEST).
+PKG-11 SCOPE (Build Phase 4, "Idempotency"):
+    idempotency.py -- IdempotencyPort, IdempotencyRecord (09 section 11's
+                       exact field list), IdempotencyOutcome (09 section
+                       11's own 4-value closed vocabulary, distinct from
+                       command.envelope.CommandOutcome -- see that
+                       module's docstring), decide_idempotency_action
+                       (pure decision engine implementing 14 section
+                       27's 6 dispositions), and SqlAlchemyIdempotencyRepository
+                       (the concrete durable adapter over `idempotency_records`
+                       -- `commit`'s own directory-ownership row already
+                       permits "persistence ports", so the adapter lives
+                       here directly rather than in `persistence/`, the
+                       opposite direction from `command`'s own split in
+                       PKG-10; no new INTERNAL_ALLOWED extension was
+                       needed for this package).
+
+`coordinator.py` (BND-014, CommitUnit transaction orchestration) remains
+PKG-13's scope -- nothing here performs a canonical mutation, resolves
+authority, or evaluates a boundary.
 """
