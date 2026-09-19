@@ -105,6 +105,12 @@ composite foreign key into `sessions` (the "corrupt projection"
 mandatory attack's own structural defense), and why
 `checkpoint_version`/`projection_version` are plain integers, never a
 `RecordVersion` reuse.
+See the PKG-23 migration's docstring for `recovery_records` —
+including why `original_attempt_id`/`human_decision_ref` carry no
+foreign key (their target tables have no `UNIQUE(id, workspace_id)`
+anchor yet), why `original_command_id`/`original_commit_id` DO carry
+real composite foreign keys, and for the identity-immutability/
+result-transition triggers, likewise invisible here.
 """
 
 from __future__ import annotations
@@ -1095,6 +1101,57 @@ inquiry_read_model_table = sa.Table(
     ),
 )
 
+recovery_records_table = sa.Table(
+    "recovery_records",
+    metadata,
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column(
+        "workspace_id",
+        sa.Uuid(),
+        sa.ForeignKey("workspaces.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    sa.Column("failure_correlation_ref", sa.Uuid(), nullable=False),
+    sa.Column("original_command_id", sa.Uuid(), nullable=False),
+    sa.Column("original_attempt_id", sa.Uuid(), nullable=False),
+    sa.Column("original_commit_id", sa.Uuid(), nullable=True),
+    sa.Column("failure_classifications", sa.ARRAY(sa.Text()), nullable=False, server_default="{}"),
+    sa.Column("known_canonical_state_ref", sa.Text(), nullable=True),
+    sa.Column("canonical_state_certainty", sa.Text(), nullable=False),
+    sa.Column("known_external_consequence_ref", sa.Text(), nullable=True),
+    sa.Column("external_consequence_certainty", sa.Text(), nullable=False),
+    sa.Column("unknown_consequence_description", sa.Text(), nullable=True),
+    sa.Column("last_proven_valid_state_ref", sa.Text(), nullable=True),
+    sa.Column("recovery_class", sa.Text(), nullable=False),
+    sa.Column("recovery_actor_type", sa.Text(), nullable=False),
+    sa.Column("recovery_actor_id", sa.Text(), nullable=False),
+    sa.Column("required_authority_ref", sa.Uuid(), nullable=True),
+    sa.Column("current_authority_binding_ref", sa.Uuid(), nullable=True),
+    sa.Column("human_decision_ref", sa.Uuid(), nullable=True),
+    sa.Column("evidence_proof_refs", sa.ARRAY(sa.Text()), nullable=False, server_default="{}"),
+    sa.Column(
+        "recovery_command_ids", postgresql.ARRAY(sa.Uuid()), nullable=False, server_default="{}"
+    ),
+    sa.Column("recovery_attempt_refs", sa.ARRAY(sa.Text()), nullable=False, server_default="{}"),
+    sa.Column("result", sa.Text(), nullable=False),
+    sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("resolved_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("audit_linkage", sa.Text(), nullable=True),
+    sa.ForeignKeyConstraint(
+        ["original_command_id", "workspace_id"],
+        ["commands.id", "commands.workspace_id"],
+        name="fk_recovery_records_original_command_workspace",
+        ondelete="RESTRICT",
+    ),
+    sa.ForeignKeyConstraint(
+        ["original_commit_id", "workspace_id"],
+        ["commit_units.id", "commit_units.workspace_id"],
+        name="fk_recovery_records_original_commit_workspace",
+        ondelete="RESTRICT",
+    ),
+)
+
 __all__ = [
     "metadata",
     "users_table",
@@ -1127,4 +1184,5 @@ __all__ = [
     "projection_checkpoints_table",
     "session_read_model_table",
     "inquiry_read_model_table",
+    "recovery_records_table",
 ]

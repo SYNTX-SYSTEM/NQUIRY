@@ -313,6 +313,18 @@ INTERNAL_ALLOWED: dict[str, frozenset[str]] = {
             # under `packages/projection/` imports `persistence` at
             # all -- so no cycle is created.
             "projection",
+            # PKG-23: `recovery` added so `recovery_repository.py` can
+            # store/reconstruct real `RecoveryRecord` instances (14
+            # section 10: "RecoveryRepository: RecoveryRecord reads and
+            # bounded operational updates"). Same one-directional
+            # pattern as `persistence -> projection`/`audit`/`events`/
+            # `evidence`/`ai_contracts`: `recovery`'s own allowed set
+            # (14 section 3.1: "command, boundaries, commit, recovery
+            # ports") does not require `persistence` for anything this
+            # package actually imports -- no file under
+            # `packages/recovery/` imports `persistence` at all -- so
+            # no cycle is created.
+            "recovery",
         }
     ),
     "test_support": frozenset(KNOWN_INTERNAL_PACKAGES - {"test_support"}),
