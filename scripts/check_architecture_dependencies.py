@@ -300,6 +300,19 @@ INTERNAL_ALLOWED: dict[str, frozenset[str]] = {
             # justification `commit <-> persistence` already
             # established (PKG-11/13).
             "ai_gateway",
+            # PKG-21: `projection` added so `projection_repository.py`
+            # can store/reconstruct real `SessionReadModel`/
+            # `InquiryReadModel`/`ProjectionCheckpoint` instances (14
+            # section 10: "ProjectionRepository: projection-only
+            # read/write"). Same one-directional pattern as
+            # `persistence -> audit`/`persistence -> events`/
+            # `persistence -> evidence`/`persistence -> ai_contracts`:
+            # `projection`'s own allowed set (14 section 3.1: "events,
+            # projection persistence") does not require `persistence`
+            # for anything this package actually imports -- no file
+            # under `packages/projection/` imports `persistence` at
+            # all -- so no cycle is created.
+            "projection",
         }
     ),
     "test_support": frozenset(KNOWN_INTERNAL_PACKAGES - {"test_support"}),

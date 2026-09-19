@@ -96,6 +96,15 @@ forward-reference gap (PKG-18) has a real target, and why
 `coach_mode` is CHECK-constrained to 08 section 10's own exact 7-value
 closed list while `source_classifications`/`excluded_context_classes`
 stay plain `TEXT[]`.
+See the PKG-21 migration's docstring for `projection_checkpoints`,
+`session_read_model`, and `inquiry_read_model` — including why
+`inquiry_read_model` is a deliberately generic per-aggregate snapshot
+rather than the full InquiryGraph (12's own minimum-prototype scope
+excludes that graph entirely), why `session_read_model` carries a real
+composite foreign key into `sessions` (the "corrupt projection"
+mandatory attack's own structural defense), and why
+`checkpoint_version`/`projection_version` are plain integers, never a
+`RecordVersion` reuse.
 """
 
 from __future__ import annotations
@@ -1029,6 +1038,63 @@ ai_context_manifests_table = sa.Table(
     sa.UniqueConstraint("id", "workspace_id", name="uq_ai_context_manifests_id_workspace"),
 )
 
+projection_checkpoints_table = sa.Table(
+    "projection_checkpoints",
+    metadata,
+    sa.Column("projection_name", sa.Text(), primary_key=True),
+    sa.Column(
+        "workspace_id",
+        sa.Uuid(),
+        sa.ForeignKey("workspaces.id", ondelete="RESTRICT"),
+        primary_key=True,
+    ),
+    sa.Column("last_processed_event_id", sa.Uuid(), nullable=True),
+    sa.Column("checkpoint_version", sa.BigInteger(), nullable=False),
+    sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
+)
+
+session_read_model_table = sa.Table(
+    "session_read_model",
+    metadata,
+    sa.Column("session_id", sa.Uuid(), primary_key=True),
+    sa.Column(
+        "workspace_id",
+        sa.Uuid(),
+        sa.ForeignKey("workspaces.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    sa.Column("current_state", sa.Text(), nullable=False),
+    sa.Column("projection_version", sa.BigInteger(), nullable=False),
+    sa.Column("last_event_id", sa.Uuid(), nullable=False),
+    sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
+    sa.ForeignKeyConstraint(
+        ["session_id", "workspace_id"],
+        ["sessions.id", "sessions.workspace_id"],
+        name="fk_session_read_model_session_workspace",
+        ondelete="RESTRICT",
+    ),
+)
+
+inquiry_read_model_table = sa.Table(
+    "inquiry_read_model",
+    metadata,
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column("aggregate_ref", sa.Text(), nullable=False),
+    sa.Column(
+        "workspace_id",
+        sa.Uuid(),
+        sa.ForeignKey("workspaces.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    sa.Column("projection_version", sa.BigInteger(), nullable=False),
+    sa.Column("snapshot", postgresql.JSONB(), nullable=False),
+    sa.Column("last_event_id", sa.Uuid(), nullable=False),
+    sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
+    sa.UniqueConstraint(
+        "aggregate_ref", "workspace_id", name="uq_inquiry_read_model_aggregate_workspace"
+    ),
+)
+
 __all__ = [
     "metadata",
     "users_table",
@@ -1058,4 +1124,7 @@ __all__ = [
     "ai_generations_table",
     "ai_derived_artifacts_table",
     "ai_context_manifests_table",
+    "projection_checkpoints_table",
+    "session_read_model_table",
+    "inquiry_read_model_table",
 ]
