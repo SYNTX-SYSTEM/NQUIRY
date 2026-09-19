@@ -260,6 +260,16 @@ INTERNAL_ALLOWED: dict[str, frozenset[str]] = {
             # (14 §3.1: "domain, semantic_types") does not include
             # `persistence`, so no cycle is created.
             "evidence",
+            # PKG-18: `ai_contracts` added so `ai_record_repository.py`
+            # can store/reconstruct real `AIGeneration`/`AIDerivedArtifact`
+            # instances (14 section 10: "AIRecordRepository: AIGeneration,
+            # manifest and derived artifact operational writes only").
+            # Same one-directional pattern as `persistence -> audit`/
+            # `persistence -> events`/`persistence -> evidence`:
+            # `ai_contracts`'s own allowed set (14 section 3.1: "semantic_types,
+            # evidence read contracts") does not include `persistence`,
+            # so no cycle is created.
+            "ai_contracts",
         }
     ),
     "test_support": frozenset(KNOWN_INTERNAL_PACKAGES - {"test_support"}),

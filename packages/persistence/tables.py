@@ -79,6 +79,18 @@ carries no foreign key (a polymorphic reference, same treatment as
 carries no foreign key (its target table does not exist until a future
 AI-operational migration), and for the validation-state transition
 trigger on `evidence`, likewise invisible here.
+See the PKG-18 migration's docstring for `ai_generations` and
+`ai_derived_artifacts` — including the retrofitted composite
+`ai_generation_id` foreign keys this migration adds to
+`question_lineage` (PKG-06) and `evidence_relations` (PKG-16) now that
+their long-disclosed forward-reference gap has a real target, why
+`ai_generations.ai_context_manifest_id`/`output_artifact_ref` still
+carry no foreign key (the former's target table, `ai_context_manifests`,
+remains PKG-19's own table to create; the latter would require a
+circular same-migration dependency, the same disclosed choice
+`commit_units.audit_event_ids`/`outbox_ids` already made), and for the
+two triggers enforcing 08 section 15's AIGeneration transition topology,
+likewise invisible here.
 """
 
 from __future__ import annotations
@@ -296,9 +308,6 @@ question_lineage_table = sa.Table(
     ),
     sa.Column("transformation_type", sa.Text(), nullable=False),
     sa.Column("producer_origin", sa.Text(), nullable=False),
-    # No ForeignKey: `ai_generations` (14 §9 migration 007_ai_operational)
-    # does not exist yet. Plain nullable reference, same disclosed
-    # limitation as `human_authority_bindings.scope_id` (PKG-02).
     sa.Column("ai_generation_id", sa.Uuid(), nullable=True),
     sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
     # Both composite FKs reference the *same* `workspace_id` column on
@@ -315,6 +324,17 @@ question_lineage_table = sa.Table(
         ["child_question_id", "workspace_id"],
         ["questions.id", "questions.workspace_id"],
         name="fk_question_lineage_child_workspace",
+        ondelete="RESTRICT",
+    ),
+    # PKG-18: retrofitted now that `ai_generations` exists (previously a
+    # disclosed forward-reference gap, PKG-06). A partial-NULL composite
+    # FK (MATCH SIMPLE, PostgreSQL's default) is unenforced whenever
+    # `ai_generation_id IS NULL` -- the same nullable-composite-FK shape
+    # `evidence.source_reference_id` (PKG-16) already uses.
+    sa.ForeignKeyConstraint(
+        ["ai_generation_id", "workspace_id"],
+        ["ai_generations.id", "ai_generations.workspace_id"],
+        name="fk_question_lineage_ai_generation_workspace",
         ondelete="RESTRICT",
     ),
 )
@@ -815,9 +835,6 @@ evidence_relations_table = sa.Table(
     sa.Column("relation_type", sa.Text(), nullable=False),
     sa.Column("origin", sa.Text(), nullable=False),
     sa.Column("producer_ref", sa.Text(), nullable=False),
-    # No foreign key: `ai_generations` (14 §9 migration
-    # `007_ai_operational`) does not exist yet -- same disclosed
-    # limitation as `question_lineage.ai_generation_id` (PKG-06).
     sa.Column("ai_generation_id", sa.Uuid(), nullable=True),
     sa.Column("human_adoption_ref", sa.Uuid(), nullable=True),
     sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
@@ -832,6 +849,14 @@ evidence_relations_table = sa.Table(
         ["claim_anchor_id", "workspace_id"],
         ["claim_anchors.id", "claim_anchors.workspace_id"],
         name="fk_evidence_relations_claim_anchor_workspace",
+        ondelete="RESTRICT",
+    ),
+    # PKG-18: retrofitted now that `ai_generations` exists (previously a
+    # disclosed forward-reference gap, PKG-16).
+    sa.ForeignKeyConstraint(
+        ["ai_generation_id", "workspace_id"],
+        ["ai_generations.id", "ai_generations.workspace_id"],
+        name="fk_evidence_relations_ai_generation_workspace",
         ondelete="RESTRICT",
     ),
     sa.CheckConstraint(
@@ -863,6 +888,101 @@ evidence_set_references_table = sa.Table(
     sa.Column("fingerprint", sa.Text(), nullable=False),
 )
 
+ai_generations_table = sa.Table(
+    "ai_generations",
+    metadata,
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column(
+        "workspace_id",
+        sa.Uuid(),
+        sa.ForeignKey("workspaces.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    sa.Column("user_id", sa.Uuid(), sa.ForeignKey("users.id", ondelete="RESTRICT"), nullable=True),
+    sa.Column("ai_operation_id", sa.Text(), nullable=False),
+    sa.Column("ai_operation_contract_version", sa.Text(), nullable=False),
+    # No foreign key: `ai_context_manifests` (14 §9 migration
+    # `007_ai_operational`) is PKG-19's own table to create.
+    sa.Column("ai_context_manifest_id", sa.Uuid(), nullable=True),
+    sa.Column("prompt_version", sa.Text(), nullable=False),
+    sa.Column("model", sa.Text(), nullable=False),
+    sa.Column("provider", sa.Text(), nullable=False),
+    sa.Column("status", sa.Text(), nullable=False),
+    sa.Column("requested_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("started_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("output_received_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("completed_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("input_tokens", sa.BigInteger(), nullable=True),
+    sa.Column("output_tokens", sa.BigInteger(), nullable=True),
+    sa.Column("latency_ms", sa.BigInteger(), nullable=True),
+    sa.Column("estimated_cost", sa.Float(), nullable=True),
+    sa.Column("retry_of_generation_id", sa.Uuid(), nullable=True),
+    sa.Column("command_id", sa.Uuid(), nullable=True),
+    sa.Column("correlation_id", sa.Uuid(), nullable=False),
+    # No foreign key: would require a circular same-migration dependency
+    # on `ai_derived_artifacts` (this table is created first). Same
+    # disclosed choice `commit_units.audit_event_ids`/`outbox_ids`
+    # (PKG-13) already made for an analogous forward self-reference.
+    sa.Column("output_artifact_ref", sa.Uuid(), nullable=True),
+    sa.Column("failure_code", sa.Text(), nullable=True),
+    sa.Column("failure_detail_ref", sa.Text(), nullable=True),
+    sa.Column("record_version", sa.BigInteger(), nullable=False),
+    sa.ForeignKeyConstraint(
+        ["command_id", "workspace_id"],
+        ["commands.id", "commands.workspace_id"],
+        name="fk_ai_generations_command_workspace",
+        ondelete="RESTRICT",
+    ),
+    sa.ForeignKeyConstraint(
+        ["retry_of_generation_id", "workspace_id"],
+        ["ai_generations.id", "ai_generations.workspace_id"],
+        name="fk_ai_generations_retry_of_workspace",
+        ondelete="RESTRICT",
+    ),
+    sa.CheckConstraint(
+        "ai_operation_id IN ("
+        "'AIOP-001','AIOP-002','AIOP-003','AIOP-004','AIOP-005','AIOP-006','AIOP-007','AIOP-008',"
+        "'AIOP-009','AIOP-010','AIOP-011','AIOP-012','AIOP-013','AIOP-014','AIOP-015','AIOP-016')",
+        name="ck_ai_generations_ai_operation_id",
+    ),
+    sa.CheckConstraint(
+        "status IN ('REQUESTED', 'RUNNING', 'OUTPUT_RECEIVED', 'VALIDATED', 'REJECTED', 'FAILED')",
+        name="ck_ai_generations_status",
+    ),
+    sa.UniqueConstraint("id", "workspace_id", name="uq_ai_generations_id_workspace"),
+)
+
+ai_derived_artifacts_table = sa.Table(
+    "ai_derived_artifacts",
+    metadata,
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column(
+        "workspace_id",
+        sa.Uuid(),
+        sa.ForeignKey("workspaces.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    sa.Column("ai_generation_id", sa.Uuid(), nullable=False),
+    sa.Column("ai_operation_id", sa.Text(), nullable=False),
+    sa.Column("content", sa.Text(), nullable=False),
+    sa.Column("content_fingerprint", sa.Text(), nullable=False),
+    sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("record_version", sa.BigInteger(), nullable=False),
+    sa.Column("provenance_ref", sa.Text(), nullable=True),
+    sa.ForeignKeyConstraint(
+        ["ai_generation_id", "workspace_id"],
+        ["ai_generations.id", "ai_generations.workspace_id"],
+        name="fk_ai_derived_artifacts_generation_workspace",
+        ondelete="RESTRICT",
+    ),
+    sa.CheckConstraint(
+        "ai_operation_id IN ("
+        "'AIOP-001','AIOP-002','AIOP-003','AIOP-004','AIOP-005','AIOP-006','AIOP-007','AIOP-008',"
+        "'AIOP-009','AIOP-010','AIOP-011','AIOP-012','AIOP-013','AIOP-014','AIOP-015','AIOP-016')",
+        name="ck_ai_derived_artifacts_ai_operation_id",
+    ),
+)
+
 __all__ = [
     "metadata",
     "users_table",
@@ -889,4 +1009,6 @@ __all__ = [
     "claim_anchors_table",
     "evidence_relations_table",
     "evidence_set_references_table",
+    "ai_generations_table",
+    "ai_derived_artifacts_table",
 ]
