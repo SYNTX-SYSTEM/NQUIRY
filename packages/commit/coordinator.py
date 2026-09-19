@@ -52,6 +52,23 @@ guessing either way -- 09 section 14's own "dependent consequence
 blocked" is exactly why a real caller must treat this identically to a
 failure, never as a success.
 
+WHY THIS MODULE RESOLVES EVIDENCE FRESHNESS ITSELF (PKG-17), THE SAME
+WAY IT ALREADY RESOLVES `current_versions`
+--------------------------------------------------------------------
+09 section 114: "BND-014 compares member versions/current states."
+The freshness this requires is "immediately before commit" -- the
+identical reasoning `boundaries.bnd_014_commit`'s own module docstring
+already gives for why `current_versions` is read by this coordinator,
+not supplied stale by an earlier caller. When `envelope.evidence_set_ref`
+is set, `commit()` re-resolves it via a caller-supplied
+`evidence_freshness_reader` (optional, defaults to `None` -- every
+existing caller commits envelopes with no `evidence_set_ref` at all,
+so this is a non-breaking widening, the same precedent
+`MutationOutcome.relation_refs` already established at PKG-14) and
+passes the result into `Bnd014Input.evidence_freshness`. A caller that
+sets `evidence_set_ref` but supplies no reader fails closed (06
+section 19 FAILURE BEHAVIOR) rather than silently skipping the check.
+
 WHY "connection loss after commit" IS NOT A SEPARATE CODE PATH HERE
 --------------------------------------------------------------------
 Once a commit genuinely succeeds (COMMITTED, real rows exist), a caller
@@ -78,6 +95,11 @@ from boundaries.bnd_014_commit import Bnd014CommitEvaluator, Bnd014Input
 from boundaries.types import BoundaryContext, BoundaryId, BoundaryProof, BoundaryResult
 from command.envelope import CommandEnvelope, CommandOutcome
 from events.outbox import DeliveryStatus, OutboxRecord, OutboxRepository
+from evidence.freshness import (
+    EvidenceFreshnessPort,
+    EvidenceSetFreshnessResult,
+    resolve_evidence_set_freshness,
+)
 from governance.authority_binding import AuthorityClass
 from persistence.command_repository import CommandRepository
 from semantic_types.ids import (
@@ -248,6 +270,16 @@ class CommitRepository(Protocol):
     def get(self, commit_id: CommitId) -> CommitUnit | None: ...
 
 
+class EvidenceFreshnessReaderRequired(Exception):
+    """Raised when `envelope.evidence_set_ref` is set but no
+    `evidence_freshness_reader` was supplied to `commit()` -- 06
+    section 19 FAILURE BEHAVIOR: "Fail closed when Evidence is
+    required and validity cannot be proven," applied to a caller
+    misconfiguration rather than silently treating Evidence as
+    not-required.
+    """
+
+
 class CommitDenied(Exception):
     """BND-014 itself denied; no CommitUnit was ever created (09's own
     3-value CommitUnit.outcome vocabulary has no DENIED member -- a
@@ -324,12 +356,26 @@ class CommitCoordinator:
         mutation: MutationExecutor,
         occurred_at: datetime,
         commit_id: CommitId,
+        evidence_freshness_reader: EvidenceFreshnessPort | None = None,
     ) -> CommitUnit:
         self._failure_injector.before(CommitInjectionPoint.BEFORE_TRANSACTION)
 
         current_versions: dict[str, RecordVersion | None] = {
             ref: current_version_reader.read(ref) for ref in envelope.target_refs
         }
+
+        evidence_freshness: EvidenceSetFreshnessResult | None = None
+        if envelope.evidence_set_ref is not None:
+            if evidence_freshness_reader is None:
+                raise EvidenceFreshnessReaderRequired(
+                    f"envelope {envelope.command_id!r} names evidence_set_ref "
+                    f"{envelope.evidence_set_ref!r} but no evidence_freshness_reader was supplied"
+                )
+            evidence_freshness = resolve_evidence_set_freshness(
+                envelope.evidence_set_ref,
+                workspace_id=envelope.workspace_scope_ref,
+                reader=evidence_freshness_reader,
+            )
 
         context = BoundaryContext(
             workspace_id=envelope.workspace_scope_ref,
@@ -348,6 +394,7 @@ class CommitCoordinator:
             expected_versions=envelope.expected_versions,
             current_versions=current_versions,
             upstream_chain_result=upstream_chain_result,
+            evidence_freshness=evidence_freshness,
         )
         proof = self._bnd014_evaluator.evaluate(bnd014_input, context)
         self._failure_injector.before(CommitInjectionPoint.AFTER_BND014)
@@ -549,6 +596,7 @@ __all__ = [
     "CurrentVersionReader",
     "CommitUnit",
     "CommitRepository",
+    "EvidenceFreshnessReaderRequired",
     "CommitDenied",
     "CommitFailedPrecommit",
     "CommitIndeterminate",

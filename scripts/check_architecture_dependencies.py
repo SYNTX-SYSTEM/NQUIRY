@@ -120,6 +120,17 @@ INTERNAL_ALLOWED: dict[str, frozenset[str]] = {
             # the identical reason `boundaries/bnd_005_human_authority.py`
             # already imports it.
             "governance",
+            # PKG-17: `evidence` added so `coordinator.py` can resolve
+            # `evidence.freshness.EvidenceSetFreshnessResult` immediately
+            # before invoking BND-014 (09 section 114: "BND-014 compares
+            # member versions/current states") -- 14 PKG-17's own
+            # OBJECTIVE is literally "BND-013 and commit freshness
+            # linkage". Read-only use: `commit` calls
+            # `evidence.freshness.resolve_evidence_set_freshness` (which
+            # itself performs no I/O) via a caller-supplied
+            # `EvidenceFreshnessPort`, and never imports
+            # `persistence.evidence_repository` directly.
+            "evidence",
         }
     ),
     "audit": frozenset({"semantic_types"}),

@@ -40,6 +40,22 @@ inside its own transaction, immediately before invoking this evaluator
 -- this module only compares what it is handed, it does not perform
 I/O of any kind, matching `authority.resolver.AuthorityResolver`'s own
 "never caches, always reads live" discipline one layer up.
+
+WHY `evidence_freshness` IS OPTIONAL AND DEFAULTS TO `None` (PKG-17)
+--------------------------------------------------------------------
+09 section 114 (Evidence Commit Materialization): "BND-014 compares
+member versions/current states. If any member: invalidated /
+superseded ... / unavailable ... / wrong Workspace / changed content
+version -- then stale ALLOW fails." Every existing caller (PKG-13's
+own tests, and every commit PKG-14/PKG-15 built) commits an operation
+with no `evidence_set_ref` at all -- an optional field defaulting to
+`None` is the same non-breaking widening precedent
+`commit.coordinator.MutationOutcome.relation_refs` already established
+(PKG-14): old callers are unaffected, a future Evidence-dependent
+Command supplies a real `EvidenceSetFreshnessResult` (re-resolved by
+the CALLER immediately before this evaluator runs, the identical
+"caller performs the fresh read, this module only compares" split as
+`current_versions` above).
 """
 
 from __future__ import annotations
@@ -49,6 +65,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 
 from authority.resolver import AuthorityRequest, AuthorityResolver, AuthorityVerdict
+from evidence.freshness import EvidenceSetFreshnessResult
 from governance.authority_binding import AuthorityClass
 from semantic_types.versions import ContractVersion, RecordVersion
 
@@ -65,6 +82,7 @@ class Bnd014Input:
     expected_versions: Mapping[str, RecordVersion]
     current_versions: Mapping[str, RecordVersion | None]
     upstream_chain_result: BoundaryResult
+    evidence_freshness: EvidenceSetFreshnessResult | None = None
 
     def __post_init__(self) -> None:
         if self.boundary_id is not BoundaryId.BND_014:
@@ -75,6 +93,13 @@ class Bnd014Input:
             raise TypeError(
                 f"upstream_chain_result must be a BoundaryResult, got "
                 f"{type(self.upstream_chain_result)!r}"
+            )
+        if self.evidence_freshness is not None and not isinstance(
+            self.evidence_freshness, EvidenceSetFreshnessResult
+        ):
+            raise TypeError(
+                "evidence_freshness must be an EvidenceSetFreshnessResult or None, got "
+                f"{type(self.evidence_freshness)!r}"
             )
 
 
@@ -123,6 +148,18 @@ class Bnd014CommitEvaluator:
             )
             return deny(f"STALE_VERSION:{','.join(stale)}")
 
+        # 09 section 114: "BND-014 compares member versions/current
+        # states... then stale ALLOW fails." Mandatory adversarial
+        # attacks: Evidence invalidated/unavailable after prepare, set
+        # membership no longer resolvable, cross-Workspace Evidence.
+        if (
+            boundary_input.evidence_freshness is not None
+            and not boundary_input.evidence_freshness.is_fresh
+        ):
+            if not boundary_input.evidence_freshness.evidence_set_found:
+                return deny("EVIDENCE_SET_NOT_FOUND")
+            return deny(f"STALE_EVIDENCE:{','.join(boundary_input.evidence_freshness.stale_refs)}")
+
         # VALIDATION: "current authority... No stale ALLOW." Mandatory
         # adversarial attack: authority revoked after preparation.
         resolution = self._resolver.resolve(
@@ -165,7 +202,11 @@ class Bnd014CommitEvaluator:
                 if version is not None
             ),
             authority_proof=resolution.proof,
-            evidence_proof_refs=(),
+            evidence_proof_refs=(
+                ()
+                if boundary_input.evidence_freshness is None
+                else (str(boundary_input.evidence_freshness.evidence_set_ref_id.value),)
+            ),
             evaluated_at=context.evaluated_at,
             correlation_id=context.correlation_id,
         )

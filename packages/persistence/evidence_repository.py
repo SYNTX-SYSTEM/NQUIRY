@@ -134,6 +134,14 @@ class EvidenceRepository(Protocol):
         self, evidence_set_ref_id: EvidenceSetId
     ) -> EvidenceSetReference | None: ...
 
+    def find_superseding_evidence_id(self, evidence_id: EvidenceId) -> EvidenceId | None:
+        """PKG-17 addition (`evidence.freshness.EvidenceFreshnessPort`):
+        does any current Evidence row declare `supersedes_evidence_id`
+        pointing at `evidence_id`? A read-only query over the existing
+        `evidence` table/column (PKG-16) -- no schema change (14 PKG-17
+        DATABASE_CHANGES: none)."""
+        ...
+
 
 class SqlAlchemyEvidenceRepository:
     """`EvidenceRepository` backed by `source_references`/`evidence`/
@@ -246,6 +254,13 @@ class SqlAlchemyEvidenceRepository:
         )
         row = self._connection.execute(stmt).mappings().one_or_none()
         return None if row is None else _evidence_set_from_row(row)
+
+    def find_superseding_evidence_id(self, evidence_id: EvidenceId) -> EvidenceId | None:
+        stmt = sa.select(evidence_table.c.id).where(
+            evidence_table.c.supersedes_evidence_id == evidence_id.value
+        )
+        row = self._connection.execute(stmt).first()
+        return None if row is None else EvidenceId(row[0])
 
 
 def _source_reference_to_row(source_reference: SourceReference) -> dict[str, object]:

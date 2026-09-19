@@ -570,3 +570,40 @@ def test_evidence_still_cannot_depend_on_persistence(tmp_path: Path) -> None:
     assert len(violations) == 1
     assert violations[0].owner_package == "evidence"
     assert violations[0].imported == "persistence"
+
+
+def test_allows_commit_to_depend_on_evidence_for_freshness_linkage(tmp_path: Path) -> None:
+    """PKG-17: `commit` may depend on `evidence` so `coordinator.py`
+    can resolve `evidence.freshness.EvidenceSetFreshnessResult`
+    immediately before invoking BND-014 (09 section 114: "BND-014
+    compares member versions/current states") -- see
+    `check_architecture_dependencies.INTERNAL_ALLOWED["commit"]` for
+    the citation. Not a forbidden-dependency violation.
+    """
+    packages_root = tmp_path / "packages"
+    _write(packages_root, "commit/__init__.py", "")
+    _write(packages_root, "commit/coordinator.py", "import evidence\n")
+    _write(packages_root, "evidence/__init__.py", "")
+
+    violations = check(roots=(packages_root,))
+
+    assert violations == []
+
+
+def test_evidence_still_cannot_depend_on_commit(tmp_path: Path) -> None:
+    """Negative control for the extension above: the new
+    `commit -> evidence` edge must not have quietly become
+    bidirectional. `evidence`'s permitted dependencies remain `domain`,
+    `semantic_types` (14 section 3.1) -- it must never reach into the
+    commit orchestration layer built on top of it.
+    """
+    packages_root = tmp_path / "packages"
+    _write(packages_root, "evidence/__init__.py", "")
+    _write(packages_root, "evidence/oops.py", "import commit\n")
+    _write(packages_root, "commit/__init__.py", "")
+
+    violations = check(roots=(packages_root,))
+
+    assert len(violations) == 1
+    assert violations[0].owner_package == "evidence"
+    assert violations[0].imported == "commit"

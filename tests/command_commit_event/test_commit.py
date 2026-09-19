@@ -34,6 +34,7 @@ from commit.coordinator import (
     CommitIndeterminate,
     CommitInjectionPoint,
     CommitOutcome,
+    EvidenceFreshnessReaderRequired,
     MutationOutcome,
     StaleVersionConflict,
 )
@@ -43,12 +44,19 @@ from commit.idempotency import (
     SqlAlchemyIdempotencyRepository,
 )
 from domain.burst import BurstMode, BurstState, QuestionBurst
+from evidence.evidence_set import (
+    EvidenceSetMember,
+    EvidenceSetReference,
+    compute_evidence_set_fingerprint,
+)
+from evidence.models import Evidence, EvidenceType, EvidenceValidationState
 from governance.authority_binding import AuthorityBindingState, AuthorityClass
 from persistence.audit_repository import SqlAlchemyAuditRepository
 from persistence.authority_binding_repository import SqlAlchemyAuthorityBindingRepository
 from persistence.burst_repository import BurstConflict, SqlAlchemyBurstRepository
 from persistence.command_repository import SqlAlchemyCommandRepository
 from persistence.commit_repository import SqlAlchemyCommitRepository
+from persistence.evidence_repository import SqlAlchemyEvidenceRepository
 from persistence.membership_repository import SqlAlchemyMembershipRepository
 from persistence.outbox_repository import SqlAlchemyOutboxRepository
 from persistence.tables import (
@@ -66,6 +74,8 @@ from semantic_types.ids import (
     CommandId,
     CommitId,
     CorrelationId,
+    EvidenceId,
+    EvidenceSetId,
     SessionId,
     UserId,
     WorkspaceId,
@@ -164,6 +174,7 @@ def _envelope_for_burst_start(
     burst: QuestionBurst,
     command_id: CommandId | None = None,
     idempotency_key: str | None = "start-burst-1",
+    evidence_set_ref: EvidenceSetId | None = None,
 ) -> CommandEnvelope:
     burst_ref = str(burst.burst_id.value)
     return CommandEnvelope(
@@ -180,7 +191,47 @@ def _envelope_for_burst_start(
         expected_versions={burst_ref: burst.record_version},
         payload=_BurstStartPayload(burst_ref),
         idempotency_key=idempotency_key,
+        evidence_set_ref=evidence_set_ref,
     )
+
+
+def _seed_fresh_evidence_set(
+    db_connection: sa.Connection, *, workspace_id: WorkspaceId
+) -> EvidenceSetReference:
+    repo = SqlAlchemyEvidenceRepository(db_connection)
+    evidence = Evidence(
+        evidence_id=EvidenceId(_ID_GEN.new_uuid()),
+        workspace_id=workspace_id,
+        type=EvidenceType.DOMAIN_EVIDENCE,
+        content="Users reported drop-off at step 2.",
+        source_reference_id=None,
+        human_source_user_id=None,
+        reliability=None,
+        captured_at=_NOW,
+        validation_state=EvidenceValidationState.UNVALIDATED,
+        content_version=RecordVersion.initial(),
+        record_version=RecordVersion.initial(),
+        supersedes_evidence_id=None,
+        provenance_ref=None,
+    )
+    repo.create_evidence(evidence)
+    members = (
+        EvidenceSetMember(
+            evidence_id=evidence.evidence_id, content_version=evidence.content_version
+        ),
+    )
+    evidence_set = EvidenceSetReference(
+        evidence_set_ref_id=EvidenceSetId(_ID_GEN.new_uuid()),
+        workspace_id=workspace_id,
+        consumer_type="CMD_START_QUESTION_BURST",
+        consumer_id=None,
+        member_evidence_id_and_version_list=members,
+        claim_anchor_refs=(),
+        created_at=_NOW,
+        fingerprint=compute_evidence_set_fingerprint(members),
+    )
+    repo.create_evidence_set_reference(evidence_set)
+    return evidence_set
 
 
 class _BurstStartMutation:
@@ -826,3 +877,138 @@ def test_denied_bundle_never_reaches_any_post_bnd014_injection_point(
         CommitInjectionPoint.AFTER_AUTHORITY_EVALUATION,
         CommitInjectionPoint.AFTER_BND014,
     ]
+
+
+def test_commit_succeeds_with_a_fresh_evidence_set(db_connection: sa.Connection) -> None:
+    """PKG-17: 09 section 114's commit-freshness linkage, exercised
+    through the full real `CommitCoordinator` (not just
+    `Bnd014CommitEvaluator` in isolation)."""
+    workspace_id, owner_id, burst = _bootstrap_burst(
+        db_connection, email="commit-evidence-fresh@nonproof.test"
+    )
+    _grant_session_control(db_connection, workspace_id=workspace_id, user_id=owner_id)
+    evidence_set = _seed_fresh_evidence_set(db_connection, workspace_id=workspace_id)
+    envelope = _envelope_for_burst_start(
+        workspace_id=workspace_id, burst=burst, evidence_set_ref=evidence_set.evidence_set_ref_id
+    )
+    SqlAlchemyCommandRepository(db_connection).record_attempt(envelope, received_at=_NOW)
+    _begin_idempotency_if_needed(db_connection, envelope)
+    coordinator = _build_coordinator(db_connection)
+    mutation = _BurstStartMutation(
+        SqlAlchemyBurstRepository(db_connection),
+        burst_id=burst.burst_id,
+        workspace_id=workspace_id,
+        expected_record_version=burst.record_version,
+        started_at=_NOW,
+    )
+
+    commit_unit = coordinator.commit(
+        envelope=envelope,
+        actor=ActorIdentity(ActorClass.HUMAN_USER, owner_id),
+        required_authority_class=AuthorityClass.SESSION_CONTROL_RIGHT,
+        authority_scope_type="WORKSPACE",
+        authority_scope_id=workspace_id.value,
+        upstream_chain_result=BoundaryResult.ALLOW,
+        current_version_reader=_BurstVersionReader(db_connection, burst_id=burst.burst_id),
+        mutation=mutation,
+        occurred_at=_NOW,
+        commit_id=CommitId(uuid.uuid4()),
+        evidence_freshness_reader=SqlAlchemyEvidenceRepository(db_connection),
+    )
+
+    assert commit_unit.outcome is CommitOutcome.COMMITTED
+
+
+def test_commit_denies_when_evidence_was_invalidated_after_prepare(
+    db_connection: sa.Connection,
+) -> None:
+    """Mandatory package-specific attack: Evidence invalidated after
+    prepare, exercised end to end through `CommitCoordinator.commit()`
+    -- the real mutation must never be applied."""
+    workspace_id, owner_id, burst = _bootstrap_burst(
+        db_connection, email="commit-evidence-invalidated@nonproof.test"
+    )
+    _grant_session_control(db_connection, workspace_id=workspace_id, user_id=owner_id)
+    evidence_set = _seed_fresh_evidence_set(db_connection, workspace_id=workspace_id)
+    evidence_repo = SqlAlchemyEvidenceRepository(db_connection)
+    member = evidence_set.member_evidence_id_and_version_list[0]
+    evidence_repo.update_validation_state(
+        evidence_id=member.evidence_id,
+        workspace_id=workspace_id,
+        expected_record_version=RecordVersion.initial(),
+        new_state=EvidenceValidationState.INVALIDATED,
+    )
+    envelope = _envelope_for_burst_start(
+        workspace_id=workspace_id, burst=burst, evidence_set_ref=evidence_set.evidence_set_ref_id
+    )
+    SqlAlchemyCommandRepository(db_connection).record_attempt(envelope, received_at=_NOW)
+    coordinator = _build_coordinator(db_connection)
+    mutation = _BurstStartMutation(
+        SqlAlchemyBurstRepository(db_connection),
+        burst_id=burst.burst_id,
+        workspace_id=workspace_id,
+        expected_record_version=burst.record_version,
+        started_at=_NOW,
+    )
+
+    with pytest.raises(CommitDenied) as excinfo:
+        coordinator.commit(
+            envelope=envelope,
+            actor=ActorIdentity(ActorClass.HUMAN_USER, owner_id),
+            required_authority_class=AuthorityClass.SESSION_CONTROL_RIGHT,
+            authority_scope_type="WORKSPACE",
+            authority_scope_id=workspace_id.value,
+            upstream_chain_result=BoundaryResult.ALLOW,
+            current_version_reader=_BurstVersionReader(db_connection, burst_id=burst.burst_id),
+            mutation=mutation,
+            occurred_at=_NOW,
+            commit_id=CommitId(uuid.uuid4()),
+            evidence_freshness_reader=evidence_repo,
+        )
+
+    assert excinfo.value.boundary_proof.reason_code.startswith("STALE_EVIDENCE:")
+    assert SqlAlchemyBurstRepository(db_connection).get(burst.burst_id).state is BurstState.PREPARED
+    assert db_connection.execute(sa.select(commit_units_table)).first() is None
+
+
+def test_commit_fails_closed_when_evidence_set_ref_present_without_a_reader(
+    db_connection: sa.Connection,
+) -> None:
+    """06 section 19 FAILURE BEHAVIOR: "Fail closed when Evidence is
+    required and validity cannot be proven" -- a caller misconfiguration
+    (evidence_set_ref set, no reader supplied) must not silently skip
+    the check."""
+    workspace_id, owner_id, burst = _bootstrap_burst(
+        db_connection, email="commit-evidence-no-reader@nonproof.test"
+    )
+    _grant_session_control(db_connection, workspace_id=workspace_id, user_id=owner_id)
+    evidence_set = _seed_fresh_evidence_set(db_connection, workspace_id=workspace_id)
+    envelope = _envelope_for_burst_start(
+        workspace_id=workspace_id, burst=burst, evidence_set_ref=evidence_set.evidence_set_ref_id
+    )
+    SqlAlchemyCommandRepository(db_connection).record_attempt(envelope, received_at=_NOW)
+    coordinator = _build_coordinator(db_connection)
+    mutation = _BurstStartMutation(
+        SqlAlchemyBurstRepository(db_connection),
+        burst_id=burst.burst_id,
+        workspace_id=workspace_id,
+        expected_record_version=burst.record_version,
+        started_at=_NOW,
+    )
+
+    with pytest.raises(EvidenceFreshnessReaderRequired):
+        coordinator.commit(
+            envelope=envelope,
+            actor=ActorIdentity(ActorClass.HUMAN_USER, owner_id),
+            required_authority_class=AuthorityClass.SESSION_CONTROL_RIGHT,
+            authority_scope_type="WORKSPACE",
+            authority_scope_id=workspace_id.value,
+            upstream_chain_result=BoundaryResult.ALLOW,
+            current_version_reader=_BurstVersionReader(db_connection, burst_id=burst.burst_id),
+            mutation=mutation,
+            occurred_at=_NOW,
+            commit_id=CommitId(uuid.uuid4()),
+        )
+
+    assert SqlAlchemyBurstRepository(db_connection).get(burst.burst_id).state is BurstState.PREPARED
+    assert db_connection.execute(sa.select(commit_units_table)).first() is None
