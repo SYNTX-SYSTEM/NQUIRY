@@ -444,6 +444,12 @@ DIFF_AUDIT:
     No production bug and no test-expectation bug were found this
     package -- every new test passed on its first live-DB run.
 
+AMENDMENT (post-commit, cleanup follow-up): the original commit for
+  this package incidentally included `.claude/scheduled_tasks.lock`, a
+  Claude Code session-runtime artifact with no relation to the NQUIRY
+  architecture; a follow-up commit untracks it and adds `.claude/*.lock`
+  to `.gitignore` -- no source/test/migration content changed.
+
 ARCHITECTURE_RECONSTRUCTION_RESULT:
   REQUEST -> ACTOR: NOT_APPLICABLE (no HTTP-reachable request path in
   this package's own scope) -> WORKSPACE: real `WorkspaceId` carried on
