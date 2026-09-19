@@ -130,5 +130,15 @@ class OutboxRepository(Protocol):
 
     def mark_failed_delivery(self, outbox_id: uuid.UUID, *, next_attempt_at: datetime) -> None: ...
 
+    def list_due_for_delivery(self, *, now: datetime, limit: int = 100) -> tuple[OutboxRecord, ...]:
+        """PKG-20's own read port for `outbox_worker.py`: every PENDING
+        record, plus every FAILED_DELIVERY record whose own
+        `next_attempt_at` has arrived -- never a DELIVERED record (09
+        section 15's own terminal state), ordered by `created_at` so
+        delivery is deterministic rather than a database's incidental
+        row order.
+        """
+        ...
+
 
 __all__ = ["DeliveryStatus", "OutboxRecord", "OutboxRepository"]

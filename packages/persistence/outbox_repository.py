@@ -5,13 +5,17 @@ THIS REPOSITORY DOES NOT DELIVER ANYTHING
 `mark_delivered`/`mark_failed_delivery` only record that a delivery
 attempt happened and its outcome -- neither method performs an actual
 broker publish or has any code path back into canonical/domain state.
-The delivery worker that would call these (14 section 48:
-`apps/worker/src/nquiry_worker/outbox_worker.py`, Phase 8) does not
-exist yet; these methods are exercised only by this package's own
-tests, the same disclosed "built but unwired" pattern
-`CommandRepository.record_outcome` (PKG-10) and `IdempotencyPort.
-mark_committed`/`mark_failed_precommit`/`mark_indeterminate` (PKG-11)
-already established.
+
+UPDATED AT PKG-20: `list_due_for_delivery` (below) closes the "delivery
+worker does not exist yet" half of this disclosure -- `apps/worker/
+src/nquiry_worker/outbox_worker.py`'s own `OutboxWorker` now calls
+`list_due_for_delivery`/`mark_delivered`/`mark_failed_delivery` for
+real, against this real adapter. This repository still never publishes
+anything itself and still has no code path into canonical/domain
+state; only the read side (which records are due) and the two
+write-outcome methods moved from "built but unwired" to "built and
+wired," the same transition `AIRecordRepository`'s manifest methods
+made at PKG-19.
 
 WHY `mark_delivered` IS IDEMPOTENT ONCE ALREADY DELIVERED
 ------------------------------------------------------------
@@ -114,6 +118,25 @@ class SqlAlchemyOutboxRepository:
         )
         if result.rowcount == 0:
             raise OutboxRecordNotFound(f"outbox_id {outbox_id!r} not found")
+
+    def list_due_for_delivery(self, *, now: datetime, limit: int = 100) -> tuple[OutboxRecord, ...]:
+        stmt = (
+            sa.select(outbox_events_table)
+            .where(
+                sa.or_(
+                    outbox_events_table.c.delivery_status == DeliveryStatus.PENDING.value,
+                    sa.and_(
+                        outbox_events_table.c.delivery_status
+                        == DeliveryStatus.FAILED_DELIVERY.value,
+                        outbox_events_table.c.next_attempt_at <= now,
+                    ),
+                )
+            )
+            .order_by(outbox_events_table.c.created_at)
+            .limit(limit)
+        )
+        rows = self._connection.execute(stmt).mappings().all()
+        return tuple(_record_from_row(row) for row in rows)
 
 
 def _record_from_row(row: sa.RowMapping) -> OutboxRecord:
