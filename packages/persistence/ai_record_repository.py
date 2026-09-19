@@ -5,16 +5,16 @@ Source: 14_IMPLEMENTATION_SEQUENCE.md section 10 (REPOSITORY PORTS):
 "`AIRecordRepository`: AIGeneration, manifest and derived artifact
 operational writes only."
 
-WHY THIS REPOSITORY HAS NO MANIFEST METHODS
+WHY MANIFEST METHODS WERE ADDED AT PKG-19, NOT PKG-18
 ------------------------------------------------------------------------
-`ai_context_manifests` (14 section 9's own migration plan) is PKG-19's
-own table to create -- this package's migration subset creates only
-`ai_generations`/`ai_derived_artifacts` (see the migration's own
-docstring). The port name 14 gives is a single umbrella covering all
-of PKG-18's and PKG-19's eventual AI-operational writes; this module
-implements exactly the two-thirds this package is authorized to build,
-honestly disclosed rather than stubbing manifest methods that would
-have no real table to write to yet.
+`ai_context_manifests` (14 section 9's own migration plan) was PKG-18's
+own disclosed forward-reference gap -- PKG-18's own migration subset
+created only `ai_generations`/`ai_derived_artifacts`. PKG-19's OBJECTIVE
+("AIContextManifest allowlist builder") is what actually creates the
+`ai_context_manifests` table and closes that gap; `create_context_manifest`/
+`get_context_manifest` are added here, alongside the retrofitted
+`ai_generations.ai_context_manifest_id` foreign key (see the PKG-19
+migration's own docstring).
 
 WHY `update_generation_status` TAKES AN `expected_record_version` GUARD
 ------------------------------------------------------------------------
@@ -44,10 +44,15 @@ import sqlalchemy as sa
 from ai_contracts.aiop import AIOperationId
 from ai_contracts.derived_artifact import AIDerivedArtifact
 from ai_contracts.generation import AIGeneration, AIGenerationStatus
+from ai_gateway.context import AIContextManifest, CoachMode, InputArtifactRef
 from semantic_types.ids import CommandId, CorrelationId, GenerationId, UserId, WorkspaceId
 from semantic_types.versions import ContractVersion, PromptVersion, RecordVersion
 
-from persistence.tables import ai_derived_artifacts_table, ai_generations_table
+from persistence.tables import (
+    ai_context_manifests_table,
+    ai_derived_artifacts_table,
+    ai_generations_table,
+)
 
 
 class AIRecordConflict(Exception):
@@ -93,6 +98,11 @@ class AIRecordRepository(Protocol):
     def get_derived_artifact(
         self, ai_derived_artifact_id: uuid.UUID
     ) -> AIDerivedArtifact | None: ...
+
+    def create_context_manifest(self, manifest: AIContextManifest) -> None: ...
+    def get_context_manifest(
+        self, ai_context_manifest_id: uuid.UUID
+    ) -> AIContextManifest | None: ...
 
 
 class SqlAlchemyAIRecordRepository:
@@ -177,6 +187,18 @@ class SqlAlchemyAIRecordRepository:
         )
         row = self._connection.execute(stmt).mappings().one_or_none()
         return None if row is None else _derived_artifact_from_row(row)
+
+    def create_context_manifest(self, manifest: AIContextManifest) -> None:
+        self._connection.execute(
+            sa.insert(ai_context_manifests_table).values(**_context_manifest_to_row(manifest))
+        )
+
+    def get_context_manifest(self, ai_context_manifest_id: uuid.UUID) -> AIContextManifest | None:
+        stmt = sa.select(ai_context_manifests_table).where(
+            ai_context_manifests_table.c.id == ai_context_manifest_id
+        )
+        row = self._connection.execute(stmt).mappings().one_or_none()
+        return None if row is None else _context_manifest_from_row(row)
 
 
 def _generation_to_row(generation: AIGeneration) -> dict[str, object]:
@@ -277,6 +299,50 @@ def _derived_artifact_from_row(row: sa.RowMapping) -> AIDerivedArtifact:
 
 def _as_uuid(value: object) -> uuid.UUID:
     return value if isinstance(value, uuid.UUID) else uuid.UUID(str(value))
+
+
+def _context_manifest_to_row(manifest: AIContextManifest) -> dict[str, object]:
+    return {
+        "id": manifest.ai_context_manifest_id,
+        "workspace_id": manifest.workspace_id.value,
+        "ai_operation_id": manifest.ai_operation_id.value,
+        "ai_operation_contract_version": str(manifest.ai_operation_contract_version),
+        "requesting_actor_ref": manifest.requesting_actor_ref,
+        "input_artifact_refs_with_versions": [
+            {"artifact_ref": ref.artifact_ref, "version": ref.version.value}
+            for ref in manifest.input_artifact_refs_with_versions
+        ],
+        "source_classifications": list(manifest.source_classifications),
+        "method_ref": manifest.method_ref,
+        "coach_mode": None if manifest.coach_mode is None else manifest.coach_mode.value,
+        "burst_mode": manifest.burst_mode,
+        "excluded_context_classes": list(manifest.excluded_context_classes),
+        "assembled_at": manifest.assembled_at,
+        "context_fingerprint": manifest.context_fingerprint,
+    }
+
+
+def _context_manifest_from_row(row: sa.RowMapping) -> AIContextManifest:
+    return AIContextManifest(
+        ai_context_manifest_id=_as_uuid(row["id"]),
+        workspace_id=WorkspaceId(row["workspace_id"]),
+        ai_operation_id=AIOperationId(row["ai_operation_id"]),
+        ai_operation_contract_version=ContractVersion(row["ai_operation_contract_version"]),
+        requesting_actor_ref=row["requesting_actor_ref"],
+        input_artifact_refs_with_versions=tuple(
+            InputArtifactRef(
+                artifact_ref=item["artifact_ref"], version=RecordVersion(item["version"])
+            )
+            for item in row["input_artifact_refs_with_versions"]
+        ),
+        source_classifications=tuple(row["source_classifications"] or ()),
+        method_ref=row["method_ref"],
+        coach_mode=None if row["coach_mode"] is None else CoachMode(row["coach_mode"]),
+        burst_mode=row["burst_mode"],
+        excluded_context_classes=tuple(row["excluded_context_classes"] or ()),
+        assembled_at=row["assembled_at"],
+        context_fingerprint=row["context_fingerprint"],
+    )
 
 
 __all__ = ["AIRecordConflict", "AIRecordRepository", "SqlAlchemyAIRecordRepository"]

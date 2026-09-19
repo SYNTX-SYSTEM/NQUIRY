@@ -71,6 +71,17 @@ INTERNAL_ALLOWED: dict[str, frozenset[str]] = {
             "governance",
             "evidence",
             "semantic_types",
+            # PKG-19: `ai_contracts` added so `bnd_009_ai_invocation.py`/
+            # `bnd_010_ai_output.py` can type their own inputs with the
+            # real `AIOperationId`/`AIGenerationStatus`/`AIValidationResult`
+            # closed enums (14 PKG-19 PUBLIC_INTERFACES: "unversioned
+            # consequential dict payloads are forbidden where they erase
+            # semantics"). Same one-directional pattern as
+            # `boundaries -> evidence` (PKG-17): `ai_contracts`'s own
+            # allowed set (14 section 3.1: "semantic_types, evidence read
+            # contracts") does not include `boundaries`, so no cycle is
+            # created.
+            "ai_contracts",
             # PKG-09: `persistence` added so BND-002/003/004 evaluators
             # can read live `WorkspaceRecord`/`MembershipRecord`/
             # `RoleAssignmentRecord` state through the PKG-01/02
@@ -270,6 +281,25 @@ INTERNAL_ALLOWED: dict[str, frozenset[str]] = {
             # evidence read contracts") does not include `persistence`,
             # so no cycle is created.
             "ai_contracts",
+            # PKG-19: `ai_gateway` added so `ai_record_repository.py`
+            # can store/reconstruct real `ai_gateway.context.
+            # AIContextManifest` instances (14 section 10's own
+            # `AIRecordRepository` port covers "AIGeneration, manifest
+            # and derived artifact operational writes"). Unlike every
+            # extension above, `ai_gateway`'s own allowed set (14
+            # section 3.1) *does* already include `persistence`
+            # (`ai_gateway/gateway.py` needs it) -- this is therefore
+            # not a one-directional pattern the way the others are. It
+            # is still safe: `ai_gateway/gateway.py` (the only
+            # `ai_gateway` submodule that imports `persistence`) and
+            # `persistence/ai_record_repository.py` (the only
+            # `persistence` submodule that imports `ai_gateway`, and
+            # only its `context` submodule specifically) are disjoint
+            # submodules, so no actual Python import cycle exists at
+            # module-load time -- the identical bidirectional-edge
+            # justification `commit <-> persistence` already
+            # established (PKG-11/13).
+            "ai_gateway",
         }
     ),
     "test_support": frozenset(KNOWN_INTERNAL_PACKAGES - {"test_support"}),

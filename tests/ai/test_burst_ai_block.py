@@ -24,16 +24,26 @@ it is "there is nothing here that could return anything else."
 UPDATED AT PKG-18: `ai_contracts` itself is no longer an empty stub --
 it now holds the real AIOP registry, `AIGeneration` lifecycle, and
 derived-artifact types (14 PKG-18's own PUBLIC_INTERFACES). That
-content is pure vocabulary/data, not an invocation path (no Gateway,
-no provider call, no method any Burst-protected code could call to
-actually run an AI operation) -- so this file's own "the whole package
-is empty" proxy check is replaced by the more
-precise, durable claim it always meant: `ai_gateway` (the actual
-invocation path) remains empty, and no Burst-protected production
-module imports either `ai_contracts` or `ai_gateway` at all. Mirrors
-PKG-13's own precedent for fixing a previously-green test whose
-assumption a later, legitimate package invalidates -- the underlying
-architectural claim (P-04) is unchanged and still holds.
+content is pure vocabulary/data, not an invocation path -- so this
+file's own "the whole package is empty" proxy check was replaced by
+the more precise, durable claim it always meant: no Burst-protected
+production module imports `ai_contracts` at all.
+
+UPDATED AGAIN AT PKG-19: `ai_gateway` itself is no longer an empty stub
+either -- it now holds the real `AIGateway`/`MockProviderAdapter`/
+context/prompt/validator (14 PKG-19's own PUBLIC_INTERFACES: "AIGateway").
+The same reasoning applies again: none of that is reachable from a
+Burst-protected module, since none of `domain.burst`/`domain.
+burst_membership`/`domain.burst_transitions`/`application.
+burst_operations`/`application.burst_contamination`/`persistence.
+burst_repository` imports `ai_gateway` (or `ai_contracts`) at all --
+the loop below re-proves this, extended to cover `ai_gateway` too, and
+"the whole package must stay empty" is finally retired as a check
+since NEITHER `ai_contracts` NOR `ai_gateway` can ever legitimately
+return to being empty stubs again. Mirrors PKG-13's own precedent for
+fixing a previously-green test whose assumption a later, legitimate
+package invalidates -- the underlying architectural claim (P-04) is
+unchanged and still holds.
 """
 
 from __future__ import annotations
@@ -76,17 +86,13 @@ def test_ai_analysis_during_active_human_only_burst_is_denied() -> None:
 
 
 def test_no_ai_gateway_or_provider_module_is_reachable_from_this_package() -> None:
-    """P-04's "no generation/provider call" half: there is no AI
-    Gateway or provider adapter this package's Burst code could call
-    even if it tried (`ai_gateway` remains an empty stub, PKG-19's own
-    scope); and no Burst-protected production module imports either
-    `ai_gateway` or `ai_contracts` (real as of PKG-18, but pure
-    vocabulary/data -- no invocation capability) at all.
+    """P-04's "no generation/provider call" half: `ai_gateway`/
+    `ai_contracts` are both real as of PKG-18/19 (AIOP registry,
+    AIGeneration lifecycle, AIGateway, MockProviderAdapter), but no
+    Burst-protected production module imports either of them at all --
+    there is no invocation path for this package's own Burst code to
+    reach even if it tried.
     """
-    import ai_gateway
-
-    assert not [name for name in vars(ai_gateway) if not name.startswith("_")]
-
     for module_name in _BURST_PROTECTED_MODULES:
         source = inspect.getsource(importlib.import_module(module_name))
         assert "import ai_gateway" not in source, module_name

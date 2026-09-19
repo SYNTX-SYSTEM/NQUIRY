@@ -84,13 +84,18 @@ See the PKG-18 migration's docstring for `ai_generations` and
 `ai_generation_id` foreign keys this migration adds to
 `question_lineage` (PKG-06) and `evidence_relations` (PKG-16) now that
 their long-disclosed forward-reference gap has a real target, why
-`ai_generations.ai_context_manifest_id`/`output_artifact_ref` still
-carry no foreign key (the former's target table, `ai_context_manifests`,
-remains PKG-19's own table to create; the latter would require a
-circular same-migration dependency, the same disclosed choice
-`commit_units.audit_event_ids`/`outbox_ids` already made), and for the
-two triggers enforcing 08 section 15's AIGeneration transition topology,
-likewise invisible here.
+`ai_generations.output_artifact_ref` carries no foreign key (would
+require a circular same-migration dependency, the same disclosed
+choice `commit_units.audit_event_ids`/`outbox_ids` already made), and
+for the two triggers enforcing 08 section 15's AIGeneration transition
+topology, likewise invisible here.
+See the PKG-19 migration's docstring for `ai_context_manifests` —
+including the retrofitted `ai_generations.ai_context_manifest_id`
+foreign key this migration adds now that its own long-disclosed
+forward-reference gap (PKG-18) has a real target, and why
+`coach_mode` is CHECK-constrained to 08 section 10's own exact 7-value
+closed list while `source_classifications`/`excluded_context_classes`
+stay plain `TEXT[]`.
 """
 
 from __future__ import annotations
@@ -901,8 +906,6 @@ ai_generations_table = sa.Table(
     sa.Column("user_id", sa.Uuid(), sa.ForeignKey("users.id", ondelete="RESTRICT"), nullable=True),
     sa.Column("ai_operation_id", sa.Text(), nullable=False),
     sa.Column("ai_operation_contract_version", sa.Text(), nullable=False),
-    # No foreign key: `ai_context_manifests` (14 §9 migration
-    # `007_ai_operational`) is PKG-19's own table to create.
     sa.Column("ai_context_manifest_id", sa.Uuid(), nullable=True),
     sa.Column("prompt_version", sa.Text(), nullable=False),
     sa.Column("model", sa.Text(), nullable=False),
@@ -937,6 +940,14 @@ ai_generations_table = sa.Table(
         ["retry_of_generation_id", "workspace_id"],
         ["ai_generations.id", "ai_generations.workspace_id"],
         name="fk_ai_generations_retry_of_workspace",
+        ondelete="RESTRICT",
+    ),
+    # PKG-19: retrofitted now that `ai_context_manifests` exists
+    # (previously a disclosed forward-reference gap, PKG-18).
+    sa.ForeignKeyConstraint(
+        ["ai_context_manifest_id", "workspace_id"],
+        ["ai_context_manifests.id", "ai_context_manifests.workspace_id"],
+        name="fk_ai_generations_context_manifest_workspace",
         ondelete="RESTRICT",
     ),
     sa.CheckConstraint(
@@ -983,6 +994,41 @@ ai_derived_artifacts_table = sa.Table(
     ),
 )
 
+ai_context_manifests_table = sa.Table(
+    "ai_context_manifests",
+    metadata,
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column(
+        "workspace_id",
+        sa.Uuid(),
+        sa.ForeignKey("workspaces.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    sa.Column("ai_operation_id", sa.Text(), nullable=False),
+    sa.Column("ai_operation_contract_version", sa.Text(), nullable=False),
+    sa.Column("requesting_actor_ref", sa.Text(), nullable=False),
+    sa.Column("input_artifact_refs_with_versions", postgresql.JSONB(), nullable=False),
+    sa.Column("source_classifications", sa.ARRAY(sa.Text()), nullable=False),
+    sa.Column("method_ref", sa.Text(), nullable=True),
+    sa.Column("coach_mode", sa.Text(), nullable=True),
+    sa.Column("burst_mode", sa.Text(), nullable=True),
+    sa.Column("excluded_context_classes", sa.ARRAY(sa.Text()), nullable=False, server_default="{}"),
+    sa.Column("assembled_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("context_fingerprint", sa.Text(), nullable=False),
+    sa.CheckConstraint(
+        "ai_operation_id IN ("
+        "'AIOP-001','AIOP-002','AIOP-003','AIOP-004','AIOP-005','AIOP-006','AIOP-007','AIOP-008',"
+        "'AIOP-009','AIOP-010','AIOP-011','AIOP-012','AIOP-013','AIOP-014','AIOP-015','AIOP-016')",
+        name="ck_ai_context_manifests_ai_operation_id",
+    ),
+    sa.CheckConstraint(
+        "coach_mode IS NULL OR coach_mode IN ("
+        "'SILENT','REFLECTIVE','CHALLENGER','SOCRATIC','FACILITATOR','RESEARCHER','STRATEGIST')",
+        name="ck_ai_context_manifests_coach_mode",
+    ),
+    sa.UniqueConstraint("id", "workspace_id", name="uq_ai_context_manifests_id_workspace"),
+)
+
 __all__ = [
     "metadata",
     "users_table",
@@ -1011,4 +1057,5 @@ __all__ = [
     "evidence_set_references_table",
     "ai_generations_table",
     "ai_derived_artifacts_table",
+    "ai_context_manifests_table",
 ]
