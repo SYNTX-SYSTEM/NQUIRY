@@ -21,6 +21,14 @@ dev = [
     "hypothesis>=6.112",
     "ruff>=0.7",
     "mypy>=1.13",
+    # PKG-27: test-only, never a runtime dependency (production code
+    # calls only `opentelemetry-api`, deliberately -- see
+    # `packages/observability/context.py`'s own "WHY ONLY
+    # opentelemetry-api" docstring section). Needed so
+    # `tests/security/test_observability.py` can install a real
+    # `InMemorySpanExporter` and prove actual span/attribute emission,
+    # not merely "does not raise" against the default no-op provider.
+    "opentelemetry-sdk>=1.27",
 ]
 
 # --- Python packaging: expose packages/*, apps/api/src/nquiry_api and

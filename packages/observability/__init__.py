@@ -6,11 +6,11 @@ Architectural ownership (14_IMPLEMENTATION_SEQUENCE.md §3.1):
     Must not depend on : canonical mutation.
     Canonical write    : no.
 
-PKG-00 SCOPE NOTE: this build phase (Phase 0, "Repository and
-architecture skeleton") materializes only the package boundary and
-its place in the dependency-enforcement graph
-(`scripts/check_architecture_dependencies.py`). No domain, authority,
-or persistence behavior is implemented here. Implementation lands in
-the build phase assigned to this package by
-14_IMPLEMENTATION_SEQUENCE.md §46 (CODING PACKAGE MANIFEST).
+PKG-27 SCOPE NOTE (Phase 10, "Observability correlation"): materializes
+`ObservationContext`/`ObservationSink`/`LocalOtelObservationSink`
+(`context.py`) -- structured diagnostic correlation only, never
+authority or domain truth (14 §46). No domain, authority, or
+persistence behavior is implemented here; this package still cannot
+depend on anything but `semantic_types` (see
+`scripts/check_architecture_dependencies.py`).
 """

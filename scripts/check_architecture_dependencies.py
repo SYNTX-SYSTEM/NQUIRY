@@ -362,9 +362,15 @@ INTERNAL_ALLOWED: dict[str, frozenset[str]] = {
         }
     ),
     "test_support": frozenset(KNOWN_INTERNAL_PACKAGES - {"test_support"}),
-    "nquiry_api": frozenset({"application", "semantic_types"}),
+    # PKG-27: `observability` added to both app entry points so
+    # `apps/api/src/nquiry_api/main.py`/`apps/worker/src/nquiry_worker/__main__.py`
+    # can construct a real `ObservationContext` and emit it through the
+    # real `LocalOtelObservationSink` at the one real endpoint/entrypoint
+    # each process currently has (14 section 46's own PKG-27
+    # "app/worker instrumentation integration" target).
+    "nquiry_api": frozenset({"application", "observability", "semantic_types"}),
     "nquiry_worker": frozenset(
-        {"events", "projection", "recovery", "command", "commit", "semantic_types"}
+        {"events", "projection", "recovery", "command", "commit", "observability", "semantic_types"}
     ),
 }
 
@@ -400,6 +406,14 @@ EXTERNAL_FORBIDDEN: dict[str, frozenset[str]] = {
     # independently checkable now that this package holds real content
     # a future edit could otherwise weaken unnoticed.
     "security": _DB_DRIVER | PROVIDER_SDK_MODULES,
+    # PKG-27: `observability` is the ONE package this codebase
+    # designates to hold `opentelemetry` directly (14's own PKG-27
+    # OBJECTIVE: "local OpenTelemetry API sink") -- deliberately NOT
+    # included in this entry's own forbidden set, unlike every other
+    # package here. Still hardened against the web framework/DB
+    # driver/provider SDK groups, since none of those belong in a
+    # correlation-only package either.
+    "observability": _WEB_FRAMEWORK | _DB_DRIVER | PROVIDER_SDK_MODULES,
     "application": _DB_DRIVER | PROVIDER_SDK_MODULES,
     "nquiry_api": _DB_DRIVER | PROVIDER_SDK_MODULES,
 }
