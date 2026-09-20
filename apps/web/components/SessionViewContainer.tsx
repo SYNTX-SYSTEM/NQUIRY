@@ -22,12 +22,19 @@
  * `"loading"` forever, invisible to the viewer, while the browser
  * logged an unhandled promise rejection. See `NetworkErrorBanner`'s
  * own docstring for the full disclosure.
+ *
+ * PKG-29 EXTENSION: the `ok` branch now also renders `DecisionSection`
+ * (12 §24 items 11/12/15) whenever the resolved `SessionView` carries
+ * a `decision`/`aiRecommendation` -- itself still a pure pass-through
+ * of whatever the server's own response contained, same as every
+ * other field this component already renders.
  */
 import { useEffect, useState } from "react";
 import { fetchSessionView } from "../lib/api/client";
 import type { SessionId, SessionReadResult, WorkspaceId } from "../lib/api/types";
 import { BurstPanel } from "./BurstPanel";
 import { ChallengeSummary } from "./ChallengeSummary";
+import { DecisionSection } from "./DecisionSection";
 import { DeniedBanner } from "./DeniedBanner";
 import { IndeterminateBanner } from "./IndeterminateBanner";
 import { NetworkErrorBanner } from "./NetworkErrorBanner";
@@ -82,6 +89,7 @@ export function SessionViewContainer({
           <ChallengeSummary challenge={result.data.challenge} />
           <SessionStateBadge state={result.data.session.state} />
           {result.data.burst !== null ? <BurstPanel burst={result.data.burst} /> : null}
+          <DecisionSection decision={result.data.decision} aiRecommendation={result.data.aiRecommendation} />
         </div>
       );
     case "denied":

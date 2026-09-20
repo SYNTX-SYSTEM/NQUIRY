@@ -18,11 +18,19 @@
  * No retry control, consistent with this package's own zero-
  * interactive-action scope (12 §24 items 10-12/15 are PKG-29's own
  * scope).
+ *
+ * PKG-29 EXTENSION: `message` is now an optional prop (default
+ * unchanged from the original PKG-28 text) so `DecisionSection` can
+ * reuse this same component for a `recordHumanDecision` network
+ * failure (a genuinely different situation -- "your decision
+ * submission failed to reach the server", not "the page failed to
+ * load") without duplicating this component's own no-retry-control
+ * guarantee in a near-identical second file.
  */
-export function NetworkErrorBanner() {
+export function NetworkErrorBanner({ message = "Unable to load this Session." }: { readonly message?: string }) {
   return (
     <div data-testid="network-error-banner" role="alert">
-      Unable to load this Session.
+      {message}
     </div>
   );
 }

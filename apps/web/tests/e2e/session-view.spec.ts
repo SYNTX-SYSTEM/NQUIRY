@@ -39,6 +39,8 @@ const OK_BODY = {
         { questionId: "q-2", originalText: "Is step 3 latency the driver?", origin: "AI" },
       ],
     },
+    decision: null,
+    aiRecommendation: null,
   },
 };
 

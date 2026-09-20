@@ -9,6 +9,28 @@ function jsonResponse(body: unknown): Response {
   return new Response(JSON.stringify(body), { status: 200, headers: { "Content-Type": "application/json" } });
 }
 
+const DECISION_UNDER_CONSIDERATION = {
+  decisionId: "d-1",
+  challengeId: "c-1",
+  decisionQuestionRef: null,
+  decisionQuestionText: "Which approach?",
+  options: ["Option A", "Option B"],
+  criteria: ["Cost", "Speed"],
+  selectedOption: null,
+  rationale: null,
+  confidence: null,
+  state: "UNDER_CONSIDERATION",
+  decidedByUserId: null,
+  decisionAuthorityBindingId: "binding-1",
+  aiRecommendationConsumedRef: null,
+  decidedAt: null,
+};
+
+const AI_RECOMMENDATION = {
+  generationId: "gen-1",
+  summary: "Consider Option A for lower cost.",
+};
+
 const OK_BODY = {
   kind: "ok",
   data: {
@@ -22,6 +44,8 @@ const OK_BODY = {
       mode: "HUMAN_ONLY",
       questions: [{ questionId: "q-1", originalText: "Why?", origin: "HUMAN" }],
     },
+    decision: DECISION_UNDER_CONSIDERATION,
+    aiRecommendation: AI_RECOMMENDATION,
   },
 };
 

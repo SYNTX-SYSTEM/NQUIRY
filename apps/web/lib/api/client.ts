@@ -34,21 +34,25 @@
  */
 
 import {
+  BOUNDARY_DENIAL_RESULTS,
   BURST_MODES,
   BURST_STATES,
+  DECISION_STATES,
   QUESTION_ORIGINS,
   SESSION_STATES,
+  type AiRecommendationView,
   type BurstView,
   type ChallengeView,
+  type DecisionView,
   type SessionId,
   type SessionReadResult,
   type SessionSummary,
   type WorkspaceId,
 } from "./types";
 
-const DEFAULT_API_BASE_URL = "http://localhost:8000";
+export const DEFAULT_API_BASE_URL = "http://localhost:8000";
 
-function apiBaseUrl(): string {
+export function apiBaseUrl(): string {
   return process.env.NEXT_PUBLIC_API_BASE_URL ?? DEFAULT_API_BASE_URL;
 }
 
@@ -98,18 +102,13 @@ export function parseSessionReadResult(body: unknown): SessionReadResult {
     case "ok":
       return { kind: "ok", data: parseSessionView(body.data) };
     case "denied":
-      if (body.result !== "DENY" && body.result !== "REQUIRE" && body.result !== "ESCALATE") {
-        throw new TypeError(`unrecognized denied result ${JSON.stringify(body.result)}`);
-      }
-      if (typeof body.reasonCode !== "string" || body.reasonCode.length === 0) {
-        throw new TypeError("denied response is missing a non-empty reasonCode");
-      }
-      return { kind: "denied", result: body.result, reasonCode: body.reasonCode };
+      return {
+        kind: "denied",
+        result: requireEnum(body, "result", BOUNDARY_DENIAL_RESULTS),
+        reasonCode: requireNonEmptyString(body, "reasonCode"),
+      };
     case "indeterminate":
-      if (typeof body.blockedTargetRef !== "string" || body.blockedTargetRef.length === 0) {
-        throw new TypeError("indeterminate response is missing a non-empty blockedTargetRef");
-      }
-      return { kind: "indeterminate", blockedTargetRef: body.blockedTargetRef };
+      return { kind: "indeterminate", blockedTargetRef: requireNonEmptyString(body, "blockedTargetRef") };
     default:
       throw new TypeError(`unrecognized SessionReadResult kind ${JSON.stringify(body.kind)}`);
   }
@@ -124,6 +123,58 @@ function parseSessionView(value: unknown): SessionView {
     challenge: parseChallengeView(value.challenge),
     session: parseSessionSummary(value.session),
     burst: value.burst === null ? null : parseBurstView(value.burst),
+    decision: value.decision === null ? null : parseDecisionView(value.decision),
+    aiRecommendation: value.aiRecommendation === null ? null : parseAiRecommendationView(value.aiRecommendation),
+  };
+}
+
+/**
+ * `packages/domain/decision.py`'s own `Decision` (PKG-15), narrowed
+ * from the same `GET /workspaces/{w}/sessions/{s}` response
+ * `parseSessionView` already parses -- see `DecisionView`'s own
+ * docstring in `types.ts` for why this lives on the SAME query rather
+ * than a second invented endpoint.
+ */
+export function parseDecisionView(value: unknown): DecisionView {
+  if (!isRecord(value)) {
+    throw new TypeError("DecisionView body must be an object");
+  }
+  if (!Array.isArray(value.options) || !value.options.every((o) => typeof o === "string")) {
+    throw new TypeError("DecisionView.options must be an array of strings");
+  }
+  if (!Array.isArray(value.criteria) || !value.criteria.every((c) => typeof c === "string")) {
+    throw new TypeError("DecisionView.criteria must be an array of strings");
+  }
+  return {
+    decisionId: requireString(value, "decisionId") as DecisionView["decisionId"],
+    challengeId: requireString(value, "challengeId") as DecisionView["challengeId"],
+    decisionQuestionRef:
+      value.decisionQuestionRef === null
+        ? null
+        : (requireString(value, "decisionQuestionRef") as DecisionView["decisionQuestionRef"]),
+    decisionQuestionText: value.decisionQuestionText === null ? null : requireString(value, "decisionQuestionText"),
+    options: value.options,
+    criteria: value.criteria,
+    selectedOption: value.selectedOption === null ? null : requireString(value, "selectedOption"),
+    rationale: value.rationale === null ? null : requireString(value, "rationale"),
+    confidence: value.confidence === null ? null : requireString(value, "confidence"),
+    state: requireEnum(value, "state", DECISION_STATES),
+    decidedByUserId: value.decidedByUserId === null ? null : requireString(value, "decidedByUserId"),
+    decisionAuthorityBindingId:
+      value.decisionAuthorityBindingId === null ? null : requireString(value, "decisionAuthorityBindingId"),
+    aiRecommendationConsumedRef:
+      value.aiRecommendationConsumedRef === null ? null : requireString(value, "aiRecommendationConsumedRef"),
+    decidedAt: value.decidedAt === null ? null : requireString(value, "decidedAt"),
+  };
+}
+
+function parseAiRecommendationView(value: unknown): AiRecommendationView {
+  if (!isRecord(value)) {
+    throw new TypeError("AiRecommendationView body must be an object");
+  }
+  return {
+    generationId: requireString(value, "generationId"),
+    summary: requireString(value, "summary"),
   };
 }
 
@@ -176,14 +227,29 @@ function parseBurstView(value: unknown): BurstView {
   };
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
+/**
+ * Shared, exported so `decisionClient.ts` (PKG-29) reuses the exact
+ * same fail-closed parsing discipline rather than re-implementing (and
+ * risking re-diverging) its own copy -- a minimal, disclosed extension
+ * of this existing file, not a new generic "utils" dumping ground
+ * (this package's own FILES_FORBIDDEN_TO_MODIFY line).
+ */
+export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
-function requireString(record: Record<string, unknown>, key: string): string {
+export function requireString(record: Record<string, unknown>, key: string): string {
   const value = record[key];
   if (typeof value !== "string") {
     throw new TypeError(`expected string field '${key}', got ${JSON.stringify(value)}`);
+  }
+  return value;
+}
+
+function requireNonEmptyString(record: Record<string, unknown>, key: string): string {
+  const value = requireString(record, key);
+  if (value.length === 0) {
+    throw new TypeError(`expected non-empty string field '${key}'`);
   }
   return value;
 }
@@ -195,7 +261,7 @@ function requireString(record: Record<string, unknown>, key: string): string {
  * `parseSessionReadResult` docstring above and `types.ts`'s own
  * `SESSION_STATES` retrofit note.
  */
-function requireEnum<T extends string>(record: Record<string, unknown>, key: string, allowed: readonly T[]): T {
+export function requireEnum<T extends string>(record: Record<string, unknown>, key: string, allowed: readonly T[]): T {
   const value = requireString(record, key);
   if (!(allowed as readonly string[]).includes(value)) {
     throw new TypeError(`expected one of ${JSON.stringify(allowed)} for field '${key}', got ${JSON.stringify(value)}`);

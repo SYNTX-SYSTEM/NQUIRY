@@ -48,6 +48,7 @@ export type ChallengeId = string & { readonly __brand: "ChallengeId" };
 export type SessionId = string & { readonly __brand: "SessionId" };
 export type BurstId = string & { readonly __brand: "BurstId" };
 export type QuestionId = string & { readonly __brand: "QuestionId" };
+export type DecisionId = string & { readonly __brand: "DecisionId" };
 
 /**
  * `packages/domain/session.py`'s own `SessionState` -- 03 §13.1's
@@ -112,6 +113,28 @@ export type BurstMode = (typeof BURST_MODES)[number];
  */
 export const QUESTION_ORIGINS = ["HUMAN", "AI", "IMPORTED", "INFERRED"] as const;
 export type QuestionOrigin = (typeof QUESTION_ORIGINS)[number];
+
+/**
+ * `packages/domain/decision.py`'s own `DecisionState` -- 03 §35.2's
+ * exact 2-value closed vocabulary, `[ARCHITECTURAL CLOSURE]`. Built as
+ * a `const` array with the type derived from it from day one (per the
+ * PKG-28 external-review retrofit lesson), never as a bare union a
+ * caller could bypass with a compile-time-only cast.
+ */
+export const DECISION_STATES = ["UNDER_CONSIDERATION", "DECIDED"] as const;
+export type DecisionState = (typeof DECISION_STATES)[number];
+
+/**
+ * `boundaries.types.BoundaryResult`'s own DENY/REQUIRE/ESCALATE
+ * outcomes (06 §2), reused verbatim for `DecisionActionResult` below --
+ * the identical vocabulary `SessionReadResult`'s own `denied` case
+ * already uses (PKG-28). Kept as its own named array (not re-exported
+ * from `SessionReadResult`) because it is the second, independent site
+ * this package needs runtime membership-checked, not because the
+ * vocabulary itself differs.
+ */
+export const BOUNDARY_DENIAL_RESULTS = ["DENY", "REQUIRE", "ESCALATE"] as const;
+export type BoundaryDenialResult = (typeof BOUNDARY_DENIAL_RESULTS)[number];
 
 /** `packages/domain/challenge.py`'s own `Challenge` -- 12 §24 item 2
  * ("Challenge frame"). Only the fields this package's own UI displays
@@ -178,13 +201,97 @@ export function isBurstFrozen(burst: BurstView): boolean {
   return burst.state === "COMPLETED";
 }
 
+/**
+ * `packages/ai_contracts/generation.py`'s own `AIGeneration` (PKG-19)
+ * -- the minimal display shape 12 §24 item 11 ("Decision boundary
+ * showing that AI recommendation is not a Decision") and this
+ * package's own AI line ("Recommendation displayed separately")
+ * require: enough to render an AI recommendation visibly and label it
+ * as such, nothing more.
+ *
+ * WHY `summary` IS THE ONLY CONTENT FIELD, AND WHY IT IS DISCLOSED AS
+ * OPAQUE
+ * --------------------------------------------------------------------
+ * `AIGeneration.output_artifact_ref` (09 §55) is itself an opaque
+ * forward reference to a not-yet-built artifact store -- this package
+ * does not resolve it into structured content any more than
+ * `domain.decision.Decision.provenance_ref` does. `summary` stands in
+ * for whatever server-side resolution a real backend route would
+ * perform; this package never computes, truncates, or "cleans up" it
+ * -- it only displays exactly the string the (disclosed,
+ * not-yet-built) backend would already have resolved.
+ */
+export interface AiRecommendationView {
+  readonly generationId: string;
+  readonly summary: string;
+}
+
+/**
+ * `packages/domain/decision.py`'s own `Decision` (PKG-15) -- 07 §54.8's
+ * own "Provenance Minimums by Artifact Class: Decision" list (human
+ * authoritative origin for DECIDED state; DecisionAuthority holder; AI
+ * recommendations consumed where applicable; Evidence set consumed
+ * where applicable; selected option; rationale; decision time) is what
+ * this interface's own fields materialize -- 12 §24 item 15's own
+ * "minimal provenance/audit reconstruction view" for the Decision
+ * artifact class specifically, not the deeper Command/CommitUnit/
+ * AuditEvent/Outbox reconstruction chain `GET /commands/{c}/reconstruction`
+ * would expose (that query is not assigned to this package by 14 at
+ * all; see this package's own completion report KNOWN_LIMITATIONS).
+ *
+ * `decidedByUserId`/`decisionAuthorityBindingId` are opaque display
+ * refs (never decoded into a resolved identity/governance object here)
+ * -- their mere PRESENCE once `state === "DECIDED"` is itself the
+ * "human authoritative origin"/"DecisionAuthority holder" proof 07
+ * §54.8 names; `Decision.__post_init__`'s own backend invariant
+ * already guarantees a DECIDED row can never lack either one.
+ *
+ * `aiRecommendationConsumedRef` mirrors `Decision.provenance_ref`
+ * (`uuid.UUID | None`) exactly, including its own honestly-disclosed
+ * limitation: `application.human_decision_handler.open_decision_consideration`
+ * hardcodes `provenance_ref=None` on every real Decision it creates --
+ * no code path in this codebase populates it yet. This field will
+ * therefore always render `null` in practice today; kept in the type
+ * (not omitted) because 07 §54.8 names the minimum regardless of
+ * whether any current caller populates it, the same "field mapped even
+ * though the real value is always absent right now" treatment
+ * `ChallengeView.description` already established (PKG-28).
+ */
+export interface DecisionView {
+  readonly decisionId: DecisionId;
+  readonly challengeId: ChallengeId;
+  readonly decisionQuestionRef: QuestionId | null;
+  readonly decisionQuestionText: string | null;
+  readonly options: readonly string[];
+  readonly criteria: readonly string[];
+  readonly selectedOption: string | null;
+  readonly rationale: string | null;
+  readonly confidence: string | null;
+  readonly state: DecisionState;
+  readonly decidedByUserId: string | null;
+  readonly decisionAuthorityBindingId: string | null;
+  readonly aiRecommendationConsumedRef: string | null;
+  readonly decidedAt: string | null;
+}
+
 /** Everything this package's own Session-view UI needs, together --
- * the positive (`ok`) case of `SessionReadResult` below. */
+ * the positive (`ok`) case of `SessionReadResult` below.
+ *
+ * `decision`/`aiRecommendation` are PKG-29's own additions to the SAME
+ * single `GET /workspaces/{w}/sessions/{s}` query PKG-28 already
+ * established, not a second parallel query -- 12 §23 itself names no
+ * dedicated Decision-read route, and richer-payload-on-the-same-query
+ * is the identical "exact HTTP paths are prototype interface choices"
+ * disclosure PKG-28 already relied on, extended rather than repeated
+ * with a new invented endpoint.
+ */
 export interface SessionView {
   readonly workspaceId: WorkspaceId;
   readonly challenge: ChallengeView;
   readonly session: SessionSummary;
   readonly burst: BurstView | null;
+  readonly decision: DecisionView | null;
+  readonly aiRecommendation: AiRecommendationView | null;
 }
 
 /**
@@ -212,5 +319,47 @@ export interface SessionView {
  */
 export type SessionReadResult =
   | { readonly kind: "ok"; readonly data: SessionView }
-  | { readonly kind: "denied"; readonly result: "DENY" | "REQUIRE" | "ESCALATE"; readonly reasonCode: string }
+  | { readonly kind: "denied"; readonly result: BoundaryDenialResult; readonly reasonCode: string }
   | { readonly kind: "indeterminate"; readonly blockedTargetRef: string };
+
+/**
+ * `POST /decisions/{d}/decide` (12 §23's own COMMAND row,
+ * `CMD_RECORD_HUMAN_DECISION`) resolves to this. Mirrors
+ * `SessionReadResult`'s own shape deliberately (same `denied`/
+ * `indeterminate` vocabulary, same discriminated-union discipline) but
+ * is NOT the same type -- a Command result and a Query result are
+ * different things (NON_COLLAPSE_RULES: "Do not turn ... Event into
+ * Command"; the same discipline extends to not collapsing a Command's
+ * own result shape into a Query's).
+ *
+ * - `committed`: `application.human_decision_handler.record_human_decision`
+ *   reached a real `CommitCoordinator.commit` (06's own BND-001..007
+ *   chain ALLOWed, BND-014 ALLOWed) -- `decision` is the fresh,
+ *   server-returned post-commit `DecisionView`, NEVER a client-guessed
+ *   projection of what the UI expected to happen (see
+ *   `RecordDecisionForm`'s own docstring: no optimistic rendering
+ *   exists anywhere in this package).
+ * - `denied`: the PRECOMMIT boundary chain (BND-001..007) did not
+ *   reach ALLOW -- `application.human_decision_handler.HumanDecisionDenied`'s
+ *   own real shape, mirrored here as the same DENY/REQUIRE/ESCALATE
+ *   vocabulary `SessionReadResult` already uses.
+ * - `indeterminate`: mirrors `SessionReadResult`'s own case (BND-017's
+ *   dependency-blocking concept, PKG-24) -- a prior operation this
+ *   Decision depends on is unresolved.
+ * - `rejected`: a POST-boundary, application-level rejection distinct
+ *   from a boundary DENY -- mirrors
+ *   `application.human_decision_handler.SelectedOptionNotCandidate`
+ *   (a submitted `selectedOption` not among the Decision's own real
+ *   `options`) and `commit.coordinator.StaleVersionConflict` (a
+ *   concurrent modification raced this submission). Kept as its own
+ *   case rather than folded into `denied` because the real backend
+ *   raises these as genuinely different exception types, for
+ *   genuinely different reasons, AFTER the boundary chain already
+ *   ALLOWed -- collapsing them into "DENY" would misrepresent which
+ *   layer actually refused the request.
+ */
+export type DecisionActionResult =
+  | { readonly kind: "committed"; readonly decision: DecisionView }
+  | { readonly kind: "denied"; readonly result: BoundaryDenialResult; readonly reasonCode: string }
+  | { readonly kind: "indeterminate"; readonly blockedTargetRef: string }
+  | { readonly kind: "rejected"; readonly reasonCode: string };
