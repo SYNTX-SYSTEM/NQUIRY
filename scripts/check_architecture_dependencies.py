@@ -344,6 +344,21 @@ INTERNAL_ALLOWED: dict[str, frozenset[str]] = {
             # `packages/recovery/` imports `persistence` at all -- so
             # no cycle is created.
             "recovery",
+            # PKG-26: `security` added so `security_event_repository.py`
+            # can store/reconstruct real `SecurityEvent` instances (14
+            # section 10's own `SecurityEventRepository` port) and
+            # `workspace_rls_context.py` can implement the real
+            # `WorkspaceContextPort` adapter (14 section 8's own
+            # `[IMPLEMENTATION CHOICE]`: "transaction-local Workspace
+            # context set only by trusted server adapter"). Same
+            # one-directional pattern as `persistence -> recovery`/
+            # `projection`/`evidence`/`audit`/`events`/`ai_contracts`:
+            # `security`'s own allowed set (14 section 3.1:
+            # "semantic_types") does not require `persistence` for
+            # anything this package actually imports -- no file under
+            # `packages/security/` imports `persistence` at all -- so no
+            # cycle is created.
+            "security",
         }
     ),
     "test_support": frozenset(KNOWN_INTERNAL_PACKAGES - {"test_support"}),
@@ -378,6 +393,13 @@ EXTERNAL_FORBIDDEN: dict[str, frozenset[str]] = {
     # relying only on the INTERNAL_ALLOWED table ever staying correct.
     "audit": _DB_DRIVER | PROVIDER_SDK_MODULES,
     "events": _DB_DRIVER | PROVIDER_SDK_MODULES,
+    # PKG-26: same defensive hardening as `audit`/`events` above --
+    # `security`'s own allowed-imports (14 §3.1: "semantic_types") already
+    # implies no ORM code belongs here (`packages/security/events.py`/
+    # `workspace.py` are both pure ports); this makes that implication
+    # independently checkable now that this package holds real content
+    # a future edit could otherwise weaken unnoticed.
+    "security": _DB_DRIVER | PROVIDER_SDK_MODULES,
     "application": _DB_DRIVER | PROVIDER_SDK_MODULES,
     "nquiry_api": _DB_DRIVER | PROVIDER_SDK_MODULES,
 }

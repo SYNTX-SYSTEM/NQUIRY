@@ -117,6 +117,12 @@ own "Version: record_version" gap PKG-23 left open, and the "dependency
 blocking metadata" 14 section 29 names, represented without a separate
 join table (`is_target_blocked` reads directly against
 `result = 'UNRESOLVED' AND :target_ref = ANY (blocked_target_refs)`).
+See the PKG-26 migration's docstring for `security_events` — including
+why `workspace_id`/`command_id`/`generation_id`/`recovery_id` carry no
+foreign key at all (a `SecurityEvent`'s own purpose can be to record a
+forged/unresolvable claim), and for the RLS policies this same
+migration enables on every Workspace-keyed table above, none of which
+is representable as SQLAlchemy Core `Table` metadata either.
 """
 
 from __future__ import annotations
@@ -1163,6 +1169,43 @@ recovery_records_table = sa.Table(
     sa.CheckConstraint("record_version >= 1", name="ck_recovery_records_record_version_positive"),
 )
 
+security_events_table = sa.Table(
+    "security_events",
+    metadata,
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    # Deliberately NO ForeignKey on workspace_id -- see
+    # `packages/security/events.py`'s own "WHY workspace_id/command_id/
+    # generation_id/recovery_id CARRY NO FOREIGN KEY" docstring section:
+    # a SecurityEvent's own purpose can be to record a forged/unresolvable
+    # claim, which a real FK would make impossible to ever persist.
+    sa.Column("workspace_id", sa.Uuid(), nullable=True),
+    sa.Column("occurred_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("environment", sa.Text(), nullable=False),
+    sa.Column("actor_type", sa.Text(), nullable=False),
+    sa.Column("actor_id", sa.Text(), nullable=False),
+    sa.Column("trust_boundary", sa.Text(), nullable=False),
+    sa.Column("event_type", sa.Text(), nullable=False),
+    sa.Column("correlation_id", sa.Uuid(), nullable=False),
+    sa.Column("target_ref", sa.Text(), nullable=True),
+    sa.Column("command_id", sa.Uuid(), nullable=True),
+    sa.Column("generation_id", sa.Uuid(), nullable=True),
+    sa.Column("recovery_id", sa.Uuid(), nullable=True),
+    sa.Column("observed_facts", sa.Text(), nullable=True),
+    sa.Column("uncertain", sa.Boolean(), nullable=False, server_default=sa.false()),
+    sa.Column("containment_action", sa.Text(), nullable=True),
+    sa.Column("audit_linkage", sa.Text(), nullable=True),
+    sa.CheckConstraint(
+        "environment IN ('DEVELOPMENT', 'TEST', 'STAGING', 'PRODUCTION')",
+        name="ck_security_events_environment",
+    ),
+    sa.CheckConstraint(
+        "trust_boundary IN ("
+        "'TB-01','TB-02','TB-03','TB-04','TB-05','TB-06','TB-07','TB-08','TB-09','TB-10',"
+        "'TB-11','TB-12','TB-13','TB-14','TB-15','TB-16','TB-17','TB-18','TB-19')",
+        name="ck_security_events_trust_boundary",
+    ),
+)
+
 __all__ = [
     "metadata",
     "users_table",
@@ -1196,4 +1239,5 @@ __all__ = [
     "session_read_model_table",
     "inquiry_read_model_table",
     "recovery_records_table",
+    "security_events_table",
 ]
