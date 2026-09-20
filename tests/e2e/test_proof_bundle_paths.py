@@ -364,6 +364,17 @@ def _seed_recovery_record(
     return record.recovery_id
 
 
+def _assert_p_claims_are_real(bundle: TestProofBundle) -> None:
+    """PKG-31 addition (explicit human instruction at the PKG-31 gate:
+    the PKG-30 HAPPY path test was the only one of six that checked
+    `p_claims_exercised` membership against `PROOF_CLAIM_MATRIX` --
+    called from all six path tests below rather than left as a single
+    unchecked path, so a typo'd `P-NN` on any of them now fails the
+    same way P-19's own real drafting error was caught in PKG-30."""
+    for claim in bundle.p_claims_exercised:
+        assert claim in PROOF_CLAIM_MATRIX
+
+
 # ---------------------------------------------------------------------------
 # 1. HAPPY
 # ---------------------------------------------------------------------------
@@ -426,8 +437,7 @@ def test_happy_path_full_decision_lifecycle_produces_a_reconstructable_bundle(
     assert row["decided_by_user_id"] == owner_id.value
     assert bundle.commit_unit is not None
     assert len(bundle.commit_unit.audit_event_ids) >= 1
-    for claim in bundle.p_claims_exercised:
-        assert claim in PROOF_CLAIM_MATRIX
+    _assert_p_claims_are_real(bundle)
 
 
 # ---------------------------------------------------------------------------
@@ -463,6 +473,7 @@ def test_denial_path_role_only_actor_produces_a_real_boundary_proof(
     assert excinfo.value.chain_result.result is BoundaryResult.DENY
     assert bundle.boundary_proofs[-1].result is BoundaryResult.DENY
     assert bundle.boundary_proofs[-1].boundary_id is BoundaryId.BND_005
+    _assert_p_claims_are_real(bundle)
     # No Decision row was ever created -- the DENY genuinely prevented consequence.
     remaining = db_connection.execute(
         sa.select(decisions_table).where(decisions_table.c.challenge_id == challenge_id.value)
@@ -563,6 +574,7 @@ def test_stale_authority_path_revoked_binding_cannot_survive_to_commit(
     )
     assert bundle.boundary_proofs[-1].result is BoundaryResult.DENY
     assert bundle.boundary_proofs[-1].boundary_id is BoundaryId.BND_005
+    _assert_p_claims_are_real(bundle)
     row = (
         db_connection.execute(
             sa.select(decisions_table).where(decisions_table.c.id == decision_id.value)
@@ -687,6 +699,7 @@ def test_cross_workspace_path_a_challenge_from_another_workspace_is_denied(
     )
     assert bundle.boundary_proofs[-1].boundary_id is BoundaryId.BND_002
     assert bundle.boundary_proofs[-1].result is BoundaryResult.DENY
+    _assert_p_claims_are_real(bundle)
 
 
 def test_cross_workspace_counter_attack_a_governance_ref_alone_cannot_read_the_other_ws(
@@ -761,6 +774,7 @@ def test_ai_boundary_path_an_ai_actor_is_denied_before_any_decision_is_touched(
     )
     assert bundle.boundary_proofs[-1].boundary_id is BoundaryId.BND_001
     assert bundle.boundary_proofs[-1].result is BoundaryResult.DENY
+    _assert_p_claims_are_real(bundle)
     remaining = db_connection.execute(
         sa.select(decisions_table).where(decisions_table.c.challenge_id == challenge_id.value)
     ).fetchall()
@@ -884,6 +898,7 @@ def test_recovery_path_deterministic_reconciliation_produces_a_resolved_record(
     assert bundle.recovery_record is not None
     assert bundle.recovery_record.result is RecoveryOutcome.RECONCILED
     assert bundle.recovery_record.resolved_at == _LATER
+    _assert_p_claims_are_real(bundle)
 
 
 def test_recovery_counter_attack_manufactured_clean_facts_do_not_override_a_real_blocking_record(
