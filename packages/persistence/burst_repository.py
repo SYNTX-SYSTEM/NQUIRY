@@ -76,6 +76,8 @@ class BurstRepository(Protocol):
 
     def get(self, burst_id: BurstId) -> QuestionBurst | None: ...
 
+    def get_by_session(self, session_id: SessionId) -> QuestionBurst | None: ...
+
     def start(
         self,
         *,
@@ -144,6 +146,26 @@ class SqlAlchemyBurstRepository:
 
     def get(self, burst_id: BurstId) -> QuestionBurst | None:
         stmt = sa.select(question_bursts_table).where(question_bursts_table.c.id == burst_id.value)
+        row = self._connection.execute(stmt).mappings().one_or_none()
+        return None if row is None else _burst_from_row(row)
+
+    def get_by_session(self, session_id: SessionId) -> QuestionBurst | None:
+        """Architecture 17 materialization: the Session-read Query
+        (14 §13 `GetSession`) needs its Session's own Burst without
+        already knowing a `BurstId`. Uses `.one_or_none()` (raises on
+        more than one row) rather than an ORDER BY/LIMIT heuristic --
+        03 §19's own topology names no multi-Burst-per-Session concept
+        anywhere in 02/03, and `question_bursts` carries no
+        `created_at` column to order by even if one existed, so a
+        second row for the same `session_id` would be a genuine schema/
+        domain-invariant violation this method deliberately surfaces
+        (`sqlalchemy.exc.MultipleResultsFound`) rather than silently
+        picking one. Fresh read, no caching, same discipline every
+        other "current state" reader in this codebase already uses.
+        """
+        stmt = sa.select(question_bursts_table).where(
+            question_bursts_table.c.session_id == session_id.value
+        )
         row = self._connection.execute(stmt).mappings().one_or_none()
         return None if row is None else _burst_from_row(row)
 

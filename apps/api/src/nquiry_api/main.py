@@ -1,24 +1,18 @@
 """FastAPI application entrypoint.
 
-PKG-00 SCOPE: toolchain boot proof only. This module wires the FastAPI
-app instance and one liveness endpoint. It must not gain a Command or
-Query route until `apps/api/src/nquiry_api/http/commands.py` and
-`queries.py` exist (14 §35, §36; file map in 14 §48, Phase 4+), and
-those must dispatch through `packages/application`, never mutate
-persistence directly (14 §3.1 forbidden dependencies for `apps/api`
-controllers: "ORM session mutation, provider SDK, direct CommitUnit
-internals").
+ARCHITECTURE 17 UPDATE: `http/commands.py`/`http/queries.py` are now
+real (`POST /decisions/{decisionId}/decide`, `GET /workspaces/{w}/
+sessions/{s}`) -- see `docs/architecture/17_LIVE_APPLICATION_RUNTIME_MATERIALIZATION.md`.
+Both dispatch through `packages/application.http_dispatch` only; this
+module still never touches persistence/authority/boundaries directly
+(14 §3.1 forbidden dependencies for `apps/api`, enforced by
+`scripts/check_architecture_dependencies.py`'s own `nquiry_api` entry).
 
-PKG-27 ADDITION: `/healthz` now emits one real `ObservationContext`
-through `LocalOtelObservationSink` per request -- the "app...
-instrumentation integration" 14's own PKG-27 OBJECTIVE names. This is
-deliberately the ONLY instrumented call site: no Command/Query/
-Boundary/CommitUnit dispatch route exists anywhere in this app yet
-(`http/commands.py`/`queries.py` are still unbuilt, see above) for a
-richer `ObservationContext` (`command_id`/`attempt_id`/`commit_id`/
-`boundary_result`/`failure_class`) to genuinely describe -- wiring
-those remains that future package's own scope, `SUCCESSOR_NOT_BUILT`,
-disclosed rather than fabricated here.
+PKG-27 ADDITION: `/healthz` emits one real `ObservationContext` through
+`LocalOtelObservationSink` per request -- still the only
+UNCONDITIONALLY-instrumented call site; the two real routes below get
+their own observability through `application.http_dispatch`'s own
+correlation-id construction (see that module).
 """
 
 from __future__ import annotations
@@ -29,11 +23,16 @@ from fastapi import FastAPI
 from observability.context import LocalOtelObservationSink, ObservationContext
 from semantic_types.ids import CorrelationId
 
+from nquiry_api.http import commands as commands_router
+from nquiry_api.http import queries as queries_router
+
 app = FastAPI(
     title="nquiry-api",
     version="0.0.0",
-    description="NQUIRY architectural prototype API — Phase 0 skeleton.",
+    description="NQUIRY architectural prototype API — Architecture 17 runtime materialization.",
 )
+app.include_router(queries_router.router)
+app.include_router(commands_router.router)
 
 _observation_sink = LocalOtelObservationSink(tracer_name="nquiry.api")
 

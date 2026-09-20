@@ -72,6 +72,19 @@ class DecisionRepository(Protocol):
         exist."""
         ...
 
+    def get_latest_by_challenge(self, challenge_id: ChallengeId) -> Decision | None:
+        """The most-recently-created Decision for this Challenge, or
+        `None` if none exists yet. Architecture 17 materialization for
+        the Session-read Query (14 §13 `GetDecision`): a caller holding
+        only a `ChallengeId` (the Session-read Query's own starting
+        point, via `Session.challenge_id`) has no `DecisionId` to call
+        `get` with. "Most recent by `created_at`" is the same, single,
+        obvious selection rule a human reading a Challenge's own
+        Decision history would apply -- 03 does not name a domain
+        concept of more than one Decision being simultaneously "the"
+        current one for a Challenge."""
+        ...
+
     def record_decision(
         self,
         *,
@@ -104,6 +117,16 @@ class SqlAlchemyDecisionRepository:
 
     def get(self, decision_id: DecisionId) -> Decision | None:
         stmt = sa.select(decisions_table).where(decisions_table.c.id == decision_id.value)
+        row = self._connection.execute(stmt).mappings().one_or_none()
+        return None if row is None else _from_row(row)
+
+    def get_latest_by_challenge(self, challenge_id: ChallengeId) -> Decision | None:
+        stmt = (
+            sa.select(decisions_table)
+            .where(decisions_table.c.challenge_id == challenge_id.value)
+            .order_by(decisions_table.c.created_at.desc())
+            .limit(1)
+        )
         row = self._connection.execute(stmt).mappings().one_or_none()
         return None if row is None else _from_row(row)
 
