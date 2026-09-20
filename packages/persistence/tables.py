@@ -111,6 +111,12 @@ foreign key (their target tables have no `UNIQUE(id, workspace_id)`
 anchor yet), why `original_command_id`/`original_commit_id` DO carry
 real composite foreign keys, and for the identity-immutability/
 result-transition triggers, likewise invisible here.
+See the PKG-24 migration's docstring for `recovery_records.record_version`/
+`blocked_target_refs` — a disclosed retrofit closing 14 section 7.1's
+own "Version: record_version" gap PKG-23 left open, and the "dependency
+blocking metadata" 14 section 29 names, represented without a separate
+join table (`is_target_blocked` reads directly against
+`result = 'UNRESOLVED' AND :target_ref = ANY (blocked_target_refs)`).
 """
 
 from __future__ import annotations
@@ -1138,6 +1144,10 @@ recovery_records_table = sa.Table(
     sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
     sa.Column("resolved_at", sa.DateTime(timezone=True), nullable=True),
     sa.Column("audit_linkage", sa.Text(), nullable=True),
+    sa.Column("record_version", sa.BigInteger(), nullable=False, server_default="1"),
+    sa.Column(
+        "blocked_target_refs", postgresql.ARRAY(sa.Text()), nullable=False, server_default="{}"
+    ),
     sa.ForeignKeyConstraint(
         ["original_command_id", "workspace_id"],
         ["commands.id", "commands.workspace_id"],
@@ -1150,6 +1160,7 @@ recovery_records_table = sa.Table(
         name="fk_recovery_records_original_commit_workspace",
         ondelete="RESTRICT",
     ),
+    sa.CheckConstraint("record_version >= 1", name="ck_recovery_records_record_version_positive"),
 )
 
 __all__ = [

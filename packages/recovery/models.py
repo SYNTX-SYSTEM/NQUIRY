@@ -48,6 +48,22 @@ one, bounded, terminal-transition method (UNRESOLVED -> one of the
 four terminal outcomes); `record_attempt` is the one, bounded,
 accumulating-findings method (10 section 65). Neither can express an
 arbitrary field mutation.
+
+WHY `record_version`/`blocked_target_refs` WERE ADDED AT PKG-24, NOT
+PKG-23
+--------------------------------------------------------------------
+14 section 7.1's own core-tables row for `recovery_records` names its
+Version column literally as "record_version" -- PKG-23's own field
+list (10 section 63's "Minimum semantics" list, which itself has no
+version field) did not include one, a genuine, now-closed gap. PKG-24
+is the first package that actually NEEDS a real optimistic-concurrency
+value to compare (its own governed Recovery Command), so the retrofit
+lands here, disclosed, the same "close a predecessor's own disclosed
+gap in the package that first needs it" pattern used repeatedly
+throughout this codebase. `blocked_target_refs` materializes 14 section
+29's own "dependency blocking metadata tied to the affected command/
+target/dependency graph" -- see `packages/persistence/recovery_repository.py`'s
+own `is_target_blocked` for why this needs no separate join table.
 """
 
 from __future__ import annotations
@@ -67,6 +83,7 @@ from semantic_types.ids import (
     RecoveryId,
     WorkspaceId,
 )
+from semantic_types.versions import RecordVersion
 
 from recovery.certainty import ConsequenceCertainty
 from recovery.failure_classifier import FailureClass
@@ -120,6 +137,7 @@ class RecoveryRecord:
     result: RecoveryOutcome
     created_at: datetime
     updated_at: datetime
+    record_version: RecordVersion
     original_commit_id: CommitId | None = None
     known_canonical_state_ref: str | None = None
     known_external_consequence_ref: str | None = None
@@ -131,6 +149,7 @@ class RecoveryRecord:
     evidence_proof_refs: tuple[str, ...] = ()
     recovery_command_ids: tuple[CommandId, ...] = ()
     recovery_attempt_refs: tuple[str, ...] = ()
+    blocked_target_refs: tuple[str, ...] = ()
     resolved_at: datetime | None = None
     audit_linkage: str | None = None
 
@@ -176,6 +195,10 @@ class RecoveryRecord:
             raise ValueError("RecoveryRecord.recovery_actor_id must be non-empty")
         if not isinstance(self.result, RecoveryOutcome):
             raise TypeError(f"result must be a RecoveryOutcome, got {type(self.result)!r}")
+        if not isinstance(self.record_version, RecordVersion):
+            raise TypeError(
+                f"record_version must be a RecordVersion, got {type(self.record_version)!r}"
+            )
         # 10 §64: UNRESOLVED alone leaves `resolved_at` meaningless;
         # every terminal outcome must record when it resolved -- mirrors
         # `OutboxRecord.delivered_at`'s own DELIVERED biconditional
@@ -229,10 +252,35 @@ class RecoveryRepository(Protocol):
         real implementation's own database trigger, defense in depth)."""
         ...
 
+    def is_target_blocked(
+        self,
+        workspace_id: WorkspaceId,
+        *,
+        target_ref: str,
+        exclude_recovery_id: RecoveryId | None = None,
+    ) -> bool:
+        """14 section 29: "INDETERMINATE creates dependency blocking
+        metadata tied to the affected command/target/dependency graph."
+        `True` iff some OTHER still-`UNRESOLVED` RecoveryRecord in this
+        Workspace names `target_ref` in its own `blocked_target_refs` --
+        `exclude_recovery_id` lets the recovery currently being resolved
+        check the target without being blocked by its own row.
+        """
+        ...
+
+
+def recovery_target_ref(recovery_id: RecoveryId) -> str:
+    """The `BoundaryContext`/`CommandEnvelope`-style ref string naming a
+    RecoveryRecord itself as a target -- mirrors `domain.question_selection.
+    session_target_ref`'s own convention.
+    """
+    return f"recovery:{recovery_id.value}"
+
 
 __all__ = [
     "RecoveryOutcome",
     "RecoveryClass",
     "RecoveryRecord",
     "RecoveryRepository",
+    "recovery_target_ref",
 ]

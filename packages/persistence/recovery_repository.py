@@ -5,7 +5,24 @@ adapter.
 operational updates." `record_attempt`/`mark_resolved` are the ONLY
 two write methods -- no generic setter exists, matching this package's
 own FORBIDDEN_SHORTCUTS ("generic status setters ... forbidden where
-they erase semantics").
+they erase semantics"). `is_target_blocked` is read-only.
+
+WHY `is_target_blocked` NEEDS NO SEPARATE JOIN TABLE
+--------------------------------------------------------------------
+See `recovery.models`'s own module docstring: "is target X blocked" is
+answered directly against `recovery_records` itself --
+`result = 'UNRESOLVED' AND :target_ref = ANY (blocked_target_refs)` --
+so resolving a record (leaving `UNRESOLVED`) automatically excludes its
+own formerly-blocked refs from every future query, with no separate
+"unblock" write.
+
+WHY `record_attempt`/`mark_resolved` NOW ALSO ADVANCE `record_version`
+--------------------------------------------------------------------
+PKG-24's own retrofit (`recovery.models`'s own docstring) gives
+`recovery_records` a real optimistic-concurrency column for the first
+time -- every governed mutation this repository performs advances it
+by one, the same convention every other versioned table in this
+codebase already follows.
 """
 
 from __future__ import annotations
@@ -25,6 +42,7 @@ from semantic_types.ids import (
     RecoveryId,
     WorkspaceId,
 )
+from semantic_types.versions import RecordVersion
 
 from persistence.tables import recovery_records_table
 
@@ -76,11 +94,13 @@ class SqlAlchemyRecoveryRepository:
                 evidence_proof_refs=list(record.evidence_proof_refs),
                 recovery_command_ids=[cid.value for cid in record.recovery_command_ids],
                 recovery_attempt_refs=list(record.recovery_attempt_refs),
+                blocked_target_refs=list(record.blocked_target_refs),
                 result=record.result.value,
                 created_at=record.created_at,
                 updated_at=record.updated_at,
                 resolved_at=record.resolved_at,
                 audit_linkage=record.audit_linkage,
+                record_version=record.record_version.value,
             )
         )
 
@@ -112,6 +132,7 @@ class SqlAlchemyRecoveryRepository:
             .values(
                 recovery_attempt_refs=[*current.recovery_attempt_refs, attempt_ref],
                 updated_at=updated_at,
+                record_version=current.record_version.next().value,
             )
         )
         if result.rowcount == 0:
@@ -140,10 +161,28 @@ class SqlAlchemyRecoveryRepository:
                 resolved_at=resolved_at,
                 last_proven_valid_state_ref=last_proven_valid_state_ref,
                 updated_at=resolved_at,
+                record_version=current.record_version.next().value,
             )
         )
         if outcome.rowcount == 0:
             raise RecoveryRecordNotFound(f"recovery_id {recovery_id!r} not found")
+
+    def is_target_blocked(
+        self,
+        workspace_id: WorkspaceId,
+        *,
+        target_ref: str,
+        exclude_recovery_id: RecoveryId | None = None,
+    ) -> bool:
+        conditions = [
+            recovery_records_table.c.workspace_id == workspace_id.value,
+            recovery_records_table.c.result == RecoveryOutcome.UNRESOLVED.value,
+            recovery_records_table.c.blocked_target_refs.any(target_ref),
+        ]
+        if exclude_recovery_id is not None:
+            conditions.append(recovery_records_table.c.id != exclude_recovery_id.value)
+        stmt = sa.select(sa.literal(1)).where(*conditions).limit(1)
+        return self._connection.execute(stmt).first() is not None
 
 
 def _record_from_row(row: sa.RowMapping) -> RecoveryRecord:
@@ -174,11 +213,13 @@ def _record_from_row(row: sa.RowMapping) -> RecoveryRecord:
         evidence_proof_refs=tuple(row["evidence_proof_refs"]),
         recovery_command_ids=tuple(CommandId(v) for v in row["recovery_command_ids"]),
         recovery_attempt_refs=tuple(row["recovery_attempt_refs"]),
+        blocked_target_refs=tuple(row["blocked_target_refs"]),
         result=RecoveryOutcome(row["result"]),
         created_at=row["created_at"],
         updated_at=row["updated_at"],
         resolved_at=row["resolved_at"],
         audit_linkage=row["audit_linkage"],
+        record_version=RecordVersion(row["record_version"]),
     )
 
 

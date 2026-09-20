@@ -99,6 +99,25 @@ INTERNAL_ALLOWED: dict[str, frozenset[str]] = {
             # AuthorityResolver` via constructor injection rather than
             # holding repositories directly.
             "persistence",
+            # PKG-24: `recovery` added so `bnd_017_failure_indeterminate.py`/
+            # `bnd_018_recovery_rollback.py` can type their own inputs
+            # with the real `RecoveryRepository`/`RecoveryClass`/
+            # `ConsequenceCertainty` closed types (14 PKG-24 PUBLIC_INTERFACES
+            # discipline: "unversioned consequential dict payloads are
+            # forbidden where they erase semantics"). Unlike every
+            # extension above, `recovery`'s own allowed set (14 section
+            # 3.1: "command, boundaries, commit, semantic_types") *does*
+            # already include `boundaries` -- this is therefore not a
+            # one-directional pattern the way most others are. It is
+            # still safe: no file under `packages/recovery/` imports
+            # `boundaries` (that ceiling remains unexercised, set at
+            # PKG-00 for a future governed-Command caller), and no file
+            # under `packages/boundaries/` other than `bnd_017_*`/
+            # `bnd_018_*` imports `recovery` -- disjoint submodules, no
+            # actual Python import cycle, the identical bidirectional-
+            # edge justification `commit <-> persistence` already
+            # established (PKG-11/13).
+            "recovery",
         }
     ),
     "evidence": frozenset({"domain", "semantic_types"}),

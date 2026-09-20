@@ -31,7 +31,7 @@ from semantic_types.ids import (
     RecoveryId,
     WorkspaceId,
 )
-from semantic_types.versions import ContractVersion
+from semantic_types.versions import ContractVersion, RecordVersion
 from test_support.clock import FixedClock
 from test_support.nonproof_bootstrap import NonProofWorkspaceBootstrap
 
@@ -116,6 +116,7 @@ def _record(
         result=result,
         created_at=_NOW,
         updated_at=_NOW,
+        record_version=RecordVersion.initial(),
         resolved_at=resolved_at,
     )
 
@@ -142,6 +143,7 @@ def test_denies_a_non_failure_class_in_failure_classifications() -> None:
             result=RecoveryOutcome.UNRESOLVED,
             created_at=_NOW,
             updated_at=_NOW,
+            record_version=RecordVersion.initial(),
         )
 
 
@@ -355,6 +357,121 @@ def test_forged_original_command_without_a_real_command_is_rejected(
 
     with pytest.raises(sa.exc.IntegrityError), db_connection.begin_nested():
         repo.create(record)
+
+
+# ---------------------------------------------------------------------------
+# PKG-24's own retrofit: record_version / blocked_target_refs / is_target_blocked
+# ---------------------------------------------------------------------------
+
+
+def test_record_version_advances_on_record_attempt_and_mark_resolved(
+    db_connection: sa.Connection,
+) -> None:
+    workspace_id = _workspace(db_connection, email="recovery-record-version@nonproof.test")
+    command_id, attempt_id, commit_id = _record_real_command_and_commit(
+        db_connection, workspace_id=workspace_id
+    )
+    repo = SqlAlchemyRecoveryRepository(db_connection)
+    record = _record(
+        workspace_id=workspace_id, command_id=command_id, attempt_id=attempt_id, commit_id=commit_id
+    )
+    repo.create(record)
+    assert repo.get(record.recovery_id, workspace_id).record_version == RecordVersion(1)  # type: ignore[union-attr]
+
+    repo.record_attempt(
+        record.recovery_id, workspace_id, attempt_ref="attempt-1", updated_at=_LATER
+    )
+    assert repo.get(record.recovery_id, workspace_id).record_version == RecordVersion(2)  # type: ignore[union-attr]
+
+    repo.mark_resolved(
+        record.recovery_id,
+        workspace_id,
+        result=RecoveryOutcome.RECOVERED,
+        resolved_at=_LATER,
+        last_proven_valid_state_ref=None,
+    )
+    assert repo.get(record.recovery_id, workspace_id).record_version == RecordVersion(3)  # type: ignore[union-attr]
+
+
+def test_is_target_blocked_true_while_unresolved_false_once_resolved(
+    db_connection: sa.Connection,
+) -> None:
+    workspace_id = _workspace(db_connection, email="recovery-record-blocked@nonproof.test")
+    command_id, attempt_id, commit_id = _record_real_command_and_commit(
+        db_connection, workspace_id=workspace_id
+    )
+    repo = SqlAlchemyRecoveryRepository(db_connection)
+    record = RecoveryRecord(
+        recovery_id=RecoveryId(uuid.uuid4()),
+        workspace_scope_ref=workspace_id,
+        failure_correlation_ref=CorrelationId(uuid.uuid4()),
+        original_command_id=command_id,
+        original_attempt_id=attempt_id,
+        original_commit_id=commit_id,
+        failure_classifications=(FailureClass.F_PERS,),
+        canonical_state_certainty=ConsequenceCertainty.CANONICAL_STATE_UNKNOWN,
+        external_consequence_certainty=ConsequenceCertainty.EXTERNAL_CONSEQUENCE_UNKNOWN,
+        recovery_class=RecoveryClass.RC_02_RECONCILIATION,
+        recovery_actor_type="SYSTEM_SERVICE",
+        recovery_actor_id="recovery-worker-1",
+        result=RecoveryOutcome.UNRESOLVED,
+        created_at=_NOW,
+        updated_at=_NOW,
+        record_version=RecordVersion.initial(),
+        blocked_target_refs=("session:1",),
+    )
+    repo.create(record)
+
+    assert repo.is_target_blocked(workspace_id, target_ref="session:1") is True
+    assert repo.is_target_blocked(workspace_id, target_ref="session:999") is False
+
+    repo.mark_resolved(
+        record.recovery_id,
+        workspace_id,
+        result=RecoveryOutcome.RECONCILED,
+        resolved_at=_LATER,
+        last_proven_valid_state_ref="session:1@v2",
+    )
+
+    assert repo.is_target_blocked(workspace_id, target_ref="session:1") is False
+
+
+def test_is_target_blocked_excludes_the_specified_recovery_id(
+    db_connection: sa.Connection,
+) -> None:
+    workspace_id = _workspace(db_connection, email="recovery-record-blocked-exclude@nonproof.test")
+    command_id, attempt_id, commit_id = _record_real_command_and_commit(
+        db_connection, workspace_id=workspace_id
+    )
+    repo = SqlAlchemyRecoveryRepository(db_connection)
+    record = RecoveryRecord(
+        recovery_id=RecoveryId(uuid.uuid4()),
+        workspace_scope_ref=workspace_id,
+        failure_correlation_ref=CorrelationId(uuid.uuid4()),
+        original_command_id=command_id,
+        original_attempt_id=attempt_id,
+        original_commit_id=commit_id,
+        failure_classifications=(FailureClass.F_PERS,),
+        canonical_state_certainty=ConsequenceCertainty.CANONICAL_STATE_UNKNOWN,
+        external_consequence_certainty=ConsequenceCertainty.EXTERNAL_CONSEQUENCE_UNKNOWN,
+        recovery_class=RecoveryClass.RC_02_RECONCILIATION,
+        recovery_actor_type="SYSTEM_SERVICE",
+        recovery_actor_id="recovery-worker-1",
+        result=RecoveryOutcome.UNRESOLVED,
+        created_at=_NOW,
+        updated_at=_NOW,
+        record_version=RecordVersion.initial(),
+        blocked_target_refs=("session:1",),
+    )
+    repo.create(record)
+
+    assert (
+        repo.is_target_blocked(
+            workspace_id, target_ref="session:1", exclude_recovery_id=record.recovery_id
+        )
+        is False
+    )
+    assert repo.is_target_blocked(workspace_id, target_ref="session:1") is True
 
 
 def test_cross_workspace_original_command_is_rejected(db_connection: sa.Connection) -> None:
