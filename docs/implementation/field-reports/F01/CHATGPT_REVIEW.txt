@@ -1,0 +1,58 @@
+NQUIRY FIELD REVIEW
+FIELD: F01 — IDENTITY · WORKSPACE · GOVERNANCE
+HEAD: c529d3d8e561d98a593766d618b59536ef05796b (F01's own content NOT yet committed)
+STATUS: FIELD_PASS
+ARCHITECTURAL AUTHORITY: docs/architecture/19_NQUIRY_IMPLEMENTATION_WITH_FRONTEND_RUNNING.md §21 (Field F01 definition), §1 (Primary Target, re-verified aligned), §4 (Work Unit merge permission), §12 (No-Commit Review Law)
+
+MISSION: Materialize 19 §21's own TARGET vertical -- IDENTITY -> WORKSPACE -> MEMBERSHIP -> GOVERNANCE -> HUMAN AUTHORITY -> CAPABILITY PROJECTION -> FRONTEND -- resolving HARD-DEP-001 along the way (was open at Field start, human-confirmed resolved WU-01.4).
+
+WHAT CHANGED:
+  Backend: 5 new application-layer Commands/Queries (create_workspace, add_member, revoke_human_authority_binding, list_accessible_workspaces, project_capabilities/resolve_workspace_context), 2 persistence repositories extended (create()/revoke()/version readers), 5 new HTTP routes, 0 migrations (existing schema fully sufficient).
+  Frontend: 2 new pages (Workspace list+create, Workspace orientation+add-member), 1 new typed API client module, root route's own landing target changed.
+  Plus: one full environment-reset cycle (WU-01.9-ENVIRONMENT-RESET) after a live-container smoke test's own real residue cascaded into 4 pre-existing, unrelated test files -- investigated, root-caused, resolved.
+
+WORK UNITS: WU-01.1, WU-01.2/01.3 (merged), WU-01.4, WU-01.4b, WU-01.5, WU-01.6, WU-01.7, WU-01.8, WU-01.9, WU-01.9-ENVIRONMENT-RESET, WU-01.10 (11 reports total, each independently reviewed by the human operator before the next began).
+
+MIGRATIONS: NONE
+NEW DEPENDENCIES: NONE
+TESTS ADDED: 76 backend (real PostgreSQL, zero mocks) + 15 frontend unit (vitest) + 10 frontend E2E (real Playwright browser) = 101 new tests across the Field.
+
+TEST COMMANDS:
+  DATABASE_URL=postgresql+psycopg://nquiry:nquiry_local_dev_only@localhost:15432/nquiry python -m pytest -q
+  python -m pytest -q tests/                       (pure-Python, DATABASE_URL unset)
+  (cd apps/web && npx eslint . && npx tsc --noEmit && npx vitest run && npx playwright test && npx next build)
+  docker compose -p nquiry --profile app up -d --build ; curl http://localhost:8000/healthz
+
+RESULTS (fresh, after the full environment reset, stable across 2 consecutive runs):
+  live-DB pytest:      1253 passed, 2 skipped, 1 failed (pre-existing, disclosed, see below)
+  pure-Python pytest:   734 passed, 0 failed, 516 skipped
+  eslint / tsc / vitest (79) / playwright (37) / next build: all PASS
+  runtime: containers rebuilt from a genuinely empty volume; real founding, real listing, real orientation, real orphaning-refusal, real browser session, zero console errors -- all re-verified live
+
+NEGATIVE/ADVERSARIAL RESULTS: Full 13-scenario 19 §21 TESTS FIRST audit performed (WU-01.10). 11 of 13 scenarios had real, pre-existing, independently-verified coverage (cited by exact file:test in WU-01.10.md/FIELD_REVIEW.md); 2 scenarios ("revoked membership" for F01's own governance-write Commands, "bootstrap self-grant" cross-Workspace non-leakage) had genuine gaps, closed with 4 new tests, all passing on first run. INVERSE PROOF chain (visible capability <- ... <- verified identity) assembled end to end from real, cited evidence at every link.
+
+RECURSIVE DEEPSWEEP: PASS across all 10 Work Units -- no Work Unit's own change ever broke an earlier one's own tests; the one exception (WU-01.8's own live-container residue cascading into 4 unrelated files) was fully investigated, root-caused to a specific real row, and resolved by a dedicated Work Unit (WU-01.9-ENVIRONMENT-RESET), not silently absorbed or hidden.
+
+INVERSE DEEPSWEEP: PASS -- see FIELD_REVIEW.md's own "Inverse DeepSweep Result" / WU-01.10.md's own "INVERSE PROOF" section.
+
+FIRST BROKEN RELATION: NONE across the whole Field.
+
+FIXTURE/MOCK CEILINGS: NonProofWorkspaceBootstrap remains NON_PROOF_FIXTURE, used only by pre-F01 tests and the disclosed DEV-ONLY seed script -- never by any F01 Command's own real write path. CreateWorkspace is the first real, production-legitimate Workspace-founding mechanism in this codebase (authority_source == "LEVEL_1_EXPLICIT"). MockProviderAdapter untouched, out of scope. No backend mocks anywhere in F01's own test suite.
+
+KNOWN LIMITATIONS:
+  - GAP-04-014's remaining four Membership-role operations (remove member, standalone role assignment/change) -- SUCCESSOR_NOT_BUILT.
+  - No revoke-binding UI (backend route + tested client wrapper exist; no Query yet for "list all bindings in a Workspace" to drive it).
+  - "non-proof demo state" frontend rendering -- no schema fact exists to project it from.
+  - Pre-F01 human_decision_handler/question_selection_handler record_attempt-before-boundary gap (disclosed since WU-01.5) -- out of F01's own scope, still open.
+  - GAP-14-001 (real OIDC), HARD-DEP-002 (real AI provider) -- both untouched, both remain open, exactly as before this Field.
+  - The one pre-existing test_habb_grant_constraints.py failure (unscoped COUNT(*) assertion, tripped by the legitimate 2-row demo seed) -- ENVIRONMENT_FAILURE, not IMPLEMENTATION_DEFECT, disclosed since before WU-01.5, reconfirmed stable across 2 fresh-volume runs this Field's own closing Work Unit.
+
+STOP CONDITIONS: "If legitimate first Workspace root is still undefined -> HUMAN_DECISION_REQUIRED" -- NOT triggered; resolved WU-01.4 (human-confirmed, Option A).
+
+PASS CONDITION: F01 now passes at the PRODUCTION-LEGITIMATE level (19 §21's own higher bar), not merely the fixture lane -- CreateWorkspace is real and governed, not a fixture.
+
+GIT DIFF STAT: 9 files modified, 28 files new (application/persistence/HTTP/frontend code + tests + this Field's own 13 report files). 0 migrations. 0 files outside this list touched.
+
+COMMIT: NOT YET COMMITTED -- awaiting FIELD_COMMIT_APPROVED F01.
+
+DOWNSTREAM: F02 unlocked per the Field DAG (19 §19), contingent on approval.

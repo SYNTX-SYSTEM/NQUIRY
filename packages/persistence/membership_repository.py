@@ -1,9 +1,27 @@
-"""MembershipRepository and its RoleAssignment reads.
+"""MembershipRepository and its RoleAssignment reads and creation.
 
 Source: 14_IMPLEMENTATION_SEQUENCE.md §10 (REPOSITORY PORTS):
 "`MembershipRepository`: current and historical membership reads,
-governed mutation plan only." PKG-02's `PUBLIC_INTERFACES` authorizes
-only the read half.
+governed mutation plan only." PKG-02's `PUBLIC_INTERFACES` authorized
+only the read half at that time, pending the governed mutation plan.
+
+[F01 WU-01.4, human-confirmed 2026-09-21] `create_membership`/
+`assign_role` below are that governed mutation plan, materialized once
+HARD-DEP-001 (legitimate first Workspace governance-root bootstrap)
+resolved -- their one legitimate caller is
+`application.workspace_creation_handler.create_workspace`, which has
+already evaluated BND-001 and the eligibility check before either is
+invoked (14 §10 non-collapse rule below still holds: neither method
+decides whether the write is allowed, only performs it).
+
+[F01 WU-01.2] `list_active_memberships_for_user` closes a previously
+disclosed absence (19 §21 CURRENT FIELD: "Workspace discovery ->
+incomplete") -- until now, every method on this repository required a
+`workspace_id` already known; there was no way to answer "which
+Workspaces can this user see at all," the "authenticate -> see
+accessible Workspaces" step 19 §21's own HUMAN PRODUCT EFFECT names
+first. A raw list of ACTIVE membership rows, same non-collapse rule as
+every other read here.
 
 RoleAssignment reads are exposed from this same repository rather than
 a separate `RoleAssignmentRepository`: 09 §23.1 treats RoleAssignment
@@ -99,11 +117,42 @@ class MembershipRepository(Protocol):
         reconstructable")."""
         ...
 
+    def create_membership(
+        self,
+        membership_id: uuid.UUID,
+        *,
+        workspace_id: WorkspaceId,
+        user_id: UserId,
+        created_at: datetime,
+    ) -> MembershipRecord:
+        """Insert a new ACTIVE `workspace_memberships` row."""
+        ...
+
+    def assign_role(
+        self,
+        role_assignment_id: uuid.UUID,
+        *,
+        workspace_id: WorkspaceId,
+        membership_id: uuid.UUID,
+        role: WorkspaceRole,
+        granted_by_user_id: UserId,
+        granted_at: datetime,
+    ) -> RoleAssignmentRecord:
+        """Insert a new, un-revoked `role_assignments` row."""
+        ...
+
+    def list_active_memberships_for_user(self, user_id: UserId) -> tuple[MembershipRecord, ...]:
+        """Every ACTIVE membership row for `user_id`, across every
+        Workspace, in no particular guaranteed order beyond what the
+        implementation returns deterministically. Raw fact only — see
+        module docstring non-collapse rule; does not itself resolve
+        role or authority."""
+        ...
+
 
 class SqlAlchemyMembershipRepository:
     """`MembershipRepository` backed by `workspace_memberships`/
-    `role_assignments` via a SQLAlchemy Core connection. Read-only by
-    construction — no `grant`/`revoke`/`assign_role` method exists.
+    `role_assignments` via a SQLAlchemy Core connection.
     """
 
     def __init__(self, connection: sa.Connection) -> None:
@@ -150,6 +199,82 @@ class SqlAlchemyMembershipRepository:
         )
         rows = self._connection.execute(stmt).mappings().all()
         return tuple(_role_assignment_record_from_row(row) for row in rows)
+
+    def create_membership(
+        self,
+        membership_id: uuid.UUID,
+        *,
+        workspace_id: WorkspaceId,
+        user_id: UserId,
+        created_at: datetime,
+    ) -> MembershipRecord:
+        record_version = RecordVersion.initial()
+        self._connection.execute(
+            sa.insert(workspace_memberships_table).values(
+                id=membership_id,
+                workspace_id=workspace_id.value,
+                user_id=user_id.value,
+                status=MembershipStatus.ACTIVE.value,
+                created_at=created_at,
+                revoked_at=None,
+                record_version=record_version.value,
+            )
+        )
+        return MembershipRecord(
+            id=membership_id,
+            workspace_id=workspace_id,
+            user_id=user_id,
+            status=MembershipStatus.ACTIVE,
+            created_at=created_at,
+            revoked_at=None,
+            record_version=record_version,
+        )
+
+    def assign_role(
+        self,
+        role_assignment_id: uuid.UUID,
+        *,
+        workspace_id: WorkspaceId,
+        membership_id: uuid.UUID,
+        role: WorkspaceRole,
+        granted_by_user_id: UserId,
+        granted_at: datetime,
+    ) -> RoleAssignmentRecord:
+        record_version = RecordVersion.initial()
+        self._connection.execute(
+            sa.insert(role_assignments_table).values(
+                id=role_assignment_id,
+                workspace_id=workspace_id.value,
+                membership_id=membership_id,
+                role=role.value,
+                granted_by_user_id=granted_by_user_id.value,
+                granted_at=granted_at,
+                revoked_at=None,
+                record_version=record_version.value,
+            )
+        )
+        return RoleAssignmentRecord(
+            id=role_assignment_id,
+            workspace_id=workspace_id,
+            membership_id=membership_id,
+            role=role,
+            granted_by_user_id=granted_by_user_id,
+            granted_at=granted_at,
+            revoked_at=None,
+            record_version=record_version,
+        )
+
+    def list_active_memberships_for_user(self, user_id: UserId) -> tuple[MembershipRecord, ...]:
+        stmt = (
+            sa.select(workspace_memberships_table)
+            .where(
+                workspace_memberships_table.c.user_id == user_id.value,
+                workspace_memberships_table.c.status == MembershipStatus.ACTIVE.value,
+            )
+            .order_by(workspace_memberships_table.c.created_at.asc())
+        )
+        rows = self._connection.execute(stmt).mappings().all()
+        return tuple(_membership_record_from_row(row) for row in rows)
 
 
 def _membership_record_from_row(row: sa.RowMapping) -> MembershipRecord:

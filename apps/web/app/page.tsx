@@ -17,29 +17,23 @@
  * real answer -- proven by this repository's own existing Playwright
  * E2E convention.
  *
- * "The real application" landing target, honestly scoped: this
- * prototype has no Workspace-list/dashboard UI or backend Query for
- * one yet (`docs/architecture/17_LIVE_APPLICATION_RUNTIME_MATERIALIZATION.md`'s
- * own disclosed "No Challenge/Session-creation UI or HTTP route" gap,
- * unchanged) -- building one now would be exactly the new, undirected
- * product capability that document's own field boundary forbids.
- * `NEXT_PUBLIC_DEFAULT_WORKSPACE_ID`/`NEXT_PUBLIC_DEFAULT_SESSION_ID`
- * (optional, set on the `web` service in `docker-compose.yml`, read by
- * `next dev` at server startup the same way it already reads
- * `NEXT_PUBLIC_API_BASE_URL` when that variable IS set) name the one
- * seeded demo Session (`scripts/seed_local_demo.py`) to land on after
- * login; if unset, a logged-in visitor sees a plain confirmation
- * screen instead of being redirected to a guess.
+ * "The real application" landing target: `NEXT_PUBLIC_DEFAULT_WORKSPACE_ID`/
+ * `NEXT_PUBLIC_DEFAULT_SESSION_ID` (optional, set on the `web` service
+ * in `docker-compose.yml`) name one specific seeded demo Session
+ * (`scripts/seed_local_demo.py`) to land on directly after login; if
+ * unset, a logged-in visitor is sent to `/workspaces` (F01 WU-01.9),
+ * the real Workspace list/orientation screen -- no longer a plain
+ * placeholder message, now that a real Workspace list/creation route
+ * exists (`docs/architecture/17_LIVE_APPLICATION_RUNTIME_MATERIALIZATION.md`'s
+ * own disclosed "No Challenge/Session-creation UI or HTTP route" gap
+ * is now closed for the Workspace half; Challenge/Session
+ * creation itself remains unbuilt).
  */
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { LogoutButton } from "../components/LogoutButton";
 import { fetchCurrentSession } from "../lib/api/authClient";
 
-type CheckState =
-  | { readonly kind: "checking" }
-  | { readonly kind: "authenticated"; readonly userId: string }
-  | { readonly kind: "redirecting" };
+type CheckState = { readonly kind: "checking" } | { readonly kind: "redirecting" };
 
 const DEFAULT_WORKSPACE_ID = process.env.NEXT_PUBLIC_DEFAULT_WORKSPACE_ID;
 const DEFAULT_SESSION_ID = process.env.NEXT_PUBLIC_DEFAULT_SESSION_ID;
@@ -59,12 +53,12 @@ export default function Home() {
           router.replace("/login");
           return;
         }
+        setState({ kind: "redirecting" });
         if (DEFAULT_WORKSPACE_ID && DEFAULT_SESSION_ID) {
-          setState({ kind: "redirecting" });
           router.replace(`/workspaces/${DEFAULT_WORKSPACE_ID}/sessions/${DEFAULT_SESSION_ID}`);
           return;
         }
-        setState({ kind: "authenticated", userId: result.userId });
+        router.replace("/workspaces");
       })
       .catch(() => {
         if (!cancelled) {
@@ -83,24 +77,9 @@ export default function Home() {
       </main>
     );
   }
-  if (state.kind === "redirecting") {
-    return (
-      <main>
-        <p data-testid="root-redirecting">Logged in. Opening your Session...</p>
-      </main>
-    );
-  }
-
   return (
     <main>
-      <h1>nquiry</h1>
-      <p data-testid="root-logged-in">Logged in as {state.userId}.</p>
-      <p>
-        No default Session is configured for this local instance (set
-        `NEXT_PUBLIC_DEFAULT_WORKSPACE_ID`/`NEXT_PUBLIC_DEFAULT_SESSION_ID`, see
-        `docs/RUNTIME_OPERATION.md`).
-      </p>
-      <LogoutButton />
+      <p data-testid="root-redirecting">Logged in. Opening your Workspaces...</p>
     </main>
   );
 }

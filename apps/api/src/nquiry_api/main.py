@@ -22,6 +22,14 @@ unused `x-nquiry-actor-*` headers from `allow_headers` -- neither route
 reads them anymore (see `http/queries.py`'s own updated docstring for
 why supplying them now has zero effect on either route).
 
+F01 WU-01.8 ADDITION: `http/workspaces.py` adds `POST /workspaces`,
+`GET /workspaces`, `GET /workspaces/{workspaceId}`,
+`POST /workspaces/{workspaceId}/members`,
+`POST /workspaces/{workspaceId}/authority-bindings/{bindingId}/revoke`
+-- the first HTTP surface for the Commands/Queries F01 built
+(WU-01.4b/01.5/01.6/01.2/01.3/01.7). Same session-cookie identity, same
+thin-adapter discipline as every other route here.
+
 PKG-27 ADDITION: `/healthz` emits one real `ObservationContext` through
 `LocalOtelObservationSink` per request -- still the only
 UNCONDITIONALLY-instrumented call site; the real routes below get their
@@ -60,6 +68,7 @@ from semantic_types.ids import CorrelationId
 from nquiry_api.http import auth as auth_router
 from nquiry_api.http import commands as commands_router
 from nquiry_api.http import queries as queries_router
+from nquiry_api.http import workspaces as workspaces_router
 
 app = FastAPI(
     title="nquiry-api",
@@ -76,6 +85,7 @@ app.add_middleware(
 app.include_router(auth_router.router)
 app.include_router(queries_router.router)
 app.include_router(commands_router.router)
+app.include_router(workspaces_router.router)
 
 _observation_sink = LocalOtelObservationSink(tracer_name="nquiry.api")
 

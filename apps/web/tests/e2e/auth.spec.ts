@@ -13,11 +13,11 @@
  * own `reuseExistingServer` may reuse an already-running real
  * `docker compose` `web` container, which DOES set them, instead of
  * starting a fresh one that would not). Tests that reach the
- * authenticated root screen therefore also mock the
- * `/workspaces/**\/sessions/**` route and accept EITHER outcome
- * (plain "logged in" screen, or a further redirect into a mocked
- * Session view) -- deterministic either way, rather than assuming one
- * specific process's own environment.
+ * authenticated landing screen therefore mock BOTH possible
+ * destinations -- the `/workspaces/**\/sessions/**` Session-view route
+ * AND the F01 WU-01.9 `/workspaces` list route -- and accept EITHER
+ * outcome, deterministic either way, rather than assuming one specific
+ * process's own environment.
  */
 import { expect, test } from "@playwright/test";
 
@@ -25,6 +25,7 @@ const LOGIN_ROUTE = "http://localhost:8000/auth/login";
 const ME_ROUTE = "http://localhost:8000/auth/me";
 const LOGOUT_ROUTE = "http://localhost:8000/auth/logout";
 const SESSION_VIEW_ROUTE = "http://localhost:8000/workspaces/**/sessions/**";
+const WORKSPACES_LIST_ROUTE = "http://localhost:8000/workspaces";
 const MOCK_SESSION_VIEW_BODY = {
   kind: "ok",
   data: {
@@ -62,7 +63,7 @@ test("wrong credentials show an error and do not navigate away from /login", asy
   await expect(page).toHaveURL(/\/login$/);
 });
 
-test("correct credentials log in and reach either the authenticated root screen or its configured default Session", async ({
+test("correct credentials log in and reach either the Workspaces list or its configured default Session", async ({
   page,
 }) => {
   await page.route(LOGIN_ROUTE, (route) =>
@@ -72,6 +73,9 @@ test("correct credentials log in and reach either the authenticated root screen 
     route.fulfill({ status: 200, json: { kind: "ok", userId: "11111111-1111-1111-1111-111111111111" } }),
   );
   await page.route(SESSION_VIEW_ROUTE, (route) => route.fulfill({ json: MOCK_SESSION_VIEW_BODY }));
+  await page.route(WORKSPACES_LIST_ROUTE, (route) =>
+    route.fulfill({ json: { kind: "ok", workspaces: [] } }),
+  );
 
   await page.goto("/login");
   await page.getByTestId("login-email").fill("demo-owner@nonproof.test");
@@ -81,11 +85,11 @@ test("correct credentials log in and reach either the authenticated root screen 
   // Never lands back on /login -- login genuinely succeeded either way.
   await expect(page).not.toHaveURL(/\/login$/);
   await expect(
-    page.getByTestId("root-logged-in").or(page.getByTestId("session-view-ok")),
+    page.getByTestId("workspaces-empty").or(page.getByTestId("session-view-ok")),
   ).toBeVisible();
 });
 
-test("logging out returns to /login, from either the plain root screen or a redirected Session view", async ({
+test("logging out returns to /login, from either the Workspaces list or a redirected Session view", async ({
   page,
 }) => {
   await page.route(ME_ROUTE, (route) =>
@@ -93,6 +97,9 @@ test("logging out returns to /login, from either the plain root screen or a redi
   );
   await page.route(LOGOUT_ROUTE, (route) => route.fulfill({ status: 200, json: { kind: "ok" } }));
   await page.route(SESSION_VIEW_ROUTE, (route) => route.fulfill({ json: MOCK_SESSION_VIEW_BODY }));
+  await page.route(WORKSPACES_LIST_ROUTE, (route) =>
+    route.fulfill({ json: { kind: "ok", workspaces: [] } }),
+  );
 
   await page.goto("/");
   const logoutButton = page.getByTestId("logout-button");
