@@ -1,8 +1,29 @@
 # nquiry
 
-Architectural prototype implementing the NQUIRY specification in
-`docs/architecture/`. This repository is materialized package by
-package, in the order fixed by
+**N.Q.U.I.R.Y. — Questions Are the Answer-System.**
+
+An AI-augmented inquiry system for leadership, decision-making,
+innovation and complex problem solving. Its primary product behavior
+is not answer generation — its purpose is to help individuals and
+teams improve the quality of inquiry around complex, ambiguous or
+consequential challenges, by discovering better questions, challenging
+assumptions, generating alternative perspectives, connecting inquiry
+to evidence, and moving inquiry toward action. The central product
+hypothesis (`docs/architecture/00_NQUIRY_MASTER_ARCHITECTURE.md` §1.1):
+
+> A better question can change the problem, which can change the
+> available options, which can change the decision and ultimately the
+> outcome.
+
+The canonical product progression a Challenge moves through:
+
+```text
+Problem → Questions → Perspectives → Assumptions → Insights →
+Evidence → Experiments → Learning → Action
+```
+
+This repository implements the NQUIRY specification in
+`docs/architecture/`, package by package, in the order fixed by
 `docs/architecture/14_IMPLEMENTATION_SEQUENCE.md` §46/§47 (Coding
 Package Manifest / DAG), using the execution prompts in
 `docs/architecture/15_AI_CODING_PROMPTS.md`.
@@ -13,11 +34,28 @@ this repository defines architecture.
 
 ## Current state
 
-`PKG-00` (Repository and architecture skeleton, Build Phase 0) —
-toolchain, package boundaries, dependency enforcement, local DB and CI
-skeleton. See `docs/implementation/proof-reports/PKG-00.md` for the
-package completion report. No domain, authority, or persistence
-behavior is implemented yet.
+All 32 originally-scoped packages (`PKG-00` through `PKG-32`) are
+complete — the full domain/boundary/authority/commit/persistence/
+security/observability/recovery core described in `docs/architecture/`
+is implemented and tested. Two further fields extended that base:
+
+- **Architecture 17** — the first real HTTP surface (`GET
+  /workspaces/{w}/sessions/{s}`, `POST /decisions/{d}/decide`), wiring
+  the existing application layer to a real, running FastAPI/Next.js
+  stack for the first time.
+- **Local Authentication Adapter** — a real, local email/password
+  login with a genuine server-verified session (closing the GAP-14-001
+  header-trust weakness Architecture 17 disclosed; see "What's still
+  open" below for what this does *not* close).
+
+Every package and field has its own dated completion report — the
+full, ordered proof trail — under
+[`docs/implementation/proof-reports/`](docs/implementation/proof-reports/)
+(`PKG-00.md` through `PKG-32.md`, then
+`ARCH-17-RUNTIME-MATERIALIZATION.md`,
+`FULLSTACK-RUNTIME-ACCEPTANCE.md`, `LOCAL-AUTH-ADAPTER.md`). Each
+report states its own test results, adversarial/negative test proof,
+and any gaps left deliberately open.
 
 ## Reference stack
 
@@ -34,20 +72,78 @@ are enforced by `scripts/check_architecture_dependencies.py`,
 `scripts/check_provider_sdk_imports.py`, and
 `scripts/check_test_only_imports.py`.
 
-## Local development
+## Running it locally
+
+Full, step-by-step instructions (prerequisites, environment
+variables, ports, database migration, seeding a login you can actually
+use) live in [`docs/RUNTIME_OPERATION.md`](docs/RUNTIME_OPERATION.md)
+— that file is the single source of truth for this; the summary below
+is not a substitute for it.
 
 ```bash
-cp infra/local/.env.example .env
-docker compose up -d postgres           # PostgreSQL 17 only
-docker compose --profile app up --build # + api, worker, web toolchain shells
+docker compose --profile app up -d --build   # postgres + api + worker + web
+psql -h localhost -p 15432 -U nquiry -d nquiry -f infra/local/db_roles.sql
+python scripts/verify_migrations.py           # applies migrations to head
+python scripts/seed_local_demo.py              # creates a demo login + Challenge
+```
 
+Then open `http://localhost:3000/` and log in with the credentials
+`seed_local_demo.py` prints (`docs/RUNTIME_OPERATION.md` §0 has the
+exact defaults and a plain-language walkthrough of the login/session
+flow, including who the demo account is and what it is not).
+
+To run the test suite / static gates directly:
+
+```bash
 pip install -e ".[dev]"                 # requires Python >= 3.13
 pytest
 ruff check .
 mypy packages apps/api/src apps/worker/src scripts
 
-cd apps/web && npm install && npm run dev
+cd apps/web && npm install && npm run lint && npm run typecheck && npm test && npm run e2e
 ```
+
+## What's still mocked, stubbed, or blocked — and why
+
+Honest, not marketing:
+
+- **HARD-DEP-001 — legitimate first Workspace governance-root
+  bootstrap: BLOCKED, open.** There is no answer yet to "who may
+  legitimately become a Workspace's first governance authority, and by
+  what provable mechanism." Every Workspace in this repository,
+  including the demo login's own, is seeded via
+  `test_support.nonproof_bootstrap.NonProofWorkspaceBootstrap` — a
+  fixture explicitly labeled, in the database itself, as
+  `NON_PROOF_FIXTURE`, never a legitimate production bootstrap. The
+  local login field (above) closes a *different* gap (verifying WHO is
+  calling) and deliberately does not touch this one — see
+  `docs/architecture/18_LOCAL_AUTHENTICATION_ADAPTER.md`'s own
+  HARD-DEP-001 RELATION section.
+- **HARD-DEP-002 — real AI provider eligibility: EXTERNAL_DEPENDENCY,
+  open.** The AI Gateway's only concrete provider is
+  `MockProviderAdapter` (`packages/ai_gateway/adapters/providers/mock.py`).
+  No real model provider is integrated; provider/data-classification/
+  privacy eligibility has not been established.
+- **Worker has no continuous production loop.** The real, tested
+  `OutboxWorker`/`ProjectionWorker` classes exist and are exercised by
+  their own test suites, but `apps/worker/src/nquiry_worker/__main__.py`
+  is not wired to run them continuously — it starts, logs a Phase-0
+  message, and exits `0` by design. Blocked on a durable
+  `OutboxRecord.commit_id` → `EventEnvelope` reconstruction path that
+  does not exist yet.
+- **No generic Command/Query HTTP dispatch.** Only the two routes
+  Architecture 17 named (`GET` session view, `POST` decide) are wired
+  to real HTTP. Every other Command/Query the architecture defines
+  (Challenge/Session creation, Question selection, Evidence, recovery,
+  AI analysis, …) exists and is fully tested at the application layer,
+  but has no HTTP route — calling it today means a direct Python call
+  in a test, not a request.
+- **No production authentication provider.** The local login (above)
+  is a real, hardened LOCAL credential adapter — not an OIDC/external
+  identity provider integration (GAP-14-001 remains open).
+- **No Workspace-list/dashboard UI.** The frontend's root route lands
+  on one operator-configured default Session; there is no UI or query
+  for "show me the Workspaces/Sessions I belong to" yet.
 
 ## No production claims
 
