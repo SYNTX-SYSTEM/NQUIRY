@@ -2,18 +2,19 @@
 
 Architecture 17 materialization of the extension point this file's own
 `__init__.py` reserved since PKG-00 ("`commands.py` ... land in Phase
-4+"). Same thin-adapter discipline as `queries.py`'s own header
-docstring -- all real work happens in
+4+"), updated by the local-login field
+(`docs/architecture/18_LOCAL_AUTHENTICATION_ADAPTER.md`): identity now
+comes from the real, `HttpOnly` `nquiry_session` cookie -- see
+`queries.py`'s own updated header docstring for the full rationale.
+Same thin-adapter discipline -- all real work happens in
 `application.http_dispatch.dispatch_record_human_decision`.
 """
 
 from __future__ import annotations
 
 from application.http_dispatch import (
-    ACTOR_CLASS_HEADER,
-    ACTOR_USER_ID_HEADER,
-    MalformedActorClaimError,
-    MissingActorClaimError,
+    SESSION_COOKIE_NAME,
+    NoValidSessionError,
     dispatch_record_human_decision,
 )
 from fastapi import APIRouter, Request
@@ -35,14 +36,13 @@ def record_human_decision(
 ) -> JSONResponse:
     try:
         result = dispatch_record_human_decision(
-            actor_user_id_claim=request.headers.get(ACTOR_USER_ID_HEADER),
-            actor_class_claim=request.headers.get(ACTOR_CLASS_HEADER),
+            session_token=request.cookies.get(SESSION_COOKIE_NAME),
             decision_id_str=decision_id,
             selected_option=body.selectedOption,
             rationale=body.rationale,
             confidence=body.confidence,
         )
-    except (MissingActorClaimError, MalformedActorClaimError) as exc:
+    except NoValidSessionError as exc:
         return JSONResponse(
             status_code=401, content={"kind": "denied", "result": "DENY", "reasonCode": str(exc)}
         )

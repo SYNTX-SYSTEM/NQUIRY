@@ -58,6 +58,13 @@ services:
       dockerfile: infra/local/web.Dockerfile
     depends_on:
       - api
+    environment:
+      # Local-login field: where the root route (`/`) sends a logged-in
+      # visitor with no Workspace-list UI yet -- the one demo Session
+      # `scripts/seed_local_demo.py` creates. Optional; unset in a
+      # deployment with no demo scenario seeded.
+      NEXT_PUBLIC_DEFAULT_WORKSPACE_ID: ${NEXT_PUBLIC_DEFAULT_WORKSPACE_ID:-01a0c312-0255-785f-9355-407c261f1f7b}
+      NEXT_PUBLIC_DEFAULT_SESSION_ID: ${NEXT_PUBLIC_DEFAULT_SESSION_ID:-01a0c312-0267-71b1-8c8d-b4508080dada}
     ports:
       - "3000:3000"
 

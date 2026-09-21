@@ -1206,6 +1206,33 @@ security_events_table = sa.Table(
     ),
 )
 
+local_auth_credentials_table = sa.Table(
+    "local_auth_credentials",
+    metadata,
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column(
+        "user_id",
+        sa.Uuid(),
+        sa.ForeignKey("users.id", ondelete="RESTRICT"),
+        nullable=False,
+        unique=True,
+    ),
+    sa.Column("password_hash", sa.Text(), nullable=False),
+    sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
+)
+
+local_auth_sessions_table = sa.Table(
+    "local_auth_sessions",
+    metadata,
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column("user_id", sa.Uuid(), sa.ForeignKey("users.id", ondelete="RESTRICT"), nullable=False),
+    sa.Column("session_token_hash", sa.Text(), nullable=False, unique=True),
+    sa.Column("issued_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("expires_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("revoked_at", sa.DateTime(timezone=True), nullable=True),
+)
+
 __all__ = [
     "metadata",
     "users_table",
@@ -1240,4 +1267,6 @@ __all__ = [
     "inquiry_read_model_table",
     "recovery_records_table",
     "security_events_table",
+    "local_auth_credentials_table",
+    "local_auth_sessions_table",
 ]

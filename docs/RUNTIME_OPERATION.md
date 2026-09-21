@@ -1,128 +1,341 @@
-# NQUIRY Backend Runtime Operation
+# NQUIRY Local Full-Stack Runtime Operation
 
-Status: informational runbook, not an architecture document. Originally
-described the runtime as it existed after PKG-32 (commit `0884f62`).
-**UPDATE (2026-09-20, same day): superseded in part by Architecture 17**
-(`docs/architecture/17_LIVE_APPLICATION_RUNTIME_MATERIALIZATION.md`) and
-its own implementation report
-(`docs/implementation/proof-reports/ARCH-17-RUNTIME-MATERIALIZATION.md`)
-— two real HTTP routes now exist and are wired to the real backend (see
-section 1a below). The worker remains unwired; that part of this
-document is still accurate. Read Architecture 17's own document for the
-authoritative, current picture; this file keeps only a short pointer
-plus the still-valid low-level "how to boot/verify" commands.
+Status: informational runbook, not an architecture document and not a
+proof report. Describes HOW THE CURRENT RUNTIME ACTUALLY OPERATES,
+observed and verified locally on top of sealed HEAD
+`e54394b8f4f513285b1f05e8d66f154e3d0ca3ed` (Architecture 17) plus the
+"NQUIRY LOCAL FULL-STACK RUNTIME ACCEPTANCE" field's CORS/actor-id
+fixes and the local-login field's own real email/password login
+(2026-09-21; see `docs/implementation/proof-reports/FULLSTACK-RUNTIME-ACCEPTANCE.md`
+and `docs/architecture/18_LOCAL_AUTHENTICATION_ADAPTER.md` — neither
+field is committed as of this writing). Rewritten in place (not
+append-only) because this file's own role is "current reality",
+distinct from `docs/architecture/*.md` ("what may exist and why") and
+`docs/implementation/proof-reports/*.md` ("what was actually built and
+proven, preserved as history"). If this file ever disagrees with a
+proof report, the proof report is the historical record; this file is
+what to trust for "how do I start it right now".
 
-## 1. What "the backend" currently is
+## 0. Quick start (no development background needed)
 
-The repository defines the runtime in `docker-compose.yml`:
+This section is written for a non-developer. It tells you the exact
+commands to type and the exact web address to open, from a completely
+empty database to being logged in — nothing here requires
+understanding the code.
 
-- `postgres` — always started, PostgreSQL 17.
-- `api`, `worker`, `web` — started only with the `app` profile
-  (`docker compose --profile app up`).
+**What you need first (once per machine)**: Docker + Docker Compose
+v2; Python 3.10+ with the repo's `.venv` set up (`pyproject.toml`); a
+`psql` client; a gitignored `.env` file at the repo root containing
+`POSTGRES_PORT=15432`. Section 1 has the full prerequisite list if
+anything here is missing. **Ports used**: `3000` (the website you open
+in your browser), `8000` (the backend API your browser talks to
+behind the scenes), `15432` (the database — you never open this in a
+browser).
 
-As of PKG-32 (commit `0884f62`), the real, implemented, live HTTP/worker
-surface was deliberately minimal:
-
-- The FastAPI app (`apps/api/src/nquiry_api/main.py`) exposed exactly
-  one route: `GET /healthz`. `apps/api/src/nquiry_api/http/__init__.py`
-  and `dispatch/__init__.py` were explicitly documented, empty extension
-  points — no package from PKG-00 through PKG-32 was ever assigned the
-  job of wiring a Command/Query HTTP dispatch layer. This was a real,
-  disclosed architectural gap (see `docs/implementation/proof-reports/PKG-32.md`,
-  KNOWN_LIMITATIONS), not a bug.
-
-### 1a. What changed the same day (Architecture 17)
-
-Two real routes are now wired end-to-end through the real
-`packages/application` handlers, real boundary/authority chains, and
-real PostgreSQL:
-
-- `GET /workspaces/{workspaceId}/sessions/{sessionId}` (new
-  `application/session_view_query.py`, the repository's first real
-  Query handler)
-- `POST /decisions/{decisionId}/decide` (reuses PKG-15's existing
-  `record_human_decision` unmodified, via the new
-  `application/http_dispatch.py` composition root)
-
-Both use a new deterministic, non-production identity adapter
-(`X-Nquiry-Actor-User-Id` / `X-Nquiry-Actor-Class` request headers,
-identity only — never authority; see Architecture 17 §
-AUTHENTICATION/IDENTITY RESOLUTION CONTRACT) — GAP-14-001 (real
-production auth provider selection) remains open. Full detail, the
-adversarial test matrix, and the complete raw proof are in
-`docs/implementation/proof-reports/ARCH-17-RUNTIME-MATERIALIZATION.md`.
-
-The worker entrypoint (`apps/worker/src/nquiry_worker/__main__.py`)
-remains an explicitly documented no-op: it prints
-`"nquiry_worker: Phase 0 skeleton — no workers implemented yet."` and
-  exits `0`. The real worker logic that DOES exist and IS tested
-  (`apps/worker/src/nquiry_worker/outbox_worker.py`,
-  `projection_worker.py`, built in PKG-20/PKG-21) is exercised only by
-  `tests/command_commit_event/test_outbox_worker.py` /
-  `test_projection_worker.py` and friends — it is never wired into the
-  actual `python -m nquiry_worker` process. Same disclosed gap class as
-  the HTTP layer.
-
-All real domain/authority/boundary/commit behavior
-(`packages/application/*_handler.py` and everything underneath) is
-fully implemented and fully tested, but is reachable **only** through
-direct Python calls in the test suite (`tests/e2e/*`, etc.), not
-through any currently-running network endpoint. This is the honest
-current state of the "executable prototype" — see
-`docs/implementation/proof-reports/PKG-32.md` for the full
-`ARCHITECTURAL_IMPLEMENTATION_PROOF::PASS` /
-`EXECUTABLE_PROTOTYPE_ACCEPTANCE::BLOCKED` reasoning (HARD-DEP-001/
-HARD-DEP-002).
-
-## 2. How to run it
+**1. Start everything** (from a terminal, in the repository folder):
 
 ```bash
-cd /home/codi/Entwicklung/nquiry
-
-# .env (already present, gitignored) must set:
-#   POSTGRES_PORT=15432
-# so the compose Postgres does not collide with a native/host
-# PostgreSQL listening on the default 5432.
-
-# Postgres only (Phase 0 gate: "DB starts"):
-docker compose up -d postgres
-
-# Full app stack (postgres + api + worker + web):
-docker compose --profile app up -d --build
-
-# Tear down cleanly:
-docker compose --profile app down
+cd ~/Entwicklung/nquiry
+env -u DATABASE_URL docker compose --profile app up -d --build
 ```
 
-Ports: Postgres → `localhost:15432` (container 5432), API →
-`localhost:8000`, web → `localhost:3000`. The worker container has no
-published port; it runs its one-shot no-op and exits `0` by design —
-seeing it in `Exited (0)` state in `docker compose ps` output (it
-won't even show as "Up") is correct, not a crash.
+Wait about 15-30 seconds for the containers to finish starting.
 
-## 3. How to verify it's actually healthy (not just "Up")
-
-A running container is not proof. Do all of the following:
+**2. First time only (or after a database reset): prepare the
+database.** A brand-new database has no tables and no accounts yet —
+this step creates them. Skip straight to step 3 if you have already
+done this once and the database has not been reset since.
 
 ```bash
-# 1. Postgres container health (compose's own healthcheck):
-docker compose ps postgres   # STATUS should say "healthy"
+# 2a. Create the database's internal user roles (once per fresh database):
+export PGPASSWORD=nquiry_local_dev_only
+psql -h localhost -p 15432 -U nquiry -d nquiry -f infra/local/db_roles.sql
 
-# 2. API liveness:
-curl -sS http://localhost:8000/healthz
-# -> {"status":"ok","phase":"0"}
-# NOTE: this is a pure liveness probe. It does NOT check database
-# connectivity -- it will return 200 even if Postgres is completely
-# down (verified empirically, see section 5). Do not treat it as a
-# readiness probe.
+# 2b. Create all the database's tables (the "migration"):
+export DATABASE_URL="postgresql+psycopg://nquiry:nquiry_local_dev_only@localhost:15432/nquiry"
+source .venv/bin/activate
+python scripts/verify_migrations.py
+# -> should print MIGRATION_STATIC_CHECK::PASS and MIGRATION_LIVE_CHECK::PASS
+```
 
-# 3. Web liveness:
-curl -sS -o /dev/null -w '%{http_code}\n' http://localhost:3000/
-# -> 200
+(Section 4 explains exactly what these two commands do and why they
+are idempotent/safe to re-run.)
 
-# 4. Real database connectivity from INSIDE the api container
-#    (the one check that actually proves network+driver+credentials
-#    all work, since no HTTP route exercises this yet):
+**3. Make sure there is something to log into.** Run this every time
+after step 2, or any time you want to double-check the demo account
+still exists:
+
+```bash
+export DATABASE_URL="postgresql+psycopg://nquiry:nquiry_local_dev_only@localhost:15432/nquiry"
+source .venv/bin/activate
+python scripts/seed_local_demo.py
+```
+
+This prints your login email and password at the end. Running it again
+later is harmless — it will just tell you the account already exists.
+The default demo login is:
+
+```
+Email:    demo-owner@nonproof.test
+Password: nquiry-demo-2026
+```
+
+**4. Open your browser** and go to:
+
+```
+http://localhost:3000/
+```
+
+You will see a real login page. Enter the email and password above and
+click "Log in". After logging in, you are taken straight to the demo
+scenario — a Challenge ("Signup conversion dropped 18% after the
+redesign"), a Session, and a Decision you can actually record (pick an
+option and submit it for real — it is saved in the database).
+
+There is a "Log out" button at the top. Logging out and re-opening
+`http://localhost:3000/` will send you back to the login page — the
+login is real, not decorative: without the correct password, or
+without ever logging in, you cannot see the demo scenario at all
+(you'll get a plain "not logged in" screen, never the Challenge/
+Decision content).
+
+**What this is NOT**: this is a local development prototype, not a
+production system. The account above is a disclosed, local-only demo
+credential (`scripts/seed_local_demo.py`'s own module docstring) — it
+is not connected to any real company system, and the underlying
+"Workspace" it logs into is explicitly marked, in the database itself,
+as a non-production test fixture (see section 20 below, "HARD-DEP-001"
+— this is a known, disclosed, and still-open architectural gap, not
+something this login work claims to have solved).
+
+## 0a. What the login feature actually does, and why
+
+**The login/session/logout flow, in plain terms:**
+
+1. You submit an email and password on `/login`.
+2. The server checks the password against a securely-hashed copy
+   stored in the database (never the plain password itself — even the
+   people running this database cannot read your password back out of
+   it, only verify a guess against the hash).
+3. On success, the server creates a real database record — "this
+   session token belongs to this user, valid until this time" — and
+   tells your browser to remember an opaque, random token in a cookie.
+   Your browser cannot read or tamper with this token in any useful
+   way (`HttpOnly`); it can only send it back automatically on later
+   requests.
+4. Every later page you visit sends that cookie automatically. The
+   server looks the token up in the database on every single request —
+   if it's missing, unknown, expired, or was revoked by a logout, you
+   are treated as not logged in. There is no "trust me, I'm user X"
+   shortcut anywhere in this path anymore.
+5. "Log out" deletes/revokes that database record for real — the
+   cookie your browser still has instantly stops working, proven by an
+   automated test that logs out and then tries to reuse the exact same
+   cookie.
+
+**The problem this closes (GAP-14-001):** before this work, the
+application had no real login at all. The only way to open the demo
+scenario in a browser was a URL trick — `?as=<some-user-id>` appended
+to the address — which the server accepted completely at face value,
+with **no password, no cryptographic check, nothing verifying the
+claim at all**. Anyone who could see or guess that URL parameter could
+claim to be any user. That was explicitly disclosed at the time as a
+temporary placeholder, not a real security mechanism. This work
+replaces it with the real login described above; that URL trick no
+longer works at all — the two application routes that used to trust
+it now require a real, verified session and silently ignore that old
+parameter/header entirely (proven by automated tests that send the old
+trick and confirm it has zero effect).
+
+**What this deliberately does NOT do (HARD-DEP-001), and why:** there
+are two separate questions that are easy to conflate:
+
+- "Is the person logging in really who they claim to be?" — **this is
+  what this work answers**, with a real password and a real,
+  database-verified session.
+- "Should that person be allowed to be the owner/administrator of a
+  brand-new Workspace in the first place — who legitimately gets to
+  create the very first one, and by what rule?" — **this work
+  deliberately does NOT answer this**, and was explicitly instructed
+  not to. The demo account this login work created is still only ever
+  set up through a fixture script that is labeled, inside the database
+  itself, as "not a legitimate production setup" — the same way every
+  single demo/test account in this codebase has always been created.
+  Answering the second question properly is reserved for a later,
+  separate piece of work. Building a real login was never supposed to
+  quietly settle it as a side effect, and it was checked, deliberately,
+  that it did not.
+
+## 1. Prerequisites
+
+- Docker + Docker Compose v2 (`docker compose`, not `docker-compose`).
+- Node.js 20+ and npm (for `apps/web`; used for local `npm run
+  lint`/`typecheck`/`test`/`e2e`/`build` — the running `web` container
+  builds its own copy inside the image and does not need these on the
+  host).
+- Python 3.10+ with a `.venv` at the repo root, `pip install -e .`'s
+  dependencies available (see `pyproject.toml`; this sandbox's system
+  Python is 3.10 against a `requires-python = ">=3.13"` target --
+  `pytest`/`mypy`/`ruff` all work via `pyproject.toml`'s own
+  `pythonpath` setting rather than an editable install; the Docker
+  images build and run under the real, pinned 3.13 from their own
+  Dockerfiles).
+- `psql` client (for one-time local role setup, see section 4).
+
+## 2. Environment setup
+
+A gitignored `.env` at the repo root must set:
+
+```
+POSTGRES_PORT=15432
+```
+
+This is required because `docker-compose.yml`'s own `postgres` service
+maps `${POSTGRES_PORT:-5432}:5432` — without this override, Compose
+would try to bind the CONTAINER's Postgres to the HOST's default 5432,
+which collides with any native/host-installed PostgreSQL already
+listening there. `15432` is a distinct host port; the container's own
+internal port is always `5432` regardless.
+
+**Known operational hazard, discovered this field**: if `DATABASE_URL`
+is exported in the SAME shell you run `docker compose up`/`down` from,
+Compose's own `${DATABASE_URL:-default}` substitution (used by the
+`api`/`worker` service definitions) will silently pick up your HOST-
+facing value (`...@localhost:15432/...`) instead of the correct
+in-network default (`...@postgres:5432/...`) — the container then
+cannot reach its own database (`connection refused`, since `localhost`
+inside the container means the container itself, not the host). Run
+`docker compose` commands with `DATABASE_URL` unset (e.g. `env -u
+DATABASE_URL docker compose ...`), and only export `DATABASE_URL` for
+host-side `pytest`/`alembic`/`psql` commands.
+
+## 3. Exact startup command
+
+```bash
+cd ~/Entwicklung/nquiry
+
+# Postgres only (satisfies "DB starts" alone):
+env -u DATABASE_URL docker compose up -d postgres
+
+# Full stack (postgres + api + worker + web):
+env -u DATABASE_URL docker compose --profile app up -d --build
+```
+
+`--build` is only required the first time, or after a code change to
+`apps/api`, `apps/worker`, `apps/web`, or `packages/*` (all three
+Dockerfiles `COPY` the relevant source into the image at build time —
+there is no live volume mount, so an edited file on the host is NOT
+visible inside a running container until the image is rebuilt).
+
+## 4. Migration procedure
+
+A **brand-new** Postgres volume needs its service-principal roles
+created before migrations will apply (PKG-25's own 9 DB principals,
+`infra/local/db_roles.sql`):
+
+```bash
+export PGPASSWORD=nquiry_local_dev_only
+psql -h localhost -p 15432 -U nquiry -d nquiry -f infra/local/db_roles.sql
+```
+
+Then apply migrations to head:
+
+```bash
+source .venv/bin/activate
+export DATABASE_URL="postgresql+psycopg://nquiry:nquiry_local_dev_only@localhost:15432/nquiry"
+python -c "
+from alembic.config import Config
+from alembic import command
+cfg = Config()
+cfg.set_main_option('script_location', 'migrations')
+cfg.set_main_option('sqlalchemy.url', '$DATABASE_URL')
+command.upgrade(cfg, 'head')
+"
+python scripts/verify_migrations.py
+# -> MIGRATION_STATIC_CHECK::PASS (20 revisions, single head)
+# -> MIGRATION_LIVE_CHECK::PASS (db head matches)
+```
+
+An EXISTING volume (from a prior session) already has both; re-running
+`db_roles.sql` and `upgrade head` is idempotent/no-op in that case.
+
+## 5. Backend startup
+
+Handled by `docker compose --profile app up -d --build api` (section
+3). No separate manual step. The `api` container's own `DATABASE_URL`
+is fixed by `docker-compose.yml` to the correct in-network address
+(`...@postgres:5432/...`) — do not override it from the host shell
+(section 2's hazard).
+
+## 6. Frontend startup
+
+Handled by the same `docker compose --profile app up -d --build web`
+call (section 3). `apps/web` is a real Next.js 16 app (`next dev`
+inside the container, per `infra/local/web.Dockerfile`) — not a static
+export, not a mock. It has no build-time `NEXT_PUBLIC_API_BASE_URL`
+set; `apps/web/lib/api/client.ts`'s own `DEFAULT_API_BASE_URL =
+"http://localhost:8000"` is correct as-is because the actual `fetch()`
+calls run in the BROWSER (client-side, by design — see that file's own
+docstring for why), and the browser's own `localhost:8000` resolves
+correctly against the same `docker-compose.yml` port mapping the API
+container publishes.
+
+## 7. Worker behavior
+
+`worker` is a real service in the `app` profile (`docker-compose.yml`),
+started by the same `docker compose --profile app up` call as `api`
+and `web` (section 3) — no separate command. It
+runs `python -m nquiry_worker`, prints `"nquiry_worker: Phase 0
+skeleton — no workers implemented yet."` to stderr, and **exits 0
+immediately by design** — this is correct, not a crash. No `restart:`
+policy is configured (defaults to `no`), so it does not loop. The real,
+tested `OutboxWorker`/`ProjectionWorker` classes exist
+(`apps/worker/src/nquiry_worker/outbox_worker.py`, `projection_worker.py`)
+but are not wired into this entrypoint — `BLOCKED_BY_UPSTREAM_GAP`, not
+implemented, because no durable `OutboxRecord.commit_id` ->
+`EventEnvelope` reconstruction mechanism exists in this codebase yet
+(disclosed in those files' own docstrings since PKG-20/21).
+
+## 8. Exact local URLs
+
+```
+Frontend root:         http://localhost:3000/            (real: -> /login, or the app if logged in)
+Frontend login:         http://localhost:3000/login
+Frontend Session view:  http://localhost:3000/workspaces/{workspaceId}/sessions/{sessionId}
+API health:             http://localhost:8000/healthz
+API login:              POST http://localhost:8000/auth/login   {"email":..., "password":...}
+API current session:    GET  http://localhost:8000/auth/me
+API logout:              POST http://localhost:8000/auth/logout
+API Session Query:      http://localhost:8000/workspaces/{workspaceId}/sessions/{sessionId}
+API Decision Command:   http://localhost:8000/decisions/{decisionId}/decide
+```
+
+**Local-login field update** (`docs/architecture/18_LOCAL_AUTHENTICATION_ADAPTER.md`):
+identity now comes from a real, `HttpOnly` `nquiry_session` cookie a
+real `POST /auth/login` call issues — the former `?as={actorUserId}`
+query parameter (Architecture 17 + the FULLSTACK-RUNTIME-ACCEPTANCE
+field's own disclosed, temporary GAP-14-001 substitute) is REMOVED. A
+bare `x-nquiry-actor-user-id`/`x-nquiry-actor-class` header, with or
+without any value, now has ZERO effect on either API route — only a
+real, verified session matters (see that architecture document's own
+adversarial test matrix for the exact proof). GAP-14-001 itself (real
+OIDC provider selection) remains open; this is still a local,
+deterministic credential adapter, not a production identity provider.
+
+## 9. Health checks
+
+```bash
+docker compose ps postgres   # STATUS column should say "(healthy)"
+curl http://localhost:8000/healthz   # -> {"status":"ok","phase":"0"}, HTTP 200
+curl -o /dev/null -w '%{http_code}\n' http://localhost:3000/   # -> 200
+```
+
+## 10. Database connectivity verification
+
+`/healthz` does NOT check database connectivity (see section 17). To
+actually prove the API can reach Postgres:
+
+```bash
 docker exec nquiry-api-1 python -c "
 import psycopg
 conn = psycopg.connect('postgresql://nquiry:nquiry_local_dev_only@postgres:5432/nquiry')
@@ -130,96 +343,217 @@ cur = conn.cursor()
 cur.execute('SELECT version_num FROM alembic_version')
 print(cur.fetchall())
 "
-# -> [('047bdf9bc528',)]  (must match the real migration head)
-
-# 5. Migration state (static + live):
-source .venv/bin/activate
-export DATABASE_URL="postgresql+psycopg://nquiry:nquiry_local_dev_only@localhost:15432/nquiry"
-python scripts/verify_migrations.py
-# -> MIGRATION_STATIC_CHECK::PASS (19 revisions, single head)
-# -> MIGRATION_LIVE_CHECK::PASS (db head matches)
-
-# 6. The real proof: run the test suite against this exact database.
-python -m pytest -q
-# -> 1111 passed, 1 skipped (as of PKG-32; DATABASE_URL must point at
-#    the docker-compose Postgres, port 15432, not any other instance)
-
-# 7. Static gates:
-ruff format --check .
-ruff check .
-MYPYPATH=packages:apps/api/src:apps/worker/src:scripts \
-  mypy packages apps/api/src apps/worker/src scripts
-python scripts/check_architecture_dependencies.py
-python scripts/check_provider_sdk_imports.py
-python scripts/check_test_only_imports.py
-# -> all PASS
+# -> [('047bdf9bc528',)]
 ```
 
-Environment note: this sandbox's Python is 3.10, while the project
-targets 3.13 (`pyproject.toml` `requires-python = ">=3.13"`). Local
-`pytest`/`mypy`/`ruff` runs rely on `pyproject.toml`'s `pythonpath`
-setting (`packages`, `apps/api/src`, `apps/worker/src`, `scripts`)
-rather than an editable install, which the 3.10 interpreter cannot
-satisfy. The Docker images build and run under the real, pinned target
-Python from their own Dockerfiles — that gap does not exist inside the
-containers.
+## 11. Live HTTP verification
 
-## 4. Runtime verification performed on 2026-09-20
+```bash
+# Unauthenticated -> real 401, never a false success:
+curl -i http://localhost:8000/workspaces/00000000-0000-0000-0000-000000000000/sessions/00000000-0000-0000-0000-000000000000
+curl -i http://localhost:8000/auth/me
 
-A full, from-scratch verification pass was run against commit
-`0884f62` (PKG-32, terminal package). Summary — **no defect found, no
-code changed**:
+# Real login (seed the demo account first -- see section 13), keeping
+# a cookie jar across calls:
+curl -i -c /tmp/nquiry-cookies.txt -X POST http://localhost:8000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"demo-owner@nonproof.test","password":"nquiry-demo-2026"}'
+# -> 200, Set-Cookie: nquiry_session=...; HttpOnly; ...
 
-- `docker compose down` / `docker compose --profile app up -d --build`
-  (clean rebuild): postgres, api, worker, web all started correctly;
-  worker exited `0` as designed.
-- `/healthz` → 200 both before and after the restart.
-- Real DB connectivity proven from inside the running `api` container
-  (see command in section 3.4) — `alembic_version` matches the real
-  migration head (`047bdf9bc528`), 33 tables present in `public`.
-- Full test suite (`python -m pytest -q`) run three separate times
-  against the freshly-restarted, real docker-compose Postgres:
-  **1111 passed, 1 skipped**, identical every time.
-- `ruff`, `mypy`, and all three architecture checkers: clean.
-- **Adversarial check**: stopped the Postgres container mid-run and
-  curled `/healthz` again — it still returned `200`. This confirms
-  `/healthz` truly is DB-connectivity-blind (documented in its own
-  docstring as a Phase-0 liveness probe, not a readiness probe) rather
-  than silently and incorrectly reporting health it hasn't checked.
-  Restarted Postgres afterward; full recovery confirmed (DB-backed
-  tests immediately green again).
-- Checked for a worker boot-loop risk: no `restart:` policy is set
-  anywhere in `docker-compose.yml` (defaults to `no`), so the worker's
-  one-shot exit is stable, not a crash-restart cycle.
-- Confirmed the host's own native PostgreSQL (listening on
-  `127.0.0.1:5432`) was never touched, stopped, or reconfigured; the
-  compose Postgres uses the distinct `15432` host port throughout
-  (`.env`: `POSTGRES_PORT=15432`).
-- `git status`/`git diff --stat` before and after: identical, empty —
-  zero files changed by this verification pass.
+# The cookie, and only the cookie, grants access:
+curl -b /tmp/nquiry-cookies.txt http://localhost:8000/auth/me
+curl -b /tmp/nquiry-cookies.txt http://localhost:8000/workspaces/<ws>/sessions/<session>
 
-## 5. Known, disclosed gaps (as of PKG-32; see section 1a for what changed)
+# A forged/garbage cookie is rejected:
+curl -i -H "Cookie: nquiry_session=not-a-real-token" http://localhost:8000/auth/me
+# -> 401
 
-- ~~No HTTP Command/Query dispatch exists yet~~ **Partially resolved
-  the same day by Architecture 17** — see section 1a. Only the two
-  named routes exist; there is still no generic dispatch for any other
-  Command/Query (that remains out of scope, disclosed in Architecture
-  17's own DEFERRED CAPABILITIES).
-- The worker process (`python -m nquiry_worker`) still never runs the
-  real, already-built `OutboxWorker`/`ProjectionWorker` loops — those
-  are proven only by their own dedicated tests. Architecture 17
-  classified wiring them as `BLOCKED_BY_UPSTREAM_GAP` (no durable path
-  from `OutboxRecord.commit_id` to a fully historically faithful
-  `EventEnvelope` exists yet — see `events.envelope`'s own module
-  docstring), not implemented.
-- Both were legitimate candidates for a future package (wiring
-  `packages/application` Command/Query handlers to
-  `apps/api/src/nquiry_api/http/`, and wiring the two workers into
-  `nquiry_worker.__main__`), but implementing either is a new
-  capability decision outside a pure runtime-verification pass, and
-  was not done here.
-- HARD-DEP-001 (legitimate first-Workspace governance-root bootstrap)
-  and HARD-DEP-002 (real AI provider eligibility) remain BLOCKED,
-  exactly as documented in every predecessor package's own report and
-  in `docs/architecture/16_DECISION_GAP_REGISTER.md`. Nothing in this
-  runtime pass touched, weakened, or attempted to close either.
+# Logout revokes the real session -- the SAME cookie stops working:
+curl -i -b /tmp/nquiry-cookies.txt -X POST http://localhost:8000/auth/logout
+curl -i -b /tmp/nquiry-cookies.txt http://localhost:8000/auth/me
+# -> 401
+```
+
+## 12. Frontend verification
+
+```bash
+cd apps/web
+npm install          # first time only
+npm run lint          # eslint
+npm run typecheck     # tsc --noEmit
+npm run test           # vitest (unit)
+npm run e2e             # playwright (real browser, network-mocked via page.route())
+npm run build            # next build (production build)
+```
+
+To see it render for real in a browser, seed a scenario (section 13)
+and open the exact Session-view URL from section 8.
+
+## 13. Seeding a scenario to look at (and a real login for it)
+
+There is no signup/create-Challenge UI yet. `scripts/seed_local_demo.py`
+(repo-tracked, idempotent) seeds a demo Workspace/Challenge/Session/
+Burst/Decision via the same disclosed `NonProofWorkspaceBootstrap`
+pattern every real test in this repository already uses (HARD-DEP-001
+stays open — this is not a legitimate production bootstrap, and is
+never represented as one), AND creates a real local login credential
+for it:
+
+```bash
+export DATABASE_URL="postgresql+psycopg://nquiry:nquiry_local_dev_only@localhost:15432/nquiry"
+source .venv/bin/activate
+python scripts/seed_local_demo.py
+```
+
+Safe to run more than once — it reuses the existing demo Workspace/
+Session and only creates the login credential if one does not already
+exist yet. Prints the login email/password and the exact Session-view
+URL you land on after logging in. Set `NEXT_PUBLIC_DEFAULT_WORKSPACE_ID`/
+`NEXT_PUBLIC_DEFAULT_SESSION_ID` (`docker-compose.yml`'s own `web`
+service `environment:` block) to the printed ids if they ever drift
+from the compose defaults (e.g. after a volume reset re-seeds with
+fresh random ids), then `docker compose -p nquiry up -d web` to apply.
+
+## 14. Shutdown procedure
+
+```bash
+env -u DATABASE_URL docker compose --profile app down
+```
+
+Leaves the Postgres named volume (`nquiry_nquiry_postgres_data`)
+intact — data persists across a plain `down`/`up` cycle.
+
+## 15. Restart procedure
+
+```bash
+env -u DATABASE_URL docker compose --profile app down
+env -u DATABASE_URL docker compose --profile app up -d
+```
+
+To reset to a **genuinely empty** database (e.g. to prove
+reproducibility, or to discard demo/manual-proof data — see section 16),
+add `-v` to the `down` to also remove the volume, then redo section 4
+(role setup + migration) before anything else will work.
+
+## 16. Common failure modes discovered during these fields
+
+- **"Incorrect email or password" with credentials you're sure are
+  right, copy-pasted from a chat/terminal.** Real incident: found
+  during this field's own human verification pass. Root cause: a
+  trailing newline/space picked up by copy-paste made the password
+  byte-comparison fail even though the visible password was correct —
+  `login` now trims surrounding whitespace from the password (matching
+  the trimming `email` already got) before comparing, so this
+  specific class of failure is fixed
+  (`packages/application/auth_handler.py::login`, regression test
+  `tests/e2e/test_auth_handler.py::
+  test_login_strips_surrounding_whitespace_from_the_password`). If
+  login STILL fails after retyping the password manually (not pasted),
+  suspect your browser's own saved-password autofill silently
+  substituting a different stored credential for `localhost:3000` —
+  clear/disable autofill for that field and check
+  `docker logs nquiry-api-1` for the real request outcome
+  (`OPTIONS /auth/login 200` + `POST /auth/login 401` means the
+  request genuinely reached the backend with the wrong credential —
+  not a CORS/networking problem).
+- **`DATABASE_URL` shell-leak into `docker compose`** — see section 2.
+  Symptom: real `500`s from the API, `docker logs nquiry-api-1` shows
+  `connection to server at "127.0.0.1", port 15432 failed`.
+- **Manual/live proof data breaking unrelated tests.** Some existing
+  tests (e.g. `tests/security/test_habb_grant_constraints.py`) assert
+  an UNSCOPED row count against a table. The automated `pytest`
+  suite's own transactional isolation never leaves real residue on its
+  own (proven repeatedly, twice-reproduced clean runs from a fresh
+  volume) — but any REAL, committed HTTP proof against the live
+  container (curl, a seed script, or a real browser session) does
+  leave real rows, some of them permanently (see next point), and can
+  make those specific unscoped-assertion tests fail until the database
+  is reset (section 15). This is a known, disclosed limitation of a
+  few pre-existing tests' own assertion style, not a defect in the
+  runtime itself.
+- **`audit_events` is genuinely append-only.** A real DB trigger
+  (`trg_audit_events_reject_delete`, PKG-26, 11 §35) rejects any
+  `DELETE` against it. A real commit therefore cannot be "cleaned up"
+  by deleting rows — only a full volume reset (section 15, `-v`)
+  actually returns to empty.
+- **Browser CORS block.** A real browser loading `localhost:3000` and
+  fetching `localhost:8000` is a cross-origin request under the
+  browser's own same-origin policy. `curl`/`requests`/`TestClient` do
+  not enforce this, and the existing Playwright E2E suite mocks the
+  network layer (`page.route()`), so this was only caught by an actual
+  browser hitting the actual live API. Fixed: `apps/api/src/nquiry_api/main.py`
+  now configures `CORSMiddleware` allowing exactly `http://localhost:3000`.
+- **DB triggers enforce real transition/initial-state rules even for
+  seed scripts.** E.g. `sessions` must be `INSERT`ed as `DRAFT` (03
+  TRN-SESS-001) and cannot jump straight to a later state via a raw
+  `UPDATE` either (`trg_sessions_enforce_transition`) — a seed script
+  must respect the same real state machine a legitimate Command would.
+
+## 17. Liveness vs readiness
+
+`GET /healthz` is LIVENESS ONLY — it returns `200` even if PostgreSQL
+is completely unreachable (verified empirically: stop the `postgres`
+container, `/healthz` still returns 200). It proves the process is
+alive, nothing about the database. There is no separate readiness
+endpoint in this build phase; use section 10's direct connectivity
+check for actual DB-reachability proof. `HEALTHZ != DATABASE READINESS`.
+
+## 18. Currently implemented runtime surface
+
+- `GET /healthz` — liveness only.
+- `POST /auth/login`, `POST /auth/logout`, `GET /auth/me` — real local
+  email/password login, real server-verified `local_auth_sessions` row,
+  real `HttpOnly` cookie (`docs/architecture/18_LOCAL_AUTHENTICATION_ADAPTER.md`).
+- `GET /workspaces/{workspaceId}/sessions/{sessionId}` — real Query,
+  real boundary chain (BND-001/002/003), real persistence read, real
+  session-cookie identity (no more header trust).
+- `POST /decisions/{decisionId}/decide` — real Command
+  (`record_human_decision`, PKG-15, unmodified), full BND-001..007 +
+  BND-014 chain, real `CommitCoordinator`, real audit/outbox, real
+  session-cookie identity.
+- Frontend: real `/login` page, a real root-route session check that
+  redirects to `/login` or the app, and the Session-view route (with a
+  real "Log out" control) — all real-network-connected to the routes
+  above (CORS-enabled with credentials).
+- Worker: real process, real exit 0, no consequential work performed.
+
+## 19. Currently non-materialized capabilities
+
+- No generic Command/Query dispatch beyond the two routes above.
+- No PRODUCTION authentication provider (GAP-14-001 remains open) — the
+  real login above is a local, deterministic credential adapter (14
+  §32's own authorized "deterministic test adapter", hardened for real
+  browser use), not an OIDC/external identity provider.
+- `OutboxWorker`/`ProjectionWorker` not wired into a continuous
+  process loop (`BLOCKED_BY_UPSTREAM_GAP`).
+- No Challenge/Session creation UI, no Workspace-list/dashboard UI
+  (there is no Command/Query for either wired to HTTP at all yet) — the
+  root route lands on one configured default Session
+  (`NEXT_PUBLIC_DEFAULT_WORKSPACE_ID`/`NEXT_PUBLIC_DEFAULT_SESSION_ID`),
+  not a list a user picks from.
+- No self-service account creation/password reset — accounts are
+  created only by `scripts/seed_local_demo.py` or a direct DB insert.
+- No readiness endpoint distinct from liveness.
+
+## 20. HARD-DEP-001 / HARD-DEP-002 status
+
+Both remain **BLOCKED**, unresolved, not bypassed by anything in this
+runbook or by any field described here, including the local-login
+field:
+
+- **HARD-DEP-001** (legitimate first-Workspace governance-root
+  bootstrap): every Workspace this runbook helps you create is seeded
+  via `NonProofWorkspaceBootstrap` (`FIXTURE_LEGITIMACY ==
+  "NON_PROOF_FIXTURE"`, checked at construction time) — never
+  represented as a real, production-legitimate bootstrap. Logging in as
+  the seeded demo user proves WHO that user is (a real, verified
+  session); it proves nothing about WHETHER that user's own Workspace
+  governance root was ever legitimately established — that is a
+  strictly separate, still-open question. Closing GAP-14-001's login
+  weakness is explicitly NOT the same thing as closing HARD-DEP-001,
+  and this work does not conflate the two (see
+  `docs/architecture/18_LOCAL_AUTHENTICATION_ADAPTER.md`'s own
+  HUMAN_DECISION_REQUIRED section).
+- **HARD-DEP-002** (real AI provider eligibility): no AI/provider code
+  is touched anywhere in this runbook; `MockProviderAdapter.provider`
+  remains the literal string `"mock"`.

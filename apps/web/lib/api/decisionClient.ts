@@ -54,6 +54,11 @@ import { BOUNDARY_DENIAL_RESULTS, type DecisionActionResult, type DecisionId } f
  * exactly this package's own AUTHORITY line ("UI never calculates
  * DECISION_RIGHT"). The single source of truth for whether this
  * action was allowed is the server's own response, parsed below.
+ *
+ * IDENTITY (local-login field): identical `credentials: "include"`
+ * cookie treatment as `client.ts::fetchSessionView`'s own -- see that
+ * function's own docstring for the full disclosure. No actor header is
+ * sent.
  */
 export async function recordHumanDecision(
   decisionId: DecisionId,
@@ -65,6 +70,7 @@ export async function recordHumanDecision(
   const response = await fetchImpl(`${apiBaseUrl()}/decisions/${encodeURIComponent(decisionId)}/decide`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Accept: "application/json" },
+    credentials: "include",
     body: JSON.stringify({ selectedOption, rationale, confidence }),
   });
   const body: unknown = await response.json();

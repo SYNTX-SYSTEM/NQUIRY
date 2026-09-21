@@ -27,6 +27,17 @@ in-suite regression proof for that exact defect class: it deliberately
 does NOT monkeypatch `connect`, so it fails the same way the live
 container did if the defect ever returns.
 
+LOCAL-LOGIN FIELD UPDATE
+(`docs/architecture/18_LOCAL_AUTHENTICATION_ADAPTER.md`): this test now
+performs a REAL `POST /auth/login` call (also against the real,
+un-monkeypatched `connect()` -- see below) to obtain its session cookie,
+instead of the old `x-nquiry-actor-user-id` header. This also means the
+real login call permanently commits its own `local_auth_credentials`/
+`local_auth_sessions` rows, on top of the Workspace/Decision/audit
+trail this test already discloses leaving behind (see below) --
+consistent with, not a new instance of, this file's own established
+"real commit, no cleanup" disclosure.
+
 WHY THIS TEST SEEDS WITH A SEPARATE, REAL-COMMITTING CONNECTION, NOT
 THE `db_connection` FIXTURE -- AND WHY IT DOES NOT ROLL BACK OR DELETE
 ITS OWN SEED DATA AFTERWARD
@@ -68,11 +79,11 @@ from datetime import datetime, timezone
 
 import pytest
 import sqlalchemy as sa
-from application.http_dispatch import ACTOR_USER_ID_HEADER
 from fastapi.testclient import TestClient
 from governance.authority_binding import AuthorityClass
 from governance.membership import WorkspaceRole
 from nquiry_api.main import app
+from persistence.local_auth_repository import SqlAlchemyLocalCredentialRepository
 from persistence.tables import (
     challenges_table,
     decisions_table,
@@ -82,10 +93,13 @@ from persistence.tables import (
     workspace_memberships_table,
     workspaces_table,
 )
+from security.local_auth import hash_password
 from semantic_types.id_generator import SystemIdGenerator
+from semantic_types.ids import UserId
 
 _NOW = datetime(2030, 1, 1, tzinfo=timezone.utc)
 _ID_GEN = SystemIdGenerator()
+_PASSWORD = "correct horse battery staple"
 
 _OPT_IN_ENV_VAR = "NQUIRY_RUN_REAL_COMMIT_TESTS"
 
@@ -227,15 +241,23 @@ def test_dispatch_record_human_decision_survives_a_real_closing_connection(
                 provenance_ref=None,
             )
         )
+        SqlAlchemyLocalCredentialRepository(seed_conn).create(
+            user_id=UserId(owner_id), password_hash=hash_password(_PASSWORD), now=_NOW
+        )
 
     # Deliberately NOT using the `http_client` fixture -- no monkeypatch,
     # so `application.http_dispatch.connect` really is
     # `persistence.engine.connect`, a real, separate, closing connection
-    # against the same real `DATABASE_URL`.
+    # against the same real `DATABASE_URL`. The login call below also
+    # goes through this same real `connect()` -- it genuinely commits
+    # its own `local_auth_sessions` row (see this file's own updated
+    # module docstring).
     client = TestClient(app)
+    login_response = client.post("/auth/login", json={"email": unique_email, "password": _PASSWORD})
+    assert login_response.status_code == 200, login_response.text
+
     response = client.post(
         f"/decisions/{decision_id}/decide",
-        headers={ACTOR_USER_ID_HEADER: str(owner_id)},
         json={
             "selectedOption": "fix_a",
             "rationale": "real connection proof",

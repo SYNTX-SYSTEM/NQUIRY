@@ -89,7 +89,10 @@ export function SessionViewContainer({
           <ChallengeSummary challenge={result.data.challenge} />
           <SessionStateBadge state={result.data.session.state} />
           {result.data.burst !== null ? <BurstPanel burst={result.data.burst} /> : null}
-          <DecisionSection decision={result.data.decision} aiRecommendation={result.data.aiRecommendation} />
+          <DecisionSection
+            decision={result.data.decision}
+            aiRecommendation={result.data.aiRecommendation}
+          />
         </div>
       );
     case "denied":

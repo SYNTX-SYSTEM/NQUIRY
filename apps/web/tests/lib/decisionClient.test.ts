@@ -38,6 +38,8 @@ describe("recordHumanDecision", () => {
       expect.stringContaining(`/decisions/${DECISION_ID}/decide`),
       expect.objectContaining({
         method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        credentials: "include",
         body: JSON.stringify({ selectedOption: "Option A", rationale: "Lower cost", confidence: "high" }),
       }),
     );
@@ -53,6 +55,20 @@ describe("recordHumanDecision", () => {
     const calledUrl = fetchImpl.mock.calls[0][0] as string;
     expect(calledUrl).toContain(encodeURIComponent(hostileDecisionId));
     expect(calledUrl).not.toContain("/../../admin/");
+  });
+
+  /** Local-login field -- see the identical note in
+   * `tests/lib/client.test.ts`: identity now comes only from the
+   * `nquiry_session` cookie, never a request header. */
+  it("sends the request with credentials included and no actor identity header", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(jsonResponse(COMMITTED_BODY));
+
+    await recordHumanDecision(DECISION_ID, "Option A", null, null, fetchImpl);
+
+    const [, init] = fetchImpl.mock.calls[0] as [string, RequestInit];
+    expect(init.credentials).toBe("include");
+    const headers = init.headers as Record<string, string>;
+    expect(Object.keys(headers)).not.toContain("x-nquiry-actor-user-id");
   });
 });
 

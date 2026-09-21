@@ -72,6 +72,37 @@ describe("fetchSessionView", () => {
     expect(calledUrl).toContain(encodeURIComponent(hostileWorkspaceId));
     expect(calledUrl).not.toContain("/../../admin/");
   });
+
+  /**
+   * Local-login field
+   * (`docs/architecture/18_LOCAL_AUTHENTICATION_ADAPTER.md`): identity
+   * now travels as the real `nquiry_session` cookie, not the former
+   * `x-nquiry-actor-user-id` header (removed entirely, see
+   * `client.ts`'s own updated docstring). `credentials: "include"` is
+   * what makes the browser attach that cookie to this real
+   * cross-origin request at all -- without it, a real login would
+   * silently behave as if no session existed on every subsequent call.
+   */
+  it("sends the request with credentials included so the session cookie is attached", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(jsonResponse(OK_BODY));
+
+    await fetchSessionView(WORKSPACE_ID, SESSION_ID, fetchImpl);
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ credentials: "include" }),
+    );
+  });
+
+  it("sends no actor identity header -- identity comes only from the session cookie", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(jsonResponse(OK_BODY));
+
+    await fetchSessionView(WORKSPACE_ID, SESSION_ID, fetchImpl);
+
+    const [, init] = fetchImpl.mock.calls[0] as [string, RequestInit];
+    const headers = init.headers as Record<string, string>;
+    expect(Object.keys(headers)).not.toContain("x-nquiry-actor-user-id");
+  });
 });
 
 describe("parseSessionReadResult", () => {

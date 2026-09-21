@@ -3,21 +3,23 @@ running `apps/api` request is translated into calls against the real
 `packages/application` Command/Query handlers, real `persistence`
 repository construction, and a real runtime database connection.
 
-Architecture 17 materialization. Lives in `packages/application`, not
-`apps/api/src/nquiry_api`, because 14 §3.1's own forbidden-dependency
-matrix (enforced by `scripts/check_architecture_dependencies.py`)
-restricts `nquiry_api` to `{application, observability, semantic_types}`
-only -- it may not import `persistence`, `authority`, `boundaries`,
-`security`, `commit`, or `sqlalchemy`/any DB driver at all.
-`application` is the one package 14 already authorizes to import every
-one of those (see its own, already-established `INTERNAL_ALLOWED`
-entry), so this module is the necessary, architecture-permitted
-composition root -- `apps/api/src/nquiry_api/http/*.py` calls only the
-functions below, passing and receiving plain JSON-serializable
-primitives (`str`/`dict`), never a domain/authority-shaped object.
+Architecture 17 materialization, extended by the local-login field
+(`docs/architecture/18_LOCAL_AUTHENTICATION_ADAPTER.md`). Lives in
+`packages/application`, not `apps/api/src/nquiry_api`, because 14 §3.1's
+own forbidden-dependency matrix (enforced by
+`scripts/check_architecture_dependencies.py`) restricts `nquiry_api` to
+`{application, observability, semantic_types}` only -- it may not
+import `persistence`, `authority`, `boundaries`, `security`, `commit`,
+or `sqlalchemy`/any DB driver at all. `application` is the one package
+14 already authorizes to import every one of those (see its own,
+already-established `INTERNAL_ALLOWED` entry), so this module is the
+necessary, architecture-permitted composition root --
+`apps/api/src/nquiry_api/http/*.py` calls only the functions below,
+passing and receiving plain JSON-serializable primitives (`str`/`dict`),
+never a domain/authority-shaped object.
 
 WHY EVERY FUNCTION HERE RETURNS A PLAIN `dict[str, object]`, NEVER A
-DOMAIN TYPE
+DOMAIN TYPE (ONE DISCLOSED EXCEPTION: `dispatch_login`)
 --------------------------------------------------------------------
 `apps/web/lib/api/types.ts`'s own `SessionReadResult`/
 `DecisionActionResult` discriminated unions are the authoritative wire
@@ -27,30 +29,65 @@ plain dict keyed exactly as that contract requires, built once here,
 keeps `apps/api/src/nquiry_api/http/*.py` a genuine thin adapter (14
 §3.1: "HTTP must remain an adapter") -- it does no field-name
 translation of its own, just `JSONResponse(dispatch_result)`.
+`dispatch_login` is the one deliberate exception: the raw session token
+must reach the HTTP layer so it can be set as an `HttpOnly` cookie
+(`Set-Cookie`, a response HEADER), and MUST NEVER appear in the JSON
+response body at all (an `HttpOnly` cookie's entire security property
+is that client-side JavaScript can never read it -- putting the same
+value in the JSON body would defeat that immediately). `dispatch_login`
+therefore returns `LoginDispatchResult`, a small dataclass separating
+`body` (safe to serialize verbatim) from `session_token`/`expires_at`
+(consumed only by the HTTP layer's own `Set-Cookie` construction, never
+serialized).
 
-IDENTITY (NOT AUTHORITY) RESOLUTION
+IDENTITY (NOT AUTHORITY) RESOLUTION -- REPLACES THE FORMER
+HEADER-TRUST ADAPTER
 --------------------------------------------------------------------
-`resolve_actor` below is the deterministic, GAP-14-001-disclosed
-identity adapter 14 §2.1 authorizes ("pluggable OIDC adapter plus
-deterministic test adapter [IMPLEMENTATION CHOICE]"). It resolves WHO
-is calling (a real `security.identity.AuthenticatedPrincipal`) and
-WHICH `authority.actor.ActorClass` they claim to be (BND-001's own
-identity-boundary input) from two bare, cryptographically-unverified
-request claims. Real domain Authority is never touched here -- it is
-resolved fresh, per request, by `authority.resolver.AuthorityResolver`
-inside `application.session_view_query.get_session_view` /
-`application.human_decision_handler.record_human_decision` exactly as
-it already was for every predecessor package's own pure-Python test
-caller. A forged `actor_class_claim` of `AI_PROCESSOR` gains nothing
-beyond a documented, provable BND-001 DENY -- see
+Architecture 17's original `resolve_actor` trusted a bare
+`x-nquiry-actor-user-id`/`x-nquiry-actor-class` request header at face
+value -- disclosed at the time (its own docstring: "No cryptographic
+verification occurs anywhere in this path") as the GAP-14-001
+`[IMPLEMENTATION CHOICE]` 14 §2.1 authorizes for that build phase. This
+field closes that specific weakness for the two real, browser-facing
+production routes below: `dispatch_get_session_view`/
+`dispatch_record_human_decision` now resolve identity ONLY from a real,
+server-verified session (`application.auth_handler.resolve_session`,
+backed by the `local_auth_sessions` table a real `/auth/login` call
+created) -- never from a request header. The two former header
+constants/exceptions (`ACTOR_USER_ID_HEADER`/`ACTOR_CLASS_HEADER`/
+`MissingActorClaimError`/`MalformedActorClaimError`) are removed
+entirely, not deprecated in place -- `apps/api/src/nquiry_api/http/
+queries.py`/`commands.py` no longer read those headers at all, so
+supplying them has structurally ZERO effect on either route (proven by
 `tests/e2e/test_http_session_view.py::
-test_ai_actor_claim_is_denied_before_touching_any_session_data` and
-its Decision-side sibling.
+test_forged_actor_headers_have_no_effect_when_no_session_is_present`
+and its sibling with a real session present but a forged header
+alongside it).
+
+A session resolved via `resolve_session` is ALWAYS
+`authority.actor.ActorClass.HUMAN_USER` -- a real password login has no
+mechanism to claim any other actor class (`application.auth_handler`'s
+own module docstring). Real domain Authority is still never touched
+here -- it is resolved fresh, per request, by
+`authority.resolver.AuthorityResolver` inside
+`application.session_view_query.get_session_view`/
+`application.human_decision_handler.record_human_decision`, exactly as
+before.
+
+GAP-14-001 (real OIDC provider selection) remains open and untouched --
+this module still never talks to an external identity provider, only
+to this repository's own local, deterministic password+session adapter
+(14 §32's "deterministic test adapter" half, hardened for real browser
+use). HARD-DEP-001 (legitimate first Workspace governance-root
+bootstrap) is untouched: nothing in this module or in `auth_handler.py`
+decides who may act as a Workspace's governance root -- only WHO is
+calling.
 """
 
 from __future__ import annotations
 
 import uuid
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
 
@@ -70,12 +107,15 @@ from persistence.decision_repository import (
     SqlAlchemyDecisionVersionReader,
 )
 from persistence.engine import connect
+from persistence.local_auth_repository import (
+    SqlAlchemyLocalCredentialRepository,
+    SqlAlchemyLocalSessionRepository,
+)
 from persistence.membership_repository import SqlAlchemyMembershipRepository
 from persistence.outbox_repository import SqlAlchemyOutboxRepository
 from persistence.question_repository import SqlAlchemyQuestionRepository
 from persistence.session_repository import SqlAlchemySessionRepository
 from persistence.workspace_repository import SqlAlchemyWorkspaceRepository
-from security.identity import AuthenticatedPrincipal, ExternalCredential
 from semantic_types.ids import (
     AttemptId,
     CommandId,
@@ -86,6 +126,7 @@ from semantic_types.ids import (
     WorkspaceId,
 )
 
+from application.auth_handler import InvalidCredentials, login, logout, resolve_session
 from application.human_decision_handler import (
     HumanDecisionDenied,
     SelectedOptionNotCandidate,
@@ -98,57 +139,92 @@ from application.session_view_query import (
     get_session_view,
 )
 
-ACTOR_USER_ID_HEADER = "x-nquiry-actor-user-id"
-ACTOR_CLASS_HEADER = "x-nquiry-actor-class"
-_ISSUER_REF = "nquiry-deterministic-dev-adapter"
-_ACTOR_CLASS_BY_VALUE: dict[str, ActorClass] = {c.value: c for c in ActorClass}
+SESSION_COOKIE_NAME = "nquiry_session"
 _STALE_VERSION_MODULE_NAME = "commit.coordinator"
 
 
-class MissingActorClaimError(ValueError):
-    """No `x-nquiry-actor-user-id` header/claim present. Fails closed."""
+class NoValidSessionError(ValueError):
+    """No session cookie present, or it does not resolve to a real,
+    unexpired, unrevoked `local_auth_sessions` row. Fails closed --
+    identical HTTP treatment (401) regardless of WHICH of those was
+    true, so a caller cannot distinguish "no cookie" from "expired"
+    from "revoked" from "forged" (same non-enumeration principle
+    `application.auth_handler.resolve_session` already applies)."""
 
 
-class MalformedActorClaimError(ValueError):
-    """The claimed subject is not a UUID, or the claimed actor class is
-    outside `ActorClass`'s own closed vocabulary. Fails closed."""
+def _resolve_actor_from_session(
+    session_token: str | None, *, session_repository: Any
+) -> ActorIdentity:
+    principal = resolve_session(
+        session_token, session_repository=session_repository, now=datetime.now(timezone.utc)
+    )
+    if principal is None:
+        raise NoValidSessionError("no valid session")
+    return ActorIdentity(ActorClass.HUMAN_USER, principal.user_id)
 
 
-def resolve_actor(
-    *, actor_user_id_claim: str | None, actor_class_claim: str | None
-) -> tuple[ActorIdentity, AuthenticatedPrincipal]:
-    if not actor_user_id_claim:
-        raise MissingActorClaimError(f"request carries no {ACTOR_USER_ID_HEADER!r} claim")
-    try:
-        user_uuid = uuid.UUID(actor_user_id_claim)
-    except ValueError as exc:
-        raise MalformedActorClaimError(
-            f"{ACTOR_USER_ID_HEADER!r} must be a UUID, got {actor_user_id_claim!r}"
-        ) from exc
-    class_value = actor_class_claim or ActorClass.HUMAN_USER.value
-    if class_value not in _ACTOR_CLASS_BY_VALUE:
-        raise MalformedActorClaimError(
-            f"{ACTOR_CLASS_HEADER!r} must be one of {sorted(_ACTOR_CLASS_BY_VALUE)}, "
-            f"got {class_value!r}"
+@dataclass(frozen=True, slots=True)
+class LoginDispatchResult:
+    """See this module's own docstring section on why `dispatch_login`
+    is the one function here that does NOT return a plain dict."""
+
+    body: dict[str, object]
+    session_token: str | None
+    expires_at: datetime | None
+
+
+def dispatch_login(*, email: str, password: str) -> LoginDispatchResult:
+    """`POST /auth/login`. Never raises on bad credentials -- returns a
+    `denied` body instead, same fail-closed-but-not-500 discipline as
+    every other dispatch function here."""
+    with connect() as connection:
+        try:
+            result = login(
+                email,
+                password,
+                credential_repository=SqlAlchemyLocalCredentialRepository(connection),
+                session_repository=SqlAlchemyLocalSessionRepository(connection),
+                now=datetime.now(timezone.utc),
+            )
+        except InvalidCredentials:
+            return LoginDispatchResult(
+                body={"kind": "denied", "reasonCode": "INVALID_CREDENTIALS"},
+                session_token=None,
+                expires_at=None,
+            )
+    return LoginDispatchResult(
+        body={"kind": "ok", "userId": str(result.user_id.value)},
+        session_token=result.session_token,
+        expires_at=result.expires_at,
+    )
+
+
+def dispatch_logout(*, session_token: str | None) -> dict[str, object]:
+    """`POST /auth/logout`. Idempotent -- a missing/unknown/already-
+    revoked token is a silent no-op, never an error."""
+    with connect() as connection:
+        logout(
+            session_token,
+            session_repository=SqlAlchemyLocalSessionRepository(connection),
+            now=datetime.now(timezone.utc),
         )
-    actor_class = _ACTOR_CLASS_BY_VALUE[class_value]
+    return {"kind": "ok"}
 
-    from semantic_types.ids import UserId
 
-    user_id = UserId(user_uuid)
-    credential = ExternalCredential(
-        subject=actor_user_id_claim,
-        issuer_ref=_ISSUER_REF,
-        session_ref=f"dev-session:{actor_user_id_claim}",
-        authentication_time=datetime.now(timezone.utc),
-    )
-    principal = AuthenticatedPrincipal(
-        user_id=user_id,
-        authentication_session_ref=credential.session_ref,
-        authentication_time=credential.authentication_time,
-        issuer_ref=credential.issuer_ref,
-    )
-    return ActorIdentity(actor_class, user_id), principal
+def dispatch_current_session(*, session_token: str | None) -> dict[str, object]:
+    """`GET /auth/me`. Used by the frontend root route to decide
+    "show the login page" vs "show the real application" -- never
+    raises; a missing/invalid session is a normal `denied` response,
+    not a 500."""
+    with connect() as connection:
+        principal = resolve_session(
+            session_token,
+            session_repository=SqlAlchemyLocalSessionRepository(connection),
+            now=datetime.now(timezone.utc),
+        )
+    if principal is None:
+        return {"kind": "denied", "reasonCode": "NO_SESSION"}
+    return {"kind": "ok", "userId": str(principal.user_id.value)}
 
 
 def _chain_denied_body(chain_result: BoundaryChainResult) -> dict[str, object]:
@@ -189,22 +265,24 @@ def _decision_view_body(decision: Any) -> dict[str, object]:
 
 def dispatch_get_session_view(
     *,
-    actor_user_id_claim: str | None,
-    actor_class_claim: str | None,
+    session_token: str | None,
     workspace_id_str: str,
     session_id_str: str,
 ) -> dict[str, object]:
     """`GET /workspaces/{workspaceId}/sessions/{sessionId}`
     (`apps/web/lib/api/client.ts::fetchSessionView`'s own exact
     contract). Returns a plain dict shaped exactly as
-    `SessionReadResult` (`types.ts`)."""
-    actor, _principal = resolve_actor(
-        actor_user_id_claim=actor_user_id_claim, actor_class_claim=actor_class_claim
-    )
-    workspace_id = WorkspaceId(uuid.UUID(workspace_id_str))
-    session_id = SessionId(uuid.UUID(session_id_str))
-
+    `SessionReadResult` (`types.ts`). Raises `NoValidSessionError`
+    (mapped to 401 by the HTTP layer) if `session_token` does not
+    resolve to a real, current session -- checked BEFORE the path
+    parameters are even parsed, same auth-before-input-validation
+    precedence the former header-based `resolve_actor` also had."""
     with connect() as connection:
+        actor = _resolve_actor_from_session(
+            session_token, session_repository=SqlAlchemyLocalSessionRepository(connection)
+        )
+        workspace_id = WorkspaceId(uuid.UUID(workspace_id_str))
+        session_id = SessionId(uuid.UUID(session_id_str))
         result = get_session_view(
             actor=actor,
             workspace_id=workspace_id,
@@ -269,8 +347,7 @@ def dispatch_get_session_view(
 
 def dispatch_record_human_decision(
     *,
-    actor_user_id_claim: str | None,
-    actor_class_claim: str | None,
+    session_token: str | None,
     decision_id_str: str,
     selected_option: str,
     rationale: str | None,
@@ -279,15 +356,19 @@ def dispatch_record_human_decision(
     """`POST /decisions/{decisionId}/decide`
     (`apps/web/lib/api/decisionClient.ts::recordHumanDecision`'s own
     exact contract). Returns a plain dict shaped exactly as
-    `DecisionActionResult` (`types.ts`)."""
-    actor, _principal = resolve_actor(
-        actor_user_id_claim=actor_user_id_claim, actor_class_claim=actor_class_claim
-    )
-    decision_id = DecisionId(uuid.UUID(decision_id_str))
+    `DecisionActionResult` (`types.ts`). Raises `NoValidSessionError`
+    (mapped to 401 by the HTTP layer) if `session_token` does not
+    resolve to a real, current session -- checked BEFORE the decision id
+    is even parsed, same auth-before-input-validation precedence the
+    former header-based `resolve_actor` also had."""
     correlation_id = CorrelationId(uuid.uuid4())
     now = datetime.now(timezone.utc)
 
     with connect() as connection:
+        actor = _resolve_actor_from_session(
+            session_token, session_repository=SqlAlchemyLocalSessionRepository(connection)
+        )
+        decision_id = DecisionId(uuid.UUID(decision_id_str))
         decision_repository = SqlAlchemyDecisionRepository(connection)
         existing = decision_repository.get(decision_id)
         if existing is None:
@@ -360,11 +441,12 @@ class _RealClock:
 
 
 __all__ = [
-    "ACTOR_USER_ID_HEADER",
-    "ACTOR_CLASS_HEADER",
-    "MissingActorClaimError",
-    "MalformedActorClaimError",
-    "resolve_actor",
+    "SESSION_COOKIE_NAME",
+    "NoValidSessionError",
+    "LoginDispatchResult",
+    "dispatch_login",
+    "dispatch_logout",
+    "dispatch_current_session",
     "dispatch_get_session_view",
     "dispatch_record_human_decision",
 ]

@@ -11,8 +11,32 @@
  * so there is nothing here for a forged/arbitrary URL segment to
  * bypass: the server's own `SessionReadResult` response is still the
  * only thing ever rendered.
+ *
+ * LOCAL-LOGIN FIELD UPDATE
+ * (`docs/architecture/18_LOCAL_AUTHENTICATION_ADAPTER.md`): the former
+ * `?as=<userId>` query parameter (Architecture 17's disclosed,
+ * temporary GAP-14-001 substitute, since this prototype had no login
+ * mechanism) is REMOVED -- identity now comes from a real, verified
+ * `nquiry_session` cookie (`lib/api/authClient.ts`), never a URL
+ * parameter. A visitor with no valid session gets the real `401`/
+ * `denied` response `SessionViewContainer` already renders as
+ * `DeniedBanner` -- this route still performs no authority decision of
+ * its own.
+ *
+ * `LogoutButton` is included because a visitor whose root route (`/`)
+ * redirects straight here (a configured default Session) would
+ * otherwise have no reachable way back to `/login`. Deliberately
+ * placed in a `<header>` OUTSIDE `<main>`, not alongside
+ * `SessionViewContainer` inside it: `tests/e2e/session-view.spec.ts`'s
+ * own mandatory attacks assert zero action elements exist within
+ * `main` for a denied/blocked/indeterminate response -- a logout
+ * control is orthogonal to that invariant (it never touches Session/
+ * Decision/boundary state and is always safe regardless of what the
+ * server returned), so it belongs in page chrome, not the domain
+ * content region those tests scope their proof to.
  */
 import type { SessionId, WorkspaceId } from "../../../../../lib/api/types";
+import { LogoutButton } from "../../../../../components/LogoutButton";
 import { SessionViewContainer } from "../../../../../components/SessionViewContainer";
 
 export default async function SessionPage({
@@ -22,8 +46,13 @@ export default async function SessionPage({
 }) {
   const { workspaceId, sessionId } = await params;
   return (
-    <main>
-      <SessionViewContainer workspaceId={workspaceId as WorkspaceId} sessionId={sessionId as SessionId} />
-    </main>
+    <>
+      <header>
+        <LogoutButton />
+      </header>
+      <main>
+        <SessionViewContainer workspaceId={workspaceId as WorkspaceId} sessionId={sessionId as SessionId} />
+      </main>
+    </>
   );
 }

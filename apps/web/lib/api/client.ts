@@ -66,6 +66,17 @@ export function apiBaseUrl(): string {
  * only thing this function ever returns. There is no code path here
  * that could grant access a `denied`/`indeterminate` server response
  * did not already grant.
+ *
+ * IDENTITY (local-login field, `docs/architecture/18_LOCAL_AUTHENTICATION_ADAPTER.md`):
+ * this function no longer sends any actor identity header. Identity now
+ * travels as the real, `HttpOnly` `nquiry_session` cookie a real
+ * `POST /auth/login` call issues (`lib/api/authClient.ts`) -- `credentials:
+ * "include"` below is what makes the browser attach that cookie to this
+ * real cross-origin (`localhost:3000` -> `localhost:8000`) request at
+ * all. This function still computes no authority of its own and reads
+ * no cookie value itself; a caller with no valid session gets the same
+ * real `401`/`denied` response the server already returns for a missing
+ * or invalid session -- never a client-side guess.
  */
 export async function fetchSessionView(
   workspaceId: WorkspaceId,
@@ -74,7 +85,7 @@ export async function fetchSessionView(
 ): Promise<SessionReadResult> {
   const response = await fetchImpl(
     `${apiBaseUrl()}/workspaces/${encodeURIComponent(workspaceId)}/sessions/${encodeURIComponent(sessionId)}`,
-    { headers: { Accept: "application/json" } },
+    { headers: { Accept: "application/json" }, credentials: "include" },
   );
   const body: unknown = await response.json();
   return parseSessionReadResult(body);

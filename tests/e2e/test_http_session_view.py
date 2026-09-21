@@ -1,10 +1,20 @@
 """T10 END-TO-END TEST: `GET /workspaces/{w}/sessions/{s}` (Architecture
 17), through the REAL FastAPI app, against real PostgreSQL.
 
-Requires `DATABASE_URL` (same live-DB requirement every other T10 file
-in this repository already has) -- `nquiry_api.main.app`'s own
-`application.http_dispatch.dispatch_get_session_view` reads it via
-`persistence.engine.connect()`.
+LOCAL-LOGIN FIELD UPDATE
+(`docs/architecture/18_LOCAL_AUTHENTICATION_ADAPTER.md`): identity now
+comes from a real, verified `nquiry_session` cookie issued by a real
+`POST /auth/login` call, not from the old `x-nquiry-actor-user-id`/
+`x-nquiry-actor-class` request headers -- see
+`application.http_dispatch`'s own updated module docstring. The full
+adversarial session-verification matrix (forged/tampered/expired/
+revoked cookies, forged headers now proven inert) lives in
+`tests/e2e/test_http_auth.py`, written once and shared across both
+Architecture-17 routes since both call the identical
+`_resolve_actor_from_session` internally -- this file keeps the
+route-specific happy paths and denial cases (missing session, no
+membership, nonexistent session) that were always specific to THIS
+route's own response shape.
 
 WHY `persistence.engine.connect` IS MONKEYPATCHED TO THE TEST'S OWN
 `db_connection`, NOT LEFT TO OPEN A SECOND REAL CONNECTION
@@ -34,8 +44,8 @@ Each test constructs its own local helpers (this repository's own
 established per-T10-file convention, see `tests/e2e/test_proof_bundle_paths.py`'s
 own module docstring) and drives the REAL ASGI app via
 `fastapi.testclient.TestClient` -- a genuine HTTP request/response
-cycle (request line, headers, JSON body), not a direct Python call
-into `application.session_view_query`.
+cycle (request line, headers, JSON body, and now real cookies), not a
+direct Python call into `application.session_view_query`.
 """
 
 from __future__ import annotations
@@ -48,16 +58,17 @@ from datetime import datetime, timezone
 import application.http_dispatch as http_dispatch
 import pytest
 import sqlalchemy as sa
-from application.http_dispatch import ACTOR_CLASS_HEADER, ACTOR_USER_ID_HEADER
 from fastapi.testclient import TestClient
 from governance.membership import WorkspaceRole
 from nquiry_api.main import app
+from persistence.local_auth_repository import SqlAlchemyLocalCredentialRepository
 from persistence.tables import (
     challenges_table,
     question_bursts_table,
     role_assignments_table,
     sessions_table,
 )
+from security.local_auth import hash_password
 from semantic_types.id_generator import SystemIdGenerator
 from semantic_types.ids import ChallengeId, SessionId, WorkspaceId
 from test_support.clock import FixedClock
@@ -68,6 +79,7 @@ from test_support.nonproof_bootstrap import (
 
 _NOW = datetime(2030, 1, 1, tzinfo=timezone.utc)
 _ID_GEN = SystemIdGenerator()
+_PASSWORD = "correct horse battery staple"
 
 
 @pytest.fixture
@@ -97,6 +109,9 @@ def _bootstrap(db_connection: sa.Connection, *, email: str) -> NonProofWorkspace
             revoked_at=None,
             record_version=1,
         )
+    )
+    SqlAlchemyLocalCredentialRepository(db_connection).create(
+        user_id=result.owner_user_id, password_hash=hash_password(_PASSWORD), now=_NOW
     )
     return result
 
@@ -138,6 +153,11 @@ def _seed_challenge_and_session(
     return challenge_id, session_id
 
 
+def _login(http_client: TestClient, *, email: str) -> None:
+    response = http_client.post("/auth/login", json={"email": email, "password": _PASSWORD})
+    assert response.status_code == 200, response.text
+
+
 def test_http_session_view_happy_path_returns_real_committed_state(
     db_connection: sa.Connection, http_client: TestClient
 ) -> None:
@@ -145,10 +165,10 @@ def test_http_session_view_happy_path_returns_real_committed_state(
     _challenge_id, session_id = _seed_challenge_and_session(
         db_connection, workspace_id=result.workspace_id
     )
+    _login(http_client, email="http-session-happy@nonproof.test")
 
     response = http_client.get(
-        f"/workspaces/{result.workspace_id.value}/sessions/{session_id.value}",
-        headers={ACTOR_USER_ID_HEADER: str(result.owner_user_id.value)},
+        f"/workspaces/{result.workspace_id.value}/sessions/{session_id.value}"
     )
 
     assert response.status_code == 200
@@ -183,10 +203,10 @@ def test_http_session_view_includes_real_burst(
             record_version=1,
         )
     )
+    _login(http_client, email="http-session-burst@nonproof.test")
 
     response = http_client.get(
-        f"/workspaces/{result.workspace_id.value}/sessions/{session_id.value}",
-        headers={ACTOR_USER_ID_HEADER: str(result.owner_user_id.value)},
+        f"/workspaces/{result.workspace_id.value}/sessions/{session_id.value}"
     )
 
     assert response.status_code == 200
@@ -197,7 +217,7 @@ def test_http_session_view_includes_real_burst(
     assert body["data"]["burst"]["questions"] == []
 
 
-def test_http_session_view_denies_missing_actor_header(
+def test_http_session_view_denies_a_request_with_no_session(
     db_connection: sa.Connection, http_client: TestClient
 ) -> None:
     result = _bootstrap(db_connection, email="http-session-noheader@nonproof.test")
@@ -213,80 +233,49 @@ def test_http_session_view_denies_missing_actor_header(
     assert response.json()["kind"] == "denied"
 
 
-def test_http_session_view_denies_actor_with_no_workspace_membership(
-    db_connection: sa.Connection, http_client: TestClient
-) -> None:
-    result = _bootstrap(db_connection, email="http-session-outsider@nonproof.test")
-    _challenge_id, session_id = _seed_challenge_and_session(
-        db_connection, workspace_id=result.workspace_id
-    )
-    stranger_user_id = uuid.uuid4()
-
-    response = http_client.get(
-        f"/workspaces/{result.workspace_id.value}/sessions/{session_id.value}",
-        headers={ACTOR_USER_ID_HEADER: str(stranger_user_id)},
-    )
-
-    assert response.status_code == 200
-    body = response.json()
-    assert body["kind"] == "denied"
-    assert body["result"] == "DENY"
-
-
-def test_ai_actor_claim_is_denied_before_touching_any_session_data(
-    db_connection: sa.Connection, http_client: TestClient
-) -> None:
-    """Adversarial: a caller claiming `AI_PROCESSOR` via the header
-    gains no read access -- BND-001 denies before any Session/Challenge/
-    Burst row is even read (mirrors
-    `tests/e2e/test_proof_bundle_paths.py::
-    test_ai_boundary_path_an_ai_actor_is_denied_before_any_decision_is_touched`
-    for the pure-Python call path)."""
-    result = _bootstrap(db_connection, email="http-session-ai@nonproof.test")
-    _challenge_id, session_id = _seed_challenge_and_session(
-        db_connection, workspace_id=result.workspace_id
-    )
-
-    response = http_client.get(
-        f"/workspaces/{result.workspace_id.value}/sessions/{session_id.value}",
-        headers={
-            ACTOR_USER_ID_HEADER: str(result.owner_user_id.value),
-            ACTOR_CLASS_HEADER: "AI_PROCESSOR",
-        },
-    )
-
-    assert response.status_code == 200
-    body = response.json()
-    assert body["kind"] == "denied"
-    assert body["result"] == "DENY"
-
-
 def test_http_session_view_denies_a_nonexistent_session(
     db_connection: sa.Connection, http_client: TestClient
 ) -> None:
     result = _bootstrap(db_connection, email="http-session-missing@nonproof.test")
     fake_session_id = uuid.uuid4()
+    _login(http_client, email="http-session-missing@nonproof.test")
 
     response = http_client.get(
-        f"/workspaces/{result.workspace_id.value}/sessions/{fake_session_id}",
-        headers={ACTOR_USER_ID_HEADER: str(result.owner_user_id.value)},
+        f"/workspaces/{result.workspace_id.value}/sessions/{fake_session_id}"
     )
 
     assert response.status_code == 200
     assert response.json()["kind"] == "denied"
 
 
-def test_malformed_actor_header_is_rejected(
+def test_http_session_view_denies_a_nonexistent_workspace(
+    db_connection: sa.Connection, http_client: TestClient
+) -> None:
+    """A malformed-but-well-formed-UUID workspace id that genuinely does
+    not exist -- same DENY shape as a missing Session, proven separately
+    since a stray "always matches the seeded Workspace" bug could hide
+    behind the happy-path test alone."""
+    result = _bootstrap(db_connection, email="http-session-badworkspace@nonproof.test")
+    _challenge_id, session_id = _seed_challenge_and_session(
+        db_connection, workspace_id=result.workspace_id
+    )
+    _login(http_client, email="http-session-badworkspace@nonproof.test")
+
+    response = http_client.get(f"/workspaces/{uuid.uuid4()}/sessions/{session_id.value}")
+
+    assert response.status_code == 200
+    assert response.json()["kind"] == "denied"
+
+
+def test_malformed_workspace_id_is_rejected(
     db_connection: sa.Connection, http_client: TestClient
 ) -> None:
     result = _bootstrap(db_connection, email="http-session-malformed@nonproof.test")
     _challenge_id, session_id = _seed_challenge_and_session(
         db_connection, workspace_id=result.workspace_id
     )
+    _login(http_client, email="http-session-malformed@nonproof.test")
 
-    response = http_client.get(
-        f"/workspaces/{result.workspace_id.value}/sessions/{session_id.value}",
-        headers={ACTOR_USER_ID_HEADER: "not-a-uuid"},
-    )
+    response = http_client.get(f"/workspaces/not-a-uuid/sessions/{session_id.value}")
 
-    assert response.status_code == 401
+    assert response.status_code == 400
