@@ -275,7 +275,10 @@ $ git diff --check
 ```
 
 ## Commit Status
-NOT COMMITTED
+COMMITTED — `f27942e` ("field(F00): execution control, baseline, and
+proof harness"), pushed to `origin/master`. Approved via
+`FIELD_COMMIT_APPROVED F00` (human operator, relaying the Claude
+Cowork session's review of `CHATGPT_REVIEW.txt`).
 
 ## Recommended Status
 FIELD_PASS
