@@ -1,0 +1,56 @@
+NQUIRY FIELD REVIEW
+FIELD: F00 — EXECUTION CONTROL · BASELINE · PROOF HARNESS
+HEAD: 140d90025c5e193cd3a84f1ceec42a9370d73991 (field-scaffold commit only — F00's own content below is NOT yet committed)
+STATUS: FIELD_PASS
+ARCHITECTURAL AUTHORITY: docs/architecture/19_NQUIRY_IMPLEMENTATION_WITH_FRONTEND_RUNNING.md §20 (Field F00 definition), §2-3 (Repository Authority Law / baseline reconstruction), §17-18 (test/runtime command registry)
+MISSION: Establish one reliable, reproducible implementation/proof/review/commit loop for every later Field, and reconstruct current repository reality from HEAD rather than assuming an earlier report still holds.
+
+WHAT CHANGED: Nothing in domain/authority/persistence/API/frontend code. A command manifest and a re-verified current-HEAD baseline now exist as the reference point for F01 onward.
+
+FILES:
+  docs/implementation/field-reports/F00/WU-00.1.md   (new)
+  docs/implementation/field-reports/F00/FIELD_REVIEW.md   (new)
+  docs/implementation/field-reports/F00/CHATGPT_REVIEW.txt   (new, this file)
+
+MIGRATIONS: NONE
+NEW DEPENDENCIES: NONE
+TESTS ADDED: NONE (F00 verifies existing tests/gates; adds no new ones)
+
+TEST COMMANDS:
+  DATABASE_URL=postgresql+psycopg://nquiry:nquiry_local_dev_only@localhost:15432/nquiry python -m pytest -q
+  python -m pytest -q tests/                       (DATABASE_URL unset)
+  ruff format --check . && ruff check .
+  MYPYPATH=packages:apps/api/src:apps/worker/src:scripts mypy packages apps/api/src apps/worker/src scripts
+  python scripts/check_architecture_dependencies.py
+  python scripts/check_provider_sdk_imports.py
+  python scripts/check_test_only_imports.py
+  python scripts/verify_migrations.py
+  (cd apps/web && npx eslint . && npx tsc --noEmit && npx vitest run && npx playwright test && npx next build)
+  docker compose -p nquiry --profile app up -d --build ; curl http://localhost:8000/healthz
+
+RESULTS:
+  live-DB pytest:      1175 passed, 2 skipped, 1 failed (pre-existing, see below)
+  pure-Python pytest:   733 passed, 0 failed, 439 skipped
+  ruff / mypy / architecture-dependency / provider-SDK / test-only-import / migration verify: all PASS
+  eslint / tsc / vitest (64 tests) / playwright (27 tests) / next build: all PASS
+  runtime: containers rebuilt from current HEAD; /healthz 200; real POST /auth/login 200 with a real HttpOnly session cookie
+
+NEGATIVE/ADVERSARIAL RESULTS: Re-verified, not newly authored by F00 — the existing local-login-auth field's full adversarial matrix (forged/expired/revoked session, no user enumeration, cross-user denial, etc.) and every prior PKG's own adversarial suite all still pass unchanged.
+
+RECURSIVE DEEPSWEEP: PASS — nothing downstream changed because nothing upstream changed; this Field is verification-only.
+
+INVERSE DEEPSWEEP: NOT_APPLICABLE (F00 has no human-visible consequential effect of its own).
+
+FIRST BROKEN RELATION: NONE
+
+FIXTURE/MOCK CEILINGS: scripts/seed_local_demo.py remains NON_PROOF_FIXTURE (HARD-DEP-001 open); MockProviderAdapter remains the only AI provider (HARD-DEP-002 open). Neither touched by this Field.
+
+KNOWN LIMITATIONS:
+  - Host Python 3.10 vs. project's >=3.13 target (works via pythonpath, disclosed since PKG-00).
+  - Worker has no continuous production loop (BLOCKED_BY_UPSTREAM_GAP, F08's own future scope).
+  - The one live-DB test failure (tests/security/test_habb_grant_constraints.py::test_grant_without_active_membership_is_rejected) is demo-seed-residue-sensitive (unscoped COUNT(*) assertion in a PKG-26-era test, unrelated to this Field) -- already disclosed twice before, reconfirmed here, not repaired (out of F00's own scope per 19 section 20's own explicit instruction not to fix unrelated architecture while building F00).
+
+GIT DIFF STAT:
+  3 new files (all under docs/implementation/field-reports/F00/), 0 files modified, 0 code changes.
+
+COMMIT: NOT YET COMMITTED
