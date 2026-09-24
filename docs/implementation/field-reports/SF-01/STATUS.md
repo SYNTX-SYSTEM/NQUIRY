@@ -49,6 +49,7 @@ review/REVIEW_INPUT_BUNDLE.md (verbatim review-input provenance, generated befor
 | SF01.5 | Static architecture gates | WU-SF01.5.md |
 | SF01.6 | Isolated real-stack environment + L7 spec (prepared) | WU-SF01.6.md |
 | SF01.7 | Isolated real-stack execution; application repair (proof-depth marker) + environment repair (output ownership) | WU-SF01.7.md |
+| SF01.8 | Sync with published F03 (integration law steps 1–3); post-sync FBR repaired (type-only); full ladder GREEN; **uncommitted, awaiting sync review** | WU-SF01.8.md |
 
 ## Human decisions (2026-09-24)
 - **SF01-HD-1**: SF-01 is authorized as the pulled-forward Symbiotic Frontend Foundation governed by doc 21. It does not replace F11.
@@ -58,8 +59,10 @@ review/REVIEW_INPUT_BUNDLE.md (verbatim review-input provenance, generated befor
 - **SF01-HD-5** (Case-3, answered 2026-09-24): ledger reconciliation (16 §41, 20 §15) is DEFERRED to the post-F03 synchronization step, because the REC-/NQ-DEC- sequence is shared with the in-progress F03. The decisions are recorded here with the exact text to reconcile (below). 16 and 20 stay untouched on this branch. This is a documented deviation from the "same Work Unit" clause of 20 §14.
 - **Integration law**: when F03 becomes PUBLISHED_FIELD, STOP before F03 integration → reconstruct F03 → synchronize this branch with the published F03 commit → contract and dependency DeepSweep → only then may WAIT_FOR_F03 relations become candidates.
 
-## Pending ledger reconciliation (execute at post-F03 sync, SF01-HD-5)
-Allocate the next free numbers after F03's own entries, then add to 16 §41 (+ §6 table, YAML, counts) and 20 §15:
+## Pending ledger reconciliation (SF01-HD-5): WAIT_FOR_F04_ARCHITECTURE_RECONCILIATION
+The numbers after F03's entries (REC-018..027, NQ-DEC-044..051, 20 §15B) are concurrently claimed by the
+uncommitted F04 architecture field. Do not number, renumber or write these entries until that field is
+reconciled; then allocate the next free numbers and add them to 16 §41 (+ §6 table, YAML, counts) and 20:
 1. REC-?? / NQ-DEC-??: SF-01 authorized as pulled-forward Symbiotic Frontend Foundation under doc 21; F11 unchanged (SF01-HD-1).
 2. REC-?? / NQ-DEC-??: Real-stack proof for frontend-only Fields runs in an isolated environment (own project, DB, no shared ports) (SF01-HD-2).
 3. REC-?? / NQ-DEC-??: Frontend Fields may not modify, infer, duplicate or stabilize an unpublished Field's contracts; contact-zone exclusion (SF01-HD-3).
@@ -72,7 +75,8 @@ SF-01's execution; published afterwards as `0d59ae3f9be5f3a3297d43ab55c70005c41a
 `c9d86bab64505845f406ba43a8c78ac185383680`, signed tag `field-F03`). Not yet integrated.
 
 ## Downstream
-Integration law, **now ACTIVE** (F03 published), not yet executed. In order:
+Integration law, **ACTIVE** (F03 published). Progress: steps 1–3 executed in WU-SF01.8 (uncommitted, awaiting sync
+review); step 4 WAIT_FOR_F04_ARCHITECTURE_RECONCILIATION; step 5 not started. In order:
 1. Reconstruct published F03.
 2. Synchronize `frontend-symbiotic` with the published F03 commit.
 3. Contract and dependency DeepSweep.

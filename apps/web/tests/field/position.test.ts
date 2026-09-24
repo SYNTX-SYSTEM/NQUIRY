@@ -5,13 +5,18 @@
  *
  * Fixtures mirror `application.inquiry_queries` output field-for-field (F02, published).
  */
-import { describe, expect, it } from "vitest";
+import { describe, expect, expectTypeOf, it } from "vitest";
 import type { Capability, ChallengeDetail, SessionPosition, WorkspaceOverview } from "../../lib/api/inquiryClient";
-import { accessTrace, challengeTrace, sessionTrace, workspaceTrace } from "../../lib/field/position";
+import {
+  accessTrace,
+  challengeTrace,
+  sessionTrace,
+  type SessionTraceInput,
+  workspaceTrace,
+} from "../../lib/field/position";
 
 const WS = { workspaceId: "11111111-1111-1111-1111-111111111111", name: "Conversion inquiry", governedFounding: true };
 const CH = "22222222-2222-2222-2222-222222222222";
-const SID = "33333333-3333-3333-3333-333333333333";
 
 const available: Capability = { available: true, reasonCode: null, reason: null };
 const unavailable = (code: string, reason: string): Capability => ({ available: false, reasonCode: code, reason });
@@ -37,20 +42,13 @@ function detail(openSession: Capability = available): ChallengeDetail {
   };
 }
 
-function position(establishedBy: SessionPosition["establishedBy"]): SessionPosition {
+/** Exactly the coordinates `sessionTrace` reads (F02-published); independent of projection growth. */
+function position(establishedBy: SessionPosition["establishedBy"]): SessionTraceInput {
   return {
     workspace: WS,
-    challenge: { challengeId: CH, title: "Signup conversion dropped 18%", description: null },
-    session: { sessionId: SID, state: "SETUP", version: 2, method: "QUESTION_BURST 1.0", createdAt: "2026-09-24T10:05:00+00:00" },
-    phases: [],
-    burst: null,
-    participants: [],
-    sessionControllers: [],
+    challenge: { challengeId: CH, title: "Signup conversion dropped 18%" },
+    session: { state: "SETUP" },
     establishedBy,
-    viewer: { userId: "u", role: "Facilitator", isSessionController: true, isGovernanceRoot: false },
-    actions: {} as SessionPosition["actions"],
-    admitCandidates: [],
-    grantCandidates: [],
   };
 }
 
@@ -122,6 +120,15 @@ describe("MUST BECOME TRUE", () => {
   it("Session: a state without a governed establishing commit says so, it does not invent one", () => {
     const t = sessionTrace(position(null));
     expect(t[4]).toMatchObject({ label: "SETUP", establishedBy: null });
+  });
+});
+
+describe("contract with the published projection (post-F03 sync, WU-SF01.8)", () => {
+  it("the published SessionPosition stays assignable to what the trace reads", () => {
+    // Type-level: enforced by tsc (L5). `SessionTraceInput` is declared structurally, so this
+    // fails the build if a later Field removes or retypes a field the trace reads (proven
+    // against a mutated projection, WU-SF01.8), instead of the trace silently drifting.
+    expectTypeOf<SessionPosition>().toMatchTypeOf<SessionTraceInput>();
   });
 });
 

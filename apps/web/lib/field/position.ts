@@ -17,7 +17,7 @@
  *
  * Inputs are the published F02 projection types, consumed read-only.
  */
-import type { Capability, ChallengeDetail, SessionPosition, WorkspaceOverview } from "../api/inquiryClient";
+import type { Capability, ChallengeDetail, WorkspaceOverview } from "../api/inquiryClient";
 
 export type TraceCoordinate = "access" | "workspace" | "challenge" | "session" | "session-state";
 export type TraceStatus = "established" | "current" | "possible" | "unavailable";
@@ -79,11 +79,27 @@ export function challengeTrace(detail: ChallengeDetail): TraceSegment[] {
 }
 
 /**
- * Session trace primitive. NOT adopted on the Session page in SF-01: that page
- * is inside the F03 contact zone and is re-homed only after F03 is published
- * (SF-01 human decision 3). It reads only the F02-published coordinates.
+ * Exactly what the trace reads, all F02-published coordinates, declared
+ * structurally instead of derived from the projection type. Two consequences:
+ * the trace and its proof are unaffected when the projection grows (F03 added
+ * `serverNow`, `questionSet` and Burst fields: the post-sync First Broken
+ * Relation, WU-SF01.8), and the contract test (`SessionPosition` assignable
+ * to this) fails if a later Field removes or retypes a field read here.
  */
-export function sessionTrace(position: SessionPosition): TraceSegment[] {
+export type SessionTraceInput = {
+  readonly workspace: { readonly workspaceId: string; readonly name: string };
+  readonly challenge: { readonly challengeId: string; readonly title: string | null };
+  readonly session: { readonly state: string };
+  readonly establishedBy: { readonly commandType: string } | null;
+};
+
+/**
+ * Session trace primitive. NOT adopted on the Session page yet: Session-page
+ * integration is Stage 2 and needs its own authorization (SF-01 human
+ * decision 3 and the integration law). It reads only the F02-published
+ * coordinates.
+ */
+export function sessionTrace(position: SessionTraceInput): TraceSegment[] {
   const challengeHref = `/workspaces/${encodeURIComponent(position.workspace.workspaceId)}/challenges/${encodeURIComponent(
     position.challenge.challengeId,
   )}`;
