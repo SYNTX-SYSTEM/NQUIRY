@@ -1340,6 +1340,15 @@ ACTIVE Session FacilitatorScopeBinding
 
 This does not grant generic Session Control or Human Decision Rights.
 
+> **Post-baseline prototype narrowing (2026-09-24, F02 WU-02.12):** in the
+> current prototype, FacilitatorScopeBinding is not materialized. Burst start
+> and manual Burst completion are closed instead by a current Session-scoped
+> `SESSION_CONTROL_RIGHT` binding at `SESSION:<session_id>` (human decision
+> HD-9, 16 §41 REC-009 / NQ-DEC-037). The closure above is preserved as the
+> architecture's broader model and stays OPEN for production
+> (16 NQ-GAP-080). The narrowing does not make a Facilitator role, or any
+> role, sufficient on its own (`ROLE ≠ AUTHORITY`).
+
 Status:
 
 ```text

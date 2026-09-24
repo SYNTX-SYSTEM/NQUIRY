@@ -20,6 +20,7 @@ from persistence.command_repository import (
     AttemptNotFound,
     AttemptOutcomeAlreadyFinal,
     CommandPayloadConflict,
+    CommandTypeMismatch,
     CommandWorkspaceMismatch,
     SqlAlchemyCommandRepository,
 )
@@ -47,10 +48,11 @@ def _envelope(
     payload: object = _Payload("hello"),
     target_refs: tuple[str, ...] = (),
     expected_versions: dict[str, RecordVersion] | None = None,
+    command_type: str = "CMD_TEST_OPERATION",
 ) -> CommandEnvelope:
     return CommandEnvelope(
         command_id=command_id,
-        command_type="CMD_TEST_OPERATION",
+        command_type=command_type,
         command_contract_version=ContractVersion("1.0"),
         attempt_id=attempt_id,
         correlation_id=CorrelationId(uuid.uuid4()),
@@ -176,6 +178,43 @@ def test_denies_reusing_a_command_id_under_a_different_workspace(
             ),
             received_at=_LATER,
         )
+
+
+def test_denies_reusing_a_command_id_for_a_different_command_type(
+    db_connection: sa.Connection,
+) -> None:
+    """F02 WU-02.12 (FBR-B): 09 §4.3 defines `command_id` as "the stable
+    identity of one logical requested consequential operation". A second
+    Command type under the same id is a different operation even when the
+    payload fingerprint is equal (two Commands can share a payload shape).
+    Accepting it would make the `commands` row of one Command the
+    provenance of another Command's effect.
+    """
+    workspace_id = _workspace(db_connection, email="cmd-type-reuse@nonproof.test")
+    repo = SqlAlchemyCommandRepository(db_connection)
+    command_id = CommandId(uuid.uuid4())
+
+    repo.record_attempt(
+        _envelope(
+            command_id=command_id,
+            attempt_id=AttemptId(uuid.uuid4()),
+            workspace_id=workspace_id,
+            command_type="CMD_FIRST_OPERATION",
+        ),
+        received_at=_NOW,
+    )
+
+    with pytest.raises(CommandTypeMismatch):
+        repo.record_attempt(
+            _envelope(
+                command_id=command_id,
+                attempt_id=AttemptId(uuid.uuid4()),
+                workspace_id=workspace_id,
+                command_type="CMD_SECOND_OPERATION",
+            ),
+            received_at=_LATER,
+        )
+    assert len(repo.list_attempts(command_id)) == 1
 
 
 def test_denies_replaying_an_already_recorded_attempt_id(db_connection: sa.Connection) -> None:

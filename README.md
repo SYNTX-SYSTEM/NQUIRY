@@ -48,6 +48,19 @@ is implemented and tested. Two further fields extended that base:
   header-trust weakness Architecture 17 disclosed; see "What's still
   open" below for what this does *not* close).
 
+Since then, execution runs Field by Field under
+`docs/architecture/20_SYSTEM_FIELD_ENGINEERING.md` (governing
+engineering architecture) and `19_NQUIRY_IMPLEMENTATION_WITH_FRONTEND_RUNNING.md`
+(Field plan F00–F12). Field reports live under
+`docs/implementation/field-reports/`: F00 (baseline) and F01 (identity,
+Workspace, governance) are committed. F02 (Challenge, Session,
+participation) is complete, including its Field-closure Work Unit WU-02.12,
+and awaiting human review. It makes the
+governed path clickable: found a Workspace → add a Facilitator → frame a
+Challenge → grant and open a Session → lawful progression to the
+protected, HUMAN_ONLY question-generation position. The walkthrough is in
+`docs/RUNTIME_OPERATION.md` §21.
+
 Every package and field has its own dated completion report — the
 full, ordered proof trail — under
 [`docs/implementation/proof-reports/`](docs/implementation/proof-reports/)
@@ -96,29 +109,33 @@ To run the test suite / static gates directly:
 
 ```bash
 pip install -e ".[dev]"                 # requires Python >= 3.13
-pytest
+DATABASE_URL=…/nquiry_test pytest       # isolated test DB, see runbook §22
 ruff check .
 mypy packages apps/api/src apps/worker/src scripts
 
 cd apps/web && npm install && npm run lint && npm run typecheck && npm test && npm run e2e
+npm run e2e:real                        # real-stack browser lane (no mocking)
 ```
+
+Both browser lanes test whatever already serves `:3000`/`:8000`. To prove
+your working tree, rebuild first (`docker compose -p nquiry --profile app up
+-d --build`). See `docs/RUNTIME_OPERATION.md` §22.
 
 ## What's still mocked, stubbed, or blocked — and why
 
 Honest, not marketing:
 
 - **HARD-DEP-001 — legitimate first Workspace governance-root
-  bootstrap: BLOCKED, open.** There is no answer yet to "who may
-  legitimately become a Workspace's first governance authority, and by
-  what provable mechanism." Every Workspace in this repository,
-  including the demo login's own, is seeded via
-  `test_support.nonproof_bootstrap.NonProofWorkspaceBootstrap` — a
-  fixture explicitly labeled, in the database itself, as
-  `NON_PROOF_FIXTURE`, never a legitimate production bootstrap. The
-  local login field (above) closes a *different* gap (verifying WHO is
-  calling) and deliberately does not touch this one — see
-  `docs/architecture/18_LOCAL_AUTHENTICATION_ADAPTER.md`'s own
-  HARD-DEP-001 RELATION section.
+  bootstrap: RESOLVED (Option A, self-service founder), 2026-09-21.**
+  Materialized in Field F01 as the governed `CMD_CREATE_WORKSPACE`
+  Command; provenance in `docs/architecture/16_DECISION_GAP_REGISTER.md`
+  §41 REC-001. Workspaces seeded by
+  `test_support.nonproof_bootstrap.NonProofWorkspaceBootstrap` (every
+  PKG-era test fixture and `scripts/seed_local_demo.py`'s demo
+  Workspace) stay `NON_PROOF_FIXTURE`. Note: the database has no column
+  that labels those rows; the distinction lives in provenance (only a
+  governed founding has `CMD_CREATE_WORKSPACE` command/audit rows) and
+  in the seed script's own printed disclosure.
 - **HARD-DEP-002 — real AI provider eligibility: EXTERNAL_DEPENDENCY,
   open.** The AI Gateway's only concrete provider is
   `MockProviderAdapter` (`packages/ai_gateway/adapters/providers/mock.py`).
@@ -131,19 +148,28 @@ Honest, not marketing:
   message, and exits `0` by design. Blocked on a durable
   `OutboxRecord.commit_id` → `EventEnvelope` reconstruction path that
   does not exist yet.
-- **No generic Command/Query HTTP dispatch.** Only the two routes
-  Architecture 17 named (`GET` session view, `POST` decide) are wired
-  to real HTTP. Every other Command/Query the architecture defines
-  (Challenge/Session creation, Question selection, Evidence, recovery,
-  AI analysis, …) exists and is fully tested at the application layer,
-  but has no HTTP route — calling it today means a direct Python call
-  in a test, not a request.
+- **HTTP coverage is partial, and grows per Field.** Routes exist for
+  local auth, the Architecture-17 Session view and decide, and the F01
+  Workspace Commands/Queries, and the F02 Challenge/Session/transition/
+  participation/grant routes (runbook §18). Several application-layer
+  Commands still have no route (Question selection, open Decision
+  consideration, recovery). Others do not exist yet at all: Burst
+  operations, Question capture, AI analysis and Evidence commands are
+  F03–F06 scope.
 - **No production authentication provider.** The local login (above)
   is a real, hardened LOCAL credential adapter — not an OIDC/external
   identity provider integration (GAP-14-001 remains open).
-- **No Workspace-list/dashboard UI.** The frontend's root route lands
-  on one operator-configured default Session; there is no UI or query
-  for "show me the Workspaces/Sessions I belong to" yet.
+- **Browser proof classes.** The Playwright suites under
+  `apps/web/tests/e2e/` that use `page.route()` are *mocked browser
+  proof* (component/contract behavior only). They are not runtime
+  proof. Real-stack browser proof (real web → API → auth → PostgreSQL,
+  no mocking) is the `apps/web/tests/real-stack/` lane, starting with
+  Field F02. See `docs/architecture/20_SYSTEM_FIELD_ENGINEERING.md`
+  §12.
+- **The seeded demo Session is a NON_PROOF fixture.** Its state
+  (captured questions in a never-started Burst of a DRAFT Session) is
+  not reachable through lawful transitions. Use it only as a labelled
+  fixture, never as proof of governed behavior.
 
 ## No production claims
 

@@ -58,6 +58,8 @@ class SqlAlchemyAuditRepository:
                 causation_id=None if event.causation_id is None else event.causation_id.value,
                 target_refs=list(event.target_refs),
                 authority_source_ref=event.authority_source_ref,
+                authority_source_type=event.authority_source_type,
+                authority_scope_ref=event.authority_scope_ref,
                 result=event.result,
                 human_decision_ref=(
                     None if event.human_decision_ref is None else event.human_decision_ref.value
@@ -103,6 +105,8 @@ def _event_from_row(row: sa.RowMapping) -> AuditEvent:
         causation_id=None if row["causation_id"] is None else CausationId(row["causation_id"]),
         target_refs=tuple(row["target_refs"] or ()),
         authority_source_ref=row["authority_source_ref"],
+        authority_source_type=row["authority_source_type"],
+        authority_scope_ref=row["authority_scope_ref"],
         result=row["result"],
         human_decision_ref=(
             None if row["human_decision_ref"] is None else DecisionId(row["human_decision_ref"])

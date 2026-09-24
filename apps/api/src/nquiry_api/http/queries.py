@@ -44,9 +44,8 @@ def get_session_view(workspace_id: str, session_id: str, request: Request) -> JS
             status_code=401, content={"kind": "denied", "result": "DENY", "reasonCode": str(exc)}
         )
     except ValueError as exc:
-        return JSONResponse(
-            status_code=400, content={"kind": "denied", "result": "DENY", "reasonCode": str(exc)}
-        )
+        # F02 WU-02.9 (E9 repair): malformed input is REJECTED, not DENIED.
+        return JSONResponse(status_code=400, content={"kind": "rejected", "reasonCode": str(exc)})
     return JSONResponse(content=body)
 
 

@@ -115,10 +115,14 @@ def test_grant_without_active_membership_is_rejected(db_connection: sa.Connectio
             )
         )
 
-    # Connection remains usable after the savepoint rollback.
+    # Connection remains usable after the savepoint rollback. Scoped to
+    # this test's own Workspace: an unscoped COUNT(*) also counted rows
+    # a live, demo-seeded database legitimately holds (F02 WU-02.5 fix).
     assert (
         db_connection.execute(
-            sa.select(sa.func.count()).select_from(human_authority_bindings_table)
+            sa.select(sa.func.count())
+            .select_from(human_authority_bindings_table)
+            .where(human_authority_bindings_table.c.workspace_id == workspace_id)
         ).scalar()
         == 0
     )

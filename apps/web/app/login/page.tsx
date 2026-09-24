@@ -32,7 +32,14 @@ export default function LoginPage() {
           router.replace("/");
           return;
         }
-        setState({ kind: "error", message: "Incorrect email or password." });
+        // F02 WU-02.12 (FBR-C): a malformed request is not a credential denial.
+        setState({
+          kind: "error",
+          message:
+            result.kind === "rejected"
+              ? "The login request was invalid. Please enter an email and a password."
+              : "Incorrect email or password.",
+        });
       })
       .catch(() => {
         setState({ kind: "error", message: "Unable to reach the server. Please try again." });

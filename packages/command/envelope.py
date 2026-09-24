@@ -142,6 +142,12 @@ class CommandEnvelope:
     evidence_set_ref: EvidenceSetId | None = None
     method_version_ref: MethodVersion | None = None
     idempotency_key: str | None = None
+    created_refs: tuple[str, ...] = ()
+    """F02 WU-02.6: refs of records this Command CREATES (e.g. a new
+    Challenge). Not version-checked -- a new record has no prior version;
+    its identity uniqueness is enforced by the database inside the
+    CommitUnit. Recorded, with `target_refs`, on the CommitUnit and audit
+    event so "what effect occurred" is reconstructable."""
 
     def __post_init__(self) -> None:
         # Mandatory adversarial attack: Event submitted as Command. An
@@ -181,6 +187,10 @@ class CommandEnvelope:
             )
         if any(not isinstance(v, RecordVersion) for v in self.expected_versions.values()):
             raise TypeError("every expected_versions value must be a RecordVersion")
+        if set(self.created_refs) & set(self.target_refs):
+            raise ValueError("CommandEnvelope.created_refs must be disjoint from target_refs")
+        if any(not isinstance(ref, str) or not ref for ref in self.created_refs):
+            raise ValueError("CommandEnvelope.created_refs must be non-empty strings")
         # Mandatory adversarial attack: missing required expected version.
         target_set = set(self.target_refs)
         expected_set = set(self.expected_versions.keys())

@@ -61,9 +61,9 @@ def _no_session_response(exc: NoValidSessionError) -> JSONResponse:
 
 
 def _malformed_input_response(exc: ValueError) -> JSONResponse:
-    return JSONResponse(
-        status_code=400, content={"kind": "denied", "result": "DENY", "reasonCode": str(exc)}
-    )
+    # F02 WU-02.9 (E9 repair): malformed input is REJECTED, never an
+    # authority DENIAL (19 §29 outcome distinctions).
+    return JSONResponse(status_code=400, content={"kind": "rejected", "reasonCode": str(exc)})
 
 
 @router.post("/workspaces")

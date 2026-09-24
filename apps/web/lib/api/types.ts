@@ -320,7 +320,9 @@ export interface SessionView {
 export type SessionReadResult =
   | { readonly kind: "ok"; readonly data: SessionView }
   | { readonly kind: "denied"; readonly result: BoundaryDenialResult; readonly reasonCode: string }
-  | { readonly kind: "indeterminate"; readonly blockedTargetRef: string };
+  | { readonly kind: "indeterminate"; readonly blockedTargetRef: string }
+  // F02 WU-02.12 (FBR-C): malformed ids are REJECTED since F02 WU-02.9 (E9).
+  | { readonly kind: "rejected"; readonly reasonCode: string };
 
 /**
  * `POST /decisions/{d}/decide` (12 §23's own COMMAND row,
@@ -362,4 +364,6 @@ export type DecisionActionResult =
   | { readonly kind: "committed"; readonly decision: DecisionView }
   | { readonly kind: "denied"; readonly result: BoundaryDenialResult; readonly reasonCode: string }
   | { readonly kind: "indeterminate"; readonly blockedTargetRef: string }
-  | { readonly kind: "rejected"; readonly reasonCode: string };
+  | { readonly kind: "rejected"; readonly reasonCode: string }
+  // F02 WU-02.12 (FBR-C): a proven rollback is not an input rejection.
+  | { readonly kind: "failed_precommit"; readonly reasonCode: string };

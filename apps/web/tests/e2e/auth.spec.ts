@@ -63,6 +63,21 @@ test("wrong credentials show an error and do not navigate away from /login", asy
   await expect(page).toHaveURL(/\/login$/);
 });
 
+test("WU-02.12: a rejected (malformed) login is not reported as wrong credentials", async ({ page }) => {
+  await page.route(LOGIN_ROUTE, (route) =>
+    route.fulfill({ status: 400, json: { kind: "rejected", reasonCode: "MALFORMED_REQUEST_BODY" } }),
+  );
+
+  await page.goto("/login");
+  await page.getByTestId("login-email").fill("someone@nonproof.test");
+  await page.getByTestId("login-password").fill("any-password");
+  await page.getByTestId("login-submit").click();
+
+  await expect(page.getByTestId("login-error")).toContainText("The login request was invalid");
+  await expect(page.getByTestId("login-error")).not.toContainText("Incorrect email or password");
+  await expect(page).toHaveURL(/\/login$/);
+});
+
 test("correct credentials log in and reach either the Workspaces list or its configured default Session", async ({
   page,
 }) => {

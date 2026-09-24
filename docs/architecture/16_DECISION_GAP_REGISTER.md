@@ -61,7 +61,7 @@ Fresh recursive extraction was performed across LEVEL 1, LEVEL 2 and 00 through 
 
 ## 5. Canonical Gap Register
 
-TOTAL_CANONICAL_GAPS: 78
+TOTAL_CANONICAL_GAPS: 78 (baseline-candidate; current: 80 including post-baseline NQ-GAP-079 and NQ-GAP-080, §41 REC-010)
 
 | GAP_ID | TITLE | STATUS | FIRST SOURCE | ALIASES |
 |---|---|---|---|---|
@@ -105,7 +105,7 @@ TOTAL_CANONICAL_GAPS: 78
 | NQ-GAP-038 | Export Authority | OPEN | 05 | GAP-04-013 |
 | NQ-GAP-039 | Membership Administration Authority | RESOLVED | 05 | GAP-04-014 |
 | NQ-GAP-040 | AI Facilitator Future Authority | DEFERRED | 05 | GAP-04-015 |
-| NQ-GAP-041 | Legitimate first Workspace governance-root bootstrap | BLOCKED | 05 | GAP-05-001, HARD-DEP-001 |
+| NQ-GAP-041 | Legitimate first Workspace governance-root bootstrap | RESOLVED (post-baseline, §41 REC-001) | 05 | GAP-05-001, HARD-DEP-001 |
 | NQ-GAP-042 | Cached Authorization and Commit Recheck Mechanism | OPEN | 05 | GAP-05-002 |
 | NQ-GAP-043 | Governance Operation Atomicity | OPEN | 05 | GAP-05-003 |
 | NQ-GAP-044 | Governance Record Retention | OPEN | 05 | GAP-05-004 |
@@ -143,6 +143,8 @@ TOTAL_CANONICAL_GAPS: 78
 | NQ-GAP-076 | Methodology governance | DECISION_REQUIRED | LEVEL 1 | D8 |
 | NQ-GAP-077 | AI provider | DECISION_REQUIRED | LEVEL 1 | D9 |
 | NQ-GAP-078 | Business model | DEFERRED | LEVEL 1 | D10 |
+| NQ-GAP-079 | Session Participation Join/Leave Authority | OPEN (post-baseline, §41 REC-010; join closed for the prototype by REC-006, leave/removal open) | 09 | GAP-09-007 |
+| NQ-GAP-080 | Production Burst Control Authority Model (Facilitator + Session FacilitatorScopeBinding vs Session-scoped SESSION_CONTROL_RIGHT) | OPEN (post-baseline, §41 REC-009/REC-010; prototype closed by REC-009) | 04/05 | GAP-04-005, AUTH-DEP-BURST-002..005, GOV-008 |
 
 ### 5.1 Canonical gap object obligations
 
@@ -175,7 +177,7 @@ For unresolved items, absent source detail remains explicit. No placeholder valu
 | NQ-DEC-019 | One ACID transaction for prototype CommitUnit | ESTABLISHED | 12 | UPSTREAM_AUTHORITY_OR_APPROVED_ARCHITECTURE | source hierarchy + explicit human gate where required |
 | NQ-DEC-020 | Modular monolith reference implementation | ESTABLISHED | 12/14 | UPSTREAM_AUTHORITY_OR_APPROVED_ARCHITECTURE | source hierarchy + explicit human gate where required |
 | NQ-DEC-021 | Reference technology stack | ESTABLISHED | 14 implementation scope | UPSTREAM_AUTHORITY_OR_APPROVED_ARCHITECTURE | source hierarchy + explicit human gate where required |
-| NQ-DEC-022 | Resolve Legitimate first Workspace governance-root bootstrap | REQUIRED | NQ-GAP-041 | ARCHITECTURAL_HUMAN_DECISION | source hierarchy + explicit human gate where required |
+| NQ-DEC-022 | Resolve Legitimate first Workspace governance-root bootstrap | ESTABLISHED (post-baseline, §41 REC-001) | NQ-GAP-041 | ARCHITECTURAL_HUMAN_DECISION | source hierarchy + explicit human gate where required |
 | NQ-DEC-023 | Resolve Export Authority Resolution Home | REQUIRED | NQ-GAP-047 | ARCHITECTURAL_HUMAN_DECISION | source hierarchy + explicit human gate where required |
 | NQ-DEC-024 | Resolve Provider/privacy eligibility for exact prototype data class and provider path | REQUIRED | NQ-GAP-060 | ARCHITECTURAL_HUMAN_DECISION | source hierarchy + explicit human gate where required |
 | NQ-DEC-025 | Resolve Target market | REQUIRED | NQ-GAP-069 | ARCHITECTURAL_HUMAN_DECISION | source hierarchy + explicit human gate where required |
@@ -185,6 +187,12 @@ For unresolved items, absent source detail remains explicit. No placeholder valu
 | NQ-DEC-029 | Resolve Measurement | REQUIRED | NQ-GAP-075 | ARCHITECTURAL_HUMAN_DECISION | source hierarchy + explicit human gate where required |
 | NQ-DEC-030 | Resolve Methodology governance | REQUIRED | NQ-GAP-076 | ARCHITECTURAL_HUMAN_DECISION | source hierarchy + explicit human gate where required |
 | NQ-DEC-031 | Resolve AI provider | REQUIRED | NQ-GAP-077 | ARCHITECTURAL_HUMAN_DECISION | source hierarchy + explicit human gate where required |
+| NQ-DEC-032 | Session control authority is SESSION-scoped | ESTABLISHED (post-baseline, §41 REC-002) | F02 HD-1; 04 §23–34 | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-24 |
+| NQ-DEC-033 | Dev-only local identity provisioning carries no authority | ESTABLISHED (post-baseline, §41 REC-003) | F02 HD-3; GAP-14-001 stays open | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-24 |
+| NQ-DEC-034 | Typed authority sources at the effect gate (BINDING / ROLE / FOUNDING) | ESTABLISHED (post-baseline, §41 REC-004) | F02 HD-6; NQ-DEC-014, NQ-GAP-054 | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-24 |
+| NQ-DEC-035 | Session controller admits participants; no self-join | ESTABLISHED (post-baseline, §41 REC-006) | F02 HD-7; NQ-GAP-079 (join) | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-24 |
+| NQ-DEC-036 | At least one participant before Question Generation opens | ESTABLISHED (post-baseline, §41 REC-007) | F02 HD-8; 03 TRN-SESS-004 | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-24 |
+| NQ-DEC-037 | Prototype Burst control closed by Session-scoped SESSION_CONTROL_RIGHT (prototype narrowing) | ESTABLISHED (post-baseline, §41 REC-009) | F02 HD-9; NQ-GAP-080 (production model open) | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-24 |
 
 No recommendation, mock, default or implementation convenience is ESTABLISHED outside its authorized scope.
 
@@ -545,7 +553,9 @@ Closures are architecture introduced to satisfy source constraints. They are not
 ## 12. Hard Dependency Register
 
 ### HARD-DEP-001: Legitimate first Workspace governance-root bootstrap
-STATUS: BLOCKED. Database seed, migration, admin account, first registered user, first API caller, JWT role, environment variable, technical root and test fixture may materialize bytes but do not establish governance legitimacy. Required closure must identify first legitimate authority, proof, resulting governance root, reconstruction path, subsequent Workspace bootstrap semantics, and whether first-ever system bootstrap differs from later Workspace creation.
+CURRENT STATUS: RESOLVED by human decision (Option A, self-service founder), 2026-09-21, materialized in Field F01. Provenance: §41 REC-001. The baseline-candidate text below is preserved as history.
+
+BASELINE-CANDIDATE STATUS (historical): BLOCKED. Database seed, migration, admin account, first registered user, first API caller, JWT role, environment variable, technical root and test fixture may materialize bytes but do not establish governance legitimacy. Required closure must identify first legitimate authority, proof, resulting governance root, reconstruction path, subsequent Workspace bootstrap semantics, and whether first-ever system bootstrap differs from later Workspace creation.
 
 ### HARD-DEP-002: Provider/privacy eligibility for exact prototype data class and provider path
 STATUS: EXTERNAL_DEPENDENCY. MockProvider, API key, encryption, provider marketing, model capability and developer preference do not close it. Required chain includes data classification, Workspace scope, sensitivity, provider, processing location, retention, training use, subprocessors, transfer basis where applicable, logging, prompt storage, tool disclosure, egress control and provider eligibility. External privacy/legal/security input remains explicit where required.
@@ -647,7 +657,7 @@ T0 through T12 remain the approved test levels from 13/14. Gap resolution trigge
 | GATE | BLOCKER | CURRENT EFFECT |
 |---|---|---|
 | Architecture prototype implementation | no unresolved contradiction in bounded implementation path | MAY PROCEED under explicit non-proof fixture/mock conditions after baseline human freeze |
-| Executable prototype acceptance | HARD-DEP-001 | BLOCKED |
+| Executable prototype acceptance | HARD-DEP-001 | RESOLVED post-baseline (§41 REC-001); pre-F01 fixture-rooted Workspaces remain NON_PROOF |
 | Executable prototype acceptance | HARD-DEP-002 for real provider path | BLOCKED |
 | Production deployment | production security/privacy/retention/deployment gaps | BLOCKED |
 
@@ -784,6 +794,7 @@ BLOCKED_GAPS: 1
 RESOLVED_GAPS: 8
 DEFERRED_GAPS: 5
 HARD_DEPENDENCIES: HARD-DEP-001, HARD-DEP-002
+CURRENT_COUNTS: the values above are the baseline-candidate record. Current values are in §41 REC-010 (post-baseline).
 P_CLAIM_STATUS: complete register, executable acceptance remains blocked
 PKG_STATUS: architecture-defined, implementation not started
 BASELINE_READINESS: BASELINE_READY_FOR_PROTOTYPE_IMPLEMENTATION pending HUMAN_REVIEW::16
@@ -1166,7 +1177,8 @@ BASELINE_READINESS: BASELINE_READY_FOR_PROTOTYPE_IMPLEMENTATION pending HUMAN_RE
     {
       "id": "NQ-GAP-041",
       "title": "Legitimate first Workspace governance-root bootstrap",
-      "status": "BLOCKED",
+      "status": "RESOLVED",
+      "post_baseline_record": "REC-001",
       "aliases": [
         "GAP-05-001",
         "HARD-DEP-001"
@@ -1530,6 +1542,33 @@ BASELINE_READINESS: BASELINE_READY_FOR_PROTOTYPE_IMPLEMENTATION pending HUMAN_RE
         "D10"
       ],
       "first": "LEVEL 1"
+    },
+    {
+      "id": "NQ-GAP-079",
+      "title": "Session Participation Join/Leave Authority",
+      "status": "OPEN",
+      "post_baseline_record": "REC-010",
+      "note": "join closed for the prototype by REC-006; leave/removal open",
+      "aliases": [
+        "GAP-09-007"
+      ],
+      "first": "09"
+    },
+    {
+      "id": "NQ-GAP-080",
+      "title": "Production Burst Control Authority Model",
+      "status": "OPEN",
+      "post_baseline_record": "REC-009",
+      "note": "prototype closed by REC-009 (Session-scoped SESSION_CONTROL_RIGHT); 04 §36-39 / 05 §20 Facilitator + FacilitatorScopeBinding model open for production",
+      "aliases": [
+        "GAP-04-005",
+        "AUTH-DEP-BURST-002",
+        "AUTH-DEP-BURST-003",
+        "AUTH-DEP-BURST-004",
+        "AUTH-DEP-BURST-005",
+        "GOV-008"
+      ],
+      "first": "04/05"
     }
   ],
   "decisions": [
@@ -1662,7 +1701,8 @@ BASELINE_READINESS: BASELINE_READY_FOR_PROTOTYPE_IMPLEMENTATION pending HUMAN_RE
     {
       "id": "NQ-DEC-022",
       "title": "Resolve Legitimate first Workspace governance-root bootstrap",
-      "status": "REQUIRED",
+      "status": "ESTABLISHED",
+      "post_baseline_record": "REC-001",
       "source": "NQ-GAP-041"
     },
     {
@@ -1718,6 +1758,48 @@ BASELINE_READINESS: BASELINE_READY_FOR_PROTOTYPE_IMPLEMENTATION pending HUMAN_RE
       "title": "Resolve AI provider",
       "status": "REQUIRED",
       "source": "NQ-GAP-077"
+    },
+    {
+      "id": "NQ-DEC-032",
+      "title": "Session control authority is SESSION-scoped",
+      "status": "ESTABLISHED",
+      "post_baseline_record": "REC-002",
+      "source": "F02 HD-1"
+    },
+    {
+      "id": "NQ-DEC-033",
+      "title": "Dev-only local identity provisioning carries no authority",
+      "status": "ESTABLISHED",
+      "post_baseline_record": "REC-003",
+      "source": "F02 HD-3"
+    },
+    {
+      "id": "NQ-DEC-034",
+      "title": "Typed authority sources at the effect gate",
+      "status": "ESTABLISHED",
+      "post_baseline_record": "REC-004",
+      "source": "F02 HD-6"
+    },
+    {
+      "id": "NQ-DEC-035",
+      "title": "Session controller admits participants; no self-join",
+      "status": "ESTABLISHED",
+      "post_baseline_record": "REC-006",
+      "source": "F02 HD-7"
+    },
+    {
+      "id": "NQ-DEC-036",
+      "title": "At least one participant before Question Generation opens",
+      "status": "ESTABLISHED",
+      "post_baseline_record": "REC-007",
+      "source": "F02 HD-8"
+    },
+    {
+      "id": "NQ-DEC-037",
+      "title": "Prototype Burst control closed by Session-scoped SESSION_CONTROL_RIGHT",
+      "status": "ESTABLISHED",
+      "post_baseline_record": "REC-009",
+      "source": "F02 HD-9"
     }
   ],
   "packages": [
@@ -2149,8 +2231,8 @@ Evidence leak test: PASS architecturally. AI confidence/citation/source existenc
 Recovery leak test: PASS architecturally. Admin/service/latest row/Event/backup/retry/historical authority do not create recovery legitimacy.
 Test leak test: PASS architecturally. Fixture/mock success cannot close hard dependencies.
 Coding-agent readiness test: PASS for bounded implementation under 15 stop rules. If a required semantic prerequisite is unresolved, agent STOP is mandatory.
-Prototype path closure test: ARCHITECTURALLY COHERENT, EXECUTABLE ACCEPTANCE BLOCKED at HARD-DEP-001 and real-provider acceptance at HARD-DEP-002.
-Inverse prototype test: reaches initial Workspace governance root and therefore correctly terminates at HARD-DEP-001 without legitimacy proof.
+Prototype path closure test: ARCHITECTURALLY COHERENT, EXECUTABLE ACCEPTANCE BLOCKED at HARD-DEP-001 and real-provider acceptance at HARD-DEP-002. [Post-baseline: HARD-DEP-001 RESOLVED, §41 REC-001; HARD-DEP-002 unchanged.]
+Inverse prototype test: reaches initial Workspace governance root and therefore correctly terminates at HARD-DEP-001 without legitimacy proof. [Post-baseline: for governed-founding Workspaces the root is the FOUNDING Command, §41 REC-001.]
 
 ## 40. Final Closure Verdict
 
@@ -2194,13 +2276,14 @@ BASELINE_FREEZE_READINESS::PASS
 19. Does every PKG know whether it may execute? **YES through DAG, stop conditions and canonical blocker mapping.**
 20. Does every P claim have explicit proof status? **YES.**
 21. Can bounded architecture be implemented without inventing semantics? **YES under explicit non-proof fixtures and stop conditions.**
-22. Can executable prototype acceptance occur today with current hard dependencies? **NO. BLOCKED by HARD-DEP-001 and HARD-DEP-002 for the real-provider acceptance path.**
+22. Can executable prototype acceptance occur today with current hard dependencies? **NO. BLOCKED by HARD-DEP-001 and HARD-DEP-002 for the real-provider acceptance path.** [Post-baseline: HARD-DEP-001 RESOLVED, §41 REC-001. The real-provider path remains BLOCKED by HARD-DEP-002.]
 23. Can production deployment occur today? **NO. Production blockers remain open.**
 24. What changes those answers? **Explicit authoritative closure of the applicable canonical gaps, required evidence/proof, reconstruction from earliest affected layer, downstream propagation, test/P-claim rerun and human review.**
 
 ### Completion Report
 
 DOCUMENT_VERDICT::PASS_WITH_EXPLICIT_BLOCKERS
+CURRENT_COUNTS::the counts below are the baseline-candidate record; current values: §41 REC-010
 TOTAL_CANONICAL_GAPS::78
 OPEN_GAPS::54
 BLOCKED_GAPS::1
@@ -2219,7 +2302,7 @@ UNRESOLVED_CONFLICTS::2
 TOTAL_ARCHITECTURAL_CLOSURES::266
 TOTAL_IMPLEMENTATION_CHOICES::18
 TOTAL_ASSUMPTIONS::12
-HARD_DEP_001_STATUS::BLOCKED
+HARD_DEP_001_STATUS::BLOCKED (baseline-candidate history; CURRENT: RESOLVED, see §41 REC-001)
 HARD_DEP_002_STATUS::EXTERNAL_DEPENDENCY
 P01_P25_REGISTER_COMPLETE::PASS
 PKG00_PKG32_REGISTER_COMPLETE::PASS
@@ -2247,3 +2330,108 @@ HUMAN_REVIEW::16_REQUIRED
 PROPOSED_BASELINE_STATUS::READY_FOR_BOUNDED_IMPLEMENTATION_FREEZE
 
 STOP. Do not modify 00 through 15. Do not implement code. Do not execute PKG-00. Do not mark HUMAN_APPROVED.
+
+
+---
+
+## 41. Post-Baseline Resolution Records
+
+Added 2026-09-24 during Field F02 under explicit human authorization
+("documentation-only reconciliation where factual repository state is already
+established by human decisions and committed proof"). Sections 1–40 are the
+baseline-candidate record and are preserved. Where §1–§40 state a gap as open
+and a record below closes it, **this section is current**. Governing process:
+`20_SYSTEM_FIELD_ENGINEERING.md` §14.
+
+### REC-001: HARD-DEP-001 / NQ-GAP-041 / NQ-DEC-022 resolved (Option A)
+
+- DECISION: "Any real, verified human (authenticated through the real local-login system, not a fixture/mock identity) may create a Workspace and becomes its governance root at that moment of creation, via a real governed Command. Ungated self-service now, but the eligibility check must be a named, replaceable step."
+- DECIDED BY: human operator, 2026-09-21.
+- RECORDED IN: `docs/implementation/field-reports/F01/WU-01.4.md` ("HUMAN DECISION (recorded 2026-09-21)").
+- MATERIALIZED BY: F01 WU-01.4b `application.workspace_creation_handler.create_workspace` (CMD_CREATE_WORKSPACE, `WorkspaceCreationEligibilityChecker` replaceable step, `AllowAllWorkspaceCreationEligibilityChecker` current policy); committed `0ea5bbb` (`FIELD_COMMIT_APPROVED F01`).
+- EFFECTIVE SCOPE: new Workspaces created through CMD_CREATE_WORKSPACE. Workspaces seeded by `test_support.nonproof_bootstrap` (all PKG-era tests, `scripts/seed_local_demo.py`) remain NON_PROOF_FIXTURE. The schema has no column that distinguishes them; the distinction is carried by provenance (`commands`/`audit_events` rows for CMD_CREATE_WORKSPACE exist only for governed foundings).
+- NOT CLOSED BY THIS: GAP-05-001's "Workspace root succession" (no transfer of WORKSPACE_GOVERNANCE_RIGHT exists), GAP-14-001 (production identity provider), HARD-DEP-002.
+- CONSEQUENCE FOR §28/§40: executable prototype acceptance is no longer blocked by HARD-DEP-001 for governed-founding Workspaces; still blocked by HARD-DEP-002 for the real-provider path.
+
+### REC-002 / NQ-DEC-032: Session control authority is SESSION-scoped (F02 HD-1)
+
+- DECISION: `SESSION_CONTROL_RIGHT` is SESSION-scoped for Session transition authority; exact authority must resolve at `SESSION:<session_id>`. No implicit Challenge→Session inheritance; a WORKSPACE-scoped binding is not sufficient for a specific Session transition; no undocumented automatic Session authority; CreateSession → transition lineage explicit and testable.
+- DECIDED BY: human operator, 2026-09-24 (F02 instruction). Consistent with 04 §23–34 ("AUTHORITY SCOPE: Specific Session").
+- MATERIALIZATION: F02 (see `docs/implementation/field-reports/F02/`).
+
+### REC-003 / NQ-DEC-033: Dev-only local identity provisioning (F02 HD-3)
+
+- DECISION: a DEV-ONLY mechanism may create a local identity record (user + local credential) for development/real-stack proof. It must not create membership, role, binding, Facilitator status or Session authority. Not a production registration feature. GAP-14-001 stays open.
+- DECIDED BY: human operator, 2026-09-24.
+
+### REC-004 / NQ-DEC-034: Typed authority sources at the effect gate (F02 HD-6)
+
+- DECISION: parallel hand-written writers beside CommitCoordinator are not accepted as permanent architecture. CommitCoordinator/BND-014 carry typed authority sources, at minimum BINDING, ROLE and FOUNDING. No fabricated UUID provenance, no fake HumanAuthorityBinding. Audit provenance references actual, reconstructable authority provenance.
+- DECIDED BY: human operator, 2026-09-24.
+- AFFECTS: NQ-DEC-014 (canonical write path restricted to governed CommitUnit, now enforced for role-sourced and founding Commands too), NQ-GAP-054 (audit atomicity; provenance shape), 09 audit contract (typed `authority_source_type` + `authority_scope_ref`).
+
+### REC-005: Proof-language correction (browser proof classes)
+
+Every Playwright suite that existed before F02 (`apps/web/tests/e2e/auth.spec.ts`, `session-view.spec.ts`, `decision.spec.ts`, `workspaces.spec.ts`) fulfils its API calls with `page.route()`. Those suites are **MOCKED BROWSER PROOF** (component/contract behavior), not runtime proof. Earlier reports that describe them as "real browser … real running containers" (F00 WU-00.1 L7, F01 review "real-browser Playwright") are corrected by `docs/implementation/proof-reports/F02-PROOF-LANGUAGE-RECONCILIATION.md`. Genuine **REAL-STACK BROWSER PROOF** before F02 exists only as the one-off manual runs recorded in FULLSTACK-RUNTIME-ACCEPTANCE §12 and F01's live re-verification. The persistent real-stack lane begins in F02.
+
+### REC-006 / NQ-DEC-035: Session participation is admitted by the Session controller (F02 HD-7; closes GAP-09-007 for the prototype)
+
+- DECISION: the holder of `SESSION_CONTROL_RIGHT` at `SESSION:<session_id>` admits an active member of the Session's Workspace as a SessionParticipation (explicit, audited Command, BINDING-sourced). No self-join. Participation remains a relation without operation authority beyond the source-explicit question-submission right (02 §12.4, 09 §28).
+- DECIDED BY: human operator, 2026-09-24, in answer to F02's Case-3 request (09 §82: "Participation mutation authority beyond source join semantics must not be invented").
+- NOT DECIDED: leave/removal semantics (still GAP-09-007 remainder).
+
+### REC-007 / NQ-DEC-036: Participant context required before Question Generation opens (F02 HD-8)
+
+- DECISION: 03 TRN-SESS-004 "SYSTEM_PROOF of required participant/configuration context" means **at least one current SessionParticipation** for the prototype method before CHALLENGE_CAPTURE → QUESTION_GENERATION (coupled with Burst PREPARED → ACTIVE).
+- DECIDED BY: human operator, 2026-09-24.
+
+### REC-008: Documentation Hard Law
+
+Persisted as law in `20_SYSTEM_FIELD_ENGINEERING.md` §14 (human-authorized 2026-09-24): no undocumented Work Unit is complete; no undocumented Field is FIELD_GREEN; architecture-level resolutions are reconciled into this ledger in the same Work Unit.
+
+### REC-009 / NQ-DEC-037: Prototype Burst control is closed by Session-scoped SESSION_CONTROL_RIGHT (F02 HD-9; prototype narrowing)
+
+- DECISION (human operator, 2026-09-24, F02 WU-02.12 instruction, "OPTION B"): for the CURRENT PROTOTYPE, a current `SESSION_CONTROL_RIGHT` binding at exactly `SESSION:<session_id>` closes Burst control, for **Burst start** and **manual Burst completion**. It is an explicit **PROTOTYPE NARROWING**. It is not permission to redefine the broader architecture, and not permission to erase or rewrite 04 / 05.
+- WHAT IT NARROWS: 04 §36 AUTH-DEP-BURST-002 (START) and §39 AUTH-DEP-BURST-005 (COMPLETE, human path) name the Facilitator as the source right. 05 §20 (GOV-008, closing GAP-04-005) states "Workspace Facilitator role + ACTIVE Session FacilitatorScopeBinding → source-explicit Burst control rights in that Session. This does not grant generic Session Control". 12 §9 (authority table) and §23 (API) say "SESSION_CONTROL_RIGHT plus facilitator scope where applicable", and 12 §8.1 lists FacilitatorScopeBinding as conditional ("IF BURST CONTROL PATH REQUIRES IT"). HD-9 decides that in the prototype it is **not** required. The Session-scoped `SESSION_CONTROL_RIGHT` is the Burst control authority.
+- CONSTRAINTS (same instruction): no automatic Session control grant; no inheritance from Challenge authority unless already explicitly authorized; no role-only inference (`ROLE ≠ AUTHORITY`). The controller requires the existing lawful Session-scoped authority relation (HD-1 / REC-002).
+- PRESERVED AS ARCHITECTURE, OPEN FOR PRODUCTION: the 04 / 05 Facilitator + FacilitatorScopeBinding model. Not materialized (no `FacilitatorScopeBinding` object exists in code; `boundaries.bnd_004_role_context` refuses to treat the role alone as Burst authority). Tracked as **NQ-GAP-080**.
+- NOT DECIDED BY THIS: Burst PAUSE / RESUME (AUTH-DEP-BURST-003/004) authority (outside HD-9's stated scope; Case 3 if a Field needs them); automatic timer completion (CONFLICT-007, NQ-GAP-022, NQ-GAP-032; NQ-DEC-017 keeps completion manual); the SYSTEM_SERVICE timer path of AUTH-DEP-BURST-005.
+- RETROACTIVE EFFECT: F02 WU-02.7 already coupled Burst START into TRN-SESS-004 under this reading and classified it as derivable (Case 1). That classification is corrected by F02 WU-02.12: it was a Case-3 authority relation, and HD-9 now closes it. The implementation is unchanged.
+- MATERIALIZATION: `application.session_control_handler` (START, inside CMD_OPEN_QUESTION_GENERATION); manual completion is F03 scope. Architecture home files carry post-baseline pointers: 04 §36 and §39, 05 §20, 12 §9. `20_SYSTEM_FIELD_ENGINEERING.md` §15 HD-9.
+
+### REC-010: Ledger reconciliation (F02 WU-02.12)
+
+Successor record. Nothing in §1–§40 is deleted. Status-bearing baseline lines that would otherwise read as current carry an inline "[Post-baseline …]" or "CURRENT_COUNTS" pointer to this section.
+
+**Status-token convention.** A table status of the form `STATUS (post-baseline, §41 REC-nnn)`, and a YAML `"status": "STATUS"` with `"post_baseline_record": "REC-nnn"`, both mean: the current status is `STATUS`, and its provenance is REC-nnn. The WU-02.4 tokens `RESOLVED_POST_BASELINE_SEE_SECTION_41` / `ESTABLISHED_POST_BASELINE_SEE_SECTION_41` are normalized to this form. No new status value is introduced.
+
+**New canonical rows (post-baseline).**
+- NQ-GAP-079 Session Participation Join/Leave Authority (GAP-09-007, 09). GAP-09-007 had no canonical row, although REC-006 closes its join half. Status OPEN: join is closed for the prototype (REC-006), leave/removal is open.
+- NQ-GAP-080 Production Burst Control Authority Model. Status OPEN: the prototype is closed by REC-009.
+- NQ-DEC-032..037 are added to the §6 table and the YAML `decisions` array. They were previously recorded only in this section.
+
+**Current counts** (recomputed from the §5/§6 tables after this record, superseding §36 and §40 for current use):
+
+| Item | Baseline-candidate (§36/§40) | Current |
+|---|---|---|
+| Canonical gaps | 78 | 80 |
+| OPEN | 54 | 56 (+NQ-GAP-079, +NQ-GAP-080) |
+| BLOCKED | 1 | 0 (NQ-GAP-041 → RESOLVED, REC-001) |
+| RESOLVED | 8 | 9 |
+| DECISION_REQUIRED / IMPLEMENTATION_CHOICE_REQUIRED / EXTERNAL_DEPENDENCY / DEFERRED | 8 / 1 / 1 / 5 | unchanged |
+| Decisions | 31 | 37 |
+| ESTABLISHED | 21 | 28 (NQ-DEC-022, 032..037) |
+| REQUIRED | 10 | 9 |
+| HARD-DEP-001 | BLOCKED | RESOLVED (REC-001) |
+| HARD-DEP-002 | EXTERNAL_DEPENDENCY | unchanged |
+
+**Superseded HARD-DEP-001 readings (index; baseline text preserved).** Read with REC-001: §15 gap dependency graph line "HARD-DEP-001 -> Workspace governance root -> …" and its ROOT GAPS list; §25/§26 non-proof bypass rules (still apply to fixture-rooted Workspaces); P-10, P-12, P-22, P-23, P-25 blocker column "HARD-DEP-001/HARD-DEP-002" (now HARD-DEP-002 only, for governed-founding Workspaces); PKG-02/03/04 "HARD-DEP-001 only when legitimacy proof is required"; ATTACK-28 (still a valid attack against fixture roots); §36 `HARD_DEPENDENCIES`; YAML `hard_dependencies`; §39 closure/inverse test lines and §40 Q22 (both inline-annotated). §40 Q17 ("Can NonProof bootstrap create governance proof? NO") stays true unchanged.
+
+**Known ledger defects recorded, not repaired in F02** (baseline integrity; they need a dedicated ledger review and do not block F02 or F03):
+- LD-1: NQ-GAP-068 ("User-Controlled AI Context Policy", DEFERRED) aliases unrelated items: GAP-14-001..005 (IdP, egress, tamper evidence, recovery governance, retention) and GAP-10-002..009. §13 and §29 treat GAP-14-001 as an open production blocker. Read GAP-14-001 as OPEN per §13/§29 and REC-001/REC-003, not DEFERRED.
+- LD-2: §38 `NO_ORPHAN_POLICY: PASS` and §40 Q3 overclaim. Upstream ids with no canonical alias include GAP-03-001, -004, -005, -007..015, -018, -019; GAP-07-001, -006..014; GAP-09-001, -002, -004..015; GAP-11-001..015; GAP-12-001..010. Some duplicate canonical rows (GAP-03-013 / GAP-09-008 ≈ NQ-GAP-018; GAP-03-014 ≈ NQ-GAP-019; GAP-09-009 ≈ NQ-GAP-008). GAP-09-007 is repaired by NQ-GAP-079.
+- LD-3: §8 `TOTAL_ARCHITECTURAL_CLOSURE_REFERENCES: 276` vs 266 AC rows (§40 says 266).
+- LD-4: FIRST SOURCE "06" on NQ-GAP-022..025 and NQ-GAP-054, whose aliases are GAP-03-xxx.
+- LD-5: the header (§1: `IMPLEMENTATION: NOT STARTED`, `UPSTREAM_MUTATION: NONE`) and §40's closing "Do not modify 00 through 15. Do not implement code." describe the baseline-candidate moment. Implementation has proceeded Field by Field under human commit approval (F00, F01), and post-baseline pointers exist in 12, 04 and 05. This section and 20 §14 are the current process record.
+
+**Provenance.** Authorized by the human operator's F02 WU-02.12 instruction (2026-09-24: "Repair the structural findings … FBR-D"; "reconcile the prototype narrowing through the authoritative decision / gap register"). Found by the SFE bootstrap reconstruction `docs/implementation/agent-bootstrap/SFE_AGENT_RECONSTRUCTION_2026-09-24.md` §6/§10.

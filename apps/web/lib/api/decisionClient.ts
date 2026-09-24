@@ -102,6 +102,8 @@ export function parseDecisionActionResult(body: unknown): DecisionActionResult {
       return { kind: "indeterminate", blockedTargetRef: requireNonEmptyString(body, "blockedTargetRef") };
     case "rejected":
       return { kind: "rejected", reasonCode: requireNonEmptyString(body, "reasonCode") };
+    case "failed_precommit":
+      return { kind: "failed_precommit", reasonCode: requireNonEmptyString(body, "reasonCode") };
     default:
       throw new TypeError(`unrecognized DecisionActionResult kind ${JSON.stringify(body.kind)}`);
   }

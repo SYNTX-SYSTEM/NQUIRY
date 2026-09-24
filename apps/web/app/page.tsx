@@ -17,17 +17,12 @@
  * real answer -- proven by this repository's own existing Playwright
  * E2E convention.
  *
- * "The real application" landing target: `NEXT_PUBLIC_DEFAULT_WORKSPACE_ID`/
- * `NEXT_PUBLIC_DEFAULT_SESSION_ID` (optional, set on the `web` service
- * in `docker-compose.yml`) name one specific seeded demo Session
- * (`scripts/seed_local_demo.py`) to land on directly after login; if
- * unset, a logged-in visitor is sent to `/workspaces` (F01 WU-01.9),
- * the real Workspace list/orientation screen -- no longer a plain
- * placeholder message, now that a real Workspace list/creation route
- * exists (`docs/architecture/17_LIVE_APPLICATION_RUNTIME_MATERIALIZATION.md`'s
- * own disclosed "No Challenge/Session-creation UI or HTTP route" gap
- * is now closed for the Workspace half; Challenge/Session
- * creation itself remains unbuilt).
+ * Landing target (F02 WU-02.10): a logged-in visitor always goes to
+ * `/workspaces`, the governed entry point. The former optional redirect to
+ * one seeded demo Session (`NEXT_PUBLIC_DEFAULT_WORKSPACE_ID`/
+ * `NEXT_PUBLIC_DEFAULT_SESSION_ID`) was removed. That Session is a
+ * NON_PROOF fixture, is no longer the landing page, and stays reachable
+ * (and labelled) through its Workspace.
  */
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -35,8 +30,6 @@ import { fetchCurrentSession } from "../lib/api/authClient";
 
 type CheckState = { readonly kind: "checking" } | { readonly kind: "redirecting" };
 
-const DEFAULT_WORKSPACE_ID = process.env.NEXT_PUBLIC_DEFAULT_WORKSPACE_ID;
-const DEFAULT_SESSION_ID = process.env.NEXT_PUBLIC_DEFAULT_SESSION_ID;
 
 export default function Home() {
   const router = useRouter();
@@ -54,10 +47,9 @@ export default function Home() {
           return;
         }
         setState({ kind: "redirecting" });
-        if (DEFAULT_WORKSPACE_ID && DEFAULT_SESSION_ID) {
-          router.replace(`/workspaces/${DEFAULT_WORKSPACE_ID}/sessions/${DEFAULT_SESSION_ID}`);
-          return;
-        }
+        // F02 seeded-demo law: the entry point is the governed Workspace
+        // list. The NON_PROOF demo Session is no longer the landing page
+        // (it stays reachable, labelled, through its Workspace).
         router.replace("/workspaces");
       })
       .catch(() => {

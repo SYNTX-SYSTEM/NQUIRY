@@ -359,3 +359,26 @@ def _membership_from_row(row: sa.RowMapping) -> QuestionBurstMembership:
 
 
 __all__ = ["BurstRepository", "BurstConflict", "SqlAlchemyBurstRepository"]
+
+
+class SqlAlchemyBurstVersionReader:
+    """`CurrentVersionReader` for one Burst's `record_version` (F02 WU-02.7:
+    the TRN-SESS-004 bundle version-checks Session AND Burst)."""
+
+    def __init__(self, connection: sa.Connection, *, burst_id: BurstId) -> None:
+        self._connection = connection
+        self._burst_id = burst_id
+
+    def read(self, target_ref: str) -> RecordVersion | None:
+        if target_ref != burst_target_ref(self._burst_id):
+            return None
+        value = self._connection.execute(
+            sa.select(question_bursts_table.c.record_version).where(
+                question_bursts_table.c.id == self._burst_id.value
+            )
+        ).scalar_one_or_none()
+        return None if value is None else RecordVersion(value)
+
+
+def burst_target_ref(burst_id: BurstId) -> str:
+    return f"burst:{burst_id.value}"

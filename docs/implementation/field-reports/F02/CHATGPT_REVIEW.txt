@@ -1,0 +1,66 @@
+NQUIRY FIELD REVIEW
+FIELD: F02 — CHALLENGE · SESSION · PARTICIPATION (reconstructed after WU-02.12 Field closure)
+HEAD: 0ea5bbb (F01, = origin/master) + uncommitted F02 (WU-02.0..02.12) in worktree .claude/worktrees/local-login-auth
+STATUS: FIELD_GREEN_WITH_DISCLOSED_EXTERNAL_CEILINGS
+ARCHITECTURAL AUTHORITY: 20_SYSTEM_FIELD_ENGINEERING (governing), 19 §22, 03 TRN-SESS-002..004 / TRN-BURST-001..002, 04 AUTH-DEP-CH-001 / SESS-001..004 / BURST-001..002 / Q-001, 05 §20, 09 §4.3/§28/§77-78/§82, 12 §9/§23/§24, 14 §27, 16 §41 REC-001..REC-010
+HUMAN DECISIONS USED: HD-1 Session control is SESSION-scoped; HD-3 DEV-ONLY identity (no authority); HD-6 typed authority sources at the effect gate; HD-7 Session controller admits participants; HD-8 >=1 participant before question generation; HD-9 prototype Burst control (start + manual completion) = Session-scoped SESSION_CONTROL_RIGHT, an explicit prototype narrowing of 04 §36-39 / 05 §20 (production model open, NQ-GAP-080); procedural: reopen F02 for WU-02.12 before commit review
+
+MISSION: Make the governed path real and clickable: login -> Workspace -> governance -> Challenge -> Session -> lawful progression -> QUESTION_GENERATION, with truthful authority, provenance and failure semantics. Frontend-first order; governance-first authority. WU-02.12 closed the structural defects an independent bootstrap reconstruction found in the first review.
+
+CORRECTIONS TO THE FIRST REVIEW (found by the SFE bootstrap, repaired in WU-02.12):
+  FBR-B idempotency identity. The first review claimed "same key, different payload -> rejected". That was true only for create challenge/session/grant. On Session Commands a reused key was replayed whatever the payload (another expectedVersion, another Session). A key reused across Command types that share a payload shape (prepare-burst -> open-question-generation) COMMITTED the effect under a commands row naming the other Command type (provenance corruption). Cross-Workspace reuse returned HTTP 500.
+    Root repair: command_repository.record_attempt enforces Command-type identity (09 §4.3). The Session replay guard applies the authoritative 14 §27 disposition with the real payload fingerprint. Type and Workspace mismatches map to rejected.
+  FBR-C outcome vocabulary. E9 changed producers to emit rejected, but two consumers (session view, workspace orientation) threw and the UI showed a network error. FastAPI validation returned bare 422 {detail} (collides with blocked=422). F01/PKG routes folded FAILED_PRECOMMIT into rejected.
+    Root repair: a RequestValidationError handler returns 400 rejected MALFORMED_REQUEST_BODY; http_dispatch emits failed_precommit; every web parser knows every kind its producer emits; /auth/me fails closed; verdict banners render (no false "Incorrect email or password").
+  FBR-D ledger. 16 §41 records were not propagated into the §6 table, YAML or counts; 20 §15 said 032..034; GAP-09-007 had no canonical row.
+    Repair: REC-009 (HD-9) and REC-010 successor record; NQ-DEC-032..037 in §6 + YAML; NQ-GAP-079 / NQ-GAP-080; current counts 80 gaps (56 OPEN, 9 RESOLVED, 0 BLOCKED) and 37 decisions (28 ESTABLISHED, 9 REQUIRED); superseded HARD-DEP-001 readings indexed; LD-1..LD-5 ledger defects recorded; 04 §36/§39, 05 §20, 12 §9 carry post-baseline pointers; history preserved.
+  WU-02.7 classified Session-scoped control as Burst START authority as Case 1. It was Case 3; HD-9 now closes it.
+  The static no-parallel-writer gate matched one literal string; it now uses AST detection with a falsifier.
+  Both browser lanes reuse whatever serves :3000/:8000; proof now runs against containers rebuilt from this tree (runbook §22).
+
+WHAT CHANGED IN F02 OVERALL:
+  Architecture: SFE persisted as doc 20. The 16 ledger reconciled (HARD-DEP-001 RESOLVED; REC-001..010; NQ-DEC-032..037; NQ-GAP-079/080). README, runbook and 12/04/05 carry post-baseline notes. Mocked vs real browser proof classes defined; a successor record corrects F00/F01 overclaims.
+  Effect gate: BND-014 v1.1 + CommitCoordinator take typed authority (BINDING / ROLE / FOUNDING); no ALLOW without proof; no uuid4 audit fallback. CreateWorkspace and CreateChallenge commit through the gate. AST static gate against application savepoint writers (documented recovery exception, F09). Command identity guaranteed at the gate's input.
+  Audit: authority_source_type + authority_scope_ref (migration a7f2c91d4e10).
+  Session control: BeginSetup, BeginChallengeCapture, PrepareBurst (HUMAN_ONLY), AdmitSessionParticipant, OpenQuestionGeneration (Session + Burst in ONE commit), all at SESSION:<id> (HD-1; Burst START per HD-9). BND-007; expected-version STALE before boundaries; BLOCKED preconditions.
+  Participation: session_participations (migration b3d8e5f0a2c7) + one-open-Burst-per-Session unique.
+  HTTP: 11 F02 routes with a status-mapped envelope. Idempotency-Key = command_id: an identical retry -> committed+replayed, any other reuse -> rejected. All routes: malformed body -> rejected; failed_precommit distinct.
+  Frontend: Workspace, Challenge and Session position pages; controls only from server capabilities; provenance shown; NON_PROOF label from provenance; restrained F11 foundation; every parser matches its producer.
+  Test environment: live-DB suite on isolated nquiry_test.
+
+MIGRATIONS: a7f2c91d4e10_typed_authority_provenance, b3d8e5f0a2c7_session_participation (head b3d8e5f0a2c7; WU-02.12 added none)
+NEW DEPENDENCIES: none
+
+TEST COMMANDS:
+  DATABASE_URL=postgresql+psycopg://nquiry:nquiry_local_dev_only@localhost:15432/nquiry_test python -m pytest -q
+  python -m pytest -q tests/ apps/api/tests          (no DATABASE_URL)
+  ruff format --check . && ruff check . && MYPYPATH=packages:apps/api/src:apps/worker/src:scripts mypy packages apps/api/src apps/worker/src scripts
+  python scripts/check_architecture_dependencies.py && python scripts/check_provider_sdk_imports.py && python scripts/check_test_only_imports.py && python scripts/verify_migrations.py
+  docker compose -p nquiry --profile app up -d --build          (FIRST: both browser lanes test whatever already serves :3000/:8000)
+  (cd apps/web && npx eslint . && npx tsc --noEmit && npx vitest run && npx playwright test && npx next build)
+  (cd apps/web && REAL_STACK_PYTHON=<python> npx playwright test --config playwright.real-stack.config.ts)
+
+RESULTS (final, this tree, after WU-02.12):
+  ARCHITECTURE PROOF: every F02 transition and authority dependency is architecture-defined or closed by a recorded human decision (HD-1/3/6/7/8/9) reconciled into 16 §41 and 20 §15; baseline history preserved.
+  IMPLEMENTATION PROOF: live DB (nquiry_test) 1360 passed / 2 skipped / 0 failed (twice); pure 751 passed; ruff/mypy clean; architecture, provider-SDK and test-only-import gates PASS; migrations static + live PASS (22 revisions, single head); eslint/tsc clean; vitest 98; next build OK (8 routes).
+  REAL STACK PROOF (containers rebuilt from this tree after WU-02.12, no mocking): 6/6 passed (F02 flow + a11y + WU-02.12 closure; desktop + Pixel 7). axe: 0 serious/critical WCAG A/AA on F02 pages (negative control proves detection).
+  MOCKED (component contract only, run against the rebuilt web): 39 passed.
+
+WU-02.12 RED (before repair): closure suite 11 failed / 1 passed (positive control); L1 type-identity test failed at collection; vitest vocabulary 6 failed / 1 passed (fail-closed control); real stack on the pre-repair containers: changed-payload key reuse -> HTTP 200 committed.
+  Disclosed deviations: the failed_precommit test first failed for the wrong reason (role literal) and was re-proven RED by temporarily restoring the old mapping line; the AST gate's RED was shown by running the old predicate over the new cases; two mocked component tests were written after the UI change (no RED).
+
+NEGATIVE/ADVERSARIAL: Owner / Challenge-scope / Workspace-scope / other-Session-scope control denied; stale (app/HTTP/browser); cross-Workspace read + write denied (app/HTTP/browser); BND-007 topology; no Burst / no participant / second Burst blocked; non-member admission blocked (handler + DB trigger); grant to a missing or foreign scope rejected; key reuse with a different payload, on another Session, across Command types and across Workspaces -> rejected with no effect; replay != stale; malformed bodies -> rejected; failure injection proves the Session/Burst bundle atomic and failed_precommit distinct on the wire.
+
+RECURSIVE DEEPSWEEP: PASS (reconstruction chain per WU). F01 affected and green (gate, FOUNDING provenance, rejected/failed_precommit semantics, clients and pages updated). PKG-29 decide/view updated. F03 prerequisites satisfied (see DOWNSTREAM).
+INVERSE DEEPSWEEP: PASS. Visible QUESTION_GENERATION <- canonical re-read <- committed CMD_OPEN_QUESTION_GENERATION (commands row type guaranteed) <- BND-014 BINDING SESSION:<id> (also Burst START authority, HD-9) <- lawful grant by the governance root <- ACTIVE membership <- FOUNDING <- verified login. Every link is real and asserted.
+FIRST BROKEN RELATIONS: all known ones repaired at their homes (list in FIELD_REVIEW). No known F02 FBR remains hidden; the remaining items are named limitations.
+
+FIXTURE/MOCK CEILINGS: seed demo = NON_PROOF (the only Decision data); dev identities carry no authority; mocked Playwright = component contract only (incl. 2 retrofitted WU-02.12 tests); the only test doubles are the DB connect monkeypatch and one injected CommitFailedPrecommit.
+EXTERNAL CEILINGS: GAP-14-001 production identity provider open. HARD-DEP-002 untouched (no AI in F02).
+KNOWN LIMITATIONS: capture / complete / freeze are F03; PAUSE/RESUME authority not covered by HD-9; leave/remove participation open (NQ-GAP-079); add member by raw user id; POST /workspaces and decide lack client idempotency keys; F01/PKG routes answer 200 with the outcome in the body; inquiryClient does not shape-validate ok bodies; audit source type nullable (pre-F02 rows); F03 entry conditions: get_by_session single Burst, establishedBy no re-entered state; LD-1..LD-5 ledger defects recorded; 00-13 still "DRAFT FOR HUMAN REVIEW".
+DOWNSTREAM: F03 dependencies satisfied (lawful QUESTION_GENERATION + ACTIVE HUMAN_ONLY Burst + participants; manual completion authority closed by HD-9; timer presentation only; capture right AUTH-DEP-Q-001 + HD-7). F03 may not start before FIELD_COMMIT_APPROVED F02.
+PROCESS INCIDENT: one accidental `git mv` staging in WU-02.10, unstaged immediately; nothing committed.
+
+GIT DIFF STAT: 54 tracked files modified (+2571/-677), all plain modifications (no deletes, renames or staged files); 59 untracked entries (71 files: new modules, 2 migrations, tests, 13 WU reports + FIELD_REVIEW + CHATGPT_REVIEW, 6 PNGs, doc 20, reconciliation record, bootstrap report). git diff --check clean. Index empty.
+PUBLICATION PRE-FLIGHT: documentation synchronized to the main checkout after a conflict check (no independent edits found). Diff audit classified every file; withheld from the F02 commit as not F02 work: apps/web/AGENTS.md and apps/web/CLAUDE.md (generated by `next dev`, 2026-09-21; human decision). Restored an unintended \u2014 rewrite in apps/web/package.json. Secrets check clean.
+COMMIT: NOT YET COMMITTED (awaiting FIELD_COMMIT_APPROVED F02)

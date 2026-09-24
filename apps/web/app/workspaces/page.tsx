@@ -25,7 +25,8 @@ import {
   listWorkspaces,
   type WorkspaceSummary,
 } from "../../lib/api/workspaceClient";
-import { LogoutButton } from "../../components/LogoutButton";
+import Link from "next/link";
+import { AppShell } from "../../components/f02/AppShell";
 
 type LoadState =
   | { readonly kind: "checking" }
@@ -92,59 +93,62 @@ export default function WorkspacesPage() {
       });
   }
 
-  if (state.kind === "checking") {
-    return (
-      <main>
-        <p data-testid="workspaces-checking">Loading your Workspaces...</p>
-      </main>
-    );
-  }
-
-  if (state.kind === "denied") {
-    return (
-      <main>
-        <p role="alert" data-testid="workspaces-denied">
-          Could not load your Workspaces ({state.reasonCode}).
-        </p>
-      </main>
-    );
-  }
-
   return (
-    <main>
-      <h1>Your Workspaces</h1>
-      {state.workspaces.length === 0 ? (
-        <p data-testid="workspaces-empty">You do not have any Workspaces yet.</p>
-      ) : (
-        <ul data-testid="workspaces-list">
-          {state.workspaces.map((workspace) => (
-            <li key={workspace.workspaceId}>
-              <a href={`/workspaces/${workspace.workspaceId}`}>{workspace.name}</a>
-            </li>
-          ))}
-        </ul>
-      )}
-      <h2>Found a new Workspace</h2>
-      <form onSubmit={handleCreate} data-testid="create-workspace-form">
-        <label htmlFor="workspace-name">Name</label>
-        <input
-          id="workspace-name"
-          data-testid="workspace-name-input"
-          type="text"
-          required
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-        />
-        <button type="submit" data-testid="create-workspace-submit" disabled={creating}>
-          {creating ? "Creating..." : "Create"}
-        </button>
-      </form>
-      {createError ? (
-        <p role="alert" data-testid="create-workspace-error">
-          {createError}
-        </p>
-      ) : null}
-      <LogoutButton />
-    </main>
+    <AppShell crumbs={[{ label: "Workspaces" }]}>
+      <div className="grid-2">
+        <section className="panel" aria-labelledby="ws-title">
+          <p className="eyebrow">Your inquiry spaces</p>
+          <h1 id="ws-title">Workspaces</h1>
+          {state.kind === "checking" ? <p data-testid="workspaces-checking">Loading your Workspaces…</p> : null}
+          {state.kind === "denied" ? (
+            <p role="alert" data-testid="workspaces-denied">
+              {state.reasonCode}
+            </p>
+          ) : null}
+          {state.kind === "ready" && state.workspaces.length === 0 ? (
+            <p data-testid="workspaces-empty">You do not have any Workspaces yet.</p>
+          ) : null}
+          {state.kind === "ready" && state.workspaces.length > 0 ? (
+            <ul className="plain-list" data-testid="workspaces-list">
+              {state.workspaces.map((ws) => (
+                <li key={ws.workspaceId}>
+                  <Link className="card-link" href={`/workspaces/${ws.workspaceId}`}>
+                    {ws.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </section>
+        <section className="panel" aria-labelledby="create-ws-title">
+          <h2 id="create-ws-title">Found a Workspace</h2>
+          <p className="muted">
+            Founding makes you this Workspace&apos;s governance root (HARD-DEP-001, Option A). It does not make you a
+            Facilitator. Challenges are framed by Facilitators you add.
+          </p>
+          <form onSubmit={handleCreate} data-testid="create-workspace-form">
+            <div className="field">
+              <label htmlFor="workspace-name">Workspace name</label>
+              <input
+                id="workspace-name"
+                data-testid="workspace-name-input"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+              />
+            </div>
+            <div className="actions-row">
+              <button className="button" type="submit" data-testid="create-workspace-submit" disabled={creating}>
+                {creating ? "Creating…" : "Create Workspace"}
+              </button>
+            </div>
+          </form>
+          {createError !== null ? (
+            <p role="alert" data-testid="create-workspace-error">
+              {createError}
+            </p>
+          ) : null}
+        </section>
+      </div>
+    </AppShell>
   );
 }

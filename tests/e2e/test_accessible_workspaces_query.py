@@ -12,7 +12,7 @@ memberships to read.
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import pytest
 import sqlalchemy as sa
@@ -58,7 +58,9 @@ def _human_actor(user_id: UserId) -> ActorIdentity:
     return ActorIdentity(actor_class=ActorClass.HUMAN_USER, user_id=user_id)
 
 
-def _make_workspace(db_connection: sa.Connection, *, owner: UserId, name: str) -> uuid.UUID:
+def _make_workspace(
+    db_connection: sa.Connection, *, owner: UserId, name: str, occurred_at: datetime = _NOW
+) -> uuid.UUID:
     result = create_workspace(
         db_connection,
         actor=_human_actor(owner),
@@ -66,7 +68,7 @@ def _make_workspace(db_connection: sa.Connection, *, owner: UserId, name: str) -
         command_id=CommandId(uuid.uuid4()),
         attempt_id=AttemptId(uuid.uuid4()),
         correlation_id=CorrelationId(uuid.uuid4()),
-        occurred_at=_NOW,
+        occurred_at=occurred_at,
         commit_id=CommitId(uuid.uuid4()),
         eligibility_checker=AllowAllWorkspaceCreationEligibilityChecker(),
         command_repository=SqlAlchemyCommandRepository(db_connection),
@@ -106,8 +108,15 @@ def test_founder_sees_the_workspace_they_created(db_connection: sa.Connection) -
 
 def test_founder_with_two_workspaces_sees_both_oldest_first(db_connection: sa.Connection) -> None:
     founder = _insert_user(db_connection, email="sees-two@real-human.test")
+    # F02 WU-02.11: distinct creation times. With identical timestamps
+    # "oldest first" is undefined, and the assertion was an intermittent flake.
     first_id = _make_workspace(db_connection, owner=founder, name="First Workspace")
-    second_id = _make_workspace(db_connection, owner=founder, name="Second Workspace")
+    second_id = _make_workspace(
+        db_connection,
+        owner=founder,
+        name="Second Workspace",
+        occurred_at=_NOW + timedelta(minutes=1),
+    )
 
     accessible = _list_for(db_connection, _human_actor(founder))
 

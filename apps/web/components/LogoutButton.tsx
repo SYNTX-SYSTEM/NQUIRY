@@ -20,6 +20,7 @@ export function LogoutButton() {
   return (
     <button
       type="button"
+      className="button secondary"
       data-testid="logout-button"
       onClick={() => {
         logout().then(() => router.replace("/login"));

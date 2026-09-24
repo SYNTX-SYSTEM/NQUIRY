@@ -111,6 +111,10 @@ class AuditEvent:
     state_after_ref: str | None = None
     failure_code: str | None = None
     metadata_ref: str | None = None
+    authority_source_type: str | None = None
+    """F02 HD-6: BINDING / ROLE / FOUNDING. `None` only on pre-F02 rows."""
+    authority_scope_ref: str | None = None
+    """F02 HD-6: exact scope of the authority source, e.g. "SESSION:<uuid>"."""
 
     def __post_init__(self) -> None:
         if not isinstance(self.audit_event_id, AuditEventId):
@@ -148,6 +152,12 @@ class AuditEvent:
             )
         if not self.result:
             raise ValueError("AuditEvent.result must be non-empty")
+        if (self.authority_source_type is None) != (self.authority_scope_ref is None):
+            raise ValueError(
+                "authority_source_type and authority_scope_ref must be set together (HD-6)"
+            )
+        if self.authority_source_type not in (None, "BINDING", "ROLE", "FOUNDING"):
+            raise ValueError(f"unknown authority_source_type {self.authority_source_type!r}")
         if self.human_decision_ref is not None and not isinstance(
             self.human_decision_ref, DecisionId
         ):

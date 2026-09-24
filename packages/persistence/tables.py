@@ -547,6 +547,9 @@ audit_events_table = sa.Table(
     sa.Column("causation_id", sa.Uuid(), nullable=True),
     sa.Column("target_refs", sa.ARRAY(sa.Text()), nullable=False),
     sa.Column("authority_source_ref", sa.Uuid(), nullable=False),
+    # F02 HD-6 (migration a7f2c91d4e10): typed provenance. NULL = pre-F02 untyped row.
+    sa.Column("authority_source_type", sa.Text(), nullable=True),
+    sa.Column("authority_scope_ref", sa.Text(), nullable=True),
     sa.Column("result", sa.Text(), nullable=False),
     sa.Column("human_decision_ref", sa.Uuid(), nullable=True),
     sa.Column("evidence_set_ref", sa.Uuid(), nullable=True),
@@ -1206,6 +1209,36 @@ security_events_table = sa.Table(
     ),
 )
 
+session_participations_table = sa.Table(
+    # F02 WU-02.8 (migration b3d8e5f0a2c7): 09 §28 SessionParticipation RELATION.
+    "session_participations",
+    metadata,
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column("session_id", sa.Uuid(), nullable=False),
+    sa.Column(
+        "workspace_id",
+        sa.Uuid(),
+        sa.ForeignKey("workspaces.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    sa.Column("user_id", sa.Uuid(), sa.ForeignKey("users.id", ondelete="RESTRICT"), nullable=False),
+    sa.Column("joined_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("left_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column(
+        "admitted_by_user_id",
+        sa.Uuid(),
+        sa.ForeignKey("users.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    sa.Column("record_version", sa.BigInteger(), nullable=False),
+    sa.ForeignKeyConstraint(
+        ["session_id", "workspace_id"],
+        ["sessions.id", "sessions.workspace_id"],
+        name="fk_session_participations_session_workspace",
+        ondelete="RESTRICT",
+    ),
+)
+
 local_auth_credentials_table = sa.Table(
     "local_auth_credentials",
     metadata,
@@ -1267,6 +1300,7 @@ __all__ = [
     "inquiry_read_model_table",
     "recovery_records_table",
     "security_events_table",
+    "session_participations_table",
     "local_auth_credentials_table",
     "local_auth_sessions_table",
 ]

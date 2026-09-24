@@ -82,6 +82,16 @@ use). HARD-DEP-001 (legitimate first Workspace governance-root
 bootstrap) is untouched: nothing in this module or in `auth_handler.py`
 decides who may act as a Workspace's governance root -- only WHO is
 calling.
+
+F02 WU-02.12 (FBR-C): a proven SAVEPOINT rollback (`CommitFailedPrecommit`)
+on the decide / add-member / revoke routes is its own outcome,
+`{"kind": "failed_precommit", "reasonCode": <reason>}`. It was previously
+folded into `rejected` with a `FAILED_PRECOMMIT:` prefix, which collapsed
+two of the four generic outcomes (03 §8, 10 §4: input rejection is not a
+proven rollback). These routes keep answering HTTP 200; their outcome is
+the body `kind` (09 §78: status "may map to these outcomes but does not
+define them"). The status-mapped envelope is the F02 routes'
+(`application.http_f02`).
 """
 
 from __future__ import annotations
@@ -477,7 +487,7 @@ def dispatch_record_human_decision(
                 )
             )
         except CommitFailedPrecommit as exc:
-            return {"kind": "rejected", "reasonCode": f"FAILED_PRECOMMIT:{exc.reason}"}
+            return {"kind": "failed_precommit", "reasonCode": exc.reason}
         except CommitIndeterminate as exc:
             return {"kind": "indeterminate", "blockedTargetRef": str(exc.commit_id.value)}
 
@@ -667,7 +677,7 @@ def dispatch_add_member(
         except AddMemberDenied as exc:
             return _chain_denied_body(exc.chain_result)
         except CommitFailedPrecommit as exc:
-            return {"kind": "rejected", "reasonCode": f"FAILED_PRECOMMIT:{exc.reason}"}
+            return {"kind": "failed_precommit", "reasonCode": exc.reason}
         except CommitIndeterminate as exc:
             return {"kind": "indeterminate", "blockedTargetRef": str(exc.commit_id.value)}
     return {"kind": "ok"}
@@ -724,7 +734,7 @@ def dispatch_revoke_authority_binding(
         except AuthorityBindingNotFound:
             return {"kind": "denied", "result": "DENY", "reasonCode": "AUTHORITY_BINDING_NOT_FOUND"}
         except CommitFailedPrecommit as exc:
-            return {"kind": "rejected", "reasonCode": f"FAILED_PRECOMMIT:{exc.reason}"}
+            return {"kind": "failed_precommit", "reasonCode": exc.reason}
         except CommitIndeterminate as exc:
             return {"kind": "indeterminate", "blockedTargetRef": str(exc.commit_id.value)}
     return {"kind": "ok"}

@@ -91,6 +91,7 @@ from typing import Protocol, runtime_checkable
 import sqlalchemy as sa
 from audit.models import AuditEvent, AuditRepository
 from authority.actor import ActorIdentity
+from boundaries.authority_source import AuthorityRequirement, FoundingAuthority
 from boundaries.bnd_014_commit import Bnd014CommitEvaluator, Bnd014Input
 from boundaries.types import BoundaryContext, BoundaryId, BoundaryProof, BoundaryResult
 from command.envelope import CommandEnvelope, CommandOutcome
@@ -193,6 +194,15 @@ class MutationOutcome:
     state_before_ref: str | None = None
     state_after_ref: str | None = None
     relation_refs: tuple[str, ...] = ()
+    governance_refs: tuple[str, ...] = ()
+    """F02: governance records the mutation created (e.g. the founding
+    `WORKSPACE_GOVERNANCE_RIGHT` binding). Recorded on the CommitUnit."""
+    event_type: str | None = None
+    """F02: an explicit domain event name (e.g. "WORKSPACE_CREATED") where
+    an existing contract already fixed one. Default `<command_type>_COMMITTED`."""
+    result_ref: str | None = None
+    """F02: the idempotency `result_ref` (e.g. the created record's id).
+    Default: the commit id."""
 
 
 class StaleVersionConflict(Exception):
@@ -316,10 +326,14 @@ class CommitIndeterminate(Exception):
 
 class CommitCoordinator:
     """The generic atomic-commit orchestration engine (14 PUBLIC
-    INTERFACES: CommitCoordinator). No concrete Command is wired
-    through this class in production yet -- 14 section 46 assigns no
-    concrete Command to PKG-13 either (COMMANDS: NOT_APPLICABLE, "If
-    none are assigned").
+    INTERFACES: CommitCoordinator) and, since F02 HD-6 (16 §41 REC-004),
+    the single governed commit boundary for canonical writes (20 §7).
+    Production Commands wired through it: CreateWorkspace (FOUNDING),
+    CreateChallenge (ROLE), grant/revoke/add-member, CreateSession,
+    RecordHumanDecision, question selection and the F02 Session control
+    Commands (BINDING). The PKG-13 wording ("no concrete Command is wired
+    ... yet") described the package at its own commit and is superseded
+    (F02 WU-02.12).
     """
 
     def __init__(
@@ -348,16 +362,28 @@ class CommitCoordinator:
         *,
         envelope: CommandEnvelope,
         actor: ActorIdentity,
-        required_authority_class: AuthorityClass,
-        authority_scope_type: str,
-        authority_scope_id: uuid.UUID,
         upstream_chain_result: BoundaryResult,
         current_version_reader: CurrentVersionReader,
         mutation: MutationExecutor,
         occurred_at: datetime,
         commit_id: CommitId,
         evidence_freshness_reader: EvidenceFreshnessPort | None = None,
+        required_authority_class: AuthorityClass | None = None,
+        authority_scope_type: str | None = None,
+        authority_scope_id: uuid.UUID | None = None,
+        authority: AuthorityRequirement | None = None,
     ) -> CommitUnit:
+        """F02 HD-6: pass a typed `authority` (BINDING/ROLE/FOUNDING), or
+        the legacy binding triple (normalized to BINDING by BND-014).
+
+        FOUNDING only: the Workspace named by `envelope.workspace_scope_ref`
+        does not exist before `mutation.apply()` creates it, so the
+        `commands`/`command_attempts` rows (FK to `workspaces`) are recorded
+        INSIDE the same SAVEPOINT, right after the mutation. A failed
+        founding therefore leaves nothing behind -- no Workspace, no attempt
+        row -- which is why no FAILED_PRECOMMIT outcome is recorded for it.
+        """
+        founding = isinstance(authority, FoundingAuthority)
         self._failure_injector.before(CommitInjectionPoint.BEFORE_TRANSACTION)
 
         current_versions: dict[str, RecordVersion | None] = {
@@ -391,6 +417,8 @@ class CommitCoordinator:
             required_authority_class=required_authority_class,
             authority_scope_type=authority_scope_type,
             authority_scope_id=authority_scope_id,
+            authority=authority,
+            command_ref=envelope.command_id.value,
             expected_versions=envelope.expected_versions,
             current_versions=current_versions,
             upstream_chain_result=upstream_chain_result,
@@ -400,6 +428,26 @@ class CommitCoordinator:
         self._failure_injector.before(CommitInjectionPoint.AFTER_BND014)
         if proof.result is not BoundaryResult.ALLOW:
             raise CommitDenied(proof)
+        if proof.authority_source is None:
+            # HD-6: no ALLOW may be committed without a real, typed
+            # authority source. Structurally unreachable with the real
+            # BND-014; guards a miswired evaluator.
+            raise CommitDenied(
+                BoundaryProof(
+                    boundary_id=proof.boundary_id,
+                    boundary_version=proof.boundary_version,
+                    result=BoundaryResult.DENY,
+                    reason_code="EFFECT_GATE_NO_AUTHORITY_SOURCE",
+                    workspace_id=proof.workspace_id,
+                    actor=proof.actor,
+                    input_refs=proof.input_refs,
+                    authoritative_version_refs=(),
+                    authority_proof=proof.authority_proof,
+                    evidence_proof_refs=(),
+                    evaluated_at=proof.evaluated_at,
+                    correlation_id=proof.correlation_id,
+                )
+            )
 
         try:
             commit_unit = self._commit_inner(
@@ -408,17 +456,25 @@ class CommitCoordinator:
                 mutation=mutation,
                 occurred_at=occurred_at,
                 commit_id=commit_id,
+                record_attempt_in_commit=founding,
             )
         except AmbiguousCommitFailure:
+            if founding:
+                # Nothing about a founding attempt can be recorded outside
+                # its own SAVEPOINT (FK to the Workspace it may or may not
+                # have created) -- surfaced as INDETERMINATE to the caller.
+                raise CommitIndeterminate(commit_id) from None
             self._record_indeterminate(
                 envelope=envelope, occurred_at=occurred_at, commit_id=commit_id
             )
             raise CommitIndeterminate(commit_id) from None
         except StaleVersionConflict as exc:
-            self._mark_failed_precommit(envelope, occurred_at=occurred_at)
+            if not founding:
+                self._mark_failed_precommit(envelope, occurred_at=occurred_at)
             raise CommitFailedPrecommit(reason=str(exc)) from exc
         except Exception as exc:  # noqa: BLE001 -- any other failure inside the SAVEPOINT is a proven rollback
-            self._mark_failed_precommit(envelope, occurred_at=occurred_at)
+            if not founding:
+                self._mark_failed_precommit(envelope, occurred_at=occurred_at)
             raise CommitFailedPrecommit(reason=f"{type(exc).__name__}: {exc}") from exc
 
         self._failure_injector.before(CommitInjectionPoint.AFTER_DB_COMMIT_BEFORE_RESPONSE)
@@ -432,17 +488,18 @@ class CommitCoordinator:
         mutation: MutationExecutor,
         occurred_at: datetime,
         commit_id: CommitId,
+        record_attempt_in_commit: bool = False,
     ) -> CommitUnit:
         audit_event_id = AuditEventId(uuid.uuid4())
         outbox_id = uuid.uuid4()
-        authority_source_ref = (
-            proof.authority_proof.binding_id.value
-            if proof.authority_proof is not None and proof.authority_proof.binding_id is not None
-            else uuid.uuid4()
-        )
+        # HD-6: the ONLY source of audit authority provenance. No fallback.
+        source = proof.authority_source
+        assert source is not None  # noqa: S101 -- guaranteed by commit()
 
         with self._connection.begin_nested():
             mutation_outcome = mutation.apply()
+            if record_attempt_in_commit:
+                self._command_repository.record_attempt(envelope, received_at=occurred_at)
             self._failure_injector.before(CommitInjectionPoint.AFTER_FIRST_CANONICAL_MUTATION)
             self._failure_injector.before(CommitInjectionPoint.AFTER_RELATION_MUTATION)
 
@@ -460,9 +517,9 @@ class CommitCoordinator:
                 command_id=envelope.command_id,
                 attempt_id=envelope.attempt_id,
                 workspace_id=envelope.workspace_scope_ref,
-                target_refs=envelope.target_refs,
+                target_refs=envelope.target_refs + envelope.created_refs,
                 relation_refs=mutation_outcome.relation_refs,
-                governance_refs=(),
+                governance_refs=mutation_outcome.governance_refs,
                 audit_event_ids=(audit_event_id,),
                 outbox_ids=(outbox_id,),
                 committed_at=occurred_at,
@@ -484,8 +541,10 @@ class CommitCoordinator:
                 commit_id=commit_id,
                 correlation_id=envelope.correlation_id,
                 causation_id=envelope.causation_id,
-                target_refs=envelope.target_refs,
-                authority_source_ref=authority_source_ref,
+                target_refs=envelope.target_refs + envelope.created_refs,
+                authority_source_ref=source.source_ref,
+                authority_source_type=source.source_type.value,
+                authority_scope_ref=source.scope_ref,
                 result=CommitOutcome.COMMITTED.value,
                 human_decision_ref=envelope.human_decision_ref,
                 evidence_set_ref=envelope.evidence_set_ref,
@@ -501,7 +560,7 @@ class CommitCoordinator:
                 event_id=EventId(uuid.uuid4()),
                 workspace_id=envelope.workspace_scope_ref,
                 commit_id=commit_id,
-                event_type=f"{envelope.command_type}_COMMITTED",
+                event_type=mutation_outcome.event_type or f"{envelope.command_type}_COMMITTED",
                 created_at=occurred_at,
                 delivery_status=DeliveryStatus.PENDING,
                 delivery_attempt_count=0,
@@ -523,7 +582,7 @@ class CommitCoordinator:
                     command_type=envelope.command_type,
                     idempotency_key=envelope.idempotency_key,
                     commit_id=commit_id,
-                    result_ref=str(commit_id.value),
+                    result_ref=mutation_outcome.result_ref or str(commit_id.value),
                 )
 
             self._failure_injector.before(CommitInjectionPoint.BEFORE_DB_COMMIT)

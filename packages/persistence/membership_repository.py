@@ -271,7 +271,12 @@ class SqlAlchemyMembershipRepository:
                 workspace_memberships_table.c.user_id == user_id.value,
                 workspace_memberships_table.c.status == MembershipStatus.ACTIVE.value,
             )
-            .order_by(workspace_memberships_table.c.created_at.asc())
+            # F02 WU-02.11: deterministic tie-break. Equal `created_at`
+            # values previously came back in undefined physical order.
+            .order_by(
+                workspace_memberships_table.c.created_at.asc(),
+                workspace_memberships_table.c.workspace_id.asc(),
+            )
         )
         rows = self._connection.execute(stmt).mappings().all()
         return tuple(_membership_record_from_row(row) for row in rows)

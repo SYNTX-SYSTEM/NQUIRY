@@ -42,13 +42,17 @@ export type WorkspaceOrientationResult =
       readonly authorized: boolean;
       readonly governanceCapable: boolean;
     }
-  | { readonly kind: "denied"; readonly reasonCode: string };
+  | { readonly kind: "denied"; readonly reasonCode: string }
+  // F02 WU-02.12 (FBR-C): a malformed Workspace id is REJECTED since F02 WU-02.9 (E9).
+  | { readonly kind: "rejected"; readonly reasonCode: string };
 
 export type GovernanceActionResult =
   | { readonly kind: "ok" }
   | { readonly kind: "denied"; readonly reasonCode: string }
   | { readonly kind: "rejected"; readonly reasonCode: string }
-  | { readonly kind: "indeterminate"; readonly blockedTargetRef: string };
+  | { readonly kind: "indeterminate"; readonly blockedTargetRef: string }
+  // F02 WU-02.12 (FBR-C): a proven rollback is not an input rejection.
+  | { readonly kind: "failed_precommit"; readonly reasonCode: string };
 
 export async function createWorkspace(
   name: string,
@@ -189,6 +193,8 @@ function parseWorkspaceOrientationResult(body: unknown): WorkspaceOrientationRes
     }
     case "denied":
       return { kind: "denied", reasonCode: requireString(body, "reasonCode") };
+    case "rejected":
+      return { kind: "rejected", reasonCode: requireString(body, "reasonCode") };
     default:
       throw new TypeError(`unrecognized WorkspaceOrientationResult kind ${JSON.stringify(body.kind)}`);
   }
@@ -207,6 +213,8 @@ function parseGovernanceActionResult(body: unknown): GovernanceActionResult {
       return { kind: "rejected", reasonCode: requireString(body, "reasonCode") };
     case "indeterminate":
       return { kind: "indeterminate", blockedTargetRef: requireString(body, "blockedTargetRef") };
+    case "failed_precommit":
+      return { kind: "failed_precommit", reasonCode: requireString(body, "reasonCode") };
     default:
       throw new TypeError(`unrecognized GovernanceActionResult kind ${JSON.stringify(body.kind)}`);
   }

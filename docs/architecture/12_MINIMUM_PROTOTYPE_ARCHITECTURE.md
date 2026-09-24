@@ -290,6 +290,13 @@ Two matters must be closed or concretely proven before the prototype can claim e
 
 The prototype architecture is buildable, but final execution acceptance remains blocked until those two dependencies are satisfied.
 
+> **Post-baseline reconciliation (2026-09-24):** the Workspace
+> governance-root dependency (HARD-DEP-001) was resolved by human decision
+> (Option A, self-service founder) and materialized in Field F01 as
+> CMD_CREATE_WORKSPACE. Provenance: 16 §41 REC-001. The text above is kept
+> as the baseline-candidate record; provider/privacy eligibility (item 2)
+> remains open.
+
 
 # 7. AUTHORITY PROFILE FOR PROTOTYPE
 
@@ -365,6 +372,13 @@ Until closed, bootstrap can be represented in deterministic test fixtures for ar
 
 Fixture seeding is explicitly labeled TEST PRECONDITION, not runtime authority.
 
+> **Post-baseline reconciliation (2026-09-24):** the Workspace
+> governance-root dependency (HARD-DEP-001) was resolved by human decision
+> (Option A, self-service founder) and materialized in Field F01 as
+> CMD_CREATE_WORKSPACE. Provenance: 16 §41 REC-001. The text above is kept
+> as the baseline-candidate record; provider/privacy eligibility (HARD-DEP-002)
+> remains open.
+
 
 # 9. MINIMUM DOMAIN MODEL
 
@@ -424,6 +438,15 @@ The prototype uses real 03 transitions only.
 | Question capture while ACTIVE | Participant permission under Burst rules | ACTIVE, same Workspace, questions-only | SYSTEM_PROOF | BND-008, BND-014 where canonical mutation commits |
 | QuestionBurst ACTIVE/PAUSED -> COMPLETED | Authorized manual controller | No automatic timer dependency | SYSTEM_PROOF | BND-008, BND-014 |
 | QUESTION_GENERATION -> ANALYSIS | SESSION_CONTROL_RIGHT | Burst COMPLETED and raw set frozen | SYSTEM_PROOF | BND-009, BND-014 |
+
+> **Post-baseline reconciliation (2026-09-24, F02 WU-02.12):** "facilitator
+> scope where applicable" (Burst PREPARED → ACTIVE) and "Authorized manual
+> controller" (Burst → COMPLETED) are resolved for the prototype by human
+> decision HD-9 (16 §41 REC-009 / NQ-DEC-037): a current Session-scoped
+> `SESSION_CONTROL_RIGHT` at `SESSION:<session_id>` closes both, and
+> FacilitatorScopeBinding is not required (the 8.1 condition "IF BURST
+> CONTROL PATH REQUIRES IT" is not met). The table rows are kept as written.
+> The broader 04/05 model stays OPEN for production (16 NQ-GAP-080).
 | ANALYSIS -> REFLECTION | SESSION_CONTROL_RIGHT | Approved analysis path complete or explicit legal condition from 03 | SYSTEM_PROOF | BND-014 |
 | REFLECTION -> QUESTION_SELECTION | SESSION_CONTROL_RIGHT | Reflection phase legal | SYSTEM_PROOF | BND-014 |
 | Create QuestionSelection | QUESTION_SELECTION_RIGHT | Current selector binding, candidate Question same Workspace | HUMAN_DECISION style authority fact per 04 | BND-005, BND-006, BND-014 |

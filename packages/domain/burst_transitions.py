@@ -18,8 +18,18 @@ duplicating a generic vocabulary for a second object class would be
 exactly the kind of "second source of truth for a closed list"
 `session_transitions`'s own docstring warns against.
 
+SUPERSESSION (F02, recorded in WU-02.12): the WORKSPACE-scope reading in
+the next section is the PKG-07 historical record. HD-1 (16 §41 REC-002)
+fixed Session control at `SESSION:<session_id>`, and HD-9 (16 §41
+REC-009 / NQ-DEC-037) closed Burst control for the current prototype as
+Session-scoped `SESSION_CONTROL_RIGHT`: an explicit prototype narrowing of
+04 §35-39 / 05 §20, whose Facilitator + FacilitatorScopeBinding model stays
+OPEN for production (NQ-GAP-080). 12 §8.1 already lists
+FacilitatorScopeBinding as conditional ("IF BURST CONTROL PATH REQUIRES
+IT"), and HD-9 decides it is not required in the prototype.
+
 WHY BURST AUTHORITY RESOLVES TO `SESSION_CONTROL_RIGHT` AT `WORKSPACE`
-SCOPE (NOT `SESSION` OR `QuestionBurst` SCOPE)
+SCOPE (NOT `SESSION` OR `QuestionBurst` SCOPE)  [PKG-07, HISTORICAL]
 ------------------------------------------------------------------------
 04 §35-39 each state an "AUTHORITY SCOPE" of "Specific Session" or a
 similarly narrow object boundary, and 04 §2.7 describes scope as an
@@ -103,9 +113,10 @@ class BurstAuthorityDependency(Enum):
     """04's authority-requirement identifiers for the Burst machine.
     Closed to the identifiers 04 §35-39 actually define. See the
     module docstring for why every one resolves to
-    `AuthorityClass.SESSION_CONTROL_RIGHT` at `WORKSPACE` scope in this
-    prototype, without this package importing `governance.AuthorityClass`
-    itself (14 §3.1: `domain` depends on `semantic_types` only).
+    `AuthorityClass.SESSION_CONTROL_RIGHT` (at `SESSION:<session_id>` since
+    HD-1/HD-9; PKG-07 read `WORKSPACE`) in this prototype, without this
+    package importing `governance.AuthorityClass` itself (14 §3.1: `domain`
+    depends on `semantic_types` only).
     """
 
     AUTH_DEP_BURST_001 = "AUTH-DEP-BURST-001"

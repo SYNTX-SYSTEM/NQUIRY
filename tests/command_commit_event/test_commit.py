@@ -411,7 +411,16 @@ def test_commit_denies_when_authority_was_revoked_after_preparation(
 
     assert excinfo.value.boundary_proof.reason_code.startswith("AUTHORITY_NOT_CURRENT")
     assert SqlAlchemyBurstRepository(db_connection).get(burst.burst_id).state is BurstState.PREPARED
-    assert db_connection.execute(sa.select(commit_units_table)).first() is None
+    # F02 WU-02.11: scoped to this test's Workspace (a live DB may hold other
+    # legitimately committed units, e.g. from the real-stack browser lane).
+    assert (
+        db_connection.execute(
+            sa.select(commit_units_table).where(
+                commit_units_table.c.workspace_id == workspace_id.value
+            )
+        ).first()
+        is None
+    )
 
 
 def test_commit_denies_when_state_version_changed(db_connection: sa.Connection) -> None:
@@ -644,7 +653,16 @@ def test_commit_rolls_back_the_real_mutation_on_a_failure_after_it(
     reverted = SqlAlchemyBurstRepository(db_connection).get(burst.burst_id)
     assert reverted.state is BurstState.PREPARED
     assert reverted.record_version == RecordVersion(1)
-    assert db_connection.execute(sa.select(commit_units_table)).first() is None
+    # F02 WU-02.11: scoped to this test's Workspace (a live DB may hold other
+    # legitimately committed units, e.g. from the real-stack browser lane).
+    assert (
+        db_connection.execute(
+            sa.select(commit_units_table).where(
+                commit_units_table.c.workspace_id == workspace_id.value
+            )
+        ).first()
+        is None
+    )
     command_attempt = SqlAlchemyCommandRepository(db_connection).get_attempt(envelope.attempt_id)
     assert command_attempt.outcome is CommandOutcome.FAILED_PRECOMMIT
 
@@ -685,7 +703,16 @@ def test_audit_insertion_failure_rolls_back_the_whole_bundle(db_connection: sa.C
             commit_id=CommitId(uuid.uuid4()),
         )
 
-    assert db_connection.execute(sa.select(commit_units_table)).first() is None
+    # F02 WU-02.11: scoped to this test's Workspace (a live DB may hold other
+    # legitimately committed units, e.g. from the real-stack browser lane).
+    assert (
+        db_connection.execute(
+            sa.select(commit_units_table).where(
+                commit_units_table.c.workspace_id == workspace_id.value
+            )
+        ).first()
+        is None
+    )
     assert (
         SqlAlchemyAuditRepository(db_connection).list_for_correlation(envelope.correlation_id) == ()
     )
@@ -968,7 +995,16 @@ def test_commit_denies_when_evidence_was_invalidated_after_prepare(
 
     assert excinfo.value.boundary_proof.reason_code.startswith("STALE_EVIDENCE:")
     assert SqlAlchemyBurstRepository(db_connection).get(burst.burst_id).state is BurstState.PREPARED
-    assert db_connection.execute(sa.select(commit_units_table)).first() is None
+    # F02 WU-02.11: scoped to this test's Workspace (a live DB may hold other
+    # legitimately committed units, e.g. from the real-stack browser lane).
+    assert (
+        db_connection.execute(
+            sa.select(commit_units_table).where(
+                commit_units_table.c.workspace_id == workspace_id.value
+            )
+        ).first()
+        is None
+    )
 
 
 def test_commit_fails_closed_when_evidence_set_ref_present_without_a_reader(
@@ -1011,4 +1047,13 @@ def test_commit_fails_closed_when_evidence_set_ref_present_without_a_reader(
         )
 
     assert SqlAlchemyBurstRepository(db_connection).get(burst.burst_id).state is BurstState.PREPARED
-    assert db_connection.execute(sa.select(commit_units_table)).first() is None
+    # F02 WU-02.11: scoped to this test's Workspace (a live DB may hold other
+    # legitimately committed units, e.g. from the real-stack browser lane).
+    assert (
+        db_connection.execute(
+            sa.select(commit_units_table).where(
+                commit_units_table.c.workspace_id == workspace_id.value
+            )
+        ).first()
+        is None
+    )

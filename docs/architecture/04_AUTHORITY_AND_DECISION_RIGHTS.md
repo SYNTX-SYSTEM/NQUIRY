@@ -2052,6 +2052,15 @@ Trace preparation authority if required by later audit policy.
 
 # 36. AUTH-DEP-BURST-002: Start Burst
 
+> **Post-baseline prototype narrowing (2026-09-24, F02 WU-02.12):** for the
+> current prototype, Burst start is closed by a current Session-scoped
+> `SESSION_CONTROL_RIGHT` binding at `SESSION:<session_id>`, not by the
+> Facilitator role + ACTIVE Session FacilitatorScopeBinding described in
+> this section. Human decision HD-9, 16 §41 REC-009 / NQ-DEC-037. This
+> section is preserved unchanged as the architecture's broader model, which
+> stays OPEN for production (16 NQ-GAP-080).
+
+
 ```text
 OPERATION:
 START_BURST
@@ -2245,6 +2254,15 @@ Record resume authority.
 ---
 
 # 39. AUTH-DEP-BURST-005: Complete Burst
+
+> **Post-baseline prototype narrowing (2026-09-24, F02 WU-02.12):** for the
+> current prototype, Burst manual completion (human path) is closed by a current Session-scoped
+> `SESSION_CONTROL_RIGHT` binding at `SESSION:<session_id>`, not by the
+> Facilitator role + ACTIVE Session FacilitatorScopeBinding described in
+> this section. Human decision HD-9, 16 §41 REC-009 / NQ-DEC-037. This
+> section is preserved unchanged as the architecture's broader model, which
+> stays OPEN for production (16 NQ-GAP-080).
+
 
 ```text
 OPERATION:

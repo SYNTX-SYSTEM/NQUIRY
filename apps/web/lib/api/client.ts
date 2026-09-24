@@ -120,6 +120,8 @@ export function parseSessionReadResult(body: unknown): SessionReadResult {
       };
     case "indeterminate":
       return { kind: "indeterminate", blockedTargetRef: requireNonEmptyString(body, "blockedTargetRef") };
+    case "rejected":
+      return { kind: "rejected", reasonCode: requireNonEmptyString(body, "reasonCode") };
     default:
       throw new TypeError(`unrecognized SessionReadResult kind ${JSON.stringify(body.kind)}`);
   }

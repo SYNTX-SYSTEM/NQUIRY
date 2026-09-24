@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: "nquiry",
-  description: "NQUIRY architectural prototype — local login and Session view.",
+  description: "NQUIRY — governed inquiry: Workspaces, Challenges, Sessions.",
 };
 
 export default function RootLayout({

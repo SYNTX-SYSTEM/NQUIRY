@@ -23,6 +23,20 @@ now -- it never calls `BurstRepository.start`/`pause`/`resume`/
 entirely unwired from production, the identical disclosed pattern
 PKG-06 established for `QuestionRepository.create_root`/`create_derived`.
 
+F02 HD-1 SUPERSESSION: the WORKSPACE-scope choice described below was
+the PKG-07 reading. The human operator's HD-1 decision (16 §41 REC-002)
+fixes Session control authority at `SESSION:<session_id>`; this
+compositor now resolves exactly that scope.
+
+F02 WU-02.12 STATUS: this compositor is still read-only and still NOT
+wired into production. The governed Burst path is
+`application.session_control_handler` (CMD_PREPARE_BURST; Burst START
+inside the TRN-SESS-004 bundle), which commits through the
+CommitCoordinator. The prototype authority for Burst control is HD-9
+(16 §41 REC-009): Session-scoped `SESSION_CONTROL_RIGHT`, as an explicit
+prototype narrowing of 04 §36-39 / 05 §20. The PKG-07 text below ("`commit`
+... does not exist yet", WORKSPACE scope) is historical.
+
 WHY `AuthorityResolver` IS CALLED FOR REAL HERE (UNLIKE PKG-05/06)
 ----------------------------------------------------------------------
 PKG-07's own coding prompt AUTHORITY line -- "Session control authority
@@ -53,7 +67,7 @@ from governance.authority_binding import AuthorityClass
 from persistence.authority_binding_repository import AuthorityBindingRepository
 from persistence.membership_repository import MembershipRepository
 from semantic_types.clock import Clock
-from semantic_types.ids import WorkspaceId
+from semantic_types.ids import SessionId, WorkspaceId
 
 
 class BurstOperationOutcome(Enum):
@@ -79,8 +93,8 @@ class BurstOperationOutcome(Enum):
 
     DENIED_AUTHORITY = "DENIED_AUTHORITY"
     """The actor does not currently, effectively hold
-    `SESSION_CONTROL_RIGHT` at this Workspace -- see
-    `resolution.authority_verdict`."""
+    `SESSION_CONTROL_RIGHT` at `SESSION:<session_id>` (HD-1; the PKG-07
+    reading was "at this Workspace") -- see `resolution.authority_verdict`."""
 
     DENIED_BOTH = "DENIED_BOTH"
     """Both checks failed."""
@@ -106,6 +120,7 @@ def check_burst_operation_readiness(
     *,
     actor: ActorIdentity,
     workspace_id: WorkspaceId,
+    session_id: SessionId,
     operation: BurstOperation,
     current_state: BurstState | None,
     membership_repository: MembershipRepository,
@@ -134,8 +149,11 @@ def check_burst_operation_readiness(
         workspace_id=workspace_id,
         operation=operation.value,
         required_authority_class=AuthorityClass.SESSION_CONTROL_RIGHT,
-        scope_type="WORKSPACE",
-        scope_id=workspace_id.value,
+        # F02 HD-1 (16 §41 REC-002): Session control authority is
+        # SESSION-scoped. The PKG-07 WORKSPACE-scope reading below
+        # ("WHY BURST AUTHORITY RESOLVES ... AT WORKSPACE") is superseded.
+        scope_type="SESSION",
+        scope_id=session_id.value,
     )
     authority = resolver.resolve(authority_request)
 

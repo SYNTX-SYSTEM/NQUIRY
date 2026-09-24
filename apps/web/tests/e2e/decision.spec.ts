@@ -19,7 +19,9 @@ const WORKSPACE_ID = "ws-real";
 const SESSION_ID = "sess-real";
 const SESSION_ROUTE_PATTERN = "http://localhost:8000/workspaces/**/sessions/**";
 const DECIDE_ROUTE_PATTERN = "http://localhost:8000/decisions/**/decide";
-const PAGE_PATH = `/workspaces/${WORKSPACE_ID}/sessions/${SESSION_ID}`;
+// F02 WU-02.10: the PKG-28/29 surface moved to `.../decision` (the canonical
+// Session page is now the governed inquiry-position page).
+const PAGE_PATH = `/workspaces/${WORKSPACE_ID}/sessions/${SESSION_ID}/decision`;
 
 const AI_RECOMMENDATION = {
   generationId: "gen-1",
@@ -234,6 +236,24 @@ test("novel attack: forged/rejected selected option is shown distinctly, never a
 
   await expect(page.getByTestId("decision-rejected-banner")).toBeVisible();
   await expect(page.getByTestId("decision-rejected-banner")).toContainText("SELECTED_OPTION_NOT_CANDIDATE");
+  await expect(page.getByTestId("decision-state")).toContainText("UNDER_CONSIDERATION");
+});
+
+test("WU-02.12: a proven rollback is shown as failed_precommit, never as a rejection or a success", async ({
+  page,
+}) => {
+  await gotoWithDecision(page, DECISION_UNDER_CONSIDERATION);
+
+  await page.route(DECIDE_ROUTE_PATTERN, (route) =>
+    route.fulfill({ json: { kind: "failed_precommit", reasonCode: "SAVEPOINT_ROLLED_BACK" } }),
+  );
+
+  await page.getByTestId("decision-option-select").selectOption("Option A");
+  await page.getByTestId("record-decision-submit").click();
+
+  await expect(page.getByTestId("decision-failed-precommit-banner")).toBeVisible();
+  await expect(page.getByTestId("decision-failed-precommit-banner")).toContainText("SAVEPOINT_ROLLED_BACK");
+  await expect(page.getByTestId("decision-rejected-banner")).toHaveCount(0);
   await expect(page.getByTestId("decision-state")).toContainText("UNDER_CONSIDERATION");
 });
 

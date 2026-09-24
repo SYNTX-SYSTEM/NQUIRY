@@ -85,6 +85,17 @@ class CommandWorkspaceMismatch(Exception):
     """
 
 
+class CommandTypeMismatch(Exception):
+    """Raised when an envelope reuses a `command_id` already recorded
+    for a *different* Command type (F02 WU-02.12, FBR-B). 09 section 4.3:
+    `command_id` is "the stable identity of one logical requested
+    consequential operation". Two Command types can share a payload shape
+    (so the fingerprint alone cannot tell them apart), and accepting the
+    second one would make the first Command's `commands` row the
+    provenance of an effect it never requested.
+    """
+
+
 class CommandPayloadConflict(Exception):
     """Raised when an envelope reuses a `command_id` already recorded
     with a *different* payload fingerprint (09 section 139/AC-09-013).
@@ -169,6 +180,14 @@ class SqlAlchemyCommandRepository:
                     f"command_id {envelope.command_id!r} already recorded at Workspace "
                     f"{existing.workspace_id!r}, envelope claims "
                     f"{envelope.workspace_scope_ref!r}"
+                )
+            # F02 WU-02.12 (FBR-B): same id, different Command type is a
+            # different logical operation (09 section 4.3), whatever the
+            # payload fingerprint says.
+            if existing.command_type != envelope.command_type:
+                raise CommandTypeMismatch(
+                    f"command_id {envelope.command_id!r} already recorded as "
+                    f"{existing.command_type}, envelope claims {envelope.command_type}"
                 )
             # Mandatory adversarial attack: changed payload under same
             # command identity. A legitimate retry (09 section 12.1)
@@ -298,6 +317,7 @@ __all__ = [
     "CommandAttempt",
     "CommandWorkspaceMismatch",
     "CommandPayloadConflict",
+    "CommandTypeMismatch",
     "AttemptAlreadyRecorded",
     "AttemptOutcomeAlreadyFinal",
     "AttemptNotFound",

@@ -24,7 +24,9 @@ import { apiBaseUrl, isRecord, requireString } from "./client";
 
 export type LoginResult =
   | { readonly kind: "ok"; readonly userId: string }
-  | { readonly kind: "denied"; readonly reasonCode: string };
+  | { readonly kind: "denied"; readonly reasonCode: string }
+  // F02 WU-02.12 (FBR-C): a malformed login body is REJECTED (400) by the API.
+  | { readonly kind: "rejected"; readonly reasonCode: string };
 
 export type CurrentSessionResult =
   | { readonly kind: "ok"; readonly userId: string }
@@ -58,7 +60,12 @@ export async function fetchCurrentSession(fetchImpl: typeof fetch = fetch): Prom
     credentials: "include",
   });
   const body: unknown = await response.json();
-  return parseAuthResult(body);
+  const result = parseAuthResult(body);
+  if (result.kind === "rejected") {
+    // `GET /auth/me` takes no input, so it has nothing to reject: fail closed.
+    throw new TypeError("unexpected 'rejected' from GET /auth/me");
+  }
+  return result;
 }
 
 /**
@@ -76,6 +83,8 @@ function parseAuthResult(body: unknown): LoginResult {
       return { kind: "ok", userId: requireString(body, "userId") };
     case "denied":
       return { kind: "denied", reasonCode: requireString(body, "reasonCode") };
+    case "rejected":
+      return { kind: "rejected", reasonCode: requireString(body, "reasonCode") };
     default:
       throw new TypeError(`unrecognized auth response kind ${JSON.stringify(body.kind)}`);
   }

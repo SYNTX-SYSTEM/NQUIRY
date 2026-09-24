@@ -121,6 +121,13 @@ export function DecisionSection({
           {actionState.result.reasonCode}
         </div>
       ) : null}
+      {actionState.kind === "result" && actionState.result.kind === "failed_precommit" ? (
+        // F02 WU-02.12 (FBR-C): a proven rollback, distinct from a rejection.
+        <div data-testid="decision-failed-precommit-banner" role="alert">
+          Not recorded: the commit was rolled back before it took effect ({actionState.result.reasonCode}).
+          Nothing was saved.
+        </div>
+      ) : null}
       {actionState.kind === "network_error" ? (
         <NetworkErrorBanner message="Unable to record this Decision. Nothing was saved." />
       ) : null}

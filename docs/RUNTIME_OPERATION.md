@@ -500,60 +500,123 @@ check for actual DB-reachability proof. `HEALTHZ != DATABASE READINESS`.
 
 ## 18. Currently implemented runtime surface
 
+(Updated by Field F02, 2026-09-24. Historical text for earlier fields is in
+their proof reports.)
+
 - `GET /healthz` — liveness only.
-- `POST /auth/login`, `POST /auth/logout`, `GET /auth/me` — real local
-  email/password login, real server-verified `local_auth_sessions` row,
-  real `HttpOnly` cookie (`docs/architecture/18_LOCAL_AUTHENTICATION_ADAPTER.md`).
-- `GET /workspaces/{workspaceId}/sessions/{sessionId}` — real Query,
-  real boundary chain (BND-001/002/003), real persistence read, real
-  session-cookie identity (no more header trust).
-- `POST /decisions/{decisionId}/decide` — real Command
-  (`record_human_decision`, PKG-15, unmodified), full BND-001..007 +
-  BND-014 chain, real `CommitCoordinator`, real audit/outbox, real
-  session-cookie identity.
-- Frontend: real `/login` page, a real root-route session check that
-  redirects to `/login` or the app, and the Session-view route (with a
-  real "Log out" control) — all real-network-connected to the routes
-  above (CORS-enabled with credentials).
-- Worker: real process, real exit 0, no consequential work performed.
+- Local auth: `POST /auth/login`, `POST /auth/logout`, `GET /auth/me`
+  (`18_LOCAL_AUTHENTICATION_ADAPTER.md`).
+- F01 Workspace governance: `POST /workspaces` (governed founding,
+  HARD-DEP-001 Option A), `GET /workspaces`, `GET /workspaces/{w}`,
+  `POST /workspaces/{w}/members`,
+  `POST /workspaces/{w}/authority-bindings/{b}/revoke`.
+- F02 inquiry context (every Command route requires an `Idempotency-Key`
+  UUID header; outcomes: `committed` / `denied` / `rejected` / `stale` /
+  `blocked` / `failed_precommit` / `indeterminate` / `not_found`):
+  `GET /workspaces/{w}/overview`, `POST /workspaces/{w}/challenges`,
+  `GET /workspaces/{w}/challenges/{c}`,
+  `POST /workspaces/{w}/challenges/{c}/sessions`,
+  `POST /workspaces/{w}/authority-bindings` (grant),
+  `GET /workspaces/{w}/sessions/{s}/position`,
+  `POST /workspaces/{w}/sessions/{s}/transitions/begin-setup`,
+  `…/transitions/begin-challenge-capture`, `…/burst` (prepare),
+  `…/participants` (admit), `…/transitions/open-question-generation`.
+- Architecture 17 / PKG-29: `GET /workspaces/{w}/sessions/{s}` (legacy
+  Session view) and `POST /decisions/{d}/decide`.
+- Outcome rules for every route (F02 WU-02.12):
+  - A request body that fails the route's schema is
+    `{"kind":"rejected","reasonCode":"MALFORMED_REQUEST_BODY"}` (400), never
+    FastAPI's bare `{"detail":…}` 422. On F02 routes, 422 means `blocked`.
+  - A proven rollback on decide / add-member / revoke is
+    `{"kind":"failed_precommit","reasonCode":…}`. It is no longer folded
+    into `rejected`.
+  - The F01 / PKG-29 routes still answer HTTP 200 for every body `kind`;
+    their outcome is the body. The status-mapped envelope applies to the F02
+    routes.
+  - An `Idempotency-Key` names ONE logical Command: the same Workspace,
+    Command type and payload. Retrying the identical request returns
+    `committed` + `replayed`. Reusing the key for a different payload,
+    Session, Command type or Workspace returns `rejected`
+    (`IDEMPOTENCY_KEY_REUSED_FOR_DIFFERENT_COMMAND`).
+- Frontend: `/login`, `/workspaces`, `/workspaces/{w}`,
+  `/workspaces/{w}/challenges/{c}`, `/workspaces/{w}/sessions/{s}`
+  (governed inquiry position), `/workspaces/{w}/sessions/{s}/decision`
+  (PKG-29 Decision surface).
+- Worker: real process, exits 0, no consequential work (F08 scope).
 
 ## 19. Currently non-materialized capabilities
 
-- No generic Command/Query dispatch beyond the two routes above.
-- No PRODUCTION authentication provider (GAP-14-001 remains open) — the
-  real login above is a local, deterministic credential adapter (14
-  §32's own authorized "deterministic test adapter", hardened for real
-  browser use), not an OIDC/external identity provider.
-- `OutboxWorker`/`ProjectionWorker` not wired into a continuous
-  process loop (`BLOCKED_BY_UPSTREAM_GAP`).
-- No Challenge/Session creation UI, no Workspace-list/dashboard UI
-  (there is no Command/Query for either wired to HTTP at all yet) — the
-  root route lands on one configured default Session
-  (`NEXT_PUBLIC_DEFAULT_WORKSPACE_ID`/`NEXT_PUBLIC_DEFAULT_SESSION_ID`),
-  not a list a user picks from.
-- No self-service account creation/password reset — accounts are
-  created only by `scripts/seed_local_demo.py` or a direct DB insert.
+- Question capture, Burst pause/resume/completion, frozen question set
+  (F03). AI sensemaking (F04). Selection, Evidence, Decision re-homing
+  (F05–F07).
+- No production authentication provider (GAP-14-001). No self-service
+  registration: additional local identities come only from the DEV-ONLY
+  provisioning script (§21).
+- `OutboxWorker`/`ProjectionWorker` not wired into a continuous loop.
 - No readiness endpoint distinct from liveness.
+- Member addition takes a raw user id (no user directory query).
 
 ## 20. HARD-DEP-001 / HARD-DEP-002 status
 
-Both remain **BLOCKED**, unresolved, not bypassed by anything in this
-runbook or by any field described here, including the local-login
-field:
+- **HARD-DEP-001**: RESOLVED (Option A, self-service founder), 2026-09-21,
+  materialized as `CMD_CREATE_WORKSPACE` (16 §41 REC-001). Workspaces
+  seeded by `scripts/seed_local_demo.py` / `NonProofWorkspaceBootstrap`
+  remain NON_PROOF fixtures. The UI labels them "NON_PROOF fixture",
+  derived from provenance: such a Workspace has no FOUNDING audit event.
+- **HARD-DEP-002**: open (EXTERNAL_DEPENDENCY). `MockProviderAdapter` only.
 
-- **HARD-DEP-001** (legitimate first-Workspace governance-root
-  bootstrap): every Workspace this runbook helps you create is seeded
-  via `NonProofWorkspaceBootstrap` (`FIXTURE_LEGITIMACY ==
-  "NON_PROOF_FIXTURE"`, checked at construction time) — never
-  represented as a real, production-legitimate bootstrap. Logging in as
-  the seeded demo user proves WHO that user is (a real, verified
-  session); it proves nothing about WHETHER that user's own Workspace
-  governance root was ever legitimately established — that is a
-  strictly separate, still-open question. Closing GAP-14-001's login
-  weakness is explicitly NOT the same thing as closing HARD-DEP-001,
-  and this work does not conflate the two (see
-  `docs/architecture/18_LOCAL_AUTHENTICATION_ADAPTER.md`'s own
-  HUMAN_DECISION_REQUIRED section).
-- **HARD-DEP-002** (real AI provider eligibility): no AI/provider code
-  is touched anywhere in this runbook; `MockProviderAdapter.provider`
-  remains the literal string `"mock"`.
+## 21. Stakeholder walkthrough (F02, real governed flow)
+
+```bash
+docker compose -p nquiry --profile app up -d --build
+export DATABASE_URL=postgresql+psycopg://nquiry:nquiry_local_dev_only@localhost:15432/nquiry
+python scripts/verify_migrations.py
+# DEV-ONLY: create two local identities. This creates NO membership, role
+# or authority (F02 HD-3). The script refuses to run without the opt-in.
+export NQUIRY_DEV_IDENTITY_PROVISIONING=I_UNDERSTAND_THIS_IS_DEV_ONLY
+PYTHONPATH=packages python scripts/dev_provision_local_identity.py \
+    --email alex@dev.local.test --name "Alex (founder)" --password "alex-dev-password"
+PYTHONPATH=packages python scripts/dev_provision_local_identity.py \
+    --email bea@dev.local.test --name "Bea (facilitator)" --password "bea-dev-password"
+```
+
+Then, in the browser at `http://localhost:3000/`:
+
+1. Alex logs in and creates a Workspace (Alex becomes its governance root).
+2. Alex adds Bea (paste Bea's printed `userId`) with role **Facilitator**.
+3. Bea logs in, opens the Workspace, and creates a Challenge.
+4. Alex opens the Challenge and grants Bea session control **for this
+   Challenge**. Bea can now open a Session.
+5. Alex opens the Session and grants Bea session control **for this
+   Session** (nothing is inherited from the Challenge, F02 HD-1).
+6. Bea: Begin setup → Begin challenge capture → Prepare protected Burst →
+   admit a participant (e.g. Alex) → Open question generation. The Session
+   is now in QUESTION_GENERATION and the HUMAN_ONLY Burst is ACTIVE.
+
+Question capture itself arrives with Field F03.
+
+## 22. Test lanes (F02)
+
+| Lane | Command | What it proves |
+|---|---|---|
+| Backend, live DB | `DATABASE_URL=…/nquiry_test pytest` | Real PostgreSQL semantics. Use the **isolated `nquiry_test` database** (see below) |
+| Backend, pure | `pytest` (no `DATABASE_URL`) | Pure-Python layers |
+| Component contract (MOCKED browser) | `cd apps/web && npm run e2e` | UI logic against `page.route()`-fulfilled responses. **Not runtime proof**. Caution (WU-02.12): `reuseExistingServer` means that if anything already serves `:3000` (e.g. the `web` container), the lane tests **that** build, not your working tree. Rebuild the containers first, or stop `web`. |
+| Real stack (REAL browser) | `PYTHON=.venv/bin/python bash scripts/run_real_stack_e2e.sh` (or `npm run e2e:real`) | Real browser → web → FastAPI → auth → PostgreSQL → governed Commands; desktop + mobile; axe; keyboard. The script starts api/web only if nothing already serves `:8000`/`:3000`, so it proves **whatever is running**. For proof of this tree, first `docker compose -p nquiry --profile app up -d --build` from it (WU-02.11/02.12 practice). |
+
+Isolated test database (once per Postgres volume):
+
+```bash
+docker exec nquiry-postgres-1 createdb -U nquiry nquiry_test
+docker exec -i nquiry-postgres-1 psql -U nquiry -d nquiry_test < infra/local/db_roles.sql
+DATABASE_URL=postgresql+psycopg://nquiry:nquiry_local_dev_only@localhost:15432/nquiry_test \
+    python scripts/verify_migrations.py
+```
+
+Why: the real-stack lane and the demo **commit** durable governed history
+(commit units, audit, PENDING outbox events) into `nquiry`. Several
+PKG-era tests assert properties of the whole outbox, such as the outbox
+worker's global due-record scan. Those tests are only meaningful on a
+database that no runtime writes to. On the shared `nquiry` DB, after
+real-stack runs, the 4 `test_outbox_worker.py` tests fail by
+construction (classified ENVIRONMENT, F02 WU-02.11).

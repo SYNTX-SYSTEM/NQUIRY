@@ -17,6 +17,7 @@ bootstrap legitimacy.
 
 from __future__ import annotations
 
+import uuid
 from datetime import datetime, timezone
 
 import sqlalchemy as sa
@@ -30,12 +31,13 @@ from persistence.authority_binding_repository import SqlAlchemyAuthorityBindingR
 from persistence.membership_repository import SqlAlchemyMembershipRepository
 from persistence.tables import human_authority_bindings_table
 from semantic_types.id_generator import SystemIdGenerator
-from semantic_types.ids import UserId, WorkspaceId
+from semantic_types.ids import SessionId, UserId, WorkspaceId
 from test_support.clock import FixedClock
 from test_support.nonproof_bootstrap import NonProofWorkspaceBootstrap
 
 _NOW = datetime(2030, 1, 1, tzinfo=timezone.utc)
 _ID_GEN = SystemIdGenerator()
+_SESSION_ID = SessionId(uuid.uuid4())  # F02 HD-1: bindings are SESSION-scoped
 
 
 def _bootstrap_workspace_with_owner(connection: sa.Connection, *, owner_email: str):
@@ -52,8 +54,8 @@ def _grant_session_control_right(
             workspace_id=workspace_id.value,
             human_user_id=user_id.value,
             authority_class=AuthorityClass.SESSION_CONTROL_RIGHT.value,
-            scope_type="WORKSPACE",
-            scope_id=workspace_id.value,
+            scope_type="SESSION",
+            scope_id=_SESSION_ID.value,
             authority_source="LEVEL_1_EXPLICIT",
             granted_by_user_id=user_id.value,
             granted_at=_NOW,
@@ -80,6 +82,7 @@ def test_ready_when_authority_granted_and_transition_eligible(db_connection: sa.
     outcome = check_burst_operation_readiness(
         actor=ActorIdentity(ActorClass.HUMAN_USER, result.owner_user_id),
         workspace_id=result.workspace_id,
+        session_id=_SESSION_ID,
         operation=BurstOperation.PREPARE_BURST,
         current_state=None,
         membership_repository=membership_repo,
@@ -100,6 +103,7 @@ def test_denied_authority_when_no_binding_exists(db_connection: sa.Connection) -
     outcome = check_burst_operation_readiness(
         actor=ActorIdentity(ActorClass.HUMAN_USER, result.owner_user_id),
         workspace_id=result.workspace_id,
+        session_id=_SESSION_ID,
         operation=BurstOperation.PREPARE_BURST,
         current_state=None,
         membership_repository=membership_repo,
@@ -124,6 +128,7 @@ def test_denied_transition_when_authority_granted_but_state_illegal(
     outcome = check_burst_operation_readiness(
         actor=ActorIdentity(ActorClass.HUMAN_USER, result.owner_user_id),
         workspace_id=result.workspace_id,
+        session_id=_SESSION_ID,
         operation=BurstOperation.START_BURST,
         current_state=BurstState.COMPLETED,  # START_BURST only legal from PREPARED
         membership_repository=membership_repo,
@@ -145,6 +150,7 @@ def test_denied_both_when_neither_authority_nor_transition_hold(
     outcome = check_burst_operation_readiness(
         actor=ActorIdentity(ActorClass.HUMAN_USER, result.owner_user_id),
         workspace_id=result.workspace_id,
+        session_id=_SESSION_ID,
         operation=BurstOperation.START_BURST,
         current_state=BurstState.COMPLETED,
         membership_repository=membership_repo,
@@ -174,6 +180,7 @@ def test_system_service_actor_cannot_complete_a_burst_via_this_compositor(
     outcome = check_burst_operation_readiness(
         actor=ActorIdentity(ActorClass.SYSTEM_SERVICE, result.owner_user_id),
         workspace_id=result.workspace_id,
+        session_id=_SESSION_ID,
         operation=BurstOperation.COMPLETE_BURST,
         current_state=BurstState.ACTIVE,
         membership_repository=membership_repo,
@@ -202,6 +209,7 @@ def test_ai_processor_actor_is_denied_authority_for_any_burst_operation(
     outcome = check_burst_operation_readiness(
         actor=ActorIdentity(ActorClass.AI_PROCESSOR, result.owner_user_id),
         workspace_id=result.workspace_id,
+        session_id=_SESSION_ID,
         operation=BurstOperation.START_BURST,
         current_state=BurstState.PREPARED,
         membership_repository=membership_repo,
@@ -232,6 +240,7 @@ def test_unresolved_ambiguous_bindings_is_never_treated_as_success(
     outcome = check_burst_operation_readiness(
         actor=ActorIdentity(ActorClass.HUMAN_USER, result.owner_user_id),
         workspace_id=result.workspace_id,
+        session_id=_SESSION_ID,
         operation=BurstOperation.PREPARE_BURST,
         current_state=None,
         membership_repository=membership_repo,
@@ -258,6 +267,7 @@ def test_cross_workspace_actor_has_no_authority(db_connection: sa.Connection) ->
     outcome = check_burst_operation_readiness(
         actor=ActorIdentity(ActorClass.HUMAN_USER, workspace_a.owner_user_id),
         workspace_id=workspace_b.workspace_id,
+        session_id=_SESSION_ID,
         operation=BurstOperation.PREPARE_BURST,
         current_state=None,
         membership_repository=membership_repo,
@@ -265,4 +275,38 @@ def test_cross_workspace_actor_has_no_authority(db_connection: sa.Connection) ->
         clock=FixedClock(_NOW),
     )
 
+    assert outcome.outcome is BurstOperationOutcome.DENIED_AUTHORITY
+
+
+def test_workspace_scoped_binding_is_not_session_control_after_hd1(
+    db_connection: sa.Connection,
+) -> None:
+    """F02 HD-1: a WORKSPACE-scoped SESSION_CONTROL_RIGHT no longer suffices."""
+    result = _bootstrap_workspace_with_owner(db_connection, owner_email="hd1@nonproof.test")
+    db_connection.execute(
+        sa.insert(human_authority_bindings_table).values(
+            id=_ID_GEN.new_uuid(),
+            workspace_id=result.workspace_id.value,
+            human_user_id=result.owner_user_id.value,
+            authority_class=AuthorityClass.SESSION_CONTROL_RIGHT.value,
+            scope_type="WORKSPACE",
+            scope_id=result.workspace_id.value,
+            authority_source="LEVEL_1_EXPLICIT",
+            granted_by_user_id=result.owner_user_id.value,
+            granted_at=_NOW,
+            state=AuthorityBindingState.ACTIVE.value,
+            record_version=1,
+        )
+    )
+    membership_repo, binding_repo = _repos(db_connection)
+    outcome = check_burst_operation_readiness(
+        actor=ActorIdentity(ActorClass.HUMAN_USER, result.owner_user_id),
+        workspace_id=result.workspace_id,
+        session_id=_SESSION_ID,
+        operation=BurstOperation.PREPARE_BURST,
+        current_state=None,
+        membership_repository=membership_repo,
+        authority_binding_repository=binding_repo,
+        clock=FixedClock(_NOW),
+    )
     assert outcome.outcome is BurstOperationOutcome.DENIED_AUTHORITY

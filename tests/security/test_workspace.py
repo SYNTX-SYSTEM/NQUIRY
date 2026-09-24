@@ -352,6 +352,8 @@ def test_rls_is_enabled_on_every_workspace_scoped_table(db_connection: sa.Connec
         "session_read_model",
         "inquiry_read_model",
         "recovery_records",
+        # F02 WU-02.8 (migration b3d8e5f0a2c7): same workspace_isolation policy.
+        "session_participations",
     }
 
 

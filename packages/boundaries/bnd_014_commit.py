@@ -64,31 +64,77 @@ import uuid
 from collections.abc import Mapping
 from dataclasses import dataclass
 
+from authority.actor import ActorClass
 from authority.resolver import AuthorityRequest, AuthorityResolver, AuthorityVerdict
 from evidence.freshness import EvidenceSetFreshnessResult
 from governance.authority_binding import AuthorityClass
+from persistence.membership_repository import MembershipRepository
 from semantic_types.versions import ContractVersion, RecordVersion
 
+from boundaries.authority_source import (
+    AuthorityRequirement,
+    AuthoritySourceProof,
+    AuthoritySourceType,
+    BindingAuthority,
+    FoundingAuthority,
+    RoleAuthority,
+)
 from boundaries.types import BoundaryContext, BoundaryId, BoundaryProof, BoundaryResult
+
+# F02 WU-02.6 (HD-6, 16 §41 REC-004): BND-014 evaluates a TYPED authority
+# requirement -- BINDING (04 AuthorityClass at an exact scope), ROLE
+# (source-explicit role right, e.g. AUTH-DEP-CH-001) or FOUNDING
+# (HARD-DEP-001 Option A). Every ALLOW carries an `AuthoritySourceProof`
+# naming a real record; there is no path that yields ALLOW without one,
+# which is what removes the coordinator's former `uuid.uuid4()` fallback.
+# The legacy `required_authority_class`/`authority_scope_type`/
+# `authority_scope_id` triple is still accepted and normalized into a
+# `BindingAuthority`, so every existing BINDING caller is unchanged.
 
 
 @dataclass(frozen=True, slots=True)
 class Bnd014Input:
     boundary_id: BoundaryId
     context: BoundaryContext
-    required_authority_class: AuthorityClass
-    authority_scope_type: str
-    authority_scope_id: uuid.UUID
     expected_versions: Mapping[str, RecordVersion]
     current_versions: Mapping[str, RecordVersion | None]
     upstream_chain_result: BoundaryResult
+    required_authority_class: AuthorityClass | None = None
+    authority_scope_type: str | None = None
+    authority_scope_id: uuid.UUID | None = None
     evidence_freshness: EvidenceSetFreshnessResult | None = None
+    authority: AuthorityRequirement | None = None
+    command_ref: uuid.UUID | None = None
+    """The Command id. Required for FOUNDING (it is the provenance ref)."""
 
     def __post_init__(self) -> None:
         if self.boundary_id is not BoundaryId.BND_014:
             raise ValueError(f"Bnd014Input.boundary_id must be BND_014, got {self.boundary_id}")
-        if not self.authority_scope_type:
-            raise ValueError("Bnd014Input.authority_scope_type must be non-empty")
+        legacy = (self.required_authority_class, self.authority_scope_type, self.authority_scope_id)
+        if self.authority is None:
+            if any(v is None for v in legacy):
+                raise ValueError(
+                    "Bnd014Input needs either `authority` or the full legacy binding triple"
+                )
+            if not self.authority_scope_type:
+                raise ValueError("Bnd014Input.authority_scope_type must be non-empty")
+            object.__setattr__(
+                self,
+                "authority",
+                BindingAuthority(
+                    authority_class=self.required_authority_class,  # type: ignore[arg-type]
+                    scope_type=self.authority_scope_type,
+                    scope_id=self.authority_scope_id,  # type: ignore[arg-type]
+                ),
+            )
+        elif any(v is not None for v in legacy):
+            raise ValueError("Bnd014Input: pass `authority` OR the legacy triple, not both")
+        if not isinstance(self.authority, (BindingAuthority, RoleAuthority, FoundingAuthority)):
+            raise TypeError(
+                f"authority must be a typed AuthorityRequirement, got {type(self.authority)!r}"
+            )
+        if isinstance(self.authority, FoundingAuthority) and self.command_ref is None:
+            raise ValueError("FOUNDING authority requires command_ref (the founding Command id)")
         if not isinstance(self.upstream_chain_result, BoundaryResult):
             raise TypeError(
                 f"upstream_chain_result must be a BoundaryResult, got "
@@ -111,13 +157,21 @@ class Bnd014CommitEvaluator:
     """
 
     boundary_id = BoundaryId.BND_014
-    boundary_version = ContractVersion("1.0")
+    boundary_version = ContractVersion("1.1")
 
-    def __init__(self, resolver: AuthorityResolver) -> None:
+    def __init__(
+        self,
+        resolver: AuthorityResolver | None,
+        *,
+        membership_repository: MembershipRepository | None = None,
+    ) -> None:
         self._resolver = resolver
+        self._membership_repository = membership_repository
 
     def evaluate(self, boundary_input: Bnd014Input, context: BoundaryContext) -> BoundaryProof:
-        def deny(reason_code: str) -> BoundaryProof:
+        input_refs = tuple(sorted(boundary_input.expected_versions.keys()))
+
+        def deny(reason_code: str, authority_proof: object = None) -> BoundaryProof:
             return BoundaryProof(
                 boundary_id=self.boundary_id,
                 boundary_version=self.boundary_version,
@@ -125,9 +179,9 @@ class Bnd014CommitEvaluator:
                 reason_code=reason_code,
                 workspace_id=context.workspace_id,
                 actor=context.actor,
-                input_refs=tuple(sorted(boundary_input.expected_versions.keys())),
+                input_refs=input_refs,
                 authoritative_version_refs=(),
-                authority_proof=None,
+                authority_proof=authority_proof,  # type: ignore[arg-type]
                 evidence_proof_refs=(),
                 evaluated_at=context.evaluated_at,
                 correlation_id=context.correlation_id,
@@ -148,10 +202,7 @@ class Bnd014CommitEvaluator:
             )
             return deny(f"STALE_VERSION:{','.join(stale)}")
 
-        # 09 section 114: "BND-014 compares member versions/current
-        # states... then stale ALLOW fails." Mandatory adversarial
-        # attacks: Evidence invalidated/unavailable after prepare, set
-        # membership no longer resolvable, cross-Workspace Evidence.
+        # 09 section 114: stale Evidence fails.
         if (
             boundary_input.evidence_freshness is not None
             and not boundary_input.evidence_freshness.is_fresh
@@ -160,33 +211,69 @@ class Bnd014CommitEvaluator:
                 return deny("EVIDENCE_SET_NOT_FOUND")
             return deny(f"STALE_EVIDENCE:{','.join(boundary_input.evidence_freshness.stale_refs)}")
 
-        # VALIDATION: "current authority... No stale ALLOW." Mandatory
-        # adversarial attack: authority revoked after preparation.
-        resolution = self._resolver.resolve(
-            AuthorityRequest(
-                actor=context.actor,
-                workspace_id=context.workspace_id,
-                operation=context.operation,
-                required_authority_class=boundary_input.required_authority_class,
-                scope_type=boundary_input.authority_scope_type,
-                scope_id=boundary_input.authority_scope_id,
+        # VALIDATION: "current authority... No stale ALLOW." -- typed.
+        authority = boundary_input.authority
+        authority_proof = None
+        workspace_scope_ref = f"WORKSPACE:{context.workspace_id.value}"
+        if isinstance(authority, BindingAuthority):
+            if self._resolver is None:
+                return deny("BINDING_RESOLVER_NOT_CONFIGURED")
+            resolution = self._resolver.resolve(
+                AuthorityRequest(
+                    actor=context.actor,
+                    workspace_id=context.workspace_id,
+                    operation=context.operation,
+                    required_authority_class=authority.authority_class,
+                    scope_type=authority.scope_type,
+                    scope_id=authority.scope_id,
+                )
             )
-        )
-        if resolution.verdict is not AuthorityVerdict.GRANTED:
-            return BoundaryProof(
-                boundary_id=self.boundary_id,
-                boundary_version=self.boundary_version,
-                result=BoundaryResult.DENY,
-                reason_code=f"AUTHORITY_NOT_CURRENT:{resolution.proof.reason.value}",
-                workspace_id=context.workspace_id,
-                actor=context.actor,
-                input_refs=tuple(sorted(boundary_input.expected_versions.keys())),
-                authoritative_version_refs=(),
-                authority_proof=resolution.proof,
-                evidence_proof_refs=(),
-                evaluated_at=context.evaluated_at,
-                correlation_id=context.correlation_id,
+            authority_proof = resolution.proof
+            if (
+                resolution.verdict is not AuthorityVerdict.GRANTED
+                or resolution.proof.binding_id is None
+            ):
+                return deny(
+                    f"AUTHORITY_NOT_CURRENT:{resolution.proof.reason.value}", resolution.proof
+                )
+            source = AuthoritySourceProof(
+                source_type=AuthoritySourceType.BINDING,
+                source_ref=resolution.proof.binding_id.value,
+                scope_ref=f"{authority.scope_type}:{authority.scope_id}",
+                detail=authority.authority_class.value,
             )
+        elif isinstance(authority, RoleAuthority):
+            if self._membership_repository is None:
+                return deny("ROLE_READER_NOT_CONFIGURED")
+            if context.actor.actor_class is not ActorClass.HUMAN_USER:
+                return deny("ROLE_ACTOR_NOT_HUMAN")
+            membership = self._membership_repository.get_current_membership(
+                context.workspace_id, context.actor.user_id
+            )
+            if membership is None:
+                return deny("ROLE_NO_ACTIVE_MEMBERSHIP")
+            role = self._membership_repository.get_current_role(membership.id)
+            if role is None or role.revoked_at is not None:
+                return deny("ROLE_NO_CURRENT_ROLE")
+            if role.role not in authority.accepted_roles:
+                return deny(f"ROLE_NOT_ACCEPTED:{role.role.value}")
+            source = AuthoritySourceProof(
+                source_type=AuthoritySourceType.ROLE,
+                source_ref=role.id,
+                scope_ref=workspace_scope_ref,
+                detail=f"{role.role.value} ({authority.operation_authority_ref})",
+            )
+        elif isinstance(authority, FoundingAuthority):  # __post_init__ guarantees command_ref
+            if context.actor.actor_class is not ActorClass.HUMAN_USER:
+                return deny("FOUNDING_ACTOR_NOT_HUMAN")
+            source = AuthoritySourceProof(
+                source_type=AuthoritySourceType.FOUNDING,
+                source_ref=boundary_input.command_ref,  # type: ignore[arg-type]
+                scope_ref=workspace_scope_ref,
+                detail=f"{authority.operation_authority_ref}:{authority.eligibility_reason_code}",
+            )
+        else:  # pragma: no cover -- __post_init__ rejects any other type
+            return deny("AUTHORITY_REQUIREMENT_UNTYPED")
 
         return BoundaryProof(
             boundary_id=self.boundary_id,
@@ -195,13 +282,13 @@ class Bnd014CommitEvaluator:
             reason_code="COMMIT_SENSITIVE_PREDICATES_CURRENT",
             workspace_id=context.workspace_id,
             actor=context.actor,
-            input_refs=tuple(sorted(boundary_input.expected_versions.keys())),
+            input_refs=input_refs,
             authoritative_version_refs=tuple(
                 f"{ref}:{version.value}"
                 for ref, version in sorted(boundary_input.current_versions.items())
                 if version is not None
             ),
-            authority_proof=resolution.proof,
+            authority_proof=authority_proof,
             evidence_proof_refs=(
                 ()
                 if boundary_input.evidence_freshness is None
@@ -209,7 +296,8 @@ class Bnd014CommitEvaluator:
             ),
             evaluated_at=context.evaluated_at,
             correlation_id=context.correlation_id,
+            authority_source=source,
         )
 
 
-__all__ = ["Bnd014Input", "Bnd014CommitEvaluator"]
+__all__ = ["Bnd014CommitEvaluator", "Bnd014Input"]

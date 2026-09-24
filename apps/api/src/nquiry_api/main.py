@@ -54,19 +54,30 @@ real local frontend origin this repository's own `docker-compose.yml`
 publishes web on, not a wildcard -- required anyway, since
 `allow_credentials=True` and a wildcard origin are mutually exclusive
 under the CORS spec itself (browsers reject the combination).
+
+F02 WU-02.12 (FBR-C): a request body that fails the route's own
+pydantic model is malformed INPUT. It is answered in the common envelope
+as `rejected` (400, `MALFORMED_REQUEST_BODY`), never FastAPI's bare
+`{"detail": ...}` 422, whose status collides with the envelope's
+`blocked` (422 = a lawful precondition is unmet). The validator's field
+detail is not echoed: the envelope carries a reason code, not a parser
+transcript.
 """
 
 from __future__ import annotations
 
 import uuid
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from observability.context import LocalOtelObservationSink, ObservationContext
 from semantic_types.ids import CorrelationId
 
 from nquiry_api.http import auth as auth_router
 from nquiry_api.http import commands as commands_router
+from nquiry_api.http import inquiry as inquiry_router
 from nquiry_api.http import queries as queries_router
 from nquiry_api.http import workspaces as workspaces_router
 
@@ -79,13 +90,25 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
     allow_methods=["GET", "POST"],
-    allow_headers=["Content-Type"],
+    # F02 WU-02.9: `Idempotency-Key` carries the client-generated command
+    # identity for every governed Command (not a CORS-safelisted header).
+    allow_headers=["Content-Type", "Idempotency-Key"],
     allow_credentials=True,
 )
+
+
+@app.exception_handler(RequestValidationError)
+async def _malformed_request_body(_request: Request, _exc: RequestValidationError) -> JSONResponse:
+    return JSONResponse(
+        status_code=400, content={"kind": "rejected", "reasonCode": "MALFORMED_REQUEST_BODY"}
+    )
+
+
 app.include_router(auth_router.router)
 app.include_router(queries_router.router)
 app.include_router(commands_router.router)
 app.include_router(workspaces_router.router)
+app.include_router(inquiry_router.router)
 
 _observation_sink = LocalOtelObservationSink(tracer_name="nquiry.api")
 

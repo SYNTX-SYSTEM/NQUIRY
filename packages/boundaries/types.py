@@ -76,6 +76,8 @@ from authority.resolver import AuthorityResolutionProof
 from semantic_types.ids import CorrelationId, WorkspaceId
 from semantic_types.versions import ContractVersion
 
+from boundaries.authority_source import AuthoritySourceProof
+
 
 class BoundaryId(Enum):
     """The 18 named boundaries 06 defines. Closed -- a boundary not
@@ -190,6 +192,10 @@ class BoundaryProof:
     evidence_proof_refs: tuple[str, ...]
     evaluated_at: datetime
     correlation_id: CorrelationId
+    authority_source: AuthoritySourceProof | None = None
+    """F02 HD-6: the typed authority source BND-014 proved on ALLOW
+    (BINDING/ROLE/FOUNDING). `None` for every other boundary and for any
+    non-ALLOW BND-014 proof."""
 
     def __post_init__(self) -> None:
         if not isinstance(self.boundary_id, BoundaryId):

@@ -99,5 +99,14 @@ export function SessionViewContainer({
       return <DeniedBanner result={result.result} reasonCode={result.reasonCode} />;
     case "indeterminate":
       return <IndeterminateBanner blockedTargetRef={result.blockedTargetRef} />;
+    case "rejected":
+      // F02 WU-02.12 (FBR-C): the server rejected the request as malformed.
+      // A verdict, not a network failure, and not an authority denial.
+      return (
+        <div data-testid="session-view-rejected" role="alert">
+          Rejected: this address does not name a valid Workspace or Session ({result.reasonCode}). No
+          authority decision was made.
+        </div>
+      );
   }
 }

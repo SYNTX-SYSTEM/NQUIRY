@@ -34,12 +34,12 @@ from application.workspace_creation_handler import (
     create_workspace,
 )
 from authority.actor import ActorClass, ActorIdentity
+from commit.coordinator import CommitFailedPrecommit
 from governance.authority_binding import AuthorityBindingState, AuthorityClass
 from governance.membership import MembershipStatus, WorkspaceRole
 from persistence.audit_repository import SqlAlchemyAuditRepository
 from persistence.authority_binding_repository import SqlAlchemyAuthorityBindingRepository
 from persistence.command_repository import (
-    AttemptAlreadyRecorded,
     SqlAlchemyCommandRepository,
 )
 from persistence.commit_repository import SqlAlchemyCommitRepository
@@ -247,7 +247,23 @@ def test_real_human_founder_creates_workspace_and_becomes_governance_root(
         .one()
     )
     assert audit_row["event_type"] == "CMD_CREATE_WORKSPACE_COMMITTED"
-    assert audit_row["authority_source_ref"] == result.governance_binding_id.value
+    # F02 HD-6: the authority SOURCE of a founding is the founding act
+    # itself (FOUNDING, ref = this Command's own `commands.id`), not the
+    # WORKSPACE_GOVERNANCE_RIGHT binding it creates. Pre-F02 this row
+    # pointed at the created binding: circular provenance.
+    assert audit_row["authority_source_type"] == "FOUNDING"
+    assert audit_row["authority_scope_ref"] == f"WORKSPACE:{result.workspace_id.value}"
+    command_row = (
+        db_connection.execute(
+            sa.select(sa.text("command_type"))
+            .select_from(sa.text("commands"))
+            .where(sa.text("id = :cid"))
+            .params(cid=audit_row["authority_source_ref"])
+        )
+        .mappings()
+        .one()
+    )
+    assert command_row["command_type"] == "CMD_CREATE_WORKSPACE"
     assert audit_row["result"] == "COMMITTED"
 
 
@@ -477,7 +493,9 @@ def test_duplicate_attempt_id_is_rejected_and_second_workspace_never_created(
     )
     before = _workspace_row_count(db_connection)
 
-    with pytest.raises(AttemptAlreadyRecorded):
+    # F02 HD-6: raised inside the coordinator's SAVEPOINT, so classified
+    # FAILED_PRECOMMIT with the root cause preserved in the message.
+    with pytest.raises(CommitFailedPrecommit, match="AttemptAlreadyRecorded"):
         create_workspace(
             db_connection,
             actor=_human_actor(founder),
@@ -522,8 +540,16 @@ def test_mid_transaction_failure_rolls_back_every_row_including_the_attempt_itse
     before_commands = db_connection.execute(
         sa.select(sa.func.count()).select_from(commands_table)
     ).scalar_one()
+    # F02 WU-02.11: before/after comparison, not "== 0": a live DB may hold
+    # other legitimately committed units (e.g. from the real-stack lane).
+    before_commit_units = db_connection.execute(
+        sa.select(sa.func.count()).select_from(commit_units_table)
+    ).scalar_one()
 
-    with pytest.raises(RuntimeError, match="INJECTED_AUDIT_FAILURE"):
+    # F02 HD-6: founding now commits through CommitCoordinator, which
+    # classifies any in-SAVEPOINT failure as FAILED_PRECOMMIT (same as
+    # every other governed Command); the root cause stays in the message.
+    with pytest.raises(CommitFailedPrecommit, match="INJECTED_AUDIT_FAILURE"):
         create_workspace(
             db_connection,
             actor=_human_actor(founder),
@@ -552,7 +578,7 @@ def test_mid_transaction_failure_rolls_back_every_row_including_the_attempt_itse
         db_connection.execute(
             sa.select(sa.func.count()).select_from(commit_units_table)
         ).scalar_one()
-        == 0
+        == before_commit_units
     )
     assert (
         db_connection.execute(sa.select(sa.func.count()).select_from(commands_table)).scalar_one()

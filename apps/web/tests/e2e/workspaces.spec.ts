@@ -16,6 +16,29 @@ const WORKSPACES_LIST_ROUTE = "http://localhost:8000/workspaces";
 const ORIENTATION_ROUTE = "http://localhost:8000/workspaces/ws-orient";
 const ADD_MEMBER_ROUTE = "http://localhost:8000/workspaces/ws-orient/members";
 
+/**
+ * F02 WU-02.10: the Workspace page also reads `GET /workspaces/{w}/overview`.
+ * This mocked (component-contract) suite fulfils it with an empty overview so
+ * the F01 orientation contract under test stays isolated.
+ */
+test.beforeEach(async ({ page }) => {
+  await page.route("http://localhost:8000/workspaces/*/overview", (route) =>
+    route.fulfill({
+      json: {
+        kind: "ok",
+        workspace: { workspaceId: "ws-orient", name: "Orientation Workspace", governedFounding: true },
+        viewer: { userId: "u-orient", role: "Owner", isGovernanceRoot: true },
+        members: [],
+        challenges: [],
+        capabilities: {
+          createChallenge: { available: false, reasonCode: "NOT_FACILITATOR", reason: "Facilitator role required." },
+          addMember: { available: true, reasonCode: null, reason: null },
+        },
+      },
+    }),
+  );
+});
+
 function authenticated(page: import("@playwright/test").Page) {
   return page.route(ME_ROUTE, (route) =>
     route.fulfill({ status: 200, json: { kind: "ok", userId: "u-orient" } }),

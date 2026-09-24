@@ -21,7 +21,9 @@ const SESSION_ID = "sess-real";
 // intercept the top-level page navigation itself, not only the
 // client's own background fetch.
 const ROUTE_PATTERN = "http://localhost:8000/workspaces/**/sessions/**";
-const PAGE_PATH = `/workspaces/${WORKSPACE_ID}/sessions/${SESSION_ID}`;
+// F02 WU-02.10: the PKG-28/29 surface moved to `.../decision` (the canonical
+// Session page is now the governed inquiry-position page).
+const PAGE_PATH = `/workspaces/${WORKSPACE_ID}/sessions/${SESSION_ID}/decision`;
 
 const OK_BODY = {
   kind: "ok",
@@ -127,7 +129,7 @@ test("mandatory attack: forged Workspace in client -- rendering is a pure functi
   const body = { ...OK_BODY, data: { ...OK_BODY.data, workspaceId: forgedWorkspaceInResponse } };
   await page.route(ROUTE_PATTERN, (route) => route.fulfill({ json: body }));
 
-  await page.goto(`/workspaces/ws-attacker-claimed/sessions/${SESSION_ID}`);
+  await page.goto(`/workspaces/ws-attacker-claimed/sessions/${SESSION_ID}/decision`);
 
   await expect(page.getByTestId("workspace-badge")).toContainText(forgedWorkspaceInResponse);
   await expect(page.getByTestId("workspace-badge")).not.toContainText("ws-attacker-claimed");
