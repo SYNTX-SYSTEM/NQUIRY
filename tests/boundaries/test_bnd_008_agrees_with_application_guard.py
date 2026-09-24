@@ -26,6 +26,7 @@ from boundaries.bnd_008_question_burst import (
 )
 from boundaries.types import BoundaryContext, BoundaryId, BoundaryResult
 from domain.burst import BurstState
+from domain.burst_input import check_burst_input
 from semantic_types.ids import CorrelationId, UserId, WorkspaceId
 
 _NOW = datetime(2030, 1, 1, tzinfo=timezone.utc)
@@ -59,6 +60,13 @@ def test_both_implementations_agree(
         context=context,
         burst_state=burst_state,
         operation_category=bnd_category,
+        # F03 WU-03.5: a capture also needs an established BURST_INPUT_VALID;
+        # the differential compares the contamination facts, so it is supplied valid.
+        input_check=(
+            check_burst_input("Why did it drop?")
+            if bnd_category is Bnd008OperationCategory.CAPTURE_BURST_QUESTION
+            else None
+        ),
     )
     boundary_proof = Bnd008QuestionBurstEvaluator().evaluate(boundary_input, context)
 

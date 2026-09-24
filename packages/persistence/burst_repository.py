@@ -78,6 +78,10 @@ class BurstRepository(Protocol):
 
     def get_by_session(self, session_id: SessionId) -> QuestionBurst | None: ...
 
+    def get_by_session_for_update(self, session_id: SessionId) -> QuestionBurst | None: ...
+
+    def next_captured_order(self, burst_id: BurstId) -> int: ...
+
     def start(
         self,
         *,
@@ -168,6 +172,36 @@ class SqlAlchemyBurstRepository:
         )
         row = self._connection.execute(stmt).mappings().one_or_none()
         return None if row is None else _burst_from_row(row)
+
+    def get_by_session_for_update(self, session_id: SessionId) -> QuestionBurst | None:
+        """F03 WU-03.6/03.7 (FBR-F03-2, FBR-F03-6): read the Session's Burst
+        and take its row lock (`FOR NO KEY UPDATE`) until the transaction ends.
+        Capture and completion BOTH call this first, so they are mutually
+        exclusive and captures are serialized: the state read here stays true
+        until commit, the completion reads its membership set only after any
+        in-flight capture has committed or rolled back, and `captured_order` is
+        assigned without a race. `NO KEY UPDATE` (not `UPDATE`) so the
+        foreign-key checks of membership INSERTs are not blocked by it. Under
+        READ COMMITTED, a waiter re-reads the row after the lock is released, so
+        a capture that waited for a completion sees COMPLETED."""
+        stmt = (
+            sa.select(question_bursts_table)
+            .where(question_bursts_table.c.session_id == session_id.value)
+            .with_for_update(key_share=True)
+        )
+        row = self._connection.execute(stmt).mappings().one_or_none()
+        return None if row is None else _burst_from_row(row)
+
+    def next_captured_order(self, burst_id: BurstId) -> int:
+        """The next ordinal for this Burst. Only meaningful while the caller
+        holds the Burst row lock (`get_by_session_for_update`); the DB
+        additionally enforces `UNIQUE (question_burst_id, captured_order)`."""
+        current = self._connection.execute(
+            sa.select(sa.func.max(burst_question_memberships_table.c.captured_order)).where(
+                burst_question_memberships_table.c.question_burst_id == burst_id.value
+            )
+        ).scalar_one()
+        return 0 if current is None else int(current) + 1
 
     def start(
         self,

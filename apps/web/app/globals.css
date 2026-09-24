@@ -423,6 +423,33 @@ textarea {
   margin: 0 0 var(--space-2);
 }
 
+/* F03: protected Burst surface. Verbatim text is shown exactly as stored. */
+.question-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.question-list > li {
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.question-list > li:last-child {
+  border-bottom: 0;
+}
+
+.verbatim {
+  margin: var(--space-2) 0 0;
+  padding: var(--space-3);
+  background: var(--surface-sunk);
+  border-radius: var(--radius);
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 /*
  * ---- SF-01 symbiotic foundation (docs/implementation/frontend/21 §30–§35) ----
  * Append-only: no F02 rule above is changed (the Session page, F03 contact

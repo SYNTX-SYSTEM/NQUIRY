@@ -390,6 +390,8 @@ question_bursts_table = sa.Table(
     sa.Column("frozen_membership_fingerprint", sa.Text(), nullable=True),
     sa.Column("record_version", sa.BigInteger(), nullable=False),
     sa.UniqueConstraint("id", "workspace_id", name="uq_question_bursts_id_workspace"),
+    # F03 WU-03.2 (EC-1, migration e5a1b3c8f204): at most one Burst per Session, ever.
+    sa.UniqueConstraint("session_id", name="uq_question_bursts_session"),
     sa.ForeignKeyConstraint(
         ["session_id", "workspace_id"],
         ["sessions.id", "sessions.workspace_id"],
@@ -420,6 +422,10 @@ burst_question_memberships_table = sa.Table(
     ),
     sa.Column("capture_origin", sa.Text(), nullable=False),
     sa.Column("record_version", sa.BigInteger(), nullable=False),
+    # F03 WU-03.2 (FBR-F03-6, migration e5a1b3c8f204): one ordinal per capture event.
+    sa.UniqueConstraint(
+        "question_burst_id", "captured_order", name="uq_burst_memberships_burst_order"
+    ),
     sa.ForeignKeyConstraint(
         ["question_burst_id", "workspace_id"],
         ["question_bursts.id", "question_bursts.workspace_id"],
@@ -448,6 +454,8 @@ commands_table = sa.Table(
     sa.Column("contract_version", sa.Text(), nullable=False),
     sa.Column("payload_fingerprint", sa.Text(), nullable=False),
     sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+    # F03 WU-03.4 (migration f6b2c4d9a318): the refs the Command targets (09 §9).
+    sa.Column("target_refs", sa.ARRAY(sa.Text()), nullable=False, server_default="{}"),
     sa.UniqueConstraint("id", "workspace_id", name="uq_commands_id_workspace"),
 )
 

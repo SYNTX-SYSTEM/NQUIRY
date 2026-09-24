@@ -26,6 +26,7 @@ from persistence.decision_repository import SqlAlchemyDecisionRepository
 from persistence.membership_repository import SqlAlchemyMembershipRepository
 from persistence.outbox_repository import SqlAlchemyOutboxRepository
 from persistence.question_repository import SqlAlchemyQuestionRepository
+from persistence.session_participation_repository import SqlAlchemySessionParticipationRepository
 from persistence.session_repository import SqlAlchemySessionRepository
 from persistence.workspace_repository import SqlAlchemyWorkspaceRepository
 from semantic_types.clock import Clock
@@ -51,6 +52,7 @@ class GovernedPorts:
         self.bindings = SqlAlchemyAuthorityBindingRepository(c)
         self.challenges = SqlAlchemyChallengeRepository(c)
         self.sessions = SqlAlchemySessionRepository(c)
+        self.participations = SqlAlchemySessionParticipationRepository(c)
         self.bursts = SqlAlchemyBurstRepository(c)
         self.questions = SqlAlchemyQuestionRepository(c)
         self.decisions = SqlAlchemyDecisionRepository(c)
@@ -62,7 +64,11 @@ class GovernedPorts:
         self.resolver = AuthorityResolver(self.memberships, self.bindings, self.clock)
 
     def bnd014(self) -> Bnd014CommitEvaluator:
-        return Bnd014CommitEvaluator(self.resolver, membership_repository=self.memberships)
+        return Bnd014CommitEvaluator(
+            self.resolver,
+            membership_repository=self.memberships,
+            participation_repository=self.participations,
+        )
 
 
 __all__ = ["GovernedPorts", "RealClock"]

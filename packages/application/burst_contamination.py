@@ -133,6 +133,8 @@ class ContaminationDenyReason(Enum):
 
     AI_OPERATION_DURING_PROTECTED_BURST = "AI_OPERATION_DURING_PROTECTED_BURST"
     AI_ACTOR_CANNOT_CONTROL_BURST_LIFECYCLE = "AI_ACTOR_CANNOT_CONTROL_BURST_LIFECYCLE"
+    CAPTURE_REQUIRES_HUMAN_ACTOR = "CAPTURE_REQUIRES_HUMAN_ACTOR"
+    """F03 (06 §14 IDENTITY): only an authenticated human submits a Question."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -163,6 +165,14 @@ def evaluate_burst_contamination_guard(
             burst_state=burst_state,
             operation=operation,
             actor_class=actor_class,
+        )
+
+    if (
+        operation is BurstOperationCategory.CAPTURE_BURST_QUESTION
+        and actor_class is not ActorClass.HUMAN_USER
+    ):
+        return result(
+            BurstContaminationVerdict.DENY, ContaminationDenyReason.CAPTURE_REQUIRES_HUMAN_ACTOR
         )
 
     if actor_class is ActorClass.AI_PROCESSOR:

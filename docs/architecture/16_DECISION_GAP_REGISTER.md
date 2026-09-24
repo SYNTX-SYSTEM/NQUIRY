@@ -87,7 +87,7 @@ TOTAL_CANONICAL_GAPS: 78 (baseline-candidate; current: 80 including post-baselin
 | NQ-GAP-020 | Experiment status vocabulary | OPEN | 02 | GAP-02-014 |
 | NQ-GAP-021 | Evidence multi-target relation semantics | OPEN | 02 | GAP-02-015 |
 | NQ-GAP-022 | Pause and Timer semantics | OPEN | 06 | GAP-03-002 |
-| NQ-GAP-023 | Questions-only enforcement mechanism | OPEN | 06 | GAP-03-003 |
+| NQ-GAP-023 | Questions-only enforcement mechanism | OPEN (prototype form rule: post-baseline, §41 REC-013 / NQ-DEC-040; the semantic mechanism stays open) | 06 | GAP-03-003 |
 | NQ-GAP-024 | Required AI Analysis failure/bypass | OPEN | 06 | GAP-03-006 |
 | NQ-GAP-025 | Cross-object commit atomicity | OPEN | 06 | GAP-03-017 |
 | NQ-GAP-026 | Collaborative Question Selection Rule | OPEN | 05 | GAP-04-001 |
@@ -193,6 +193,12 @@ For unresolved items, absent source detail remains explicit. No placeholder valu
 | NQ-DEC-035 | Session controller admits participants; no self-join | ESTABLISHED (post-baseline, §41 REC-006) | F02 HD-7; NQ-GAP-079 (join) | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-24 |
 | NQ-DEC-036 | At least one participant before Question Generation opens | ESTABLISHED (post-baseline, §41 REC-007) | F02 HD-8; 03 TRN-SESS-004 | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-24 |
 | NQ-DEC-037 | Prototype Burst control closed by Session-scoped SESSION_CONTROL_RIGHT (prototype narrowing) | ESTABLISHED (post-baseline, §41 REC-009) | F02 HD-9; NQ-GAP-080 (production model open) | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-24 |
+| NQ-DEC-038 | PAUSE / RESUME is out of scope for F03 (authority stays open) | ESTABLISHED (post-baseline, §41 REC-011) | F03 HD-10; NQ-GAP-022 (stays OPEN) | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-24 |
+| NQ-DEC-039 | No automatic timer completion; the timer is presentation only | ESTABLISHED (post-baseline, §41 REC-012) | F03 HD-11; affirms NQ-DEC-017; CONFLICT-007, NQ-GAP-022, NQ-GAP-032 stay OPEN | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-24 |
+| NQ-DEC-040 | Questions-only validity is a deterministic form rule (prototype narrowing) | ESTABLISHED (post-baseline, §41 REC-013) | F03 HD-12; NQ-GAP-023 (semantic mechanism stays OPEN) | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-24 |
+| NQ-DEC-041 | Burst visibility: own Questions only while ACTIVE, full frozen set with authors afterwards | ESTABLISHED (post-baseline, §41 REC-014) | F03 HD-13; 00 §11.1 | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-24 |
+| NQ-DEC-042 | Controller self-admission is lawful (HD-7 clarified) | ESTABLISHED (post-baseline, §41 REC-015) | F03 HD-14; NQ-DEC-035; NQ-GAP-079 (leave/removal stays open) | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-24 |
+| NQ-DEC-043 | PARTICIPATION is the fourth typed effect-gate authority source | ESTABLISHED (post-baseline, §41 REC-016) | F03 HD-15; NQ-DEC-034; 04 AUTH-DEP-Q-001 | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-24 |
 
 No recommendation, mock, default or implementation convenience is ESTABLISHED outside its authorized scope.
 
@@ -1800,6 +1806,48 @@ BASELINE_READINESS: BASELINE_READY_FOR_PROTOTYPE_IMPLEMENTATION pending HUMAN_RE
       "status": "ESTABLISHED",
       "post_baseline_record": "REC-009",
       "source": "F02 HD-9"
+    },
+    {
+      "id": "NQ-DEC-038",
+      "title": "PAUSE / RESUME is out of scope for F03",
+      "status": "ESTABLISHED",
+      "post_baseline_record": "REC-011",
+      "source": "F03 HD-10"
+    },
+    {
+      "id": "NQ-DEC-039",
+      "title": "No automatic timer completion; the timer is presentation only",
+      "status": "ESTABLISHED",
+      "post_baseline_record": "REC-012",
+      "source": "F03 HD-11"
+    },
+    {
+      "id": "NQ-DEC-040",
+      "title": "Questions-only validity is a deterministic form rule",
+      "status": "ESTABLISHED",
+      "post_baseline_record": "REC-013",
+      "source": "F03 HD-12"
+    },
+    {
+      "id": "NQ-DEC-041",
+      "title": "Burst visibility: own Questions only while ACTIVE",
+      "status": "ESTABLISHED",
+      "post_baseline_record": "REC-014",
+      "source": "F03 HD-13"
+    },
+    {
+      "id": "NQ-DEC-042",
+      "title": "Controller self-admission is lawful",
+      "status": "ESTABLISHED",
+      "post_baseline_record": "REC-015",
+      "source": "F03 HD-14"
+    },
+    {
+      "id": "NQ-DEC-043",
+      "title": "PARTICIPATION is the fourth typed effect-gate authority source",
+      "status": "ESTABLISHED",
+      "post_baseline_record": "REC-016",
+      "source": "F03 HD-15"
     }
   ],
   "packages": [
@@ -2435,3 +2483,43 @@ Successor record. Nothing in §1–§40 is deleted. Status-bearing baseline line
 - LD-5: the header (§1: `IMPLEMENTATION: NOT STARTED`, `UPSTREAM_MUTATION: NONE`) and §40's closing "Do not modify 00 through 15. Do not implement code." describe the baseline-candidate moment. Implementation has proceeded Field by Field under human commit approval (F00, F01), and post-baseline pointers exist in 12, 04 and 05. This section and 20 §14 are the current process record.
 
 **Provenance.** Authorized by the human operator's F02 WU-02.12 instruction (2026-09-24: "Repair the structural findings … FBR-D"; "reconcile the prototype narrowing through the authoritative decision / gap register"). Found by the SFE bootstrap reconstruction `docs/implementation/agent-bootstrap/SFE_AGENT_RECONSTRUCTION_2026-09-24.md` §6/§10.
+
+### REC-011 / NQ-DEC-038: PAUSE / RESUME is out of scope for F03 (F03 HD-10)
+
+- DECISION (human operator, 2026-09-24, F03 bootstrap instruction): PAUSE / RESUME is **out of scope for F03**. HD-9 does not authorize it. Its authority stays OPEN as a Case-3 relation (NQ-GAP-022 stays OPEN).
+- EFFECT: TRN-BURST-003 / 004 and AUTH-DEP-BURST-003 / 004 are not materialized. Burst states reachable in F03 are PREPARED → ACTIVE → COMPLETED. PAUSED stays in the schema (03 §19) but has no Command.
+- RECORDED IN: `docs/implementation/field-reports/F03/F03_READINESS_RECONSTRUCTION.md` §1; `20_SYSTEM_FIELD_ENGINEERING.md` §15.
+
+### REC-012 / NQ-DEC-039: No automatic timer completion (F03 HD-11)
+
+- DECISION (human operator, 2026-09-24): **automatic timer completion is NOT authorized.** The timer is presentation only. Completion is an explicit manual consequential action under HD-9. Time passing alone must not commit the completion effect.
+- EFFECT: the SYSTEM_SERVICE path of AUTH-DEP-BURST-005 / AUTH-DEP-SESS-005 is not materialized. This affirms NQ-DEC-017 and 12 §11. CONFLICT-007, NQ-GAP-022 and NQ-GAP-032 stay OPEN and are not needed for F03.
+
+### REC-013 / NQ-DEC-040: Questions-only validity is a deterministic form rule (F03 HD-12; prototype narrowing; closes C3-1 for the prototype)
+
+- DECISION (human operator, 2026-09-24, option (a)): Capture input is `BURST_INPUT_VALID` when it contains non-whitespace and its last non-whitespace character is a question mark in any script (`?`, `？`, `؟`, Greek question mark U+037E, and equivalents). Any other input is `rejected`, and nothing is stored. The text itself is stored verbatim; validation never alters it.
+- PROTOTYPE NARROWING: it enforces **form, not meaning**. NQ-GAP-023 stays **OPEN** for a semantic mechanism. AI remains excluded as validator (06 BND-008).
+- MATERIALIZATION: `domain.burst_input` (pure rule) consumed by BND-008 (`BURST_INPUT_VALID`) inside the capture Command.
+
+### REC-014 / NQ-DEC-041: Burst visibility (F03 HD-13; closes C3-2)
+
+- DECISION (human operator, 2026-09-24, option (a)): while the Burst is ACTIVE, each participant sees **only their own** Questions, and the controller sees **only a count**. After completion, every Session member who can read the Session sees the **full frozen set**, with human origin marked and author names shown.
+- MATERIALIZATION: `application.inquiry_queries.session_position` (server-side filtering; the client never receives other participants' Questions while the Burst is ACTIVE).
+
+### REC-015 / NQ-DEC-042: Controller self-admission is lawful (F03 HD-14; closes C3-3; clarifies HD-7 / NQ-DEC-035)
+
+- DECISION (human operator, 2026-09-24, option (a)): "No self-join" means a member cannot join **without** the controller's admission. The holder of `SESSION_CONTROL_RIGHT` at `SESSION:<id>` may admit themselves. The Command stays audited and BINDING-sourced. F02's behaviour stands. NQ-GAP-079 leave/removal stays OPEN.
+
+### REC-016 / NQ-DEC-043: PARTICIPATION is the fourth typed effect-gate authority source (F03 HD-15; closes the FBR-F03-5 confirmation)
+
+- DECISION (human operator, 2026-09-24): The effect gate gains a fourth typed authority source, **PARTICIPATION** (reference = SessionParticipation id, scope `SESSION:<id>`), re-read at commit. It is recorded in `20_SYSTEM_FIELD_ENGINEERING.md` §7 by successor note. The `audit_events.authority_source_type` CHECK is extended by migration `c4e9a2b7d135`.
+- WHY: AUTH-DEP-Q-001 makes the source participation right the authority for Question capture. Encoding it as ROLE or BINDING would fabricate provenance (HD-6 / NQ-DEC-034).
+- AFFECTS: NQ-DEC-034 (the "at minimum BINDING, ROLE and FOUNDING" set is extended), 09 audit contract (`authority_source_type` vocabulary).
+
+### REC-017: Ledger reconciliation (F03 WU-03.0)
+
+Successor record. Nothing in §1–§40 or REC-001..REC-010 is deleted.
+
+**Current counts** (superseding REC-010 for current use): Decisions 43 (ESTABLISHED 34: NQ-DEC-022, 032..043; REQUIRED 9). Canonical gaps stay 80. NQ-GAP-023, NQ-GAP-022, NQ-GAP-032 and NQ-GAP-079 stay OPEN; NQ-GAP-023 now records the prototype form rule.
+
+**Provenance.** F03 WU-03.0, authorized by the human operator's F03 instruction (2026-09-24), per `20_SYSTEM_FIELD_ENGINEERING.md` §14.

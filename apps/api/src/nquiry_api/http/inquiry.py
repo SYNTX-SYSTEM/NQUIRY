@@ -12,9 +12,13 @@ segment, mapped to one semantic Command (12 §23, 19 §22).
 
 from __future__ import annotations
 
+from typing import Any
+
 from application.http_dispatch import SESSION_COOKIE_NAME
 from application.http_f02 import (
+    dispatch_capture_question,
     dispatch_challenge_detail,
+    dispatch_complete_burst,
     dispatch_create_challenge,
     dispatch_create_session,
     dispatch_grant_authority,
@@ -24,7 +28,7 @@ from application.http_f02 import (
 )
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 router = APIRouter()
 
@@ -57,6 +61,20 @@ class GrantBody(BaseModel):
 class SessionCommandBody(BaseModel):
     expectedVersion: int | None = None  # noqa: N815
     participantUserId: str | None = None  # noqa: N815
+
+
+class CaptureQuestionBody(BaseModel):
+    """Wire contract of a capture: ONLY `originalText` and `expectedBurstVersion`.
+    Extra fields are captured (not dropped) so the dispatch can REJECT them."""
+
+    model_config = ConfigDict(extra="allow")
+    originalText: Any = None  # noqa: N815 -- camelCase wire contract; validated in dispatch
+    expectedBurstVersion: Any = None  # noqa: N815
+
+
+class CompleteBurstBody(BaseModel):
+    expectedVersion: int | None = None  # noqa: N815
+    expectedBurstVersion: int | None = None  # noqa: N815
 
 
 @router.get("/workspaces/{workspace_id}/overview")
@@ -177,6 +195,39 @@ def admit_participant(
     workspace_id: str, session_id: str, body: SessionCommandBody, request: Request
 ) -> JSONResponse:
     return _session_command(workspace_id, session_id, "admit-participant", body, request)
+
+
+@router.post("/workspaces/{workspace_id}/sessions/{session_id}/burst/questions")
+def capture_question(
+    workspace_id: str, session_id: str, body: CaptureQuestionBody, request: Request
+) -> JSONResponse:
+    return _json(
+        dispatch_capture_question(
+            session_token=_token(request),
+            idempotency_key=_idem(request),
+            workspace_id=workspace_id,
+            session_id=session_id,
+            original_text=body.originalText,
+            expected_burst_version=body.expectedBurstVersion,
+            extra_fields=tuple((body.model_extra or {}).keys()),
+        )
+    )
+
+
+@router.post("/workspaces/{workspace_id}/sessions/{session_id}/transitions/complete-burst")
+def complete_burst(
+    workspace_id: str, session_id: str, body: CompleteBurstBody, request: Request
+) -> JSONResponse:
+    return _json(
+        dispatch_complete_burst(
+            session_token=_token(request),
+            idempotency_key=_idem(request),
+            workspace_id=workspace_id,
+            session_id=session_id,
+            expected_session_version=body.expectedVersion,
+            expected_burst_version=body.expectedBurstVersion,
+        )
+    )
 
 
 __all__ = ["router"]

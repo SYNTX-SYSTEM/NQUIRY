@@ -54,6 +54,8 @@ from persistence.local_auth_repository import SqlAlchemyLocalSessionRepository
 from semantic_types.ids import ChallengeId, CommandId, SessionId, UserId, WorkspaceId
 from semantic_types.versions import MethodVersion
 
+from application import burst_capture_handler as capture
+from application import burst_completion_handler as completion
 from application import inquiry_queries as queries
 from application import session_control_handler as control
 from application.auth_handler import resolve_session
@@ -127,6 +129,9 @@ def _command_outcome(run: Callable[[], Response]) -> Response:
     try:
         return run()
     except _Rejected as exc:
+        return _rejected(exc.reason_code)
+    except capture.CaptureInputRejected as exc:
+        # F03 HD-12: input, never authority. Nothing was stored or altered.
         return _rejected(exc.reason_code)
     except control.SessionVersionStale as exc:
         return 409, {
@@ -463,7 +468,112 @@ def dispatch_session_command(
     return _with_actor(session_token, work)
 
 
+_CAPTURE_FIELDS = frozenset({"originalText", "expectedBurstVersion"})
+
+
+def dispatch_capture_question(
+    *,
+    session_token: str | None,
+    idempotency_key: str | None,
+    workspace_id: str,
+    session_id: str,
+    original_text: object,
+    expected_burst_version: object,
+    extra_fields: tuple[str, ...] = (),
+) -> Response:
+    """CMD_CAPTURE_BURST_QUESTION. The wire contract carries ONLY the exact text
+    and the Burst version the caller saw. `origin`, author, mode and every other
+    field are REJECTED, never ignored: Question origin and author come from the
+    verified session, never from the client (AI-origin contamination is
+    unrepresentable at the API)."""
+
+    def work(ports: GovernedPorts, principal: Any) -> Response:
+        ws = WorkspaceId(_uuid(workspace_id, "workspace_id"))
+        sid = SessionId(_uuid(session_id, "session_id"))
+        ident = _ident(idempotency_key)
+        if extra_fields:
+            raise _Rejected(f"UNSUPPORTED_FIELD:{sorted(extra_fields)[0]}")
+        if not isinstance(original_text, str):
+            raise _Rejected("ORIGINAL_TEXT_REQUIRED")
+        if (
+            not isinstance(expected_burst_version, int)
+            or isinstance(expected_burst_version, bool)
+            or expected_burst_version < 1
+        ):
+            raise _Rejected("EXPECTED_VERSION_REQUIRED")
+
+        def run() -> Response:
+            question_id: str | None
+            try:
+                result = capture.capture_burst_question(
+                    ports,
+                    actor=_actor(principal),
+                    workspace_id=ws,
+                    session_id=sid,
+                    original_text=original_text,  # verbatim, never trimmed here
+                    expected_burst_version=expected_burst_version,
+                    ident=ident,
+                )
+                replayed, question_id = False, str(result.question_id.value)
+            except control.IdempotentReplay as replay:
+                replayed, question_id = True, replay.result_ref
+            position = queries.session_position(ports, principal, ws, sid)
+            return 200, {
+                "kind": "committed",
+                "replayed": replayed,
+                "questionId": question_id,
+                "position": position,
+            }
+
+        return _command_outcome(run)
+
+    return _with_actor(session_token, work)
+
+
+def dispatch_complete_burst(
+    *,
+    session_token: str | None,
+    idempotency_key: str | None,
+    workspace_id: str,
+    session_id: str,
+    expected_session_version: object,
+    expected_burst_version: object,
+) -> Response:
+    """CMD_COMPLETE_BURST (TRN-SESS-005 + TRN-BURST-005, one bundle)."""
+
+    def work(ports: GovernedPorts, principal: Any) -> Response:
+        ws = WorkspaceId(_uuid(workspace_id, "workspace_id"))
+        sid = SessionId(_uuid(session_id, "session_id"))
+        for version in (expected_session_version, expected_burst_version):
+            if not isinstance(version, int) or isinstance(version, bool) or version < 1:
+                raise _Rejected("EXPECTED_VERSION_REQUIRED")
+        ident = _ident(idempotency_key)
+
+        def run() -> Response:
+            try:
+                completion.complete_burst(
+                    ports,
+                    actor=_actor(principal),
+                    workspace_id=ws,
+                    session_id=sid,
+                    expected_session_version=expected_session_version,  # type: ignore[arg-type]
+                    expected_burst_version=expected_burst_version,  # type: ignore[arg-type]
+                    ident=ident,
+                )
+                replayed = False
+            except control.IdempotentReplay:
+                replayed = True
+            position = queries.session_position(ports, principal, ws, sid)
+            return 200, {"kind": "committed", "replayed": replayed, "position": position}
+
+        return _command_outcome(run)
+
+    return _with_actor(session_token, work)
+
+
 __all__ = [
+    "dispatch_capture_question",
+    "dispatch_complete_burst",
     "dispatch_challenge_detail",
     "dispatch_create_challenge",
     "dispatch_create_session",

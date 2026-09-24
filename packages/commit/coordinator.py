@@ -82,6 +82,7 @@ mechanism here would duplicate an invariant PKG-11 already proves.
 
 from __future__ import annotations
 
+import contextlib
 import uuid
 from dataclasses import dataclass
 from datetime import datetime
@@ -113,7 +114,7 @@ from semantic_types.ids import (
 )
 from semantic_types.versions import ContractVersion, RecordVersion
 
-from commit.idempotency import IdempotencyPort
+from commit.idempotency import IdempotencyPort, IdempotencyRecordNotFound
 
 
 class CommitOutcome(Enum):
@@ -427,6 +428,10 @@ class CommitCoordinator:
         proof = self._bnd014_evaluator.evaluate(bnd014_input, context)
         self._failure_injector.before(CommitInjectionPoint.AFTER_BND014)
         if proof.result is not BoundaryResult.ALLOW:
+            if not founding:
+                self._mark_denied_at_gate(
+                    envelope, occurred_at=occurred_at, reason_code=proof.reason_code
+                )
             raise CommitDenied(proof)
         if proof.authority_source is None:
             # HD-6: no ALLOW may be committed without a real, typed
@@ -588,6 +593,33 @@ class CommitCoordinator:
             self._failure_injector.before(CommitInjectionPoint.BEFORE_DB_COMMIT)
 
         return commit_unit
+
+    def _mark_denied_at_gate(
+        self, envelope: CommandEnvelope, *, occurred_at: datetime, reason_code: str
+    ) -> None:
+        """F03 FBR-F03-7. BND-014 DENIED, so nothing was mutated and no
+        CommitUnit exists (09 §13). The attempt still needs its determined
+        outcome (09 §18: DENIED), and the idempotency record must leave
+        IN_PROGRESS, otherwise the attempt reads as an unresolved Command
+        (10 §4.4) that blocks its dependents (BND-008 "capture uncertainty
+        blocks Burst completion") forever. The idempotency record becomes
+        FAILED_PRECOMMIT (no effect, a fresh attempt may proceed)."""
+        with self._connection.begin_nested():
+            self._command_repository.record_outcome(
+                attempt_id=envelope.attempt_id,
+                workspace_id=envelope.workspace_scope_ref,
+                outcome=CommandOutcome.DENIED,
+                completed_at=occurred_at,
+                failure_code=reason_code[:200],
+            )
+            if envelope.idempotency_key is not None:
+                # A caller that never began an idempotency record has none to resolve.
+                with contextlib.suppress(IdempotencyRecordNotFound):
+                    self._idempotency_port.mark_failed_precommit(
+                        workspace_id=envelope.workspace_scope_ref,
+                        command_type=envelope.command_type,
+                        idempotency_key=envelope.idempotency_key,
+                    )
 
     def _mark_failed_precommit(self, envelope: CommandEnvelope, *, occurred_at: datetime) -> None:
         with self._connection.begin_nested():

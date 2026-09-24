@@ -39,6 +39,7 @@ from enum import Enum
 
 from authority.actor import ActorClass
 from domain.burst import PROTECTED_BURST_STATES, BurstState
+from domain.burst_input import BurstInputCheck
 from semantic_types.versions import ContractVersion
 
 from boundaries.types import BoundaryContext, BoundaryId, BoundaryProof, BoundaryResult
@@ -92,6 +93,10 @@ class Bnd008Input:
     context: BoundaryContext
     burst_state: BurstState
     operation_category: Bnd008OperationCategory
+    input_check: BurstInputCheck | None = None
+    """F03 HD-12 (NQ-DEC-040): the BURST_INPUT_VALID fact for a capture,
+    computed by `domain.burst_input.check_burst_input` over the exact submitted
+    text. `None` means it has not been established."""
 
     def __post_init__(self) -> None:
         if self.boundary_id is not BoundaryId.BND_008:
@@ -125,6 +130,20 @@ class Bnd008QuestionBurstEvaluator:
         actor_class = context.actor.actor_class
         operation = boundary_input.operation_category
         burst_state = boundary_input.burst_state
+
+        if operation is Bnd008OperationCategory.CAPTURE_BURST_QUESTION:
+            # 06 §14 IDENTITY: "Human submission requires authenticated Session
+            # Participant ... AI must remain AI_PROCESSOR." ALLOW lists only
+            # "valid human Question capture".
+            if actor_class is not ActorClass.HUMAN_USER:
+                return result_proof(BoundaryResult.DENY, "CAPTURE_REQUIRES_HUMAN_ACTOR")
+            check = boundary_input.input_check
+            if check is None:
+                # 06 §14 REQUIRE: BURST_INPUT_VALID cannot be established.
+                return result_proof(BoundaryResult.REQUIRE, "BURST_INPUT_VALID_NOT_ESTABLISHED")
+            if not check.valid:
+                return result_proof(BoundaryResult.DENY, f"BURST_INPUT_INVALID:{check.reason_code}")
+            return result_proof(BoundaryResult.ALLOW, "BURST_INPUT_VALID")
 
         if actor_class is ActorClass.AI_PROCESSOR:
             if operation in _AI_ONLY_OPERATIONS and burst_state in PROTECTED_BURST_STATES:

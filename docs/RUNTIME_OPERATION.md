@@ -521,6 +521,15 @@ their proof reports.)
   `POST /workspaces/{w}/sessions/{s}/transitions/begin-setup`,
   `…/transitions/begin-challenge-capture`, `…/burst` (prepare),
   `…/participants` (admit), `…/transitions/open-question-generation`.
+- F03 (protected human question field): `POST /workspaces/{w}/sessions/{s}/burst/questions`
+  (CMD_CAPTURE_BURST_QUESTION; body `{originalText, expectedBurstVersion}` only, any
+  other field is `rejected`; needs `Idempotency-Key`) and
+  `POST …/transitions/complete-burst` (CMD_COMPLETE_BURST; body
+  `{expectedVersion, expectedBurstVersion}`). `GET …/position` now also serves
+  `questionSet` (HD-13: own questions only while the Burst is ACTIVE, a count for the
+  controller, the full frozen set after completion), `serverNow`, and the
+  `CAPTURE_QUESTION` / `COMPLETE_BURST` capabilities. `GET /workspaces/{w}/sessions/{s}`
+  (legacy view) carries Burst questions only after completion.
 - Architecture 17 / PKG-29: `GET /workspaces/{w}/sessions/{s}` (legacy
   Session view) and `POST /decisions/{d}/decide`.
 - Outcome rules for every route (F02 WU-02.12):
@@ -546,8 +555,8 @@ their proof reports.)
 
 ## 19. Currently non-materialized capabilities
 
-- Question capture, Burst pause/resume/completion, frozen question set
-  (F03). AI sensemaking (F04). Selection, Evidence, Decision re-homing
+- Burst pause/resume (F03 HD-10: out of scope; PAUSED has no Command) and
+  automatic timer completion (F03 HD-11: not authorized). AI sensemaking (F04). Selection, Evidence, Decision re-homing
   (F05–F07).
 - No production authentication provider (GAP-14-001). No self-service
   registration: additional local identities come only from the DEV-ONLY
@@ -593,7 +602,14 @@ Then, in the browser at `http://localhost:3000/`:
    admit a participant (e.g. Alex) → Open question generation. The Session
    is now in QUESTION_GENERATION and the HUMAN_ONLY Burst is ACTIVE.
 
-Question capture itself arrives with Field F03.
+7. Participants (Alex, and Bea herself: the controller may admit themselves,
+   F03 HD-14) type questions in the Burst. A question must end with a question
+   mark (F03 HD-12); it is stored exactly as typed. Each participant sees only
+   their own questions while the Burst is open; Bea sees a count.
+8. Bea: **Complete Burst…** → confirm. The Session moves to QUESTION_CAPTURE and
+   every member sees the frozen human question set with its authors and the
+   completion provenance. The elapsed timer is guidance only; nothing closes the
+   Burst automatically.
 
 ## 22. Test lanes (F02)
 

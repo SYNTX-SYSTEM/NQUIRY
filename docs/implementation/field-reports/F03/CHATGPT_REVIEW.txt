@@ -1,0 +1,35 @@
+NQUIRY FIELD REVIEW
+FIELD: F03 — PROTECTED HUMAN QUESTION FIELD
+HEAD: bea864b (F02 published, tag field-F02) + uncommitted F03 (WU-03.0..03.11) in worktree .claude/worktrees/local-login-auth
+STATUS: FIELD_GREEN_WITH_DISCLOSED_CEILINGS (implemented, NOT committed, NOT tagged, NOT pushed; awaiting human Field Review)
+ARCHITECTURAL AUTHORITY: 20 (governing), 19 §23, 03 TRN-Q-001 / TRN-BURST-005 / TRN-SESS-005, 04 AUTH-DEP-Q-001, 06 BND-008 / BND-014, 09 §4.3/§28/§30, 10 §4.4/§64, 16 §41 REC-011..017
+HUMAN DECISIONS USED: HD-10 PAUSE/RESUME out of scope; HD-11 no automatic timer completion; HD-12 deterministic questions-only form rule (prototype narrowing, NQ-GAP-023 open); HD-13 own questions only while ACTIVE, full frozen set with authors after; HD-14 controller self-admission; HD-15 PARTICIPATION as the fourth typed effect-gate source; existing HD-1/6/7/8/9
+
+MISSION: Materialize the human-closed F03 architecture: Session QUESTION_GENERATION -> ACTIVE HUMAN_ONLY Burst -> authorized participant -> exact immutable human question -> manual authorized completion -> frozen, reconstructable human set with real provenance. No AI, no timer effect, no pause/resume.
+
+WHAT CHANGED:
+  Effect gate: BND-014 + CommitCoordinator gain PARTICIPATION (ref = SessionParticipation id, scope SESSION:<id>), one shared rule with the precommit BND-005 participation evaluator. A BND-014 DENY now resolves its attempt (DENIED) and idempotency record (FBR-F03-7).
+  Persistence: 3 migrations. Freeze trigger requires an ACTIVE Burst and locks it; capture-law trigger (participation, HUMAN, author = actor, same Challenge); UNIQUE(burst, captured_order); UNIQUE(session_id); commands.target_refs.
+  Domain: BURST_INPUT_VALID form rule (question mark, any script; storage safeguards reject, never alter); frozen-set fingerprint V2 over immutable birth facts (disclosed deviation from 14 §19).
+  Commands: CMD_CAPTURE_BURST_QUESTION (Question + membership in one commit; ids derived from the idempotency key) and CMD_COMPLETE_BURST (Burst COMPLETED + Session QUESTION_CAPTURE in one commit). Both take the Burst row lock and re-read under it: capture and completion are mutually exclusive.
+  Read side: server-side HD-13 filtering (participant: own; controller: count; after completion: everyone the frozen set with authors + verified fingerprint); capabilities share preconditions with the Commands.
+  HTTP: 2 routes; wire contract carries only the text and the burst version; origin/author/mode are REJECTED, not ignored.
+  Frontend: capture form (byte-exact text, Ctrl+Enter, one Idempotency-Key per capture), elapsed-time guidance, explicit two-step completion, frozen set record. Controls only from server capabilities.
+
+FIRST BROKEN RELATIONS: FBR-F03-2..6 (known) repaired first; FBR-F03-7 (BND-014 DENY left the attempt IN_PROGRESS, which would block completion forever) and FBR-F03-8 (the PKG-28 GetSession read served every member all questions while ACTIVE, bypassing HD-13) discovered and repaired at their homes; EC-1 hardened.
+
+MIGRATIONS: c4e9a2b7d135, e5a1b3c8f204, f6b2c4d9a318 (head f6b2c4d9a318). NEW DEPENDENCIES: none.
+
+RESULTS (this tree):
+  Live DB (nquiry_test): 1535 passed / 2 skipped (baseline 1360; +175). Pure: 808 passed / 729 skipped. ruff, mypy (172 files), architecture / provider-SDK / test-only-import gates, migrations (static + live) PASS. vitest 123; eslint, tsc clean; next build OK.
+  Real concurrency (two-connection races on a cloned DB): capture-vs-completion exclusion both ways, serialized captures, 5-thread race: frozen set == acknowledged captures, fingerprint verifies. Mutation check: removing the row lock fails all 4.
+  Real stack (containers rebuilt from this tree, no network interception): 10 passed (F02 6 + F03 4; desktop + Pixel 7). axe WCAG A/AA 0 serious/critical; keyboard-only capture and completion; no horizontal overflow. Mocked lane 39 passed.
+  RED first: recorded per WU in FIELD_REVIEW.md. Disclosed: WU-03.5 test and code were authored together (RED reproduced by removing the module); three real-stack spec defects (hydration race, ambiguous locator, comment tripping the no-mock guard) were fixed in the specs, none in the application.
+
+NEGATIVE / ADVERSARIAL: capture before ACTIVE / after completion / by outsider, controller, Owner, other-Session participant, other-Workspace member, AI or system actor; statement, empty, whitespace, "?!" rejected with nothing stored; stale version; changed payload and cross-command key reuse both ways; client-supplied origin/author/mode/normalizedText rejected; original_text/origin/author UPDATE refused by the DB; late membership insert after freeze refused by the DB; completion by participant / Owner / Challenge-scoped / non-human / other Workspace denied; zero questions and unresolved (INDETERMINATE) capture block completion; failure injection at 7 commit points leaves no partial capture or freeze; time passing (10 years) creates no effect; tampered fingerprint is detected.
+
+RECURSIVE DEEPSWEEP: PASS. INVERSE DEEPSWEEP: PASS after FBR-F03-8 (visible frozen set <- canonical re-read + recomputed fingerprint <- committed completion (BINDING @ SESSION) <- committed captures (PARTICIPATION, exact text) <- controller admission <- F02 chain <- login).
+
+CEILINGS / LIMITATIONS: HD-12 enforces FORM not MEANING (NQ-GAP-023 open); 2000-char cap and NUL/surrogate refusal are technical safeguards; an empty Burst cannot complete (O-6); an INDETERMINATE capture blocks completion until a recovery record resolves it (recovery worker is F09); timer = elapsed + guidance only, duration semantics (CONFLICT-007, NQ-GAP-022/032) open; leave/remove participation (NQ-GAP-079) and production Burst control (NQ-GAP-080) open; seed demo is NON_PROOF and now freezes its fixture set; no F03-specific mocked Playwright spec (component contracts are vitest); no screen-reader run; HARD-DEP-002 untouched (no AI in F03).
+DOWNSTREAM: F04 prerequisites delivered (provably frozen, reconstructable human set with human origin + author). F04 NOT started. F08 event types: BURST_QUESTION_CAPTURED, QUESTION_GENERATION_CLOSED.
+PUBLICATION: withhold apps/web/AGENTS.md and apps/web/CLAUDE.md (generated by next dev, not F03 work). Secrets scan clean; git diff --check clean; index empty. Commit requires FIELD_COMMIT_APPROVED F03.

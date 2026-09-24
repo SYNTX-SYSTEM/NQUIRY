@@ -15,6 +15,7 @@ from boundaries.bnd_008_question_burst import (
 )
 from boundaries.types import BoundaryContext, BoundaryId, BoundaryResult
 from domain.burst import BurstState
+from domain.burst_input import check_burst_input
 from semantic_types.ids import CorrelationId, UserId, WorkspaceId
 
 _NOW = datetime(2030, 1, 1, tzinfo=timezone.utc)
@@ -32,7 +33,7 @@ def _context(actor_class: ActorClass) -> BoundaryContext:
 
 def _evaluate(
     *, actor_class: ActorClass, burst_state: BurstState, operation: Bnd008OperationCategory
-):
+):  # F03 WU-03.5: a CAPTURE also needs an established BURST_INPUT_VALID (06 §14).
     context = _context(actor_class)
     evaluator = Bnd008QuestionBurstEvaluator()
     boundary_input = Bnd008Input(
@@ -40,6 +41,11 @@ def _evaluate(
         context=context,
         burst_state=burst_state,
         operation_category=operation,
+        input_check=(
+            check_burst_input("Why did it drop?")
+            if operation is Bnd008OperationCategory.CAPTURE_BURST_QUESTION
+            else None
+        ),
     )
     return evaluator.evaluate(boundary_input, context)
 
