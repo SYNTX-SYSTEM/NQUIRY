@@ -10,6 +10,9 @@ the pre-WU-02.12 review, whose claims are corrected in "Corrections to the
 previous review" below.
 
 ## Worktree State
+*(State at review time, before publication. The approved commit identity is
+recorded under "Commit Status" below.)*
+
 - Worktree: `.claude/worktrees/local-login-auth`, branch
   `worktree-local-login-auth` at `0ea5bbb` (F01, = `origin/master`), plus
   uncommitted F02 (WU-02.0 … WU-02.12).
@@ -538,7 +541,18 @@ F08 may start event-contract work in parallel (19 §47).
 Clean.
 
 ## Commit Status
-NOT COMMITTED. Awaiting `FIELD_COMMIT_APPROVED F02`.
+Approved via `FIELD_COMMIT_APPROVED F02` (human operator). Committed as
+`2f33be11547b635b24be8cdba33f81afec643d7f`
+("field(F02): governed Challenge, Session and participation vertical
+(FIELD PASS)"): 123 files (54 modified, 69 added), parent `0ea5bbb`, signed.
+Pushed to `origin/master` (fast-forward `0ea5bbb..2f33be1`). Signed annotated
+tag `field-F02` (tag object `626054cb0e1b846eec645821c861cd3766de7eeb`,
+resolving to `2f33be1`) pushed. Remote branch SHA and remote tag resolution
+were verified from the remote, and the published tree was verified from a
+fresh clone. `apps/web/AGENTS.md` and `apps/web/CLAUDE.md` were withheld by
+human decision and are not in the published tree. This identity was recorded
+after publication in a separate docs-only commit (19 §16). No other content
+of this report was changed.
 
 ## Recommended Status
 **FIELD_GREEN_WITH_DISCLOSED_EXTERNAL_CEILINGS**. The ceilings are
