@@ -134,7 +134,7 @@ Persisted in the canonical tree: 16 §41 REC-011..017 + §6 table/YAML, 20 §7 +
 - Git diff summary at writing: 30 tracked files changed (+1075/-60 before this report), plus untracked entries listed above.
 
 ## Commit status
-NOT committed. Commit requires the literal approval `FIELD_COMMIT_APPROVED F03` (19 §16) or "PASS, committe das".
+Committed locally as `0d59ae3f9be5f3a3297d43ab55c70005c41aa68d` after `FIELD_COMMIT_APPROVED F03`. Not pushed, not tagged.
 
 ## Recommended status
 READY FOR HUMAN FIELD REVIEW: YES.
