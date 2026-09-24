@@ -1,0 +1,47 @@
+NQUIRY FIELD REVIEW
+FIELD: SF-01 — SYMBIOTIC FRONTEND FOUNDATION (pulled forward; does not replace F11)
+HEAD: bea864b (F02 published; field-F02 = 2f33be1) + uncommitted SF-01 on branch frontend-symbiotic (worktree ~/Entwicklung/nquiry-frontend)
+STATUS: FIELD_GREEN_WITH_DISCLOSED_CEILINGS (awaiting human Field Review; NOT committed)
+ARCHITECTURAL AUTHORITY: docs/implementation/frontend/21_SYMBIOTIC_FRONTEND_ARCHITECTURE.md (governing, persisted with SF-01), 20 SFE §8/§12/§13/§14, published F02 projections (inquiry_queries, http_f02) and F01 routes
+HUMAN DECISIONS USED: SF01-HD-1 authorize SF-01 under doc 21 (not F11); SF01-HD-2 isolated real stack (own project/DB/no shared ports), no PASS before it; SF01-HD-3 F03 contact zone excluded, no F03 contract touched or inferred, integration law on F03 publication; SF01-HD-4 doc 21 persisted with SF-01; SF01-HD-5 (Case-3) ledger reconciliation deferred to post-F03 sync (shared REC/NQ-DEC sequence), exact entries recorded in STATUS.md
+
+MISSION: The frontend must not overtake the system. Materialize only relations whose meaning is already closed: on the pre-Session surfaces (Workspaces, Workspace, Challenge), make canonical context shape position, affordance, effect, boundary and proof, from published F02 truth only.
+
+FIRST BROKEN RELATION (bootstrap): CANONICAL CONTEXT/STATE -> HUMAN POSITION. Pages composed position from literal breadcrumbs (and showed "Workspaces > Session" before anything was confirmed); canonical state did not shape space. Downstream: page-local outcome residue, busy-flag lifecycle, "re-read" claimed before re-read, mutation network loss read "Nothing is assumed to have changed" (falsifier 17), keyless founding said "Please try again", Session identity invented as "Session {i+1}", proof flattened into permanent width.
+  Root repair: Field Frame + Relation Trace derived only from confirmed projections (Session appears only as a possible/unavailable relation before CreateSession); one effect relation per action (intent -> outcome -> consequence -> canonical re-read); section-39 boundary language, each kind distinct; proof as a D2 depth; DOM order = relational order.
+
+WHAT CHANGED:
+  New: components/field (FieldFrame/Zone/Layout, RelationTrace, EffectIntent/EffectOutcome/ReconstructionNote, ReadBoundary, ProofDepth, OriginMark/StateName); lib/field (outcomeSemantics, effectLifecycle, position, useEffectField).
+  Rewritten: the Workspaces, Workspace and Challenge pages (all F01/F02 test contracts preserved). globals.css: append-only SF-01 section.
+  Not changed: Session page, inquiryClient, F02 AppShell/Outcome, legacy /decision, packages/**, apps/api/**, apps/worker/**, migrations/**, dependencies, every pre-existing test, docs/architecture 00-20.
+  Lanes: playwright.sf01.config.ts (isolated mocked: own server :3301, reuseExistingServer false, unmocked traffic to a dead proxy); infra/sf01 + scripts/run_sf01_real_stack.sh (isolated real stack: project nquiry-sf01, own DB volume, no host ports, network-namespace isolation because the API CORS origin is fixed to localhost:3000 outside SF-01's scope).
+  Semantics decided autonomously and recorded: PENDING not rendered (F02 has no producer; displayed certainty <= reconstructable certainty); server INDETERMINATE retains the Idempotency-Key (a new key could duplicate the effect).
+
+MIGRATIONS: none. NEW DEPENDENCIES: none (npm ci from the unchanged lockfile; runner image installs pyproject + lockfile only).
+
+TEST COMMANDS:
+  (cd apps/web && npx eslint . && npx tsc --noEmit && npx vitest run && npx next build)
+  (cd apps/web && npx playwright test --config playwright.sf01.config.ts)      # isolated mocked lane; afterwards remove apps/web/AGENTS.md, CLAUDE.md and restore next-env.d.ts (next dev regenerates them)
+  bash scripts/run_sf01_real_stack.sh                                          # isolated real stack (L6/L7)
+
+RESULTS (final tree):
+  ARCHITECTURE PROOF: every rendered relation traces to a doc-21 law and a published F02/F01 projection (PROOF_MATRIX T1-T23); no authority or next-state computation; no invented DTO/route/capability; F03 absent by construction (gates + diff).
+  IMPLEMENTATION PROOF: eslint/tsc clean; vitest 170 (98 baseline + 72 SF-01); next build 8 routes; static gates 13; diff gate: only 3 pages + globals.css tracked-changed (0 removed CSS lines), contact zone/backend/migrations/deps/existing tests untouched; git diff --check clean.
+  MOCKED (isolated, component contract only): 81 passed (39 existing F01/F02 unchanged + 21 SF-01 x desktop + Pixel 7).
+  REAL STACK PROOF (isolated nquiry-sf01, no interception): L6 guard PASS, DB principals, migrations static+live PASS on an empty DB (head b3d8e5f0a2c7); L7 10/10 twice (second run on the final tree): F02 flow + F02 a11y + WU-02.12 closure + SF-01 path + SF-01 reduced motion, desktop + Pixel 7. axe serious/critical = 0 on all SF-01 surfaces; no overflow; keyboard proof depth; real browser offline -> unknown consequence -> last-confirmed view -> re-read -> repeat with the retained key -> exactly ONE Challenge. The F03 environment was untouched (containers and times verified).
+
+RED: all new modules RED by absence; F17 predicate proven against the real F02 wording; SF-01 mocked spec against the pre-SF-01 pages (bea864b): 19 failed / 2 passed (the passes are the isolation harness and the CF-07 rule F02 already held); gate predicates proven against planted violations; proof-depth marker assertion RED (2 failed) before repair.
+  Disclosed deviations: ReconstructionNote/FieldFrame tests written in the same step as the component; L7 not run against pre-SF-01 pages (non-vacuity rests on L3 RED); the marker defect was found by visual proof, and the test was strengthened afterwards and shown RED before the repair.
+
+DEFECTS FOUND BY THE REAL-STACK RUN (WU-SF01.7):
+  Application: PROOF DEPTH -> PERCEIVABLE ACTIVATION TARGET. The flex summary dropped the native disclosure marker; the proof looked like a static heading (21 section 35). Root repair: explicit, visible open/closed marker (decorative for assistive tech), summary in the action color. RED 2 -> GREEN.
+  Environment: root-owned runner output in the bind mount blocked other lanes (EACCES). Repair inside infra/sf01 only: output handed back to the mount owner on exit.
+
+RECURSIVE DEEPSWEEP: PASS (the chain is in each WU report). F01 orientation/add-member and the F02 real-stack flow are green; Session page deliberately unchanged.
+INVERSE DEEPSWEEP: PASS. The possible Session relation traces to the openSession capability, to an ACTIVE CHALLENGE-scoped SESSION_CONTROL_RIGHT binding, to a real grant by the governance root, to FOUNDING (proven by unavailable -> possible after a real grant). The unknown consequence traces to a real transport rejection, reconciled by a canonical re-read, and the repeat produced a single effect.
+
+CEILINGS / KNOWN LIMITATIONS: Session page still page-centric with the F17 wording (F03 contact zone; Stage 2 after F03); PENDING not produced by F02 (OR-I); previous-state provenance not projected (OR-C); Challenge authorship origin not projected (OR-D); phases is enum-index (OR-E); no projection freshness/push (OR-F); F01 founding/add-member keyless; L7 web server is next dev (build proven separately); next dev regenerates AGENTS.md/CLAUDE.md/next-env.d.ts (cleaned after each lane); doc 21 not yet reconciled with the 19 DAG (OR-A); ledger entries pending (SF01-HD-5); GAP-14-001 production identity open.
+DOWNSTREAM: on F03 PUBLISHED_FIELD: STOP -> reconstruct F03 -> sync branch -> contract/dependency DeepSweep -> ledger reconciliation -> Stage 2 (Session page on SF-01 primitives) and the WAIT_FOR_F03 relations. F11 later consumes the grammar.
+
+GIT: 4 tracked files modified (+721/-380), no deletes, renames or staged files; new: components/field, lib/field, tests/field, sf01 specs (mocked + real), playwright.sf01.config.ts, infra/sf01, scripts/run_sf01_real_stack.sh, doc 21, docs/implementation/field-reports/SF-01 (reports + 10 curated PNGs). apps/web/AGENTS.md and CLAUDE.md absent (must stay out). git diff --check clean. Index empty.
+COMMIT: none. Awaiting human Field Review; no commit, tag or push without explicit approval.

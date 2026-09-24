@@ -1,0 +1,14 @@
+# Build context filter for infra/sf01/runner.Dockerfile ONLY (BuildKit
+# Dockerfile-scoped ignore file). Deliberately not a root .dockerignore, which
+# would change every other image's build context.
+**/node_modules
+**/.next
+**/test-results
+**/playwright-report
+**/__pycache__
+**/*.tsbuildinfo
+.git
+.venv
+.env
+.env.*
+.claude

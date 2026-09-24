@@ -11,44 +11,75 @@
  * app already performs (`app/page.tsx`'s own `fetchCurrentSession`
  * pattern).
  *
- * `LogoutButton` is included because this page is now the real landing
- * screen `/` redirects a logged-in visitor to whenever no default
- * demo Session is configured -- the same reason the Session-view page
- * carries its own copy (`app/workspaces/[workspaceId]/sessions/[sessionId]/page.tsx`'s
- * own docstring).
+ * SF-01 (21 §7 PF-01, §12, §17, C3-01): the access context of the
+ * Relational Interaction Field. Position is the Relation Trace (access
+ * context only: no Workspace is confirmed here). Founding a Workspace is one
+ * effect relation. `POST /workspaces` (F01) carries NO Idempotency-Key, so a
+ * lost response is an UNKNOWN consequence: the list is re-read and the human
+ * is never invited to "try again" blindly (a retry could found a second
+ * Workspace). A response outside the F01 vocabulary is INDETERMINATE.
  */
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { fetchCurrentSession } from "../../lib/api/authClient";
-import {
-  createWorkspace,
-  listWorkspaces,
-  type WorkspaceSummary,
-} from "../../lib/api/workspaceClient";
 import Link from "next/link";
-import { AppShell } from "../../components/f02/AppShell";
+import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { EffectIntent, EffectOutcome, ReconstructionNote } from "../../components/field/EffectSurface";
+import { FieldFrame, FieldLayout, FieldZone } from "../../components/field/FieldFrame";
+import { ReadBoundary } from "../../components/field/ReadBoundary";
+import { fetchCurrentSession } from "../../lib/api/authClient";
+import { createWorkspace, listWorkspaces, type WorkspaceSummary } from "../../lib/api/workspaceClient";
+import { accessTrace } from "../../lib/field/position";
+import { type Settlement, useEffectField } from "../../lib/field/useEffectField";
 
 type LoadState =
   | { readonly kind: "checking" }
   | { readonly kind: "ready"; readonly workspaces: readonly WorkspaceSummary[] }
-  | { readonly kind: "denied"; readonly reasonCode: string };
+  | { readonly kind: "denied"; readonly reasonCode: string }
+  | { readonly kind: "unreachable" };
+
+const CREATE = "create-workspace";
+
+/** Founding over the keyless F01 route; tells transport loss apart from an unrecognized response. */
+async function foundWorkspace(name: string): Promise<Settlement<{ readonly workspaceId: string }>> {
+  let reached = true;
+  const tracked: typeof fetch = (input, init) =>
+    fetch(input, init).catch((error: unknown) => {
+      reached = false;
+      throw error;
+    });
+  try {
+    const result = await createWorkspace(name, tracked);
+    return result.kind === "ok"
+      ? { kind: "committed", reasonCode: null, body: { workspaceId: result.workspaceId } }
+      : { kind: result.kind, reasonCode: result.reasonCode };
+  } catch {
+    return reached
+      ? { kind: "indeterminate", reasonCode: "UNRECOGNIZED_SERVER_RESPONSE" }
+      : { kind: "network_failure", reasonCode: "NETWORK_FAILURE" };
+  }
+}
 
 export default function WorkspacesPage() {
   const router = useRouter();
   const [state, setState] = useState<LoadState>({ kind: "checking" });
   const [name, setName] = useState("");
-  const [creating, setCreating] = useState(false);
-  const [createError, setCreateError] = useState<string | null>(null);
+  const effect = useEffectField();
 
-  function load() {
-    listWorkspaces().then((result) => {
+  const load = useCallback(async (): Promise<boolean> => {
+    try {
+      const result = await listWorkspaces();
       if (result.kind === "ok") {
         setState({ kind: "ready", workspaces: result.workspaces });
-      } else {
-        setState({ kind: "denied", reasonCode: result.reasonCode });
+        return true;
       }
-    });
-  }
+      setState({ kind: "denied", reasonCode: result.reasonCode });
+      return false;
+    } catch {
+      // Read path: the projection is unavailable. A list confirmed earlier stays,
+      // explicitly marked as last confirmed (ReconstructionNote).
+      setState((prev) => (prev.kind === "ready" ? prev : { kind: "unreachable" }));
+      return false;
+    }
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -61,7 +92,7 @@ export default function WorkspacesPage() {
           router.replace("/login");
           return;
         }
-        load();
+        void load();
       })
       .catch(() => {
         if (!cancelled) {
@@ -71,84 +102,87 @@ export default function WorkspacesPage() {
     return () => {
       cancelled = true;
     };
-  }, [router]);
+  }, [router, load]);
 
   function handleCreate(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setCreating(true);
-    setCreateError(null);
-    createWorkspace(name)
-      .then((result) => {
-        setCreating(false);
-        if (result.kind === "ok") {
-          setName("");
-          router.push(`/workspaces/${result.workspaceId}`);
-          return;
-        }
-        setCreateError(result.reasonCode);
-      })
-      .catch(() => {
-        setCreating(false);
-        setCreateError("Unable to reach the server. Please try again.");
-      });
+    void effect.run({
+      relation: CREATE,
+      keyed: false,
+      send: () => foundWorkspace(name),
+      reconstruct: load,
+      onCommitted: (body) => {
+        setName("");
+        router.push(`/workspaces/${body.workspaceId}`);
+        return true;
+      },
+    });
   }
 
   return (
-    <AppShell crumbs={[{ label: "Workspaces" }]}>
-      <div className="grid-2">
-        <section className="panel" aria-labelledby="ws-title">
-          <p className="eyebrow">Your inquiry spaces</p>
-          <h1 id="ws-title">Workspaces</h1>
-          {state.kind === "checking" ? <p data-testid="workspaces-checking">Loading your Workspaces…</p> : null}
-          {state.kind === "denied" ? (
-            <p role="alert" data-testid="workspaces-denied">
-              {state.reasonCode}
-            </p>
-          ) : null}
-          {state.kind === "ready" && state.workspaces.length === 0 ? (
-            <p data-testid="workspaces-empty">You do not have any Workspaces yet.</p>
-          ) : null}
-          {state.kind === "ready" && state.workspaces.length > 0 ? (
-            <ul className="plain-list" data-testid="workspaces-list">
-              {state.workspaces.map((ws) => (
-                <li key={ws.workspaceId}>
-                  <Link className="card-link" href={`/workspaces/${ws.workspaceId}`}>
-                    {ws.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-        </section>
-        <section className="panel" aria-labelledby="create-ws-title">
-          <h2 id="create-ws-title">Found a Workspace</h2>
-          <p className="muted">
-            Founding makes you this Workspace&apos;s governance root (HARD-DEP-001, Option A). It does not make you a
-            Facilitator. Challenges are framed by Facilitators you add.
-          </p>
-          <form onSubmit={handleCreate} data-testid="create-workspace-form">
-            <div className="field">
-              <label htmlFor="workspace-name">Workspace name</label>
-              <input
-                id="workspace-name"
-                data-testid="workspace-name-input"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
+    <FieldFrame trace={accessTrace("current")} regime="workspace-access">
+      <header className="field-heading">
+        <p className="eyebrow">Your inquiry spaces</p>
+        <h1 id="ws-title">Workspaces</h1>
+      </header>
+      <FieldLayout
+        primary={
+          <>
+            <FieldZone zone="centre" labelledBy="ws-title">
+              <ReconstructionNote field={effect.field} />
+              {state.kind === "checking" ? <p data-testid="workspaces-checking">Loading your Workspaces…</p> : null}
+              {state.kind === "denied" ? (
+                <ReadBoundary kind="denied" reasonCode={state.reasonCode} reasonTestId="workspaces-denied" />
+              ) : null}
+              {state.kind === "unreachable" ? <ReadBoundary kind="network_failure" reasonCode="NETWORK_FAILURE" /> : null}
+              {state.kind === "ready" && state.workspaces.length === 0 ? (
+                <p data-testid="workspaces-empty">You do not have any Workspaces yet.</p>
+              ) : null}
+              {state.kind === "ready" && state.workspaces.length > 0 ? (
+                <ul className="plain-list" data-testid="workspaces-list">
+                  {state.workspaces.map((ws) => (
+                    <li key={ws.workspaceId}>
+                      <Link className="card-link" href={`/workspaces/${ws.workspaceId}`}>
+                        {ws.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </FieldZone>
+            <FieldZone zone="near" labelledBy="create-ws-title">
+              <h2 id="create-ws-title">Found a Workspace</h2>
+              <p className="muted">
+                Founding makes you this Workspace&apos;s governance root (HARD-DEP-001, Option A). It does not make you a
+                Facilitator. Challenges are framed by Facilitators you add.
+              </p>
+              <form onSubmit={handleCreate} data-testid="create-workspace-form">
+                <div className="field">
+                  <label htmlFor="workspace-name">Workspace name</label>
+                  <input
+                    id="workspace-name"
+                    data-testid="workspace-name-input"
+                    value={name}
+                    onChange={(event) => setName(event.target.value)}
+                  />
+                </div>
+                <div className="actions-row">
+                  <button className="button" type="submit" data-testid="create-workspace-submit" disabled={effect.blocked}>
+                    Create Workspace
+                  </button>
+                </div>
+              </form>
+              <EffectIntent field={effect.field} relation={CREATE} />
+              <EffectOutcome
+                field={effect.field}
+                relation={CREATE}
+                reasonTestId="create-workspace-error"
+                onReread={() => void effect.rereadNow(load)}
               />
-            </div>
-            <div className="actions-row">
-              <button className="button" type="submit" data-testid="create-workspace-submit" disabled={creating}>
-                {creating ? "Creating…" : "Create Workspace"}
-              </button>
-            </div>
-          </form>
-          {createError !== null ? (
-            <p role="alert" data-testid="create-workspace-error">
-              {createError}
-            </p>
-          ) : null}
-        </section>
-      </div>
-    </AppShell>
+            </FieldZone>
+          </>
+        }
+      />
+    </FieldFrame>
   );
 }

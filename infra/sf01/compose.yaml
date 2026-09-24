@@ -1,0 +1,49 @@
+# SF-01 ISOLATED real-stack environment (SF-01 human decision 2).
+#
+# Own compose project identity (`nquiry-sf01`, never `nquiry`), own database
+# volume, and NO published host ports. It cannot collide with, read from or
+# write to any other running NQUIRY environment (for example the F03 stack on
+# :3000/:8000/:15432).
+#
+# Why the ports are private instead of remapped: the API's CORS origin is
+# fixed to `http://localhost:3000` (apps/api/src/nquiry_api/main.py, outside
+# SF-01's scope), so a credentialed browser must see web at localhost:3000 and
+# the API at localhost:8000. The `runner` container therefore runs THIS tree's
+# API, this tree's Next.js server and the browser together inside its own
+# network namespace, where localhost:3000/8000 are its own private ports.
+#
+# Run only through scripts/run_sf01_real_stack.sh (it guards the project name
+# and the absence of host ports before starting anything).
+name: nquiry-sf01
+
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: nquiry
+      POSTGRES_PASSWORD: nquiry_local_dev_only
+      POSTGRES_DB: nquiry
+    volumes:
+      - sf01_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nquiry"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  runner:
+    build:
+      context: ../..
+      dockerfile: infra/sf01/runner.Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg://nquiry:nquiry_local_dev_only@postgres:5432/nquiry
+    shm_size: "1gb"
+    volumes:
+      # Proof output only (gitignored): logs, screenshots, traces.
+      - ../../apps/web/test-results/sf01-real-stack:/repo/apps/web/test-results
+
+volumes:
+  sf01_postgres_data:
