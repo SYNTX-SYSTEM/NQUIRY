@@ -72,6 +72,7 @@ from commit.coordinator import (
     CommitCoordinator,
     CommitUnit,
     CurrentVersionReader,
+    FailureInjectionPort,
     MutationOutcome,
     StaleVersionConflict,
 )
@@ -190,6 +191,10 @@ def _replay_guard(
     if decision is IdempotencyDecision.PROCEED_FRESH_ATTEMPT_AFTER_FAILED_PRECOMMIT:
         return
     raise_for_decision(decision, existing)
+
+
+replay_guard = _replay_guard
+"""Public name for the shared idempotency disposition (F03 reuses it)."""
 
 
 class SessionPreconditionUnmet(Exception):
@@ -334,6 +339,7 @@ def _run(
     reader: CurrentVersionReader,
     precondition: Callable[[], None] | None,
     mutation: Callable[[], MutationOutcome],
+    failure_injector: FailureInjectionPort | None = None,
 ) -> CommitUnit:
     context = BoundaryContext(
         workspace_id=workspace_id,
@@ -444,6 +450,7 @@ def _run(
         outbox_repository=ports.outbox,
         commit_repository=ports.commits,
         idempotency_port=ports.idempotency,
+        failure_injector=failure_injector,
     )
     return coordinator.commit(
         envelope=envelope,
@@ -800,6 +807,7 @@ __all__ = [
     "SessionTransitionPayload",
     "SessionVersionStale",
     "admit_participant",
+    "replay_guard",
     "method_setup_blocker",
     "open_question_generation_blocker",
     "prepare_burst_blocker",

@@ -62,12 +62,53 @@ export type SessionActionName =
   | "OPEN_QUESTION_GENERATION"
   | "GRANT_SESSION_CONTROL";
 
+/** F03: the burst-scoped actions the server projects (capability, never authority). */
+export type BurstActionName = "CAPTURE_QUESTION" | "COMPLETE_BURST";
+
+export type CapturedQuestion = {
+  readonly questionId: string;
+  readonly originalText: string;
+  readonly origin: string;
+  readonly captureOrigin: string;
+  readonly authorUserId: string | null;
+  readonly authorName: string | null;
+  readonly capturedOrder: number;
+  readonly capturedAt: string;
+};
+
+export type FrozenSet = {
+  readonly fingerprint: string | null;
+  readonly verified: boolean;
+  readonly memberCount: number;
+  readonly completedAt: string | null;
+  readonly questions: readonly CapturedQuestion[];
+};
+
+/** HD-13: what the server entitles THIS viewer to see of the Burst's questions. */
+export type QuestionSet = {
+  readonly visibility: "NONE" | "OWN_ONLY_WHILE_ACTIVE" | "FULL_FROZEN_SET";
+  readonly mine: readonly CapturedQuestion[];
+  readonly capturedCount: number | null;
+  readonly frozen: FrozenSet | null;
+};
+
 export type SessionPosition = {
   readonly workspace: WorkspaceRef;
   readonly challenge: { readonly challengeId: string; readonly title: string | null; readonly description: string | null };
   readonly session: { readonly sessionId: string; readonly state: string; readonly version: number; readonly method: string; readonly createdAt: string };
   readonly phases: readonly { readonly state: string; readonly status: "done" | "current" | "upcoming" }[];
-  readonly burst: { readonly burstId: string; readonly state: string; readonly mode: string; readonly version: number; readonly startedAt: string | null } | null;
+  readonly serverNow: string;
+  readonly burst: {
+    readonly burstId: string;
+    readonly state: string;
+    readonly mode: string;
+    readonly version: number;
+    readonly startedAt: string | null;
+    readonly completedAt: string | null;
+    readonly guidanceSeconds: number;
+    readonly guidanceIsAuthoritative: boolean;
+  } | null;
+  readonly questionSet: QuestionSet;
   readonly participants: readonly { readonly userId: string; readonly name: string | null; readonly joinedAt: string; readonly admittedByUserId: string }[];
   readonly sessionControllers: readonly BindingProvenance[];
   readonly establishedBy: {
@@ -80,7 +121,7 @@ export type SessionPosition = {
     readonly authorityScopeRef: string | null;
   } | null;
   readonly viewer: { readonly userId: string; readonly role: string | null; readonly isSessionController: boolean; readonly isGovernanceRoot: boolean };
-  readonly actions: Readonly<Record<SessionActionName, Capability & { readonly relevant: boolean }>>;
+  readonly actions: Readonly<Record<SessionActionName | BurstActionName, Capability & { readonly relevant: boolean }>>;
   readonly admitCandidates: readonly { readonly userId: string; readonly name: string }[];
   readonly grantCandidates: readonly { readonly userId: string; readonly name: string }[];
 };
@@ -255,6 +296,45 @@ export function runSessionCommand(
     `/workspaces/${enc(workspaceId)}/sessions/${enc(sessionId)}/${SESSION_COMMAND_PATHS[action]}`,
     intentKey,
     { expectedVersion, ...extra },
+    fetchImpl,
+  );
+}
+
+/**
+ * CMD_CAPTURE_BURST_QUESTION. The wire contract is EXACTLY the text and the
+ * Burst version the viewer saw. Origin and author are never sent: the server
+ * takes them from the verified session (a client-supplied one is rejected).
+ * `originalText` is sent byte-exact: no trim, no normalization.
+ */
+export function captureBurstQuestion(
+  workspaceId: string,
+  sessionId: string,
+  originalText: string,
+  expectedBurstVersion: number,
+  intentKey: string,
+  fetchImpl: typeof fetch = fetch,
+) {
+  return post<{ readonly position: SessionPosition; readonly replayed: boolean; readonly questionId: string }>(
+    `/workspaces/${enc(workspaceId)}/sessions/${enc(sessionId)}/burst/questions`,
+    intentKey,
+    { originalText, expectedBurstVersion },
+    fetchImpl,
+  );
+}
+
+/** CMD_COMPLETE_BURST: TRN-SESS-005 + TRN-BURST-005 as one manual, authorized bundle. */
+export function completeBurst(
+  workspaceId: string,
+  sessionId: string,
+  expectedSessionVersion: number,
+  expectedBurstVersion: number,
+  intentKey: string,
+  fetchImpl: typeof fetch = fetch,
+) {
+  return post<{ readonly position: SessionPosition; readonly replayed: boolean }>(
+    `/workspaces/${enc(workspaceId)}/sessions/${enc(sessionId)}/transitions/complete-burst`,
+    intentKey,
+    { expectedVersion: expectedSessionVersion, expectedBurstVersion },
     fetchImpl,
   );
 }

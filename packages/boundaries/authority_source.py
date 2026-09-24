@@ -6,8 +6,8 @@ BINDING, ROLE and FOUNDING. No fabricated UUID provenance. No fake
 HumanAuthorityBinding. Audit provenance references actual, reconstructable
 authority provenance." 20_SYSTEM_FIELD_ENGINEERING.md §7.
 
-Three requirement shapes, each named by the architecture that authorizes
-it, never by convenience:
+Four requirement shapes (three from F02 HD-6, PARTICIPATION from F03 HD-15), each named
+by the architecture that authorizes it, never by convenience:
 
 - `BindingAuthority`: 04's operation-specific `HumanAuthorityBinding`
   (every AUTH-DEP whose OPERATION AUTHORITY is an `AuthorityClass`).
@@ -42,6 +42,8 @@ class AuthoritySourceType(str, Enum):
     BINDING = "BINDING"
     ROLE = "ROLE"
     FOUNDING = "FOUNDING"
+    PARTICIPATION = "PARTICIPATION"
+    """F03 HD-15 (16 §41 REC-016 / NQ-DEC-043)."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -82,14 +84,33 @@ class FoundingAuthority:
             raise ValueError("FoundingAuthority.eligibility_reason_code must be non-empty")
 
 
-AuthorityRequirement = BindingAuthority | RoleAuthority | FoundingAuthority
+@dataclass(frozen=True, slots=True)
+class ParticipationAuthority:
+    """F03 HD-15: the source-explicit question-submission right of a CURRENT
+    SessionParticipation (04 AUTH-DEP-Q-001: "Direct source participation
+    right ... Valid SessionParticipation"). It is neither a role nor a
+    binding: the Workspace role label is "not sufficient or necessary", and no
+    `HumanAuthorityBinding` exists for it. Provenance: the participation id."""
+
+    session_id: uuid.UUID
+    operation_authority_ref: str = "AUTH-DEP-Q-001"
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.session_id, uuid.UUID):
+            raise TypeError("ParticipationAuthority.session_id must be a uuid.UUID")
+        if not self.operation_authority_ref:
+            raise ValueError("ParticipationAuthority.operation_authority_ref must be non-empty")
+
+
+AuthorityRequirement = BindingAuthority | RoleAuthority | FoundingAuthority | ParticipationAuthority
 
 
 @dataclass(frozen=True, slots=True)
 class AuthoritySourceProof:
     source_type: AuthoritySourceType
     source_ref: uuid.UUID
-    """BINDING: human_authority_bindings.id. ROLE: role_assignments.id. FOUNDING: commands.id."""
+    """BINDING: human_authority_bindings.id. ROLE: role_assignments.id. FOUNDING: commands.id.
+    PARTICIPATION: session_participations.id."""
     scope_ref: str
     """e.g. "SESSION:<uuid>", "WORKSPACE:<uuid>"."""
     detail: str
@@ -110,5 +131,6 @@ __all__ = [
     "AuthoritySourceType",
     "BindingAuthority",
     "FoundingAuthority",
+    "ParticipationAuthority",
     "RoleAuthority",
 ]

@@ -49,7 +49,7 @@ from boundaries.bnd_002_workspace import Bnd002Input, Bnd002WorkspaceEvaluator
 from boundaries.bnd_003_membership import Bnd003Input, Bnd003MembershipEvaluator
 from boundaries.registry import BoundaryChainResult, BoundaryRegistry, evaluate_chain
 from boundaries.types import BoundaryContext, BoundaryId
-from domain.burst import QuestionBurst
+from domain.burst import BurstState, QuestionBurst
 from domain.challenge import Challenge
 from domain.decision import Decision
 from domain.question import Question
@@ -166,7 +166,11 @@ def get_session_view(
 
     burst = burst_repository.get_by_session(session_id)
     burst_questions: tuple[Question, ...] = ()
-    if burst is not None:
+    # F03 FBR-F03-8 (HD-13 / NQ-DEC-041): this legacy read is not participant-
+    # aware, so it may only carry Questions the architecture shows to EVERY
+    # member: the frozen set of a COMPLETED Burst. While the Burst is open, a
+    # participant sees only their own Questions through `session_position`.
+    if burst is not None and burst.state is BurstState.COMPLETED:
         memberships = burst_repository.list_members(burst.burst_id)
         burst_questions = tuple(
             q

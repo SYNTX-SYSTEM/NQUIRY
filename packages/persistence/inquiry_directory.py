@@ -22,8 +22,10 @@ import sqlalchemy as sa
 
 from persistence.tables import (
     audit_events_table,
+    burst_question_memberships_table,
     challenges_table,
     human_authority_bindings_table,
+    questions_table,
     role_assignments_table,
     sessions_table,
     users_table,
@@ -79,6 +81,68 @@ class TransitionEvidenceRow:
     authority_source_type: str | None
     authority_source_ref: uuid.UUID
     authority_scope_ref: str | None
+
+
+@dataclass(frozen=True, slots=True)
+class CapturedQuestionRow:
+    """One Question of a Burst's raw set with its capture facts (F03)."""
+
+    membership_id: uuid.UUID
+    question_id: uuid.UUID
+    original_text: str
+    origin: str
+    capture_origin: str
+    author_user_id: uuid.UUID | None
+    author_name: str | None
+    captured_order: int
+    captured_at: datetime
+
+
+def list_captured_questions(
+    connection: sa.Connection,
+    workspace_id: uuid.UUID,
+    burst_id: uuid.UUID,
+    *,
+    only_author: uuid.UUID | None = None,
+) -> tuple[CapturedQuestionRow, ...]:
+    """The Burst's raw set in capture order. `only_author` filters IN SQL, so
+    a caller entitled to only their own Questions (HD-13) never loads anyone
+    else's text. The caller decides entitlement; this module only filters."""
+    m, q, u = burst_question_memberships_table, questions_table, users_table
+    stmt = (
+        sa.select(
+            m.c.id,
+            q.c.id,
+            q.c.original_text,
+            q.c.origin,
+            m.c.capture_origin,
+            m.c.capture_actor_user_id,
+            u.c.name,
+            m.c.captured_order,
+            m.c.captured_at,
+        )
+        .select_from(m)
+        .join(q, sa.and_(q.c.id == m.c.question_id, q.c.workspace_id == m.c.workspace_id))
+        .outerjoin(u, u.c.id == m.c.capture_actor_user_id)
+        .where(m.c.workspace_id == workspace_id, m.c.question_burst_id == burst_id)
+        .order_by(m.c.captured_order.asc(), m.c.id.asc())
+    )
+    if only_author is not None:
+        stmt = stmt.where(m.c.capture_actor_user_id == only_author)
+    return tuple(CapturedQuestionRow(*row) for row in connection.execute(stmt).all())
+
+
+def count_captured_questions(
+    connection: sa.Connection, workspace_id: uuid.UUID, burst_id: uuid.UUID
+) -> int:
+    m = burst_question_memberships_table
+    return int(
+        connection.execute(
+            sa.select(sa.func.count()).where(
+                m.c.workspace_id == workspace_id, m.c.question_burst_id == burst_id
+            )
+        ).scalar_one()
+    )
 
 
 def has_governed_founding(connection: sa.Connection, workspace_id: uuid.UUID) -> bool:
@@ -210,12 +274,15 @@ def session_state_established_by(
 
 __all__ = [
     "BindingRow",
+    "CapturedQuestionRow",
     "ChallengeRow",
     "MemberRow",
     "SessionRow",
     "TransitionEvidenceRow",
+    "count_captured_questions",
     "has_governed_founding",
     "list_active_bindings_at_scope",
+    "list_captured_questions",
     "list_challenges",
     "list_members",
     "list_sessions",

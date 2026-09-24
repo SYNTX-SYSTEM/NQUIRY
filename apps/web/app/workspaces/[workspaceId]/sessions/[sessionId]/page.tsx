@@ -20,6 +20,7 @@ import { AppShell } from "../../../../../components/f02/AppShell";
 import { LoadFailure } from "../../../../../components/f02/LoadFailure";
 import { Outcome, type ShownOutcome } from "../../../../../components/f02/Outcome";
 import { Unavailable } from "../../../../../components/f02/Unavailable";
+import { BurstCapturePanel } from "../../../../../components/f03/BurstCapturePanel";
 import {
   fetchSessionPosition,
   grantSessionControl,
@@ -240,13 +241,24 @@ export default function SessionPage() {
                     <>
                       <dt>Open since</dt>
                       <dd>{p.burst.startedAt ? new Date(p.burst.startedAt).toLocaleString() : "—"}</dd>
-                      <dd className="muted" data-testid="capture-not-yet-available">
-                        Capturing questions arrives with Field F03. This build shows the lawfully opened burst only.
-                      </dd>
+                    </>
+                  ) : null}
+                  {p.burst.state === "COMPLETED" ? (
+                    <>
+                      <dt>Completed</dt>
+                      <dd>{p.burst.completedAt ? new Date(p.burst.completedAt).toLocaleString() : "—"}</dd>
                     </>
                   ) : null}
                 </dl>
               )}
+              <BurstCapturePanel
+                workspaceId={workspaceId}
+                sessionId={sessionId}
+                position={p}
+                onPosition={(next) => setPosition({ kind: "ok", data: next })}
+                onOutcome={setOutcome}
+                reload={load}
+              />
             </section>
 
             <section className="panel" aria-labelledby="participants-title">

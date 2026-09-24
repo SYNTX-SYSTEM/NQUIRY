@@ -47,7 +47,7 @@ from __future__ import annotations
 import hashlib
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 
 from semantic_types.ids import BurstId, QuestionId, RelationId, UserId, WorkspaceId
 from semantic_types.versions import RecordVersion
@@ -123,40 +123,72 @@ class QuestionBurstMembership:
             raise ValueError(f"captured_order must be >= 0, got {self.captured_order}")
 
 
+FROZEN_SET_FINGERPRINT_SCHEME = "NQ-FROZEN-SET-V2"
+"""The canonical-serialization scheme tag. V1 (PKG-07) hashed
+`question_id:record_version`."""
+
+
 def compute_frozen_membership_fingerprint(
     memberships: Sequence[QuestionBurstMembership],
-    question_record_versions: Mapping[QuestionId, RecordVersion],
+    question_original_texts: Mapping[QuestionId, str],
 ) -> str:
-    """14 §19's `[IMPLEMENTATION CHOICE]`: "canonical sorted
-    serialization of membership IDs plus Question content versions.
-    Hash establishes identity/integrity relation only" -- not a
-    security signature (same disclosed role as AC-09-009's Evidence-set
-    fingerprint).
+    """The frozen raw set's identity/integrity relation (not a security
+    signature; the same disclosed role as AC-09-009's Evidence-set fingerprint).
 
-    Canonical serialization: sort by `question_id` (the only stable,
-    content-independent sort key every membership has), join each as
-    `"<question_id>:<record_version>"`, `"|"`-separated, then SHA-256.
-    `question_record_versions` must contain an entry for every
-    membership's `question_id`; a missing entry raises rather than
-    silently omitting a member from the fingerprint (an incomplete
-    fingerprint would be worse than no fingerprint -- it would look
-    valid while proving less than it claims).
+    F03 WU-03.3 (FBR-F03-4), a DISCLOSED DEVIATION from 14 §19's historical
+    `[IMPLEMENTATION CHOICE]` ("membership IDs plus Question content versions",
+    PKG-07: `question_id:record_version`). `questions.record_version` and
+    `normalized_text` stay updatable after the Burst (03 §25.5: normalization
+    is legitimate derived work, F04), so a fingerprint over them would stop
+    matching an UNTOUCHED raw set after a later normalization bump, and
+    03 TRN-SESS-005 requires "frozen-set identity must be reconstructable".
+    The fingerprint is therefore computed over immutable BIRTH FACTS only. Per
+    member: the membership id, the question id, the SHA-256 digest of the exact
+    `original_text` (UTF-8, no normalization), `captured_order`, the capture
+    actor and `captured_at` (UTC). Members are ordered by
+    `(captured_order, membership id)`. Every membership row and every
+    `original_text` is immutable at the database (DB triggers), so the value
+    is recomputable at any time from canonical persistence.
+
+    `question_original_texts` must contain an entry for every membership's
+    `question_id`; a missing entry raises rather than silently omitting a
+    member (an incomplete fingerprint would look valid while proving less than
+    it claims).
     """
     if not memberships:
         raise ValueError("cannot compute a frozen membership fingerprint over zero memberships")
 
-    parts: list[str] = []
-    for membership in sorted(memberships, key=lambda m: str(m.question_id.value)):
+    lines: list[str] = [FROZEN_SET_FINGERPRINT_SCHEME]
+    for membership in sorted(
+        memberships,
+        key=lambda m: (m.captured_order, str(m.burst_question_membership_id.value)),
+    ):
         try:
-            version = question_record_versions[membership.question_id]
+            original_text = question_original_texts[membership.question_id]
         except KeyError as exc:
             raise ValueError(
-                f"no record_version supplied for question_id={membership.question_id!r}"
+                f"no original_text supplied for question_id={membership.question_id!r}"
             ) from exc
-        parts.append(f"{membership.question_id.value}:{version.value}")
+        digest = hashlib.sha256(original_text.encode("utf-8")).hexdigest()
+        actor_id = membership.capture_actor_user_id
+        actor = "" if actor_id is None else str(actor_id.value)
+        lines.append(
+            "|".join(
+                (
+                    str(membership.burst_question_membership_id.value),
+                    str(membership.question_id.value),
+                    digest,
+                    str(membership.captured_order),
+                    actor,
+                    membership.captured_at.astimezone(timezone.utc).isoformat(),
+                )
+            )
+        )
+    return hashlib.sha256("\n".join(lines).encode("utf-8")).hexdigest()
 
-    canonical = "|".join(parts)
-    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
-
-__all__ = ["QuestionBurstMembership", "compute_frozen_membership_fingerprint"]
+__all__ = [
+    "FROZEN_SET_FINGERPRINT_SCHEME",
+    "QuestionBurstMembership",
+    "compute_frozen_membership_fingerprint",
+]

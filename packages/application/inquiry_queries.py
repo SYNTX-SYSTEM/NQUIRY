@@ -25,6 +25,8 @@ import uuid
 
 from authority.actor import ActorClass, ActorIdentity
 from authority.resolver import AuthorityRequest, AuthorityVerdict
+from boundaries.participation_right import resolve_participation_right
+from domain.burst import BurstState
 from domain.session import SessionState
 from domain.session_transitions import SessionTransitionId, resolve_session_transition
 from governance.authority_binding import AuthorityClass
@@ -34,7 +36,10 @@ from persistence.session_participation_repository import SqlAlchemySessionPartic
 from security.identity import AuthenticatedPrincipal
 from semantic_types.ids import ChallengeId, SessionId, WorkspaceId
 
+from application.burst_capture_handler import capture_blocker
+from application.burst_completion_handler import complete_burst_blocker
 from application.composition import GovernedPorts
+from application.frozen_set import verify_frozen_set
 from application.session_control_handler import (
     method_setup_blocker,
     open_question_generation_blocker,
@@ -81,7 +86,38 @@ _REASONS = {
     "METHOD_SETUP_MISSING": "The Session's method setup is missing.",
     "NO_CANDIDATES": "Every active member is already a participant.",
     "SESSION_CLOSED": "The Session is closed.",
+    # F03
+    "NOT_A_PARTICIPANT": (
+        "Only a participant admitted by the Session controller can submit questions. "
+        "A Workspace role, Ownership or Session control does not grant this."
+    ),
+    "SESSION_NOT_QUESTION_GENERATION": (
+        "Questions can only be captured while the Session is in QUESTION_GENERATION (now: {scope})."
+    ),
+    "BURST_NOT_ACTIVE": "The protected Burst is not ACTIVE (now: {scope}).",
+    "BURST_MODE_NOT_HUMAN_ONLY": "Only a HUMAN_ONLY Burst accepts captured questions.",
+    "NO_CAPTURED_QUESTIONS": "No question has been captured yet; a Burst cannot close empty.",
+    "UNRESOLVED_CAPTURE": (
+        "A capture write is still unresolved. The Burst cannot close until it is resolved."
+    ),
 }
+
+# 12 §5 / 01: the Burst is "approximately four minutes". PRESENTATION guidance
+# only (HD-11): nothing is scheduled and nothing happens when it is exceeded.
+BURST_GUIDANCE_SECONDS = 240
+
+
+def _question_json(row: directory.CapturedQuestionRow) -> dict[str, object]:
+    return {
+        "questionId": str(row.question_id),
+        "originalText": row.original_text,
+        "origin": row.origin,
+        "captureOrigin": row.capture_origin,
+        "authorUserId": None if row.author_user_id is None else str(row.author_user_id),
+        "authorName": row.author_name,
+        "capturedOrder": row.captured_order,
+        "capturedAt": row.captured_at.isoformat(),
+    }
 
 
 def _cap(available: bool, code: str | None = None, scope: str = "") -> dict[str, object]:
@@ -281,6 +317,57 @@ def _transition_cap(
     return _cap(True)
 
 
+def _question_set(
+    ports: GovernedPorts,
+    context: WorkspaceContext,
+    burst: object | None,
+    viewer_id: uuid.UUID,
+    is_controller: bool,
+    captured_count: int | None,
+) -> dict[str, object]:
+    """HD-13 / NQ-DEC-041, filtered ON THE SERVER: while the Burst is ACTIVE a
+    participant is served only their own Questions and the controller only a
+    count; after completion every Session member is served the full frozen set
+    with authors. Nobody is served a Question they are not entitled to."""
+    from domain.burst import QuestionBurst
+
+    empty: dict[str, object] = {
+        "visibility": "NONE",
+        "mine": [],
+        "capturedCount": None,
+        "frozen": None,
+    }
+    if not isinstance(burst, QuestionBurst):
+        return empty
+    ws = context.workspace.id.value
+    if burst.state is BurstState.ACTIVE:
+        mine = directory.list_captured_questions(
+            ports.connection, ws, burst.burst_id.value, only_author=viewer_id
+        )
+        return {
+            "visibility": "OWN_ONLY_WHILE_ACTIVE",
+            "mine": [_question_json(q) for q in mine],
+            "capturedCount": captured_count if is_controller else None,
+            "frozen": None,
+        }
+    if burst.state is BurstState.COMPLETED:
+        rows = directory.list_captured_questions(ports.connection, ws, burst.burst_id.value)
+        verification = verify_frozen_set(ports, burst)
+        return {
+            "visibility": "FULL_FROZEN_SET",
+            "mine": [],
+            "capturedCount": None,
+            "frozen": {
+                "fingerprint": burst.frozen_membership_fingerprint,
+                "verified": verification.matches,
+                "memberCount": verification.member_count,
+                "completedAt": burst.completed_at.isoformat() if burst.completed_at else None,
+                "questions": [_question_json(q) for q in rows],
+            },
+        }
+    return empty
+
+
 def session_position(
     ports: GovernedPorts,
     principal: AuthenticatedPrincipal,
@@ -325,6 +412,44 @@ def session_position(
         return _cap(code is None, code)
 
     setup_blocker = method_setup_blocker(session)
+
+    # ---- F03: capture / completion capabilities and the Question set (HD-13)
+    viewer_id = context.principal.user_id
+    viewer_participation = resolve_participation_right(
+        participation_repository=ports.participations,
+        membership_repository=ports.memberships,
+        actor=ActorIdentity(ActorClass.HUMAN_USER, viewer_id),
+        workspace_id=context.workspace.id,
+        session_id=sid,
+    )
+    capture_state_blocker = capture_blocker(session, burst)
+    if not viewer_participation.granted:
+        capture_cap = _cap(False, "NOT_A_PARTICIPANT")
+    elif capture_state_blocker is not None:
+        capture_cap = _cap(False, capture_state_blocker)
+    else:
+        capture_cap = _cap(True)
+    captured_count: int | None = None
+    unresolved_capture = False
+    if burst is not None and is_controller:
+        captured_count = directory.count_captured_questions(
+            ports.connection, ws, burst.burst_id.value
+        )
+        if burst.state is BurstState.ACTIVE:
+            unresolved_capture = bool(
+                ports.commands.list_unresolved_for_target(
+                    workspace_id=context.workspace.id,
+                    command_type="CMD_CAPTURE_BURST_QUESTION",
+                    target_ref=f"burst:{burst.burst_id.value}",
+                )
+            )
+    complete_code = complete_burst_blocker(
+        session.state,
+        None if burst is None else burst.state,
+        unresolved_capture=unresolved_capture,
+        member_count=captured_count if is_controller else None,
+    )
+
     actions = {
         "BEGIN_SETUP": _transition_cap(
             is_controller, session.state, SessionTransitionId.TRN_SESS_002, scope
@@ -346,6 +471,8 @@ def session_position(
             )
         ),
         "GRANT_SESSION_CONTROL": _cap(governance_root, "NOT_GOVERNANCE_ROOT"),
+        "CAPTURE_QUESTION": capture_cap,
+        "COMPLETE_BURST": blocked_or(complete_code),
     }
     # `relevant`: does the action belong to the Session's CURRENT phase in
     # the 03 topology (independent of who is looking)? Computed here so the
@@ -357,12 +484,18 @@ def session_position(
         "OPEN_QUESTION_GENERATION": session.state is SessionState.CHALLENGE_CAPTURE,
         "ADMIT_PARTICIPANT": session.state is not SessionState.CLOSED,
         "GRANT_SESSION_CONTROL": True,
+        "CAPTURE_QUESTION": session.state is SessionState.QUESTION_GENERATION,
+        "COMPLETE_BURST": session.state is SessionState.QUESTION_GENERATION,
     }
     for name, cap in actions.items():
         cap["relevant"] = relevant[name]
     role = _role(ports, context)
+    question_set = _question_set(
+        ports, context, burst, viewer_id.value, is_controller, captured_count
+    )
     return {
         "kind": "ok",
+        "serverNow": ports.clock.now().isoformat(),
         "workspace": _workspace_json(ports, context),
         "challenge": {
             "challengeId": str(session.challenge_id.value),
@@ -393,7 +526,11 @@ def session_position(
             "mode": burst.mode.value,
             "version": burst.record_version.value,
             "startedAt": burst.started_at.isoformat() if burst.started_at else None,
+            "completedAt": burst.completed_at.isoformat() if burst.completed_at else None,
+            "guidanceSeconds": BURST_GUIDANCE_SECONDS,
+            "guidanceIsAuthoritative": False,
         },
+        "questionSet": question_set,
         "participants": [
             {
                 "userId": str(p.user_id.value),

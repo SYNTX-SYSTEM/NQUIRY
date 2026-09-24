@@ -29,6 +29,7 @@ from persistence.tables import (
     challenges_table,
     question_bursts_table,
     questions_table,
+    session_participations_table,
     sessions_table,
 )
 from semantic_types.id_generator import SystemIdGenerator
@@ -94,6 +95,33 @@ def _insert_question(
     challenge_id: ChallengeId,
     author_id: UserId,
 ) -> QuestionId:
+    # F03 WU-03.2 (04 AUTH-DEP-Q-001): a burst membership requires its author
+    # to hold a CURRENT SessionParticipation in the Burst's Session. The PKG-07
+    # constraint tests below exercise OTHER laws, so the author is admitted here
+    # (test plumbing only; participation carries no other authority).
+    session_row = connection.execute(
+        sa.select(sessions_table.c.id).where(sessions_table.c.challenge_id == challenge_id.value)
+    ).scalar_one()
+    already = connection.execute(
+        sa.select(session_participations_table.c.id).where(
+            session_participations_table.c.session_id == session_row,
+            session_participations_table.c.user_id == author_id.value,
+            session_participations_table.c.left_at.is_(None),
+        )
+    ).first()
+    if already is None:
+        connection.execute(
+            sa.insert(session_participations_table).values(
+                id=_ID_GEN.new_uuid(),
+                session_id=session_row,
+                workspace_id=workspace_id.value,
+                user_id=author_id.value,
+                joined_at=_NOW,
+                left_at=None,
+                admitted_by_user_id=author_id.value,
+                record_version=1,
+            )
+        )
     question_id = QuestionId(_ID_GEN.new_uuid())
     connection.execute(
         sa.insert(questions_table).values(
@@ -296,7 +324,7 @@ def test_completed_burst_is_fully_immutable(db_connection: sa.Connection) -> Non
     burst_repo.add_member(membership)
 
     fingerprint = compute_frozen_membership_fingerprint(
-        (membership,), {question_id: RecordVersion.initial()}
+        (membership,), {question_id: "Why do onboarding users drop off after step 2?"}
     )
     burst_repo.complete(
         burst_id=burst.burst_id,
@@ -352,7 +380,7 @@ def test_add_raw_member_after_freeze_is_rejected(db_connection: sa.Connection) -
     )
     burst_repo.add_member(membership)
     fingerprint = compute_frozen_membership_fingerprint(
-        (membership,), {question_id: RecordVersion.initial()}
+        (membership,), {question_id: "Why do onboarding users drop off after step 2?"}
     )
     burst_repo.complete(
         burst_id=burst.burst_id,
@@ -419,7 +447,7 @@ def test_remove_member_after_freeze_is_rejected(db_connection: sa.Connection) ->
     )
     burst_repo.add_member(membership)
     fingerprint = compute_frozen_membership_fingerprint(
-        (membership,), {question_id: RecordVersion.initial()}
+        (membership,), {question_id: "Why do onboarding users drop off after step 2?"}
     )
     burst_repo.complete(
         burst_id=burst.burst_id,

@@ -2335,6 +2335,15 @@ Record authority path and timer basis if System.
 
 # 40. AUTH-DEP-Q-001: Capture Burst Question
 
+> **Post-baseline materialization note (2026-09-24, F03 WU-03.0):** the
+> "direct source participation right" is materialized as a current
+> `SessionParticipation` (09 §28, admitted per 16 §41 REC-006 / REC-015),
+> recorded at the effect gate as the typed authority source **PARTICIPATION**
+> (reference = the participation id, scope `SESSION:<id>`; 16 §41 REC-016 /
+> NQ-DEC-043; `20_SYSTEM_FIELD_ENGINEERING.md` §7 successor note). "Input
+> satisfies protected Burst rule" is the prototype form rule of 16 §41
+> REC-013 / NQ-DEC-040. Nothing above is rewritten.
+
 ```text
 OPERATION:
 CAPTURE_BURST_QUESTION

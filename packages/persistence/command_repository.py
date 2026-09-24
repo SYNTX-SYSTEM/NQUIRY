@@ -44,7 +44,7 @@ from command.envelope import CommandEnvelope, CommandOutcome, compute_payload_fi
 from semantic_types.ids import AttemptId, CommandId, CommitId, WorkspaceId
 from semantic_types.versions import ContractVersion
 
-from persistence.tables import command_attempts_table, commands_table
+from persistence.tables import command_attempts_table, commands_table, recovery_records_table
 
 
 @dataclass(frozen=True, slots=True)
@@ -60,6 +60,9 @@ class CommandRecord:
     contract_version: ContractVersion
     payload_fingerprint: str
     created_at: datetime
+    target_refs: tuple[str, ...] = ()
+    """F03 WU-03.4 (FBR-F03-3): the refs this Command targets (09 §9),
+    persisted at birth. Empty on rows written before migration f6b2c4d9a318."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -143,6 +146,10 @@ class CommandRepository(Protocol):
 
     def get_command(self, command_id: CommandId) -> CommandRecord | None: ...
 
+    def list_unresolved_for_target(
+        self, *, workspace_id: WorkspaceId, command_type: str, target_ref: str
+    ) -> tuple[CommandId, ...]: ...
+
     def get_attempt(self, attempt_id: AttemptId) -> CommandAttempt | None: ...
 
     def list_attempts(self, command_id: CommandId) -> tuple[CommandAttempt, ...]: ...
@@ -171,6 +178,7 @@ class SqlAlchemyCommandRepository:
                     contract_version=envelope.command_contract_version.value,
                     payload_fingerprint=fingerprint,
                     created_at=received_at,
+                    target_refs=list(envelope.target_refs),
                 )
             )
         else:
@@ -269,6 +277,45 @@ class SqlAlchemyCommandRepository:
         row = self._connection.execute(stmt).mappings().one_or_none()
         return None if row is None else _command_from_row(row)
 
+    def list_unresolved_for_target(
+        self, *, workspace_id: WorkspaceId, command_type: str, target_ref: str
+    ) -> tuple[CommandId, ...]:
+        """F03 WU-03.4 (FBR-F03-3). Commands of `command_type` that target
+        `target_ref` and are UNRESOLVED: some attempt has no outcome yet
+        (IN_PROGRESS) or is INDETERMINATE (09 §18; 10 §4.4: never assumed
+        either way), no attempt of the same Command COMMITTED, and no recovery
+        record for the Command has left UNRESOLVED (10 §64: recovery is the
+        architecture's resolution path for an uncertain consequence)."""
+        c, a, r = commands_table, command_attempts_table, recovery_records_table
+        committed = sa.exists().where(
+            a.c.command_id == c.c.id,
+            a.c.workspace_id == c.c.workspace_id,
+            a.c.outcome == CommandOutcome.COMMITTED.value,
+        )
+        uncertain = sa.exists().where(
+            a.c.command_id == c.c.id,
+            a.c.workspace_id == c.c.workspace_id,
+            sa.or_(a.c.outcome.is_(None), a.c.outcome == CommandOutcome.INDETERMINATE.value),
+        )
+        recovered = sa.exists().where(
+            r.c.original_command_id == c.c.id,
+            r.c.workspace_id == c.c.workspace_id,
+            r.c.result != "UNRESOLVED",
+        )
+        rows = self._connection.execute(
+            sa.select(c.c.id)
+            .where(
+                c.c.workspace_id == workspace_id.value,
+                c.c.command_type == command_type,
+                c.c.target_refs.any(target_ref),
+                uncertain,
+                sa.not_(committed),
+                sa.not_(recovered),
+            )
+            .order_by(c.c.created_at.asc(), c.c.id.asc())
+        ).all()
+        return tuple(CommandId(row[0]) for row in rows)
+
     def get_attempt(self, attempt_id: AttemptId) -> CommandAttempt | None:
         stmt = sa.select(command_attempts_table).where(
             command_attempts_table.c.id == attempt_id.value
@@ -294,6 +341,7 @@ def _command_from_row(row: sa.RowMapping) -> CommandRecord:
         contract_version=ContractVersion(row["contract_version"]),
         payload_fingerprint=row["payload_fingerprint"],
         created_at=row["created_at"],
+        target_refs=tuple(row["target_refs"] or ()),
     )
 
 

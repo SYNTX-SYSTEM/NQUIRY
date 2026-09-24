@@ -153,9 +153,9 @@ Honest, not marketing:
   Workspace Commands/Queries, and the F02 Challenge/Session/transition/
   participation/grant routes (runbook §18). Several application-layer
   Commands still have no route (Question selection, open Decision
-  consideration, recovery). Others do not exist yet at all: Burst
-  operations, Question capture, AI analysis and Evidence commands are
-  F03–F06 scope.
+  consideration, recovery). F03 added Question capture and manual Burst
+  completion (runbook §18). AI analysis and Evidence commands are F04–F06
+  scope. Burst PAUSE/RESUME is out of scope (F03 HD-10).
 - **No production authentication provider.** The local login (above)
   is a real, hardened LOCAL credential adapter — not an OIDC/external
   identity provider integration (GAP-14-001 remains open).
@@ -167,8 +167,8 @@ Honest, not marketing:
   Field F02. See `docs/architecture/20_SYSTEM_FIELD_ENGINEERING.md`
   §12.
 - **The seeded demo Session is a NON_PROOF fixture.** Its state
-  (captured questions in a never-started Burst of a DRAFT Session) is
-  not reachable through lawful transitions. Use it only as a labelled
+  (a frozen Burst of a DRAFT Session) is not reachable through lawful
+  transitions. Use it only as a labelled
   fixture, never as proof of governed behavior.
 
 ## No production claims

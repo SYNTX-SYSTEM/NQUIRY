@@ -54,6 +54,7 @@ from persistence.tables import (
     question_bursts_table,
     questions_table,
     role_assignments_table,
+    session_participations_table,
     sessions_table,
     users_table,
     workspaces_table,
@@ -126,6 +127,27 @@ def _seed_demo_scenario(
             record_version=1,
         )
     )
+    # F03 (migration e5a1b3c8f204): burst memberships exist only for an ACTIVE
+    # Burst and for an author with a CURRENT SessionParticipation. This NON_PROOF
+    # demo fixture therefore starts the Burst and admits the demo owner directly
+    # (fixture plumbing, no governed Command; the Session itself stays DRAFT).
+    connection.execute(
+        sa.insert(session_participations_table).values(
+            id=id_gen.new_uuid(),
+            session_id=session_id.value,
+            workspace_id=workspace_id.value,
+            user_id=owner_user_id.value,
+            joined_at=now,
+            left_at=None,
+            admitted_by_user_id=owner_user_id.value,
+            record_version=1,
+        )
+    )
+    connection.execute(
+        sa.update(question_bursts_table)
+        .where(question_bursts_table.c.id == burst_id)
+        .values(state="ACTIVE", started_at=now, record_version=2)
+    )
     demo_questions = (
         "Did the new checkout flow introduce extra required fields?",
         "Is the drop concentrated in mobile or desktop traffic?",
@@ -159,6 +181,61 @@ def _seed_demo_scenario(
                 record_version=1,
             )
         )
+    # Freeze the fixture's raw set (COMPLETED + fingerprint) so the decision
+    # surface still shows its questions: the legacy Session view serves Burst
+    # questions only after completion (F03 FBR-F03-8, HD-13).
+    from domain.burst_membership import (
+        QuestionBurstMembership,
+        compute_frozen_membership_fingerprint,
+    )
+    from domain.question import QuestionOrigin
+    from semantic_types.ids import BurstId, QuestionId, RelationId
+    from semantic_types.versions import RecordVersion
+
+    seeded = (
+        connection.execute(
+            sa.select(burst_question_memberships_table).where(
+                burst_question_memberships_table.c.question_burst_id == burst_id
+            )
+        )
+        .mappings()
+        .all()
+    )
+    texts = {
+        QuestionId(r[0]): r[1]
+        for r in connection.execute(
+            sa.select(questions_table.c.id, questions_table.c.original_text).where(
+                questions_table.c.workspace_id == workspace_id.value
+            )
+        ).all()
+    }
+    fingerprint = compute_frozen_membership_fingerprint(
+        [
+            QuestionBurstMembership(
+                burst_question_membership_id=RelationId(m["id"]),
+                question_burst_id=BurstId(m["question_burst_id"]),
+                question_id=QuestionId(m["question_id"]),
+                workspace_id=workspace_id,
+                captured_order=m["captured_order"],
+                captured_at=m["captured_at"],
+                capture_actor_user_id=UserId(m["capture_actor_user_id"]),
+                capture_origin=QuestionOrigin.HUMAN,
+                record_version=RecordVersion(m["record_version"]),
+            )
+            for m in seeded
+        ],
+        texts,
+    )
+    connection.execute(
+        sa.update(question_bursts_table)
+        .where(question_bursts_table.c.id == burst_id)
+        .values(
+            state="COMPLETED",
+            completed_at=now,
+            frozen_membership_fingerprint=fingerprint,
+            record_version=3,
+        )
+    )
     decision_id = DecisionId(id_gen.new_uuid())
     binding_id = id_gen.new_uuid()
     connection.execute(

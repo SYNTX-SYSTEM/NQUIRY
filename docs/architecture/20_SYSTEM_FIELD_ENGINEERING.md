@@ -164,6 +164,13 @@ authority sources:
 | ROLE | A role-sourced operation authority the architecture names explicitly (e.g. AUTH-DEP-CH-001 Facilitator creates Challenge) | the current role assignment id |
 | FOUNDING | The HARD-DEP-001 Option-A founding act: a verified human creating a Workspace | the founding Command id |
 
+**Successor note (F03 HD-15, 16 §41 REC-016 / NQ-DEC-043).** The table above is
+the F02 state. F03 adds a fourth typed source, extending, not rewriting, it:
+
+| Source | Meaning | Reference recorded |
+|---|---|---|
+| PARTICIPATION | The source-explicit question-submission right of a current SessionParticipation (04 AUTH-DEP-Q-001), re-read at commit. It is not a role and not a binding | the SessionParticipation id (scope `SESSION:<id>`) |
+
 ## 8. THE RECURSION CONDITION (THREE CASES)
 
 For every unresolved next relation: *can it be legitimately derived from the
@@ -394,6 +401,26 @@ incomplete. Corrected in F02 WU-02.12).
   authority, no role-only inference. Decided by the human operator,
   2026-09-24, in answer to the bootstrap reconstruction's Case-3 request.
   Corrects F02 WU-02.7, which had classified this reading as Case 1.
+
+## 15A. HUMAN DECISIONS RECORDED UNDER THIS ARCHITECTURE (F03)
+
+Supplied by the human operator on 2026-09-24 for Field F03. Reconciled into
+16 §41 as NQ-DEC-038..043 (REC-011..REC-016, F03 WU-03.0).
+
+- **HD-10 (NQ-DEC-038)**: PAUSE / RESUME is out of scope for F03. Its
+  authority stays open (NQ-GAP-022).
+- **HD-11 (NQ-DEC-039)**: automatic timer completion is not authorized. The
+  timer is presentation only. Time passing creates no effect. Completion is
+  an explicit manual act (affirms NQ-DEC-017).
+- **HD-12 (NQ-DEC-040)**: questions-only validity is a deterministic form
+  rule (last non-whitespace character is a question mark in any script).
+  Prototype narrowing: form, not meaning. NQ-GAP-023 stays open.
+- **HD-13 (NQ-DEC-041)**: while the Burst is ACTIVE each participant sees
+  only their own Questions and the controller sees only a count. After
+  completion every Session member sees the full frozen set with authors.
+- **HD-14 (NQ-DEC-042)**: controller self-admission is lawful.
+- **HD-15 (NQ-DEC-043)**: PARTICIPATION is the fourth typed effect-gate
+  authority source (§7 successor note).
 
 ## 16. FINAL LAW
 

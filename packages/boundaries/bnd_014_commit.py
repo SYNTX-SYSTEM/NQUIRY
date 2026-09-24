@@ -69,6 +69,7 @@ from authority.resolver import AuthorityRequest, AuthorityResolver, AuthorityVer
 from evidence.freshness import EvidenceSetFreshnessResult
 from governance.authority_binding import AuthorityClass
 from persistence.membership_repository import MembershipRepository
+from persistence.session_participation_repository import SessionParticipationRepository
 from semantic_types.versions import ContractVersion, RecordVersion
 
 from boundaries.authority_source import (
@@ -77,8 +78,10 @@ from boundaries.authority_source import (
     AuthoritySourceType,
     BindingAuthority,
     FoundingAuthority,
+    ParticipationAuthority,
     RoleAuthority,
 )
+from boundaries.participation_right import resolve_participation_right
 from boundaries.types import BoundaryContext, BoundaryId, BoundaryProof, BoundaryResult
 
 # F02 WU-02.6 (HD-6, 16 §41 REC-004): BND-014 evaluates a TYPED authority
@@ -129,7 +132,10 @@ class Bnd014Input:
             )
         elif any(v is not None for v in legacy):
             raise ValueError("Bnd014Input: pass `authority` OR the legacy triple, not both")
-        if not isinstance(self.authority, (BindingAuthority, RoleAuthority, FoundingAuthority)):
+        if not isinstance(
+            self.authority,
+            (BindingAuthority, RoleAuthority, FoundingAuthority, ParticipationAuthority),
+        ):
             raise TypeError(
                 f"authority must be a typed AuthorityRequirement, got {type(self.authority)!r}"
             )
@@ -164,9 +170,11 @@ class Bnd014CommitEvaluator:
         resolver: AuthorityResolver | None,
         *,
         membership_repository: MembershipRepository | None = None,
+        participation_repository: SessionParticipationRepository | None = None,
     ) -> None:
         self._resolver = resolver
         self._membership_repository = membership_repository
+        self._participation_repository = participation_repository
 
     def evaluate(self, boundary_input: Bnd014Input, context: BoundaryContext) -> BoundaryProof:
         input_refs = tuple(sorted(boundary_input.expected_versions.keys()))
@@ -271,6 +279,29 @@ class Bnd014CommitEvaluator:
                 source_ref=boundary_input.command_ref,  # type: ignore[arg-type]
                 scope_ref=workspace_scope_ref,
                 detail=f"{authority.operation_authority_ref}:{authority.eligibility_reason_code}",
+            )
+        elif isinstance(authority, ParticipationAuthority):
+            # F03 HD-15 / AUTH-DEP-Q-001: a CURRENT SessionParticipation in
+            # the named Session, of a still-ACTIVE Workspace member, in this
+            # Workspace. Re-read live (no stale ALLOW). No role, no binding,
+            # no client claim is consulted.
+            participation_resolution = resolve_participation_right(
+                participation_repository=self._participation_repository,
+                membership_repository=self._membership_repository,
+                actor=context.actor,
+                workspace_id=context.workspace_id,
+                session_id=authority.session_id,
+            )
+            if (
+                not participation_resolution.granted
+                or participation_resolution.participation_id is None
+            ):
+                return deny(participation_resolution.reason_code)
+            source = AuthoritySourceProof(
+                source_type=AuthoritySourceType.PARTICIPATION,
+                source_ref=participation_resolution.participation_id,
+                scope_ref=f"SESSION:{authority.session_id}",
+                detail=authority.operation_authority_ref,
             )
         else:  # pragma: no cover -- __post_init__ rejects any other type
             return deny("AUTHORITY_REQUIREMENT_UNTYPED")
