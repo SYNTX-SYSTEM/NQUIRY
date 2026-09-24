@@ -199,6 +199,14 @@ For unresolved items, absent source detail remains explicit. No placeholder valu
 | NQ-DEC-041 | Burst visibility: own Questions only while ACTIVE, full frozen set with authors afterwards | ESTABLISHED (post-baseline, §41 REC-014) | F03 HD-13; 00 §11.1 | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-24 |
 | NQ-DEC-042 | Controller self-admission is lawful (HD-7 clarified) | ESTABLISHED (post-baseline, §41 REC-015) | F03 HD-14; NQ-DEC-035; NQ-GAP-079 (leave/removal stays open) | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-24 |
 | NQ-DEC-043 | PARTICIPATION is the fourth typed effect-gate authority source | ESTABLISHED (post-baseline, §41 REC-016) | F03 HD-15; NQ-DEC-034; 04 AUTH-DEP-Q-001 | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-24 |
+| NQ-DEC-044 | A committed BEGIN_ANALYSIS authorizes exactly one system-executed AIOP-001 run | ESTABLISHED (post-baseline, §41 REC-018) | F04 HD-16; 04 AUTH-DEP-SESS-006; 08 §23 | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-24 |
+| NQ-DEC-045 | SYSTEM_OPERATION is the fifth typed effect-gate authority source | ESTABLISHED (post-baseline, §41 REC-019) | F04 HD-17; NQ-DEC-034, NQ-DEC-043; 09 §68; 06 BND-010 | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-24 |
+| NQ-DEC-046 | AIOP-001 prototype output content; no normalized_text in F04 | ESTABLISHED (post-baseline, §41 REC-020) | F04 HD-18; 08 §23; BLOCK-08-008 | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-24 |
+| NQ-DEC-047 | MockProvider enabled in the dev runtime, marked MOCK / NON_PROOF | ESTABLISHED (post-baseline, §41 REC-021) | F04 HD-19; HARD-DEP-002; 19 §24 | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-24 |
+| NQ-DEC-048 | A mock-validated proof never counts toward BEGIN_REFLECTION for a non-fixture Session | ESTABLISHED (post-baseline, §41 REC-022) | F04 HD-20; 03 TRN-SESS-007; 13 AC-13-008 | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-24 |
+| NQ-DEC-049 | F04 AIOP scope is AIOP-001 + AIOP-002 | ESTABLISHED (post-baseline, §41 REC-023) | F04 HD-21; 12 §12; 08 §24 | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-24 |
+| NQ-DEC-050 | Derived analysis is visible to the HD-13 frozen-set audience | ESTABLISHED (post-baseline, §41 REC-024) | F04 HD-22; NQ-DEC-041 | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-24 |
+| NQ-DEC-051 | One AIOP-002 clustering run is authorized only after an accepted AIOP-001 artifact exists | ESTABLISHED (post-baseline, §41 REC-026) | F04 HD-23; 08 §24; NQ-DEC-044, NQ-DEC-045 | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-24 |
 
 No recommendation, mock, default or implementation convenience is ESTABLISHED outside its authorized scope.
 
@@ -1848,6 +1856,62 @@ BASELINE_READINESS: BASELINE_READY_FOR_PROTOTYPE_IMPLEMENTATION pending HUMAN_RE
       "status": "ESTABLISHED",
       "post_baseline_record": "REC-016",
       "source": "F03 HD-15"
+    },
+    {
+      "id": "NQ-DEC-044",
+      "title": "A committed BEGIN_ANALYSIS authorizes exactly one system-executed AIOP-001 run",
+      "status": "ESTABLISHED",
+      "post_baseline_record": "REC-018",
+      "source": "F04 HD-16"
+    },
+    {
+      "id": "NQ-DEC-045",
+      "title": "SYSTEM_OPERATION is the fifth typed effect-gate authority source",
+      "status": "ESTABLISHED",
+      "post_baseline_record": "REC-019",
+      "source": "F04 HD-17"
+    },
+    {
+      "id": "NQ-DEC-046",
+      "title": "AIOP-001 prototype output content; no normalized_text in F04",
+      "status": "ESTABLISHED",
+      "post_baseline_record": "REC-020",
+      "source": "F04 HD-18"
+    },
+    {
+      "id": "NQ-DEC-047",
+      "title": "MockProvider enabled in the dev runtime, marked MOCK / NON_PROOF",
+      "status": "ESTABLISHED",
+      "post_baseline_record": "REC-021",
+      "source": "F04 HD-19"
+    },
+    {
+      "id": "NQ-DEC-048",
+      "title": "A mock-validated proof never counts toward BEGIN_REFLECTION for a non-fixture Session",
+      "status": "ESTABLISHED",
+      "post_baseline_record": "REC-022",
+      "source": "F04 HD-20"
+    },
+    {
+      "id": "NQ-DEC-049",
+      "title": "F04 AIOP scope is AIOP-001 + AIOP-002",
+      "status": "ESTABLISHED",
+      "post_baseline_record": "REC-023",
+      "source": "F04 HD-21"
+    },
+    {
+      "id": "NQ-DEC-050",
+      "title": "Derived analysis is visible to the HD-13 frozen-set audience",
+      "status": "ESTABLISHED",
+      "post_baseline_record": "REC-024",
+      "source": "F04 HD-22"
+    },
+    {
+      "id": "NQ-DEC-051",
+      "title": "One AIOP-002 clustering run is authorized only after an accepted AIOP-001 artifact exists",
+      "status": "ESTABLISHED",
+      "post_baseline_record": "REC-026",
+      "source": "F04 HD-23"
     }
   ],
   "packages": [
@@ -2523,3 +2587,87 @@ Successor record. Nothing in §1–§40 or REC-001..REC-010 is deleted.
 **Current counts** (superseding REC-010 for current use): Decisions 43 (ESTABLISHED 34: NQ-DEC-022, 032..043; REQUIRED 9). Canonical gaps stay 80. NQ-GAP-023, NQ-GAP-022, NQ-GAP-032 and NQ-GAP-079 stay OPEN; NQ-GAP-023 now records the prototype form rule.
 
 **Provenance.** F03 WU-03.0, authorized by the human operator's F03 instruction (2026-09-24), per `20_SYSTEM_FIELD_ENGINEERING.md` §14.
+
+### REC-018 / NQ-DEC-044: A committed BEGIN_ANALYSIS authorizes exactly one system-executed AIOP-001 run (F04 HD-16; closes C3-F04-1)
+
+- DECISION (human operator, 2026-09-24, option (b)): "Beginning analysis authorizes exactly one AI run, which the system executes right after that commit. Re-runs after a failure need an explicit controller request."
+- READING (F04 reconstruction revision 2, R1–R3, for architecture review):
+  - The run's authority is the committed human BEGIN_ANALYSIS command, recorded as SYSTEM_OPERATION (REC-019). It is not SYSTEM_DERIVED method authority, so BND-011/012 (D8) stay REQUIRE/DENY for any automatic path.
+  - No re-run is authorized after an accepted success.
+  - Revision 4 (FBR-F04-11): authorizations are operation-scoped. OA =
+    (authorizing command, AI operation). BEGIN_ANALYSIS creates OA-1 =
+    (BEGIN_ANALYSIS, AIOP-001), consumed by the one AIOP-001 generation
+    carrying it. A controller re-run request creates OA-2 =
+    (CMD_REQUEST_QUESTION_ANALYSIS, AIOP-001), superseding an unconsumed
+    OA-1. Generation uniqueness is keyed on OA, never on the command alone.
+- NOT DECIDED at the time: the AIOP-002 invocation trigger (C3-F04-7). Decided afterwards by REC-026 / NQ-DEC-051.
+- MATERIALIZATION: F04 WU-04.1 / WU-04.5. Home-file pointer (04 AUTH-DEP-SESS-006) due in WU-04.0.
+
+### REC-019 / NQ-DEC-045: SYSTEM_OPERATION is the fifth typed effect-gate authority source (F04 HD-17; closes C3-F04-2)
+
+- DECISION (option (a)): a new typed source **SYSTEM_OPERATION**. Reference = the authorizing human command id; scope `SESSION:<id>`; re-checked at commit (that command committed, the Session is still ANALYSIS, and for acceptance the proof is VALIDATED). The actor must be SYSTEM_SERVICE.
+- WHY: 09 §68 names SYSTEM_SERVICE as the accepting actor. 06 BND-010 defers acceptance authority to 08/09, which never define it. BINDING, ROLE, FOUNDING and PARTICIPATION would fabricate provenance (HD-6 / NQ-DEC-034).
+- AFFECTS: NQ-DEC-034 / NQ-DEC-043 (typed-source set extended again), the 09 audit contract (`authority_source_type` vocabulary; CHECK change at materialization).
+- STATUS: decided, **not yet materialized**. `20_SYSTEM_FIELD_ENGINEERING.md` §7 carries a successor note.
+
+### REC-020 / NQ-DEC-046: AIOP-001 prototype output content; no normalized_text in F04 (F04 HD-18; closes C3-F04-3)
+
+- DECISION (option (b)): AIOP-001 analysis contains classification proposals, Question families, unusual-question flags, pattern descriptions and contradiction proposals. **No** additional Question suggestions. `Question.normalized_text` is not written in F04.
+- AFFECTS: BLOCK-08-008 (the AIOP-001 output schema is closed for the prototype; exact field names are implementation choices in WU-04.4). The 08 §23 "such as" list stays the broader model.
+
+### REC-021 / NQ-DEC-047: MockProvider enabled in the dev runtime, marked MOCK / NON_PROOF (F04 HD-19; closes C3-F04-4)
+
+- DECISION (option (b)): MockProvider is enabled in the dev runtime. Every generation, artifact and projection is marked mock and projected as NON_PROOF / MOCK, never as analysis of the real Questions.
+- NOT CLOSED: HARD-DEP-002 / NQ-GAP-060 (real provider eligibility; D3, D9) remain EXTERNAL_DEPENDENCY / DECISION_REQUIRED. Production must not enable the mock (19 §40 Production Readiness Gates: "Do not silently substitute MockProvider").
+
+### REC-022 / NQ-DEC-048: A mock-validated proof never counts toward BEGIN_REFLECTION for a non-fixture Session (F04 HD-20)
+
+- DECISION: "Mock-validated proof MUST NEVER count toward F05 BEGIN_REFLECTION for a non-fixture Session."
+- SCOPE: a prohibition only. Whether a mock proof may count for a fixture (NON_PROOF) Session is not decided (F05).
+- CONSEQUENCE: in a mock-only runtime, governed Sessions cannot satisfy TRN-SESS-007 until a real eligible provider exists (HARD-DEP-002) or NQ-GAP-024 is decided.
+- ENFORCEMENT HOME: F05 BEGIN_REFLECTION, via proof → generation → provider provenance.
+
+### REC-023 / NQ-DEC-049: F04 AIOP scope is AIOP-001 + AIOP-002 (F04 HD-21; closes C3-F04-5)
+
+- DECISION (option (b)): AIOP-001 plus AIOP-002 question clustering (09 §34/§35 QuestionCluster, per-run `cluster_run_id`). AIOP-004 assumptions, perspectives and AI-origin Questions are out of F04.
+- The AIOP-002 invocation trigger (C3-F04-7) was open at the time. It is decided by REC-026 / NQ-DEC-051.
+
+### REC-024 / NQ-DEC-050: Derived analysis is visible to the HD-13 frozen-set audience (F04 HD-22; closes C3-F04-6)
+
+- DECISION (option (a)): every member who can read the frozen set sees the derived analysis and clusters, with AI origin and the MOCK / NON_PROOF marker, evaluated server-side.
+
+### REC-025: Ledger reconciliation (F04 architecture revision 2)
+
+Successor record. Nothing earlier is deleted.
+
+**Current counts** (superseding REC-017 for current use):
+- Decisions: 50 (ESTABLISHED 41: NQ-DEC-022, 032..050; REQUIRED 9).
+- Canonical gaps: stay 80. No gap status changes.
+  - NQ-GAP-024, NQ-GAP-060 / HARD-DEP-002, NQ-GAP-070 (D2) and NQ-GAP-076 (D8) remain as they were.
+  - NQ-GAP-010 (cluster recomputation identity) stays OPEN. The prototype has at most one accepted run per Session under REC-018's reading.
+
+**Open Case-3 relation recorded, not closed:** C3-F04-7 (AIOP-002 invocation trigger).
+
+**Provenance.** The human operator's F04 decisions of 2026-09-24. `docs/implementation/field-reports/F04/HUMAN_DECISIONS.md`, `F04_ARCHITECTURE_RECONSTRUCTION.md` revision 2. Per `20_SYSTEM_FIELD_ENGINEERING.md` §14.
+
+### REC-026 / NQ-DEC-051: One AIOP-002 clustering run is authorized only after an accepted AIOP-001 artifact exists (F04 HD-23; closes C3-F04-7)
+
+- DECISION (human operator, 2026-09-24, option (c)), verbatim: "One AIOP-002 run becomes authorized only after an accepted AIOP-001 artifact exists. The AIOP-002 execution is SYSTEM_OPERATION and references the same BEGIN_ANALYSIS authority chain. If AIOP-001 fails or is not accepted, clustering must not run. If AIOP-002 itself fails, any retry requires an explicit controller request."
+- READING (F04 reconstruction revision 3, R7–R10, for architecture review):
+  - **R7** (revision 4, FBR-F04-11). Acceptance of an AIOP-001 artifact creates OA-3 = (C, AIOP-002), where C is the human command that authorized the accepted artifact: BEGIN_ANALYSIS for the original run, CMD_REQUEST_QUESTION_ANALYSIS for a controller re-run. The SYSTEM_OPERATION reference of the automatic clustering run is C. The accepted AIOP-001 artifact is the mandatory commit-time precondition and the authorizing link. The chain resolves to BEGIN_ANALYSIS, as provenance, not identity.
+  - **R8.** Nothing authorizes a clustering re-run after an accepted cluster run. At most one accepted cluster run per Session.
+  - **R9** (revision 4). OA-3 is consumed by the one AIOP-002 generation carrying it, never by an AIOP-001 generation. An unconsumed OA-3 is never executed later. A controller request creates OA-4 = (CMD_REQUEST_QUESTION_CLUSTERING, AIOP-002), superseding it.
+  - **R10.** The AIOP-002 input remains the verified frozen human set (08 §24). The AIOP-001 artifact authorizes the run but is not model input.
+- AFFECTS: NQ-DEC-044 (HD-16 stays AIOP-001-only), NQ-DEC-045 (SYSTEM_OPERATION reference semantics), NQ-DEC-049 (scope). NQ-GAP-010 stays OPEN, but the prototype has at most one accepted cluster run per Session.
+- MATERIALIZATION: F04 WU-04.9. Home-file pointer (08 §24) due in WU-04.0.
+
+### REC-027: Ledger reconciliation (F04 architecture revision 3)
+
+Successor record. Nothing earlier is deleted.
+
+**Current counts** (superseding REC-025 for current use):
+- Decisions: 51 (ESTABLISHED 42: NQ-DEC-022, 032..051; REQUIRED 9).
+- Canonical gaps: stay 80. No gap status changes.
+- C3-F04-7 is closed by REC-026. No F04 Case-3 relation remains open.
+
+**Provenance.** The human operator's F04 decision of 2026-09-24 ("C3-F04-7 = (c)"). `docs/implementation/field-reports/F04/HUMAN_DECISIONS.md`, `F04_ARCHITECTURE_RECONSTRUCTION.md` revision 3. Per `20_SYSTEM_FIELD_ENGINEERING.md` §14.
