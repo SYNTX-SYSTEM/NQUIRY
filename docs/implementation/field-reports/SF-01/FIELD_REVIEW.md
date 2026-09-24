@@ -5,6 +5,8 @@ SF-01: Symbiotic Frontend Foundation (pulled forward). Semantic regime: the pre-
 Interaction Field (doc 21 §48, Stage 1 plus the Stage 3 primitives).
 
 ## Worktree State
+*(State at review time, before the Field commit. The approved commit identity is recorded under "Commit Status" below.)*
+
 - Worktree `~/Entwicklung/nquiry-frontend`, branch `frontend-symbiotic`, at `bea864b` (F02 published, identity recorded). SF-01 is uncommitted.
 - Index empty. `git diff --check` clean. **NOT COMMITTED.**
 - Throughout SF-01, up to and including Field Green, F03 was in progress in a separate worktree and environment (compose project `nquiry`). It was neither inspected nor touched. F03 was published afterwards (see "Post-run timeline").
@@ -230,7 +232,22 @@ None. Doc 21 is unchanged, and no 00–20 file is touched.
 Clean.
 
 ## Commit Status
-**NOT COMMITTED.** Awaiting human Field Review. No commit, tag or push without explicit approval. The branch is still based on `bea864b` and not synchronized with published F03. That synchronization is the first step of the integration law, after this review.
+*(At review time: NOT COMMITTED, awaiting human Field Review.)*
+
+Human Field Review: **PASS**. Approved via `FIELD_COMMIT_APPROVED SF-01`.
+- **Committed** as `447b24e6177e891e0df12bdf2d9874379af72911` ("field(SF-01): symbiotic frontend foundation on the pre-Session surfaces (FIELD PASS)"):
+  - one commit, parent `bea864b`, signed (GPG, good signature);
+  - 50 files (46 added, 4 modified), +7871 / −380;
+  - branch `frontend-symbiotic`, **local only: not tagged, not pushed**.
+- **Kept out of the Field commit**, as its approved exclusions: `apps/web/AGENTS.md`, `apps/web/CLAUDE.md` (absent), generated `next-env.d.ts` changes (none), `test-results/` (gitignored).
+- **Review input bundle**: `review/REVIEW_INPUT_BUNDLE.md` is intentional review-input provenance (human decision), kept verbatim (64 831 bytes, sha256 prefix `1693b9768dc61dec`).
+  - It was generated at 22:06 from the SF-01 artifacts as they stood before the post-F03 timeline notes, so it records the review input at that moment.
+  - The canonical reports are the files in this directory.
+  - It was not in the Field commit; the documentation-record commit adds it.
+- **Commit identity** recorded after the Field commit, in a separate documentation-only commit (19 §16: the only post-commit change permitted to a historical report). No other content of this report was changed.
+- **Timeline preserved:** SF-01 reached Field Green while F03 was excluded; F03 was published afterwards; **F03 integration has still NOT begun.**
+  - The SF-01 commits sit on `bea864b`, and the branch is not synchronized with published F03.
+  - The integration law (see "Post-run timeline") remains ACTIVE and unexecuted.
 
 ## Recommended Status
 **FIELD_GREEN_WITH_DISCLOSED_CEILINGS.** The ceilings are Known Limitations 1–9 plus GAP-14-001. All are disclosed, and none hides an SF-01 relation.

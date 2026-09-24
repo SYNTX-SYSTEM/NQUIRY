@@ -14,13 +14,17 @@ grammar (affordance, effect and boundary, proof depth). SF-01 does not replace F
 F11 semantics (21 §44 F11-R01..R04).
 
 ## Status
-**FIELD_GREEN_WITH_DISCLOSED_CEILINGS — AWAITING HUMAN FIELD REVIEW.** Not committed. No commit, tag
-or push without explicit approval. The isolated real-stack proof exists (SF01-HD-2 satisfied).
+**FIELD_GREEN_WITH_DISCLOSED_CEILINGS — COMMITTED (local; not tagged, not pushed).** Human Field Review
+PASS; approved via `FIELD_COMMIT_APPROVED SF-01`. Field commit `447b24e6177e891e0df12bdf2d9874379af72911`
+(parent `bea864b`, signed; 50 files). Identity recorded afterwards in a separate documentation-only commit
+(19 §16), which also adds the verbatim review-input provenance `review/REVIEW_INPUT_BUNDLE.md`. Tagging and
+pushing need separate explicit authorization. The isolated real-stack proof exists (SF01-HD-2 satisfied).
 
 **Timeline:** SF-01 reached Field Green while F03 was still isolated and excluded. F03 was published
 afterwards (`0d59ae3f`, record `c9d86bab` = `origin/master`, signed tag `field-F03`). No F03 integration has
-occurred inside SF-01; the branch is still at `bea864b`. The post-F03 integration law is now ACTIVE, not yet
-executed (see Downstream and FIELD_REVIEW.md "Post-run timeline").
+occurred inside SF-01, and it has still NOT begun: the SF-01 commits sit on `bea864b`, and the branch is not
+synchronized with F03. The post-F03 integration law is ACTIVE, not yet executed (see Downstream and
+FIELD_REVIEW.md "Post-run timeline").
 
 | Lane | Result (final tree) |
 |---|---|
@@ -31,7 +35,8 @@ executed (see Downstream and FIELD_REVIEW.md "Post-run timeline").
 | L6 isolated environment (`nquiry-sf01`, no host ports) | guard PASS; DB principals; migrations static + live PASS on an empty DB (head b3d8e5f0a2c7) |
 | L7 isolated real stack (`scripts/run_sf01_real_stack.sh`) | **10/10 passed**, run twice; the second run is on the final tree (F02 flow + a11y + WU-02.12 closure + SF-01 × desktop + Pixel 7) |
 
-Review artefacts: FIELD_REVIEW.md, CHATGPT_REVIEW.txt, PROOF_MATRIX.md, visual/ (10 real-stack PNGs).
+Review artefacts: FIELD_REVIEW.md, CHATGPT_REVIEW.txt, PROOF_MATRIX.md, visual/ (10 real-stack PNGs),
+review/REVIEW_INPUT_BUNDLE.md (verbatim review-input provenance, generated before the post-F03 timeline notes).
 
 ## Work Units
 | WU | Title | Report |
