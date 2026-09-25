@@ -1,71 +1,134 @@
 /*
- * F02 frontend foundation (WU-02.10). A restrained, reusable base: tokens,
- * layout primitives, status semantics, provenance and authority labels.
- * The full semiotic system is F11 (19 §31).
+ * NQIRY SYMBIOTIC INTERACTION FIELD — stylesheet (docs/implementation/frontend/22 §11–§20, §32–§35).
  *
- * Semantic color rules (19 §31): no green = truth, no red = false. Color
- * never carries meaning alone; every status also has text.
+ * The Field identity is dark, deep and relational (22 §3.2). Colour law (22 §18):
+ *   CYAN  living relation / possible effect / current activity
+ *   BLUE  stable / established / confirmed / frozen / proof relation
+ *   RED   boundary / tension / blocked / denied / rejected / unknown
+ *   NEUTRAL content, labels, quiet structure
+ * Green is not a Field identity. Colour never carries meaning alone (22 §18.6): every state below
+ * also exists as text, an attribute, a shape or a path style.
+ *
+ * Presentation layers (22 §16.4): BACKGROUND (.field-bg) → MIDFIELD (orbits) → ACTIVE PLANE (.core)
+ * → ACTION PLANE (.plane) → PROOF DEPTH (.proof-depth) → BOUNDARY PLANE (.read-boundary).
+ * Motion (22 §19): slow, sparse, GPU-friendly; `prefers-reduced-motion` removes every animation and
+ * transition while the same meaning stays in text and structure (22 §19.7).
+ *
+ * Class names used by the F02 components and the legacy /decision surface are kept, restyled.
  */
 :root {
-  --bg: #f7f6f3;
-  --surface: #ffffff;
-  --surface-sunk: #f0eee9;
-  --ink: #1d1b18;
-  --ink-soft: #4a4640;
-  --muted: #6d675f;
-  --line: #dcd8d0;
-  --accent: #33427a;          /* primary action */
-  --accent-ink: #ffffff;
-  --authority: #2e3f6e;       /* authority / provenance labels */
-  --authority-bg: #e9ecf6;
-  --human: #7a4a1f;           /* human origin */
-  --human-bg: #f6ece2;
-  --ai: #5a3d7a;              /* AI origin (derived, never primary) */
-  --ai-bg: #efe9f6;
-  --attention: #7a5a00;       /* blocked / stale: needs attention, not "wrong" */
-  --attention-bg: #fbf3dc;
-  --fault: #8a2f2a;           /* denied / failure of an operation */
-  --fault-bg: #f8e6e4;
-  --settled: #2f5d62;         /* committed: settled, not "true" */
-  --settled-bg: #e3f0f0;
-  --focus: #1f5fd6;
-  --radius: 8px;
+  color-scheme: dark;
+  /* field */
+  --bg-deep: #03060c;
+  --bg: #070b14;
+  --surface: #0e1524;
+  --surface-2: #131c30;
+  --surface-sunk: #0a101c;
+  --line: #223049;
+  --line-strong: #34486b;
+  /* neutral content */
+  --ink: #e8eef8;
+  --ink-soft: #c2cde0;
+  --muted: #93a2ba;
+  /* CYAN: living relation */
+  --cyan: #58dcff;
+  --cyan-strong: #2ec8f5;
+  --cyan-ink: #04131c;
+  --cyan-glow: rgba(88, 220, 255, 0.28);
+  --cyan-tint: rgba(88, 220, 255, 0.09);
+  /* BLUE: stable / established */
+  --blue: #86abff;
+  --blue-deep: #3d64c9;
+  --blue-ink: #06101f;
+  --blue-tint: rgba(134, 171, 255, 0.1);
+  --blue-glow: rgba(134, 171, 255, 0.22);
+  /* RED: boundary / tension */
+  --red: #ff7b86;
+  --red-soft: #e58d95;
+  --red-deep: #b3323f;
+  --red-tint: rgba(255, 123, 134, 0.09);
+  --red-glow: rgba(255, 123, 134, 0.25);
+  /* origin classes (non-colour carriers exist for each) */
+  --human: #f1e6d2;
+  --human-bg: rgba(241, 230, 210, 0.07);
+  --ai: #cdbcff;
+  --ai-bg: rgba(205, 188, 255, 0.08);
+  /* legacy aliases (F02 components, /decision) */
+  --accent: var(--cyan);
+  --accent-ink: var(--cyan-ink);
+  --authority: var(--blue);
+  --authority-bg: var(--blue-tint);
+  --attention: var(--red-soft);
+  --attention-bg: var(--red-tint);
+  --fault: var(--red);
+  --fault-bg: var(--red-tint);
+  --focus: #ffffff;
+  /* edge grammar (21 §31 → 22 §15) */
+  --edge-open: var(--cyan);
+  --edge-closed: var(--blue);
+  --edge-interrupted: var(--red-soft);
+  --edge-unknown: var(--red);
+  /* type roles */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --type-source: var(--font-serif);
+  --type-system: var(--font-mono);
+  --type-derived: var(--font-sans);
+  --type-evidence: var(--font-sans);
+  --type-proof: var(--font-mono);
+  /* rhythm */
+  --radius: 10px;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
   --space-5: 24px;
   --space-6: 32px;
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #161513;
-    --surface: #1f1d1a;
-    --surface-sunk: #292622;
-    --ink: #eeeae3;
-    --ink-soft: #cfc9bf;
-    --muted: #a39c91;
-    --line: #3a3630;
-    --accent: #9aa9e6;
-    --accent-ink: #151515;
-    --authority: #b7c3ef;
-    --authority-bg: #262c40;
-    --human: #e3b989;
-    --human-bg: #3a2d20;
-    --ai: #cdb6ec;
-    --ai-bg: #33283f;
-    --attention: #e9cf85;
-    --attention-bg: #3a3220;
-    --fault: #eba49e;
-    --fault-bg: #402624;
-    --settled: #9fd0d4;
-    --settled-bg: #213638;
-    --focus: #8fb4ff;
-  }
+  /* motion law (22 §19, §33; doc 23 §15: four layers, ambient slowest) */
+  --motion-relation: 220ms;
+  --motion-settle: 480ms;
+  --motion-breathe: 9s;
+  --motion-rail: 14s;
+  --motion-ambient: 150s;
+  /* topology geometry (presentation only; 22 §3.4; doc 23 §6–§7: frames follow content, radii follow frames) */
+  --core-min: 196px;
+  --core-max: 272px;
+  --node-max-md: 188px;
+  --node-max-sm: 192px;
+  /* legible type minimums (doc 23 §6.1): nothing material below these */
+  --type-node: 0.86rem;
+  --type-node-sm: 0.8rem;
+  --type-meta: 0.74rem;
+  --type-marker: 0.72rem;
+  --rail-h: 64px;
+  /* SF-04 organism tokens (doc 25 §17): motion, field colour, shape */
+  --motion-breath-slow: 12000ms;
+  --motion-breath-medium: 9000ms;
+  --motion-hover-in: 280ms;
+  --motion-hover-out: 420ms;
+  --motion-context-emerge: 640ms;
+  --motion-stabilize: 900ms;
+  --motion-current-drift: 9s; /* relation current drift (doc 25 §8.4: 5–12 s) */
+  --motion-shimmer: 26s; /* idle shimmer (18–32 s) */
+  --motion-micro-orbit: 48s;
+  --ease-organic: cubic-bezier(0.33, 0, 0.2, 1);
+  --ease-resonance: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-settle: cubic-bezier(0.16, 1, 0.3, 1);
+  --field-core-aura: rgba(120, 190, 255, 0.18);
+  --field-core-membrane: rgba(180, 220, 255, 0.16);
+  --field-node-membrane: rgba(180, 220, 255, 0.12);
+  --field-node-active: rgba(150, 215, 255, 0.24);
+  --field-line-idle: rgba(160, 210, 255, 0.16);
+  --field-line-active: rgba(170, 225, 255, 0.46);
+  --field-line-latent: rgba(160, 210, 255, 0.08);
+  --field-focus-ring: rgba(210, 240, 255, 0.86);
+  --radius-core: 999px;
+  --radius-node: 999px;
+  --radius-organ: 32px;
+  --radius-chamber: 22px;
+  --membrane-border: 1px solid rgba(220, 245, 255, 0.16);
+  --membrane-border-active: 1px solid rgba(220, 245, 255, 0.32);
 }
 
 *,
@@ -73,58 +136,282 @@
 *::after {
   box-sizing: border-box;
 }
-
 html {
   -webkit-text-size-adjust: 100%;
 }
-
 body {
   margin: 0;
-  background: var(--bg);
+  background: var(--bg-deep);
   color: var(--ink);
   font-family: var(--font-sans);
   font-size: 16px;
   line-height: 1.55;
+  min-height: 100vh;
 }
-
 a {
-  color: var(--accent);
+  color: var(--cyan);
 }
-
 :focus-visible {
   outline: 3px solid var(--focus);
   outline-offset: 2px;
+  box-shadow: 0 0 0 6px var(--bg-deep);
 }
-
+/* 22 §19.7: reduced motion removes every animation and transition, INCLUDING pseudo-elements
+ * (a bare `*` never matches ::before/::after); meaning stays in text and structure. */
 @media (prefers-reduced-motion: reduce) {
-  * {
+  *,
+  *::before,
+  *::after {
     transition: none !important;
     animation: none !important;
   }
 }
-
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
 .skip-link {
   position: absolute;
   left: -999px;
   top: 0;
   background: var(--surface);
+  color: var(--ink);
   padding: var(--space-2) var(--space-3);
-  z-index: 10;
+  z-index: 40;
 }
 .skip-link:focus {
   left: var(--space-3);
 }
 
-/* ---- shell ---- */
+/* ============================================================ BACKGROUND FIELD (22 §17) */
+.field-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 38%, rgba(61, 100, 201, 0.16), transparent 62%),
+    radial-gradient(ellipse 45% 40% at 18% 90%, rgba(88, 220, 255, 0.07), transparent 60%),
+    radial-gradient(ellipse 40% 35% at 85% 12%, rgba(134, 171, 255, 0.08), transparent 60%),
+    linear-gradient(180deg, #050a15 0%, var(--bg-deep) 100%);
+}
+/* faint constellation structure: static, low contrast, no DOM per dot */
+.field-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(200, 220, 255, 0.28) 0.6px, transparent 1.2px),
+    radial-gradient(circle, rgba(88, 220, 255, 0.18) 0.6px, transparent 1.4px);
+  background-size:
+    160px 160px,
+    260px 260px;
+  background-position:
+    0 0,
+    70px 90px;
+  opacity: 0.55;
+}
+/* breathing luminosity: presentation only. A bounded layer (not the viewport): only this box is recomposited
+   per frame, which keeps constrained machines at full frame rate (measured under 4x CPU throttling). */
+.field-bg::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: 90vmin;
+  height: 90vmin;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, var(--cyan-tint), transparent 70%);
+  will-change: opacity;
+  animation: field-breathe var(--motion-breathe) ease-in-out infinite;
+}
+/* --- nebular drift (doc 23 §5.2): three bounded blobs on their own compositor layers; transform only,
+   ±3 % of the viewport over minutes; low contrast; measured cost in harness/perf-ab.mjs */
+.field-bg .nebula {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+/* two moving blobs (bounded paint area, measured: ≤ ~5 ms/frame at 4x CPU throttle) and one static haze */
+.field-bg .nebula-a {
+  left: -6vmax;
+  top: -12vmax;
+  width: 46vmax;
+  height: 46vmax;
+  background: radial-gradient(circle at 50% 50%, rgba(61, 100, 201, 0.24), rgba(61, 100, 201, 0.06) 45%, transparent 68%);
+  will-change: transform;
+  animation: nebula-a var(--motion-ambient) ease-in-out infinite alternate;
+}
+.field-bg .nebula-b {
+  right: -14vmax;
+  top: 10vmax;
+  width: 40vmax;
+  height: 40vmax;
+  background: radial-gradient(circle at 50% 50%, rgba(88, 220, 255, 0.13), rgba(88, 220, 255, 0.03) 48%, transparent 68%);
+  will-change: transform;
+  animation: nebula-b calc(var(--motion-ambient) * 1.27) ease-in-out infinite alternate;
+}
+.field-bg .nebula-c {
+  left: 14vmax;
+  bottom: -32vmax;
+  width: 64vmax;
+  height: 64vmax;
+  background: radial-gradient(circle at 50% 50%, rgba(134, 171, 255, 0.13), rgba(134, 171, 255, 0.04) 46%, transparent 68%);
+}
+@keyframes nebula-a {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(3vmax, 2vmax, 0);
+  }
+}
+@keyframes nebula-b {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-2.5vmax, 3vmax, 0);
+  }
+}
+/* rare low-energy particles: opacity only, minutes-long */
+.field-bg .particles {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.field-bg .particle {
+  fill: rgba(200, 224, 255, 0.85);
+  opacity: 0;
+  animation: particle-drift 96s ease-in-out infinite;
+}
+@keyframes particle-drift {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.55;
+  }
+  30% {
+    opacity: 0.15;
+  }
+  52% {
+    opacity: 0.7;
+  }
+  70% {
+    opacity: 0.05;
+  }
+}
+.field-bg .traces {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: 900px;
+  height: 900px;
+  transform: translate(-50%, -50%);
+  opacity: 0.5;
+}
+/* The rings are static structure. A continuous rotation of three viewport-sized SVG groups repainted the
+   whole page every frame (measured: ~8-10 fps under 4x CPU throttling, 60 fps without), which made every
+   interaction slow on constrained machines. Motion stays with the breathing layer (compositor-only). */
+.field-bg .drift {
+  transform-origin: 50% 50%;
+}
+.field-bg .drift-2 {
+  transform: rotate(23deg);
+}
+.field-bg .drift-3 {
+  transform: rotate(-41deg);
+}
+/* surface class intensities (22 §17.3): no backend state, only surface class */
+.field-bg[data-regime="access"] {
+  background:
+    radial-gradient(ellipse 55% 45% at 50% 50%, rgba(61, 100, 201, 0.12), transparent 62%),
+    linear-gradient(180deg, #04070f 0%, var(--bg-deep) 100%);
+}
+.field-bg[data-regime="access"]::before,
+.field-bg[data-regime="access"] .drift-2,
+.field-bg[data-regime="access"] .drift-3 {
+  opacity: 0.25;
+}
+.field-bg[data-regime="challenge"]::after {
+  background: radial-gradient(circle at 50% 50%, rgba(88, 220, 255, 0.12), transparent 70%);
+}
+.field-bg[data-regime="session"]::after {
+  background: radial-gradient(circle at 50% 50%, rgba(88, 220, 255, 0.1), transparent 70%);
+}
+.field-bg[data-regime="human-question"]::after {
+  background: radial-gradient(circle at 50% 50%, rgba(88, 220, 255, 0.16), transparent 70%);
+}
+.field-bg[data-regime="frozen"]::after {
+  background: radial-gradient(circle at 50% 50%, rgba(134, 171, 255, 0.14), transparent 70%);
+  animation: none;
+}
+.field-bg[data-regime="boundary"]::after {
+  background: radial-gradient(circle at 50% 50%, rgba(255, 123, 134, 0.1), transparent 70%);
+  animation: none;
+}
+/* opacity only: scaling a viewport-sized gradient layer repainted every frame on software rendering */
+@keyframes field-breathe {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@media (max-width: 860px) {
+  .field-bg .traces {
+    width: 720px;
+    height: 720px;
+  }
+  .field-bg .drift-2,
+  .field-bg .drift-3,
+  .field-bg .nebula-c {
+    display: none;
+  }
+  .field-bg::before {
+    opacity: 0.35;
+  }
+}
+
+/* ============================================================ SHELL, POSITION TRACE */
+/* --- Global orientation rail (doc 23 §9, §10): trace · centred identity · exit, one Field */
 .shell-header {
-  display: flex;
-  flex-wrap: wrap;
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-5);
-  border-bottom: 1px solid var(--line);
-  background: var(--surface);
+  gap: var(--space-4);
+  min-height: var(--rail-h);
+  padding: var(--space-2) var(--space-5);
+  border-bottom: 1px solid rgba(52, 72, 107, 0.55);
+  background: linear-gradient(180deg, rgba(7, 11, 20, 0.82), rgba(7, 11, 20, 0.62));
+}
+.shell-header .trace {
+  grid-column: 1;
+  min-width: 0;
+}
+.shell-header .identity {
+  grid-column: 2;
+  justify-self: center;
+}
+.shell-header .rail-exit {
+  grid-column: 3;
+  justify-self: end;
 }
 .brand {
   font-family: var(--font-serif);
@@ -132,6 +419,78 @@ a {
   letter-spacing: 0.02em;
   color: var(--ink);
   text-decoration: none;
+}
+/* the Access Field's rail: only the centred identity (no trace, no exit before an identity relation exists) */
+.access-rail {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  padding: var(--space-4) var(--space-5) 0;
+}
+.access-rail .identity .identity-word {
+  font-size: 1.5rem;
+}
+/* the designed mark: an orbital glyph + wordmark; product identity only (doc 23 §10.2) */
+.identity {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  color: var(--ink);
+  text-decoration: none;
+  border: 1px solid transparent;
+}
+.identity:hover {
+  border-color: var(--line);
+}
+.identity .identity-mark {
+  width: 26px;
+  height: 26px;
+  flex: none;
+}
+.identity .identity-word {
+  font-family: var(--font-serif);
+  font-size: 1.3rem;
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+.identity .identity-word em {
+  font-style: normal;
+  color: var(--cyan);
+}
+@media (max-width: 860px) {
+  .shell-header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "identity exit"
+      "trace trace";
+    padding: var(--space-2) var(--space-3);
+  }
+  .shell-header .identity {
+    grid-area: identity;
+    justify-self: start;
+  }
+  .shell-header .rail-exit {
+    grid-area: exit;
+  }
+  .shell-header .trace {
+    grid-area: trace;
+  }
+}
+.shell-main {
+  position: relative;
+  z-index: 1;
+  max-width: 1880px; /* the whole viewport is one composition (doc 23 §12) */
+  margin: 0 auto;
+  padding: var(--space-5) var(--space-6);
+}
+@media (max-width: 640px) {
+  .shell-header,
+  .shell-main {
+    padding: var(--space-3);
+  }
 }
 .breadcrumbs ol {
   display: flex;
@@ -147,19 +506,1377 @@ a {
   content: "›";
   margin-right: var(--space-2);
 }
-.shell-main {
-  max-width: 1080px;
-  margin: 0 auto;
-  padding: var(--space-5);
+.field-header .trace {
+  flex: 1 1 auto;
+  min-width: 0;
 }
-@media (max-width: 640px) {
-  .shell-header,
-  .shell-main {
-    padding: var(--space-3);
+.trace ol {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-2);
+  min-width: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.9rem;
+}
+.trace li {
+  position: relative;
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding: 3px 12px;
+  border-radius: 999px;
+  isolation: isolate;
+}
+/* route node membrane: a capsule that brightens for the current position and on encounter */
+.route-membrane {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  border: var(--membrane-border);
+  background: rgba(180, 220, 255, 0.035);
+  opacity: 0.55;
+  z-index: -1;
+  pointer-events: none;
+  transition:
+    opacity var(--motion-hover-in) var(--ease-resonance),
+    box-shadow var(--motion-hover-out) var(--ease-resonance);
+}
+.trace li[data-status="current"] .route-membrane {
+  opacity: 1;
+  border: var(--membrane-border-active);
+  background: rgba(88, 220, 255, 0.08);
+  box-shadow: 0 0 18px var(--cyan-glow);
+  animation: aura-breathe var(--motion-breath-slow) var(--ease-organic) infinite;
+}
+.trace li:hover .route-membrane,
+.trace li:focus-within .route-membrane {
+  opacity: 1;
+  border: var(--membrane-border-active);
+}
+.trace li[data-status="possible"] .route-membrane,
+.trace li[data-status="unavailable"] .route-membrane {
+  border-style: dashed;
+  opacity: 0.4;
+}
+.trace-chip-toggle {
+  display: none;
+}
+/* separator: a short relation trace whose energy breathes very slowly (opacity only; text never moves) */
+.trace li + li::before {
+  content: "" / "";
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  display: inline-block;
+  width: var(--space-2);
+  height: 2px;
+  margin-top: -1px;
+  border-radius: 2px;
+  align-self: center;
+  background: linear-gradient(90deg, rgba(134, 171, 255, 0.15), var(--blue-deep) 55%, var(--cyan));
+  opacity: 0.55;
+  will-change: opacity;
+  animation: rail-energy var(--motion-rail) ease-in-out infinite;
+}
+.trace li:nth-child(3)::before {
+  animation-delay: -4s;
+}
+.trace li:nth-child(4)::before {
+  animation-delay: -8s;
+}
+.trace li:nth-child(5)::before {
+  animation-delay: -11s;
+}
+@keyframes rail-energy {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.trace li[data-status="current"] .trace-label {
+  color: var(--cyan);
+  text-shadow: 0 0 14px var(--cyan-glow);
+}
+.trace li[data-status="established"] {
+  color: var(--muted);
+}
+.trace li[data-status="established"] a {
+  color: var(--blue);
+}
+.trace li[data-status="current"] {
+  color: var(--ink);
+  font-weight: 700;
+}
+.trace li[data-status="possible"] .trace-label {
+  color: var(--cyan);
+  border-bottom: 1px dashed var(--edge-open);
+}
+.trace li[data-status="unavailable"] .trace-label {
+  color: var(--muted);
+  border-bottom: 1px dotted var(--edge-interrupted);
+}
+.trace-status {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+/* ============================================================ TYPE ROLES */
+h1 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: clamp(1.4rem, 2.6vw, 2rem);
+  line-height: 1.2;
+  margin: 0 0 var(--space-2);
+}
+h2 {
+  font-size: 1.05rem;
+  margin: 0 0 var(--space-3);
+}
+h3 {
+  font-size: 0.98rem;
+  margin: var(--space-4) 0 var(--space-2);
+}
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.74rem;
+  color: var(--muted);
+  margin: 0 0 var(--space-1);
+}
+.lede {
+  color: var(--ink-soft);
+  max-width: 62ch;
+  margin: 0;
+}
+.muted {
+  color: var(--muted);
+}
+.mono {
+  font-family: var(--font-mono);
+  font-size: max(0.85em, 0.74rem); /* legible floor (doc 23 §6.1) */
+  word-break: break-all;
+}
+.t-source {
+  font-family: var(--type-source);
+  font-size: 1.05rem;
+}
+.t-system {
+  font-family: var(--type-system);
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+}
+.t-derived {
+  font-family: var(--type-derived);
+  font-style: italic;
+}
+.t-evidence {
+  font-family: var(--type-evidence);
+}
+.t-proof {
+  font-family: var(--type-proof);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  word-break: break-word;
+}
+.t-boundary {
+  font-weight: 600;
+}
+.state {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+/* ============================================================ FIELD STAGE + TOPOLOGY (22 §11, §16, §20, §32) */
+.field-stage {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(700px, 1.1fr) minmax(400px, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+/* the Session Field is the densest surface: its topology gets more of the width (doc 23 §12, §13.5) */
+.field-stage[data-surface="session"] {
+  grid-template-columns: minmax(720px, 1.2fr) minmax(400px, 1fr);
+}
+.field-stage[data-topology="stack"] {
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 1fr);
+  min-height: 0;
+}
+/* the box in which the core and the rings live; presentation geometry only. Its size follows the viewport
+   (doc 23 §7.2, §7.6); the content-aware layout measures it and positions every node from its centre. */
+.topology {
+  position: relative;
+  width: 100%;
+  /* the default height follows the viewport; the content-aware layout raises it (--stage-h) when the frames
+     need more room — text is never shrunk to fit (doc 23 §6.2) */
+  height: max(clamp(600px, calc(100vh - var(--rail-h) - 96px), 900px), var(--stage-h, 0px));
+  min-width: 0;
+}
+.field-stage[data-topology="stack"] .topology,
+.field-stage[data-topology="stack"] .core,
+.field-stage[data-topology="stack"] .orbit {
+  position: static;
+  width: auto;
+  height: auto;
+  max-width: none;
+  transform: none;
+}
+.field-stage[data-topology="stack"] .core {
+  position: relative; /* the breathing glow pseudo-element is positioned against the core */
+  left: auto;
+  top: auto;
+}
+/* --- Instrument constellation (doc 23 §11): one composition, not a sidebar */
+.instruments {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-auto-rows: min-content;
+  align-items: start;
+  gap: var(--space-4);
+  min-width: 0;
+}
+/* wide desktop: the active relation (action / human / frozen / boundary) holds the first column with primary
+   gravity; governance, proof and context compose beside it in the second column (doc 23 §11.3, §11.7) */
+@media (min-width: 1500px) {
+  .instruments {
+    grid-template-columns: minmax(320px, 1.15fr) minmax(300px, 1fr);
+  }
+  .instruments > .plane[data-plane="action"],
+  .instruments > .plane[data-plane="human"],
+  .instruments > .plane[data-plane="frozen"],
+  .instruments > .plane[data-plane="boundary"] {
+    grid-column: 1;
+    grid-row: 1 / span 4;
+  }
+  .instruments > .plane[data-plane="governance"],
+  .instruments > .plane[data-plane="proof"],
+  .instruments > .plane[data-plane="context"] {
+    grid-column: 2;
+  }
+}
+/* tablet (doc 25 §15.3: 768–1199): the field oval takes the width on top, the contextual organ attaches below
+   it and its chambers compose in two columns (SF-03 threshold weakness: two columns of 700 + 400 px never fit
+   between 1100 and 1199 px — the desktop composition now starts at 1200 px) */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .field-stage,
+  .field-stage[data-surface="session"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .topology {
+    max-width: 820px;
+    margin: 0 auto;
+    height: clamp(560px, 92vw, 820px);
+  }
+  /* the organ attaches BELOW the field oval (its desktop column is declared later in the sheet, hence the
+     stage-scoped selector) */
+  .field-stage .organ {
+    grid-column: 1;
+    max-width: 960px;
+    width: 100%;
+    margin: 0 auto;
+  }
+  .instruments {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+  .organ-bridge {
+    display: none;
+  }
+}
+.field-stage[data-topology="stack"] .stack-column {
+  grid-column: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+/* --- Semantic Core Organism (22 §11.1, §12; doc 25 §6): aura → resonance rings → membrane → nucleus → micro-orbit.
+   The `.core` box is the NUCLEUS frame (the geometry measures it); every other layer is absolutely positioned
+   around it and never changes its size. Layers paint with opacity/transform only; the text never moves. */
+.core {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max-content;
+  min-width: var(--core-min);
+  max-width: var(--core-max);
+  min-height: var(--core-min);
+  transform: translate(-50%, -50%);
+  border-radius: 46% / 42%;
+  display: flex;
+  z-index: 3;
+  --core-tone: var(--blue);
+  --core-tone-glow: var(--blue-glow);
+  --core-aura-color: var(--field-core-aura);
+}
+.core[data-core-state="current"],
+.core[data-core-state="human"] {
+  --core-tone: var(--cyan);
+  --core-tone-glow: var(--cyan-glow);
+  --core-aura-color: rgba(88, 220, 255, 0.2);
+}
+.core[data-core-state="frozen"] {
+  --core-tone: var(--blue);
+  --core-tone-glow: var(--blue-glow);
+  --core-aura-color: rgba(134, 171, 255, 0.2);
+}
+.core[data-core-state="boundary"] {
+  --core-tone: var(--red);
+  --core-tone-glow: var(--red-glow);
+  --core-aura-color: rgba(255, 123, 134, 0.14);
+}
+.core[data-core-state="loading"] {
+  --core-tone: var(--line-strong);
+  --core-tone-glow: transparent;
+  --core-aura-color: rgba(160, 210, 255, 0.06);
+}
+.core-nucleus {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  min-height: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-5) var(--space-6);
+  border-radius: inherit;
+  background: radial-gradient(circle at 50% 40%, var(--surface-2) 0%, var(--surface) 70%, var(--bg) 100%);
+  border: 1px solid var(--core-tone);
+  box-shadow:
+    0 0 0 1px var(--core-tone-glow),
+    inset 0 0 30px rgba(7, 11, 20, 0.6);
+}
+.core[data-core-state="loading"] .core-nucleus {
+  border-style: dashed;
+}
+.core-aura,
+.core-rings,
+.core-membrane,
+.core-orbit-trace {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 50%;
+}
+/* outer aura: soft radial presence, breathing by opacity; leans toward the encounter vector (doc 25 §6.4) */
+.core-aura {
+  inset: -38%;
+  background: radial-gradient(circle, var(--core-aura-color) 0%, rgba(120, 190, 255, 0.05) 42%, transparent 68%);
+  opacity: 0.8;
+  transform: translate(calc(var(--vec-x, 0) * 10px * var(--vec-on, 0)), calc(var(--vec-y, 0) * 10px * var(--vec-on, 0)));
+  transition:
+    transform var(--motion-hover-in) var(--ease-resonance),
+    opacity var(--motion-hover-out) var(--ease-resonance);
+  will-change: opacity;
+  animation: aura-breathe var(--motion-breath-slow) var(--ease-organic) infinite;
+  z-index: 0;
+}
+/* resonance rings: three irregular, phase-shifted rings that breathe by scale ≤ 2.4 % and opacity */
+.core-rings {
+  inset: -16%;
+  z-index: 1;
+  transform: translate(calc(var(--vec-x, 0) * 6px * var(--vec-on, 0)), calc(var(--vec-y, 0) * 6px * var(--vec-on, 0)));
+  transition: transform var(--motion-hover-in) var(--ease-resonance);
+}
+.core-ring {
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--core-tone);
+  opacity: 0.22;
+  border-radius: 48% 52% 50% 47% / 51% 46% 54% 49%;
+  animation: ring-breathe var(--motion-breath-medium) var(--ease-organic) infinite;
+}
+.core-ring[data-ring="2"] {
+  inset: -9%;
+  border-radius: 52% 48% 47% 53% / 46% 54% 49% 51%;
+  opacity: 0.14;
+  animation-delay: -3s;
+  animation-duration: calc(var(--motion-breath-medium) * 1.25);
+}
+.core-ring[data-ring="3"] {
+  inset: -19%;
+  border-radius: 49% 51% 53% 47% / 53% 48% 52% 47%;
+  opacity: 0.09;
+  animation-delay: -6s;
+  animation-duration: calc(var(--motion-breath-medium) * 1.5);
+}
+/* membrane: the boundary glow just outside the nucleus */
+.core-membrane {
+  inset: -3px;
+  border-radius: 46% / 42%;
+  box-shadow:
+    0 0 44px var(--core-tone-glow),
+    0 0 0 1px var(--field-core-membrane);
+  z-index: 2;
+  will-change: transform;
+  animation: membrane-breathe var(--motion-breath-slow) var(--ease-organic) infinite;
+}
+/* micro-orbit trace: one faint particle on a slow continuity orbit — 48 s, never a spinner (doc 25 §6.5).
+   The LAYER never rotates (a rotating box sweeps its bounding box past the viewport on phones); the dot travels
+   an ellipse inscribed in the layer (CSS motion path), so nothing ever leaves the layer's box. */
+.core-orbit-trace {
+  inset: -11%;
+  z-index: 2;
+}
+.core-orbit-dot {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--core-tone);
+  opacity: 0.45;
+  box-shadow: 0 0 8px var(--core-tone-glow);
+  offset-path: ellipse(50% 50% at 50% 50%);
+  offset-rotate: 0deg;
+  animation: micro-orbit var(--motion-micro-orbit) linear infinite;
+}
+.core[data-core-state="loading"] .core-orbit-trace,
+.core[data-core-state="boundary"] .core-orbit-trace {
+  display: none;
+}
+.core .eyebrow {
+  margin-bottom: var(--space-1);
+}
+.core-title {
+  font-family: var(--font-serif);
+  font-size: 1.06rem;
+  line-height: 1.28;
+  margin: 0;
+  color: var(--ink);
+  overflow-wrap: anywhere; /* never clamped, never clipped (doc 23 §6.2) */
+}
+.core-state {
+  margin-top: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--type-marker);
+  color: var(--cyan);
+  letter-spacing: 0.04em;
+}
+.core[data-core-state="frozen"] .core-state {
+  color: var(--blue);
+}
+.core[data-core-state="boundary"] .core-state {
+  color: var(--red);
+}
+.core-meta {
+  margin-top: var(--space-1);
+  font-size: var(--type-meta);
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+@keyframes aura-breathe {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+@keyframes ring-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.1;
+  }
+  50% {
+    transform: scale(1.024);
+    opacity: 0.28;
+  }
+}
+@keyframes membrane-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.012);
+  }
+}
+@keyframes micro-orbit {
+  from {
+    offset-distance: 0%;
+  }
+  to {
+    offset-distance: 100%;
   }
 }
 
-/* ---- layout primitives ---- */
+/* --- Orbit (22 §11.2, §13): a <ul> in semantic order; geometry from unit-circle custom properties */
+.orbit {
+  position: absolute;
+  inset: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.orbit-paths {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  z-index: 1;
+}
+.orbit-paths .ring {
+  fill: none;
+  stroke: var(--line-strong);
+  stroke-width: 1;
+  stroke-dasharray: 2 6;
+  opacity: 0.7;
+}
+.orbit-paths .ring[data-orbit="governance"] {
+  stroke: var(--blue-deep);
+  stroke-dasharray: none;
+  opacity: 0.55;
+}
+.orbit-paths .path {
+  fill: none;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+.orbit-paths .path[data-path="established"] {
+  stroke: var(--blue);
+  opacity: 0.6;
+}
+.orbit-paths .path[data-path="current"] {
+  stroke: var(--cyan);
+  stroke-width: 2;
+  opacity: 0.95;
+  animation: path-pulse 3.5s ease-in-out infinite;
+}
+.orbit-paths .path[data-path="possible"] {
+  stroke: var(--cyan);
+  stroke-dasharray: 5 5;
+  opacity: 0.85;
+}
+.orbit-paths .path[data-path="unavailable"] {
+  stroke: var(--red-soft);
+  stroke-dasharray: 2 6;
+  opacity: 0.6;
+}
+.orbit-paths .path[data-path="denied"] {
+  stroke: var(--red);
+  opacity: 0.9;
+}
+.orbit-paths .path[data-path="loading"] {
+  stroke: var(--line-strong);
+  stroke-dasharray: 2 8;
+  opacity: 0.5;
+}
+.orbit-paths .path[data-path="governance"],
+.orbit-paths .path[data-path="authority"] {
+  stroke: var(--blue);
+  opacity: 0.75;
+}
+.orbit-paths .path[data-path="historical"],
+.orbit-paths .path[data-path="dependency"] {
+  stroke: var(--muted);
+  opacity: 0.45;
+  stroke-dasharray: 1 4;
+}
+@keyframes path-pulse {
+  0%,
+  100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+/* --- Relational Current System (doc 25 §8): the relation's visual class (from the projection rules, on the DOM)
+   decides the motion law. Base path = the SF-03 colour law above (by canonical path state); the current layer
+   drifts along it; endpoints resonate. `--w` is the projected relation weight. */
+.orbit-paths .relation {
+  --current: var(--field-line-active);
+}
+.orbit-paths .relation[data-path="possible"],
+.orbit-paths .relation[data-path="current"] {
+  --current: var(--cyan);
+}
+.orbit-paths .relation[data-path="governance"],
+.orbit-paths .relation[data-path="authority"],
+.orbit-paths .relation[data-path="established"] {
+  --current: var(--blue);
+}
+.orbit-paths .path-base {
+  stroke-width: calc(1 + 0.8 * var(--w, 0.7));
+}
+/* the current: an HTML pulse on a CSS motion path over the same arc (transform animation on its own compositor
+   layer; the SVG stays static and never repaints for motion — measured: SVG dash animation cost ~10 ms/frame at
+   ×4 throttle). One pulse per non-latent relation; a latent relation is a static dotted trace without current. */
+.currents {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+.current-pulse {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: var(--current, var(--field-line-active));
+  box-shadow: 0 0 8px var(--current, var(--field-line-active));
+  opacity: 0.7;
+  offset-rotate: 0deg;
+  offset-distance: 0%;
+  will-change: transform;
+  transition: opacity var(--motion-hover-out) var(--ease-resonance);
+}
+.current-pulse[data-path="possible"],
+.current-pulse[data-path="current"] {
+  --current: var(--cyan);
+}
+.current-pulse[data-path="governance"],
+.current-pulse[data-path="authority"],
+.current-pulse[data-path="established"] {
+  --current: var(--blue);
+}
+/* directional: the pulse travels source → target (reverse for target → source) */
+.current-pulse[data-relation-type="directional"] {
+  animation: current-travel var(--motion-current-drift) linear infinite;
+}
+.current-pulse[data-direction="target-to-source"] {
+  animation-direction: reverse;
+}
+/* reciprocal: the pulse alternates between both ends (canonical mutuality only) */
+.current-pulse[data-relation-type="reciprocal"] {
+  animation: current-travel var(--motion-current-drift) var(--ease-organic) infinite alternate;
+}
+/* context: the active phase current breathes in place, midway on the arc */
+.current-pulse[data-relation-type="context"] {
+  offset-distance: 55%;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  animation: current-breathe var(--motion-breath-medium) var(--ease-organic) infinite;
+}
+.orbit-paths .relation[data-relation-type="latent"] .path-base {
+  stroke-dasharray: 2 6;
+}
+.orbit-paths .endpoint {
+  fill: var(--current);
+  opacity: 0.5;
+  transition:
+    opacity var(--motion-hover-in) var(--ease-resonance),
+    r var(--motion-hover-in) var(--ease-resonance);
+}
+.orbit-paths .relation[data-relation-type="latent"] .endpoint {
+  opacity: 0.25;
+}
+/* encounter (doc 25 §13.1): the current of the encountered relation activates */
+.orbit-paths .relation[data-resonating] .path-base {
+  opacity: 1;
+  stroke-width: calc(1.6 + 0.8 * var(--w, 0.7));
+}
+.current-pulse[data-resonating] {
+  opacity: 1;
+  animation-duration: calc(var(--motion-current-drift) / 2);
+}
+.orbit-paths .relation[data-resonating][data-relation-type="latent"] .path-base {
+  opacity: 0.85;
+}
+.orbit-paths .relation[data-resonating] .endpoint {
+  opacity: 1;
+  r: 4.5;
+}
+@keyframes current-travel {
+  from {
+    offset-distance: 0%;
+  }
+  to {
+    offset-distance: 100%;
+  }
+}
+@keyframes current-breathe {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+/* --- Living Field Entity (22 §11.3, §14; doc 25 §7): aura → membrane (.node-body) → surface → label → role.
+   `--mass` (from the projected semanticWeight through the geometry) scales the frame's padding and the aura's
+   presence — never the type (doc 23 §6.1 floors hold). `--tone-*` come from the projected visualTone. */
+.node {
+  position: absolute;
+  left: calc(50% + var(--x, 0px));
+  top: calc(50% + var(--y, 0px));
+  transform: translate(-50%, -50%);
+  width: max-content;
+  max-width: var(--node-max-md);
+  z-index: 2;
+  --tone: var(--blue);
+  --tone-glow: var(--blue-glow);
+}
+.node[data-tone="living"] {
+  --tone: var(--cyan);
+  --tone-glow: var(--cyan-glow);
+}
+.node[data-tone="boundary"] {
+  --tone: var(--red-soft);
+  --tone-glow: var(--red-glow);
+}
+.node[data-tone="neutral"] {
+  --tone: var(--line-strong);
+  --tone-glow: rgba(160, 210, 255, 0.1);
+}
+.node-aura {
+  position: absolute;
+  inset: calc(-6px - 8px * (var(--mass, 1) - 0.9));
+  border-radius: var(--radius-node);
+  background: radial-gradient(ellipse at center, var(--tone-glow) 0%, transparent 72%);
+  opacity: calc(0.28 + 0.5 * (var(--weight, 0.7) - 0.4));
+  pointer-events: none;
+  z-index: -1;
+  transition:
+    opacity var(--motion-hover-out) var(--ease-resonance),
+    transform var(--motion-hover-out) var(--ease-resonance);
+}
+.node-role {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--tone);
+  opacity: 0.8;
+  vertical-align: middle;
+}
+.node-role[data-role="core-adjacent"] {
+  box-shadow: 0 0 8px var(--tone-glow);
+}
+.node-role[data-role="peripheral"] {
+  opacity: 0.45;
+}
+.node-body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+  text-align: center;
+  padding: calc(9px + 4px * (var(--mass, 1) - 0.9)) calc(14px + 6px * (var(--mass, 1) - 0.9));
+  min-height: 44px;
+  border-radius: var(--radius-node);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--type-node);
+  line-height: 1.3;
+  max-width: 100%;
+  overflow-wrap: anywhere; /* text never escapes the frame (doc 23 §6.2) */
+  text-decoration: none;
+  cursor: default;
+  transition:
+    box-shadow var(--motion-relation) ease,
+    border-color var(--motion-relation) ease,
+    transform var(--motion-relation) ease;
+}
+a.node-body,
+button.node-body {
+  cursor: pointer;
+  width: 100%;
+}
+a.node-body:hover,
+button.node-body:hover {
+  transform: translateY(-1px);
+}
+.node-label {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}
+.node-meta {
+  font-size: var(--type-meta);
+  color: var(--muted);
+  overflow-wrap: anywhere; /* long authority tokens (SESSION_CONTROL_RIGHT) stay inside the node */
+  max-width: 100%;
+}
+.node-marker {
+  font-family: var(--font-mono);
+  font-size: var(--type-marker);
+  letter-spacing: 0.06em;
+}
+/* low-gravity lifecycle phases (doc 23 §13.5): quieter colour and border, never smaller or hidden text */
+.node[data-emphasis="low"] .node-body {
+  border-color: var(--line);
+  background: rgba(14, 21, 36, 0.7);
+}
+.node[data-emphasis="low"] .node-label {
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+/* node states: each also carries a text label (.node-marker / visually-hidden) */
+.node[data-node-state="established"] .node-body {
+  border-color: var(--blue-deep);
+  box-shadow: 0 0 18px rgba(134, 171, 255, 0.12);
+}
+.node[data-node-state="established"] .node-marker {
+  color: var(--blue);
+}
+.node[data-node-state="current"] .node-body {
+  border-color: var(--cyan);
+  box-shadow: 0 0 22px var(--cyan-glow);
+}
+.node[data-node-state="current"] .node-marker,
+.node[data-node-state="possible"] .node-marker {
+  color: var(--cyan);
+}
+.node[data-node-state="possible"] .node-body {
+  border: 1px dashed var(--cyan);
+  background: linear-gradient(var(--cyan-tint), var(--cyan-tint)), var(--surface); /* opaque: paths never show through text */
+  color: var(--ink);
+  box-shadow: 0 0 24px var(--cyan-glow);
+}
+.node[data-node-state="unavailable"] .node-body {
+  border: 1px dotted var(--red-soft);
+  background: linear-gradient(transparent, transparent), var(--surface); /* opaque: paths never show through text */
+  color: var(--muted);
+}
+.node[data-node-state="unavailable"] .node-marker,
+.node[data-node-state="denied"] .node-marker {
+  color: var(--red-soft);
+}
+.node[data-node-state="denied"] .node-body {
+  border-color: var(--red);
+  background: linear-gradient(var(--red-tint), var(--red-tint)), var(--surface); /* opaque: paths never show through text */
+}
+.node[data-node-state="loading"] .node-body {
+  border-style: dashed;
+  color: var(--muted);
+  animation: node-shimmer 2.4s ease-in-out infinite;
+}
+.node[data-node-state="unknown"] .node-body {
+  border: 1px dashed var(--red-soft);
+  color: var(--muted);
+}
+.node[data-node-state="frozen"] .node-body {
+  border-color: var(--blue);
+  background: linear-gradient(var(--blue-tint), var(--blue-tint)), var(--surface); /* opaque: paths never show through text */
+}
+.node[data-node-state="frozen"] .node-marker {
+  color: var(--blue);
+}
+.node[data-node-state="human"] .node-body {
+  border-color: rgba(241, 230, 210, 0.45);
+  background: linear-gradient(var(--human-bg), var(--human-bg)), var(--surface); /* opaque: paths never show through text */
+  font-family: var(--font-sans);
+}
+.node[data-node-state="human"] .node-marker {
+  color: var(--human);
+}
+.node[data-node-state="governance"] .node-body {
+  border-color: var(--blue);
+  background: linear-gradient(var(--blue-tint), var(--blue-tint)), var(--surface); /* opaque: paths never show through text */
+}
+.node[data-node-state="governance"] .node-marker {
+  color: var(--blue);
+}
+.node[data-node-size="sm"] {
+  max-width: var(--node-max-sm);
+}
+/* a narrow stage compacts md frames (they wrap earlier); the type keeps its size (doc 23 §7.6, §6.2) */
+.topology[data-compact] .node[data-node-size="md"] {
+  max-width: 160px;
+}
+.node[data-node-size="sm"] .node-body {
+  padding: 6px 11px;
+  min-height: 34px;
+  font-size: var(--type-node-sm);
+  border-radius: 18px;
+}
+.node[data-node-size="dot"] {
+  max-width: 40px;
+}
+.node[data-node-size="dot"] .node-body {
+  min-height: 32px;
+  width: 32px;
+  padding: 0;
+  font-size: var(--type-node-sm);
+  justify-content: center;
+}
+.node[aria-current="step"] .node-body,
+.node[data-node-state="current"] .node-body {
+  font-weight: 700;
+}
+@keyframes node-shimmer {
+  0%,
+  100% {
+    border-color: var(--line);
+  }
+  50% {
+    border-color: var(--line-strong);
+  }
+}
+
+/* --- Orbit-to-stack transformation (22 §32.4–§32.6): same DOM, same order, connectors instead of rings */
+@media (max-width: 767px) {
+  .field-stage,
+  .field-stage[data-surface="session"],
+  .field-stage[data-topology="stack"] {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    min-height: 0;
+  }
+  .plane-column,
+  .stack-column {
+    display: contents;
+  }
+  .topology,
+  .core,
+  .orbit {
+    position: static;
+    width: auto;
+    height: auto;
+    max-width: none;
+    transform: none;
+  }
+  .topology {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: var(--space-3) 0;
+  }
+  .stage-atmosphere {
+    position: fixed;
+    inset: 0;
+    height: 100vh;
+  }
+  .node,
+  .node[data-node-size="sm"],
+  .node[data-node-size="dot"],
+  .topology[data-compact] .node[data-node-size="md"] {
+    max-width: 100%;
+  }
+  /* the core keeps its organism anatomy in the flow: the nucleus is the frame, the layers stay around it */
+  .core {
+    position: relative;
+    left: auto;
+    top: auto;
+    margin: var(--space-4) auto var(--space-5);
+    max-width: min(var(--core-max), 100%);
+  }
+  /* the layers stay inside the phone's width: the core is bounded (also in stack mode, below) and the layer
+     insets shrink — presence, not overflow */
+  .core-aura {
+    inset: -18%;
+  }
+  .core-rings {
+    inset: -6%;
+  }
+  .core-ring[data-ring="2"] {
+    inset: -4%;
+  }
+  .core-ring[data-ring="3"] {
+    inset: -9%;
+  }
+  .core-orbit-trace {
+    inset: -8%;
+  }
+  .core-title {
+    -webkit-line-clamp: unset;
+    display: block;
+  }
+  .orbit-paths,
+  .currents {
+    display: none;
+  }
+  /* breathing constellation: a wrapping cluster of capsules in semantic order (doc 25 §15.4) */
+  .orbit {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: stretch;
+    gap: var(--space-2) var(--space-2);
+    padding: 0 var(--space-1);
+  }
+  /* static, so the orbit offsets (left/top from --x/--y) never apply in the constellation; the aura anchors to
+     the membrane (.node-body is positioned) */
+  .node {
+    position: static;
+    width: fit-content; /* the capsule sizes to its membrane, never to its unwrapped text; the longest word is the floor */
+    max-width: calc(100vw - 2 * var(--space-3) - 2 * var(--space-1));
+    transform: none;
+    flex: 0 1 auto;
+  }
+  .node::before {
+    content: none;
+  }
+  .node-body {
+    height: 100%;
+    justify-content: center;
+    width: auto;
+    max-width: 100%;
+  }
+  .node[data-node-size="sm"] .node-body,
+  .node[data-node-size="dot"] .node-body {
+    min-height: 40px;
+    padding: var(--space-1) var(--space-3);
+    font-size: var(--type-node-sm);
+  }
+  /* the ring's numeric marker duplicates the (now visible) label */
+  .node[data-node-size="dot"] .node-meta {
+    display: none;
+  }
+  .node[data-node-size="dot"] {
+    max-width: 100%;
+  }
+  .node[data-node-size="dot"] .node-body {
+    width: auto;
+  }
+  .node[data-node-size="dot"] .node-label.assistive {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    clip: auto;
+    overflow: visible;
+    white-space: normal;
+  }
+}
+/* stack mode on any width (too many nodes for a ring; doc 23 §7.6 compacted representation): the same DOM as a
+   breathing constellation — capsules in semantic order around the core, no rows, no rings (doc 25 §15.2) */
+.field-stage[data-topology="stack"] .topology {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-3) 0;
+}
+.field-stage[data-topology="stack"] .orbit {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: stretch;
+  gap: var(--space-2);
+  padding: 0 var(--space-1);
+}
+.field-stage[data-topology="stack"] .orbit-paths,
+.field-stage[data-topology="stack"] .currents {
+  display: none;
+}
+.field-stage[data-topology="stack"] .node,
+.field-stage[data-topology="stack"] .node[data-node-size="sm"],
+.field-stage[data-topology="stack"] .node[data-node-size="dot"],
+.field-stage[data-topology="stack"] .topology[data-compact] .node[data-node-size="md"] {
+  position: static; /* the orbit offsets never apply in the constellation */
+  width: auto;
+  max-width: 100%;
+  transform: none;
+  flex: 0 1 auto;
+}
+.field-stage[data-topology="stack"] .node-body {
+  height: 100%;
+  justify-content: center;
+  max-width: min(320px, 100%);
+}
+.field-stage[data-topology="stack"] .node[data-node-size="sm"] .node-body,
+.field-stage[data-topology="stack"] .node[data-node-size="dot"] .node-body {
+  min-height: 40px;
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--type-node-sm);
+}
+.field-stage[data-topology="stack"] .node[data-node-size="dot"] .node-meta {
+  display: none;
+}
+.field-stage[data-topology="stack"] .node[data-node-size="dot"] .node-label.assistive {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
+  clip: auto;
+  overflow: visible;
+  white-space: normal;
+}
+.field-stage[data-topology="stack"] .core {
+  position: relative;
+  left: auto;
+  top: auto;
+  margin: var(--space-4) auto var(--space-5);
+  max-width: min(var(--core-max), 100%); /* the nucleus never stretches to the row; the layers stay bounded */
+}
+.orbit-heading {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.74rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: var(--bg-deep);
+  padding: 0 var(--space-2);
+  z-index: 2;
+}
+@media (max-width: 767px) {
+  .orbit-heading,
+  .field-stage[data-topology="stack"] .orbit-heading {
+    position: static;
+    transform: none;
+    padding: 0;
+    background: transparent;
+    margin-bottom: var(--space-1);
+  }
+}
+.field-stage[data-topology="stack"] .orbit-heading {
+  position: static;
+  transform: none;
+  padding: 0;
+  background: transparent;
+}
+
+/* ============================================================ RELATIONAL RECIPROCITY (doc 23 §8, §15.3)
+   Presentation-only response of the relation family under focus/hover; keyboard focus sets the same attribute.
+   Nothing here changes a state, a marker or a capability; text keeps its colour and contrast. */
+.orbit-paths .path,
+.plane,
+.node-body {
+  transition:
+    opacity var(--motion-relation) ease,
+    stroke-width var(--motion-relation) ease,
+    border-color var(--motion-relation) ease,
+    box-shadow var(--motion-relation) ease;
+}
+.field-stage[data-active-relation="action"] .plane[data-relation="action"],
+.field-stage[data-active-relation="governance"] .plane[data-relation="governance"],
+.field-stage[data-active-relation="proof"] .plane[data-relation="proof"],
+.field-stage[data-active-relation="context"] .plane[data-relation="context"] {
+  border-color: var(--cyan);
+  box-shadow:
+    0 0 0 1px var(--cyan-glow),
+    0 0 28px var(--cyan-glow);
+}
+.field-stage[data-active-relation="action"] .orbit[data-relation="action"] .node-body,
+.field-stage[data-active-relation="governance"] .orbit[data-relation="governance"] .node-body,
+.field-stage[data-active-relation="proof"] .orbit[data-relation="proof"] .node-body {
+  border-color: var(--cyan);
+  box-shadow: 0 0 18px var(--cyan-glow);
+}
+.field-stage[data-active-relation="action"] .orbit-paths[data-orbit="containment"] .path,
+.field-stage[data-active-relation="action"] .orbit-paths[data-orbit="capability"] .path,
+.field-stage[data-active-relation="action"] .orbit-paths[data-orbit="lifecycle"] .path,
+.field-stage[data-active-relation="governance"] .orbit-paths[data-orbit="governance"] .path,
+.field-stage[data-active-relation="governance"] .orbit-paths[data-orbit="participation"] .path {
+  opacity: 1;
+  stroke-width: 2;
+}
+
+/* ============================================================ ENCOUNTER CASCADE (doc 25 §13)
+   hover / focus on a field entity → its aura and membrane → its relation current (above) → the core leans
+   (--vec) → the organ's mirrored relation token and chamber preview → the atmosphere wash. Identical for keyboard
+   focus (the stage writes the same attributes). Nothing here selects, commits or implies authority. */
+.node[data-resonating] .node-aura,
+.node:hover .node-aura,
+.node:focus-within .node-aura {
+  opacity: 1;
+  transform: scale(1.08);
+  transition-duration: var(--motion-hover-in);
+}
+.node[data-resonating] .node-body,
+.node:hover .node-body,
+.node:focus-within .node-body {
+  border-color: var(--tone);
+  box-shadow:
+    0 0 0 1px var(--field-node-active),
+    0 0 26px var(--tone-glow);
+  transition-duration: var(--motion-hover-in);
+}
+.node-main:focus-visible {
+  outline: 2px solid var(--field-focus-ring);
+  outline-offset: 3px;
+  border-radius: 999px;
+}
+.field-stage[data-encounter] .core-aura {
+  opacity: 1;
+}
+[data-relation-key] {
+  transition:
+    color var(--motion-hover-in) var(--ease-resonance),
+    text-shadow var(--motion-hover-in) var(--ease-resonance);
+}
+[data-relation-key][data-resonating] {
+  color: var(--cyan);
+  text-shadow: 0 0 12px var(--cyan-glow);
+}
+.chamber {
+  transition:
+    background-color var(--motion-stabilize) var(--ease-settle),
+    box-shadow var(--motion-stabilize) var(--ease-settle);
+}
+.chamber[data-chamber-resonating] {
+  background-color: rgba(150, 215, 255, 0.05);
+  box-shadow: inset 0 0 0 1px rgba(220, 245, 255, 0.12);
+}
+
+/* ============================================================ CONTEXTUAL SEMANTIC ORGAN (doc 25 §10)
+   One body grown from the active state: shell → membrane header → chambers (the instruments) → bridge to the
+   field. Chambers share the organ's surface and are divided by membranes, never boxed as cards. */
+.organ {
+  grid-column: 2;
+  position: relative;
+  min-width: 0;
+  border-radius: var(--radius-organ);
+  /* a solid membrane surface: full-size gradients and an inset blur rasterize per pixel over the whole organ
+     (measured: 2.5× slower full-page capture on phones); depth comes from the membrane border and the outer shadow */
+  background: rgba(12, 20, 34, 0.94);
+  border: var(--membrane-border);
+  box-shadow:
+    0 0 0 1px rgba(134, 171, 255, 0.04),
+    0 28px 60px rgba(2, 5, 12, 0.45);
+  padding: var(--space-3) var(--space-3) var(--space-4);
+  overflow-wrap: anywhere; /* long identifiers wrap inside the organ (doc 23 §6.4) */
+  animation: organ-emerge var(--motion-context-emerge) var(--ease-settle) both;
+}
+/* the bridge: a faint relation from the field into the organ (decorative) */
+.organ-bridge {
+  position: absolute;
+  top: 88px;
+  right: 100%;
+  width: var(--space-5);
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--field-line-active));
+  opacity: 0.6;
+  pointer-events: none;
+}
+.organ-bridge::after {
+  content: "";
+  position: absolute;
+  right: -3px;
+  top: -2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--field-line-active);
+}
+.organ-header {
+  padding: var(--space-2) var(--space-3) var(--space-3);
+  margin: 0 var(--space-1) var(--space-2);
+  border-bottom: var(--membrane-border);
+}
+.organ-header .eyebrow {
+  margin-bottom: 2px;
+}
+.organ-title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  line-height: 1.3;
+  color: var(--ink);
+}
+.organ-state {
+  margin: var(--space-1) 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--type-marker);
+  letter-spacing: 0.04em;
+  color: var(--cyan);
+}
+.organ-body {
+  gap: var(--space-3);
+}
+.plane {
+  position: relative;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-chamber);
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  box-shadow: none;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+/* membrane between consecutive chambers (not a box around each) */
+.plane + .plane::before {
+  content: "";
+  position: absolute;
+  left: var(--space-4);
+  right: var(--space-4);
+  top: calc(-1 * var(--space-3) / 2);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(220, 245, 255, 0.16) 30%, rgba(220, 245, 255, 0.16) 70%, transparent);
+}
+/* the chamber's relation family, as a membrane accent on its edge (colour + the chamber heading in text) */
+.plane::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: var(--space-4);
+  bottom: var(--space-4);
+  width: 2px;
+  border-radius: 2px;
+  background: var(--chamber-tone, var(--line-strong));
+  opacity: 0.7;
+}
+.plane .mono {
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
+.plane > h2:first-child,
+.plane > h3:first-child {
+  margin-top: 0;
+}
+.plane[data-plane="action"],
+.plane[data-plane="human"] {
+  --chamber-tone: var(--cyan);
+}
+.plane[data-plane="governance"],
+.plane[data-plane="frozen"] {
+  --chamber-tone: var(--blue);
+}
+.plane[data-plane="proof"] {
+  --chamber-tone: var(--line-strong);
+}
+.plane[data-plane="boundary"] {
+  --chamber-tone: var(--red);
+}
+.plane[data-plane="human"] {
+  box-shadow: inset 0 0 40px rgba(88, 220, 255, 0.05);
+}
+.plane[data-plane="frozen"] {
+  box-shadow: inset 0 0 40px rgba(134, 171, 255, 0.05);
+}
+@keyframes organ-emerge {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (max-width: 767px) {
+  /* membrane sheet (doc 25 §15.4): the organ grows from the bottom of the field, edge to edge */
+  .organ {
+    margin: var(--space-2) calc(-1 * var(--space-3)) 0;
+    border-radius: var(--radius-organ) var(--radius-organ) 0 0;
+    border-bottom: 0;
+    padding: var(--space-3) var(--space-2) calc(var(--space-4) + env(safe-area-inset-bottom));
+  }
+  .organ-bridge {
+    display: none;
+  }
+  .plane {
+    padding: var(--space-3) var(--space-3) var(--space-4);
+  }
+}
+/* legacy layout primitives (F02 components, /decision) */
 .stack > * + * {
   margin-top: var(--space-4);
 }
@@ -180,48 +1897,48 @@ a {
   border-radius: var(--radius);
   padding: var(--space-4) var(--space-5);
 }
-@media (max-width: 640px) {
-  .panel {
-    padding: var(--space-3) var(--space-4);
-  }
-}
 .panel > h2,
 .panel > h3 {
   margin-top: 0;
 }
-.eyebrow {
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-size: 0.72rem;
-  color: var(--muted);
-  margin: 0 0 var(--space-1);
+.field-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: start;
 }
-h1 {
-  font-family: var(--font-serif);
-  font-weight: 600;
-  font-size: clamp(1.5rem, 3vw, 2.1rem);
-  line-height: 1.2;
-  margin: 0 0 var(--space-2);
+.field-layout[data-columns="1"] {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 760px;
 }
-h2 {
-  font-size: 1.1rem;
-  margin: 0 0 var(--space-3);
+.field-primary > * + *,
+.field-secondary > * + * {
+  margin-top: var(--space-4);
 }
-.lede {
-  color: var(--ink-soft);
-  max-width: 62ch;
-  margin: 0;
+@media (max-width: 860px) {
+  .field-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
-.muted {
-  color: var(--muted);
+.field-zone {
+  border-radius: var(--radius);
+  padding: var(--space-4) var(--space-5);
+  background: rgba(14, 21, 36, 0.86);
+  border: 1px solid var(--line);
 }
-.mono {
-  font-family: var(--font-mono);
-  font-size: 0.85em;
-  word-break: break-all;
+.field-zone > h2:first-child,
+.field-zone > h3:first-child {
+  margin-top: 0;
+}
+.field-zone[data-field-zone="centre"] {
+  border-color: var(--line-strong);
+}
+.field-zone[data-field-zone="outer"],
+.field-zone[data-field-zone="depth"] {
+  background: rgba(10, 16, 28, 0.7);
 }
 
-/* ---- forms ---- */
+/* ============================================================ FORMS, BUTTONS (instruments) */
 .field {
   display: flex;
   flex-direction: column;
@@ -239,9 +1956,9 @@ select,
 textarea {
   font: inherit;
   color: var(--ink);
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 6px;
+  background: var(--surface-sunk);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
   padding: 10px 12px;
   width: 100%;
   min-height: 44px;
@@ -250,24 +1967,34 @@ textarea {
   min-height: 88px;
   resize: vertical;
 }
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  border-color: var(--cyan);
+}
 .button {
   font: inherit;
-  font-weight: 600;
+  font-weight: 700;
   min-height: 44px;
   padding: 10px 18px;
-  border-radius: 6px;
-  border: 1px solid var(--accent);
-  background: var(--accent);
-  color: var(--accent-ink);
+  border-radius: 999px;
+  border: 1px solid var(--cyan);
+  background: var(--cyan);
+  color: var(--cyan-ink);
   cursor: pointer;
+  transition: box-shadow var(--motion-relation) ease;
+}
+.button:hover {
+  box-shadow: 0 0 22px var(--cyan-glow);
 }
 .button[disabled] {
-  opacity: 0.55;
+  opacity: 0.5;
   cursor: progress;
+  box-shadow: none;
 }
 .button.secondary {
   background: transparent;
-  color: var(--accent);
+  color: var(--cyan);
 }
 .actions-row {
   display: flex;
@@ -276,75 +2003,164 @@ textarea {
   margin-top: var(--space-4);
 }
 
-/* ---- status semantics (text + color, never color alone) ---- */
+/* ============================================================ EFFECT + BOUNDARY SURFACES (22 §28, §30) */
+.effect-intent {
+  margin: var(--space-3) 0 0;
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px dashed var(--edge-open);
+  color: var(--ink-soft);
+}
+.effect-outcome,
+.read-boundary,
 .outcome {
-  border-radius: var(--radius);
+  margin: var(--space-3) 0 0;
   padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius);
   border: 1px solid var(--line);
-  margin: var(--space-3) 0;
+  background: rgba(10, 16, 28, 0.85);
+  animation: relation-settle var(--motion-settle) ease-out;
 }
-.outcome strong {
-  display: block;
+.effect-outcome p,
+.read-boundary p {
+  margin: 0;
 }
+.effect-outcome p + p,
+.read-boundary p + p {
+  margin-top: var(--space-1);
+}
+.effect-outcome .button {
+  margin-top: var(--space-3);
+}
+/* committed = confirmed relation: BLUE, closed edge (22 §18.2); never green, never cyan-as-success */
+.effect-outcome[data-consequence="committed"],
 .outcome[data-outcome="committed"] {
-  background: var(--settled-bg);
-  border-color: var(--settled);
+  border: 1px solid var(--edge-closed);
+  background: var(--blue-tint);
 }
-.outcome[data-outcome="stale"],
-.outcome[data-outcome="blocked"] {
-  background: var(--attention-bg);
-  border-color: var(--attention);
-}
+/* no effect: interrupted edge (RED, restrained) */
+.effect-outcome[data-consequence="none"],
+.read-boundary,
 .outcome[data-outcome="denied"],
 .outcome[data-outcome="rejected"],
 .outcome[data-outcome="failed_precommit"],
+.outcome[data-outcome="not_found"],
+.outcome[data-outcome="stale"],
+.outcome[data-outcome="blocked"] {
+  border-left: 4px solid var(--edge-interrupted);
+}
+/* unknown consequence: neither open nor closed */
+.effect-outcome[data-consequence="unknown"],
 .outcome[data-outcome="network_failure"],
-.outcome[data-outcome="indeterminate"],
-.outcome[data-outcome="not_found"] {
-  background: var(--fault-bg);
-  border-color: var(--fault);
+.outcome[data-outcome="indeterminate"] {
+  border: 2px dashed var(--edge-unknown);
+}
+.effect-detail {
+  color: var(--ink-soft);
+}
+.reconstruction-note {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: 1px dashed var(--edge-interrupted);
+  border-radius: 8px;
+  font-size: 0.9rem;
 }
 .unavailable {
-  border-left: 3px solid var(--attention);
-  background: var(--attention-bg);
+  border-left: 3px dotted var(--red-soft);
+  background: var(--red-tint);
   padding: var(--space-2) var(--space-3);
-  border-radius: 0 6px 6px 0;
+  border-radius: 0 8px 8px 0;
   font-size: 0.93rem;
+  color: var(--ink-soft);
+}
+@keyframes relation-settle {
+  from {
+    transform: translateY(3px);
+    border-color: var(--line-strong);
+  }
+  to {
+    transform: none;
+  }
+}
+/* loading placeholders never imply count or identity (22 §28.9, falsifier 43) */
+.projection-pending {
+  color: var(--muted);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius);
+  padding: var(--space-3) var(--space-4);
+}
+
+/* ============================================================ PROOF DEPTH (22 §2.14, §16.4) */
+.proof-depth > summary {
+  cursor: pointer;
+  font-weight: 600;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--blue);
+  list-style: none;
+}
+.proof-depth > summary::-webkit-details-marker {
+  display: none;
+}
+.proof-depth > summary::before {
+  content: "▸" / "";
+  display: inline-block;
+  width: 1em;
+  flex: none;
+}
+.proof-depth[open] > summary::before {
+  content: "▾" / "";
+}
+.proof-depth-body {
+  margin-top: var(--space-2);
+  color: var(--ink-soft);
+}
+.proof-depth-body .plain-list > li {
+  padding: var(--space-2) 0;
+}
+.provenance {
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+}
+.provenance dt {
+  font-weight: 600;
   color: var(--ink);
 }
+.provenance dd {
+  margin: 0 0 var(--space-2);
+}
+
+/* ============================================================ TAGS, LISTS, ORIGIN */
 .tag {
   display: inline-block;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
   padding: 2px 8px;
   border-radius: 999px;
   border: 1px solid currentColor;
   vertical-align: middle;
 }
 .tag.authority {
-  color: var(--authority);
-  background: var(--authority-bg);
+  color: var(--blue);
+  background: var(--blue-tint);
 }
 .tag.human {
   color: var(--human);
   background: var(--human-bg);
+  border-style: double;
 }
 .tag.ai {
   color: var(--ai);
   background: var(--ai-bg);
+  border-style: dashed;
 }
 .tag.fixture {
-  color: var(--attention);
-  background: var(--attention-bg);
+  color: var(--muted);
+  background: transparent;
+  border-style: dotted;
 }
-.state {
-  font-family: var(--font-mono);
-  font-weight: 700;
-  letter-spacing: 0.03em;
-}
-
-/* ---- lists ---- */
 .plain-list {
   list-style: none;
   margin: 0;
@@ -366,8 +2182,14 @@ textarea {
 .card-link:hover {
   text-decoration: underline;
 }
+.origin[data-origin="system-state"] .state {
+  font-size: 0.8rem;
+}
+.origin[data-origin="human-source"] {
+  font-family: var(--type-source);
+}
 
-/* ---- inquiry position (phase stepper) ---- */
+/* lifecycle list in the legacy layout (kept for /decision and any non-Field use) */
 .phases {
   list-style: none;
   counter-reset: phase;
@@ -397,298 +2219,1438 @@ textarea {
   color: var(--ink-soft);
 }
 .phases li[data-status="current"] {
-  background: var(--authority-bg);
-  color: var(--authority);
+  background: var(--cyan-tint);
+  color: var(--cyan);
   font-weight: 700;
 }
 .phases .phase-status {
   margin-left: auto;
   font-size: 0.75rem;
 }
-@media (max-width: 640px) {
-  .phases li[data-status="upcoming"]:not(:nth-of-type(-n + 5)) {
-    display: none;
-  }
-}
 
-.provenance {
-  font-size: 0.9rem;
-  color: var(--ink-soft);
-}
-.provenance dt {
-  font-weight: 600;
-  color: var(--ink);
-}
-.provenance dd {
-  margin: 0 0 var(--space-2);
-}
-
-/* F03: protected Burst surface. Verbatim text is shown exactly as stored. */
+/* F03: verbatim human text is shown exactly as stored (HUMAN SOURCE type role) */
 .question-list {
   list-style: none;
   margin: 0;
   padding: 0;
 }
-
 .question-list > li {
   padding: var(--space-3) 0;
   border-bottom: 1px solid var(--line);
 }
-
 .question-list > li:last-child {
   border-bottom: 0;
 }
-
 .verbatim {
   margin: var(--space-2) 0 0;
   padding: var(--space-3);
   background: var(--surface-sunk);
+  border: 1px solid var(--line);
   border-radius: var(--radius);
   font-family: var(--font-serif);
   font-size: 1.05rem;
+  color: var(--human);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
-
-/*
- * ---- SF-01 symbiotic foundation (docs/implementation/frontend/21 §30–§35) ----
- * Append-only: no F02 rule above is changed (the Session page, F03 contact
- * zone, still renders with them). Every distinction here also exists in text,
- * structure or an accessible name. Color reinforces, never defines (21 §31).
- */
-:root {
-  /* typographic roles (21 §32) */
-  --type-source: var(--font-serif);
-  --type-system: var(--font-mono);
-  --type-derived: var(--font-sans);
-  --type-evidence: var(--font-sans);
-  --type-proof: var(--font-mono);
-  /* edge grammar (21 §31): open continuation / committed closure / interruption / unknown */
-  --edge-open: var(--accent);
-  --edge-closed: var(--settled);
-  --edge-interrupted: var(--attention);
-  --edge-unknown: var(--fault);
-  /* motion explains relation change only (21 §33) */
-  --motion-relation: 180ms;
+.frozen-artifact .verbatim {
+  border-color: var(--blue-deep);
 }
 
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-.t-source {
-  font-family: var(--type-source);
-  font-size: 1.05rem;
-}
-.t-system {
-  font-family: var(--type-system);
-  font-size: 0.85rem;
-  letter-spacing: 0.02em;
-}
-.t-derived {
-  font-family: var(--type-derived);
-  font-style: italic;
-}
-.t-evidence {
-  font-family: var(--type-evidence);
-}
-.t-proof {
-  font-family: var(--type-proof);
-  font-size: 0.82rem;
-  line-height: 1.45;
-  word-break: break-word;
-}
-.t-boundary {
-  font-weight: 600;
-}
-
-/* ---- relation trace (21 §12): closed past, dominant present, non-guaranteed future ---- */
-.field-header .trace {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-.trace ol {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--space-1) var(--space-2);
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  font-size: 0.9rem;
-}
-.trace li + li::before {
-  content: "→" / "";
-  margin-right: var(--space-2);
-  color: var(--muted);
-}
-.trace li[data-status="established"] {
-  color: var(--muted);
-}
-.trace li[data-status="current"] {
-  color: var(--ink);
-  font-weight: 700;
-}
-.trace li[data-status="possible"] .trace-label {
-  border-bottom: 1px dashed var(--edge-open);
-}
-.trace li[data-status="unavailable"] .trace-label {
-  color: var(--muted);
-  border-bottom: 1px dotted var(--edge-interrupted);
-}
-.trace-status {
-  font-size: 0.75rem;
-  color: var(--muted);
-}
-
-/* ---- field layout (21 §30, §34): DOM order is the relational (mobile) order ---- */
-.field-layout {
+/* ============================================================ ACCESS FIELD (22 §21) */
+.access-field {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
   display: grid;
-  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
-  gap: var(--space-5);
-  align-items: start;
+  place-items: center;
+  padding: var(--space-5);
 }
-.field-layout[data-columns="1"] {
-  grid-template-columns: minmax(0, 1fr);
-  max-width: 760px;
+.access-core {
+  width: min(440px, 100%);
+  padding: var(--space-6) var(--space-5);
+  border-radius: 24px;
+  background: radial-gradient(circle at 50% 0%, var(--surface-2), var(--surface) 60%, var(--bg) 100%);
+  border: 1px solid var(--line-strong);
+  box-shadow:
+    0 0 0 1px rgba(134, 171, 255, 0.1),
+    0 0 60px var(--blue-glow);
 }
-.field-primary > * + *,
-.field-secondary > * + * {
+.access-core .brand {
+  font-size: 1.6rem;
+}
+.access-core form {
   margin-top: var(--space-4);
 }
-@media (max-width: 860px) {
-  .field-layout {
-    grid-template-columns: minmax(0, 1fr);
-  }
+.access-core .actions-row {
+  margin-top: var(--space-4);
 }
-.field-zone {
-  border-radius: var(--radius);
-  padding: var(--space-4) var(--space-5);
-}
-.field-zone > h2:first-child,
-.field-zone > h3:first-child {
-  margin-top: 0;
-}
-.field-zone[data-field-zone="centre"] {
-  background: var(--surface);
-  border: 1px solid var(--ink-soft);
-}
-.field-zone[data-field-zone="near"] {
-  background: var(--surface);
-  border: 1px solid var(--line);
-}
-/* outer field and depth: reduced density, still present */
-.field-zone[data-field-zone="outer"],
-.field-zone[data-field-zone="depth"] {
-  background: transparent;
-  border: 1px solid var(--line);
-}
-@media (max-width: 640px) {
-  .field-zone {
-    padding: var(--space-3) var(--space-4);
-  }
-}
-
-/* ---- effect & boundary surfaces (21 §14, §17, §22) ---- */
-.effect-intent {
+.access-status {
   margin: var(--space-3) 0 0;
-  padding: var(--space-2) var(--space-3);
-  border-left: 3px dashed var(--edge-open);
   color: var(--ink-soft);
 }
-.effect-outcome,
-.read-boundary {
-  margin: var(--space-3) 0 0;
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius);
-  border: 1px solid var(--line);
-  animation: relation-settle var(--motion-relation) ease-out;
+
+/* node control inside the pill: the marker is a sibling, so accessible names stay exact */
+.node-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  color: inherit;
+  text-decoration: none;
+  font: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: default;
+  min-width: 0;
 }
-.effect-outcome p,
-.read-boundary p {
-  margin: 0;
+a.node-main,
+button.node-main {
+  cursor: pointer;
 }
-.effect-outcome p + p,
-.read-boundary p + p {
-  margin-top: var(--space-1);
+a.node-main:hover .node-label,
+button.node-main:hover .node-label {
+  text-decoration: underline;
 }
-.effect-outcome .button {
-  margin-top: var(--space-3);
+button.node-main[disabled] {
+  cursor: progress;
+  opacity: 0.6;
 }
-/* committed: closed edge */
-.effect-outcome[data-consequence="committed"] {
-  border: 1px solid var(--edge-closed);
-  background: var(--settled-bg);
+/* constellation capsules keep the column anatomy (label over meta over marker) at every width */
+
+/* lifecycle: lawful later states are neutral, never red (22 §18.3 "red must be selective") */
+.node[data-node-state="future"] .node-body {
+  border-color: var(--line);
+  color: var(--muted);
+  background: transparent;
 }
-/* no effect: the path is interrupted, the field is not painted as failed */
-.effect-outcome[data-consequence="none"],
-.read-boundary {
-  border-left: 4px solid var(--edge-interrupted);
+.node[data-node-state="future"] .node-marker {
+  color: var(--muted);
 }
-/* unknown: neither open nor closed */
-.effect-outcome[data-consequence="unknown"] {
-  border: 2px dashed var(--edge-unknown);
+
+/* ============================================================ ATMOSPHERIC MEDIUM OF THE FIELD BOX (doc 25 §12)
+   A pressure zone around the core (breathing opacity) and a resonance wash that leans toward the encounter vector
+   (--vec-x/--vec-y written by the stage). Decorative; opacity/transform only; the background field (.field-bg)
+   stays the ambient layer beneath. */
+.stage-atmosphere {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+  border-radius: 40%;
 }
-.reconstruction-note {
-  margin: 0 0 var(--space-3);
-  padding: var(--space-2) var(--space-3);
-  border: 1px dashed var(--edge-interrupted);
-  border-radius: 6px;
-  font-size: 0.9rem;
+.pressure-zone {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(72%, 720px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(120, 190, 255, 0.09) 0%, rgba(120, 190, 255, 0.035) 40%, transparent 68%);
+  opacity: 0.85; /* static presence: the breathing lives on the core's aura (measured cost of a second large
+                    breathing layer: ~10 ms/frame at ×4 throttle on the Workspaces field) */
 }
-@keyframes relation-settle {
-  from {
-    opacity: 0.35;
+.resonance-wash {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(60%, 600px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(88, 220, 255, 0.1) 0%, rgba(88, 220, 255, 0.03) 45%, transparent 70%);
+  opacity: 0;
+  transform: translate(calc(-50% + var(--vec-x, 0) * 22%), calc(-50% + var(--vec-y, 0) * 22%));
+  transition:
+    opacity var(--motion-hover-out) var(--ease-resonance),
+    transform var(--motion-stabilize) var(--ease-settle);
+}
+.field-stage[data-encounter] .resonance-wash {
+  opacity: 0.75;
+  transition-duration: var(--motion-hover-in), var(--motion-stabilize);
+}
+.field-stage[data-surface="workspace-access"] .pressure-zone {
+  opacity: 0.6;
+}
+.field-stage[data-topology="stack"] .stage-atmosphere {
+  border-radius: 0;
+}
+/* focus parity (doc 25 §18.3): the same ring on every field control */
+.trace a:focus-visible,
+.trace-chip-toggle:focus-visible,
+.organ a:focus-visible,
+.organ button:focus-visible,
+.organ summary:focus-visible {
+  outline: 2px solid var(--field-focus-ring);
+  outline-offset: 2px;
+}
+/* phone: the trace compresses to the current route node as a chip; the toggle reveals the whole route */
+@media (max-width: 767px) {
+  .trace {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
   }
-  to {
-    opacity: 1;
+  .trace-chip-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    min-height: 32px;
+    padding: 0 var(--space-2);
+    border-radius: 999px;
+    border: var(--membrane-border);
+    background: rgba(180, 220, 255, 0.05);
+    color: var(--ink-soft);
+    font: inherit;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+  .trace-chip-toggle[aria-expanded="true"] {
+    border: var(--membrane-border-active);
+    color: var(--cyan);
+  }
+  /* collapsed route nodes stay in the accessibility tree (the route is still announced, links still reachable);
+     only their visual presence is compressed into the chip */
+  .trace:not([data-expanded]) li:not([data-status="current"]) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+  .trace:not([data-expanded]) li + li::before {
+    display: none;
+  }
+  .trace ol {
+    gap: var(--space-1) var(--space-3);
+  }
+  .trace li[data-status="current"] .trace-label {
+    overflow-wrap: anywhere;
+  }
+}
+/* compact phones (doc 25 §15.5: < 390 px): tighter capsules, same type floors */
+@media (max-width: 389px) {
+  :root {
+    --core-max: 248px; /* the nucleus and its layers (aura −18 %) stay inside 360 px */
+  }
+  .node-body {
+    padding: 7px 10px;
+  }
+  .core-nucleus {
+    padding: var(--space-4) var(--space-4);
+  }
+  .organ {
+    padding-left: var(--space-1);
+    padding-right: var(--space-1);
   }
 }
 
-/* ---- proof depth (21 §15, §40) ---- */
-/* The flex summary drops the native marker, so the open/closed state is drawn
- * explicitly: a proof depth must look openable without hover (21 §35). The
- * marker is decorative for assistive tech (`/ ""`); <details> already exposes
- * expanded/collapsed. */
-.proof-depth > summary {
-  cursor: pointer;
-  font-weight: 600;
-  min-height: 44px;
+/* ============================================================ SF-05 — RIGHT_CONTEXT_ORGAN v2 (doc 26 §15–§26, §33)
+   One contextual organism of differentiated semantic chambers: dark translucent chambers, fine cyan contours, local
+   nuclei, luminous internal relations. Solid surfaces and bounded pseudo-elements only (doc 26 §36): no full-size
+   gradients, no large blur. Every chamber carries `data-semantic`; the tone tokens below make the classes distinct
+   while the text carries every meaning. */
+.organ {
+  background: rgba(9, 15, 27, 0.93);
+  border: 1px solid rgba(88, 220, 255, 0.14);
+  box-shadow:
+    0 0 0 1px rgba(88, 220, 255, 0.03),
+    0 28px 60px rgba(2, 5, 12, 0.45);
+}
+/* context nucleus: the organ header grows from the field's core state */
+.organ-header {
+  position: relative;
+  padding-left: calc(var(--space-3) + 22px);
+}
+.organ-header::before {
+  content: "";
+  position: absolute;
+  left: var(--space-3);
+  top: calc(var(--space-2) + 10px);
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow:
+    0 0 0 4px rgba(88, 220, 255, 0.12),
+    0 0 0 8px rgba(88, 220, 255, 0.05),
+    0 0 14px var(--cyan-glow);
+}
+.organ-body {
+  gap: var(--space-3);
+}
+.plane.chamber {
+  --chamber-tone: var(--line-strong);
+  --chamber-tone-glow: rgba(160, 210, 255, 0.12);
+  position: relative;
+  padding: var(--space-3) var(--space-4) var(--space-4) calc(var(--space-4) + 6px);
+  border-radius: var(--radius-chamber);
+  background: rgba(14, 22, 38, 0.5);
+  border: 1px solid rgba(160, 210, 255, 0.07);
+}
+.plane.chamber + .plane.chamber::before {
+  display: none; /* chambers are bodies of one organ now; the membrane dividers give way to contours */
+}
+.plane.chamber::after {
+  left: 0;
+  top: 18px;
+  bottom: 18px;
+  width: 2px;
+  opacity: 0.9;
+  background: var(--chamber-tone);
+  box-shadow: 0 0 10px var(--chamber-tone-glow);
+}
+/* technical contour: two small bracket corners in the chamber's tone (bounded pseudo-elements) */
+.chamber-contour {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+}
+.chamber-contour::before,
+.chamber-contour::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--chamber-tone);
+  opacity: 0.6;
+}
+.chamber-contour::before {
+  right: 10px;
+  top: 10px;
+  border-left: 0;
+  border-bottom: 0;
+  border-top-right-radius: 6px;
+}
+.chamber-contour::after {
+  right: 10px;
+  bottom: 10px;
+  border-left: 0;
+  border-top: 0;
+  border-bottom-right-radius: 6px;
+}
+.plane.chamber[data-semantic="action"],
+.plane.chamber[data-semantic="context"] {
+  --chamber-tone: var(--cyan);
+  --chamber-tone-glow: var(--cyan-glow);
+}
+.plane.chamber[data-semantic="authority"] {
+  --chamber-tone: var(--blue);
+  --chamber-tone-glow: var(--blue-glow);
+}
+.plane.chamber[data-semantic="participation"] {
+  --chamber-tone: rgba(241, 230, 210, 0.75);
+  --chamber-tone-glow: rgba(241, 230, 210, 0.16);
+}
+.plane.chamber[data-semantic="proof"] {
+  --chamber-tone: rgba(160, 210, 255, 0.7);
+  --chamber-tone-glow: rgba(160, 210, 255, 0.14);
+  background: rgba(10, 16, 28, 0.55);
+}
+.plane.chamber[data-semantic="question"] {
+  --chamber-tone: var(--human);
+  --chamber-tone-glow: rgba(241, 230, 210, 0.18);
+  box-shadow: inset 0 0 40px rgba(88, 220, 255, 0.05);
+}
+.plane.chamber[data-semantic="frozen"] {
+  --chamber-tone: var(--blue);
+  --chamber-tone-glow: var(--blue-glow);
+  box-shadow: inset 0 0 40px rgba(134, 171, 255, 0.05);
+}
+.plane.chamber[data-semantic="boundary"] {
+  --chamber-tone: var(--red-soft);
+  --chamber-tone-glow: var(--red-glow);
+}
+.plane.chamber[data-semantic="identity"] {
+  --chamber-tone: var(--cyan-strong);
+  --chamber-tone-glow: var(--cyan-glow);
+}
+.plane.chamber[data-semantic="identifiers"] {
+  --chamber-tone: var(--muted);
+}
+.plane.chamber[data-semantic="confirmation"] {
+  --chamber-tone: var(--red);
+  --chamber-tone-glow: var(--red-glow);
+}
+.plane.chamber[data-semantic="decision-entry"] {
+  --chamber-tone: var(--blue); /* markers are small type: the tone must keep AA contrast on the chamber surface */
+  --chamber-tone-glow: var(--blue-glow);
+}
+/* chamber head: glyph · title · canonical marker */
+.chamber-head {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  color: var(--accent);
-  list-style: none;
+  gap: 10px;
+  margin: 0 0 var(--space-3);
+  min-width: 0;
 }
-.proof-depth > summary::-webkit-details-marker {
-  display: none;
-}
-.proof-depth > summary::before {
-  content: "▸" / "";
-  display: inline-block;
-  width: 1em;
-  flex: none;
-}
-.proof-depth[open] > summary::before {
-  content: "▾" / "";
-}
-.proof-depth-body {
+.chamber-head + .chamber-head,
+.chamber-action .chamber-head {
   margin-top: var(--space-2);
+}
+.chamber-glyph {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  fill: none;
+  stroke: var(--chamber-tone);
+  stroke-width: 1.3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 4px var(--chamber-tone-glow));
+}
+.chamber-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+h3.chamber-title {
+  font-size: 0.92rem;
+}
+.chamber-marker {
+  margin-left: auto;
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  color: var(--chamber-tone);
+  border: 1px solid var(--chamber-tone);
+  padding: 2px 8px;
+  border-radius: 999px;
+  opacity: 0.9;
+  max-width: 46%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chamber-lede {
+  margin: 0 0 var(--space-3);
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+}
+.chamber-action {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px dashed rgba(160, 210, 255, 0.14);
+}
+.identity-facts {
+  list-style: none;
+  margin: 0 0 var(--space-2);
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  font-size: 0.92rem;
+}
+.identity-facts li::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 8px;
+  background: var(--chamber-tone);
+  vertical-align: middle;
+  opacity: 0.8;
+}
+.human-position {
+  margin: var(--space-2) 0 0;
+  color: var(--human);
+  font-size: 0.88rem;
+}
+/* form controls inside chambers (doc 26 §33): contained, relation-aware focus, less border noise */
+.chamber input,
+.chamber select,
+.chamber textarea {
+  background: rgba(7, 11, 20, 0.6);
+  border: 1px solid rgba(160, 210, 255, 0.16);
+  border-radius: 10px;
+  transition:
+    border-color var(--motion-hover-in) var(--ease-resonance),
+    box-shadow var(--motion-hover-in) var(--ease-resonance);
+}
+.chamber input:focus-visible,
+.chamber select:focus-visible,
+.chamber textarea:focus-visible {
+  border-color: var(--chamber-tone);
+  box-shadow: 0 0 0 3px var(--chamber-tone-glow);
+  outline: 2px solid var(--field-focus-ring); /* focus visibility is never removed (doc 26 §34) */
+  outline-offset: 2px;
+}
+.chamber .button {
+  box-shadow: 0 0 14px rgba(88, 220, 255, 0.18);
+}
+.chamber .button:hover {
+  box-shadow: 0 0 26px var(--cyan-glow);
+}
+.chamber .button.secondary {
+  box-shadow: none;
+}
+/* --- authority as a relation: SOURCE → AUTHORITY → HOLDER → SCOPE (doc 26 §20) */
+.authority-chain {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+.authority-relation {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 6px 4px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(7, 11, 20, 0.45);
+  border: 1px solid rgba(134, 171, 255, 0.12);
+}
+.authority-relation[data-held="true"] {
+  border-color: rgba(88, 220, 255, 0.4);
+  box-shadow: inset 0 0 0 1px rgba(88, 220, 255, 0.08);
+}
+.chain-node {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1 1 110px;
+}
+.chain-role {
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.chain-value {
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+  overflow-wrap: anywhere;
+}
+.chain-value.tag {
+  align-self: flex-start;
+  overflow-wrap: normal; /* an authority class breaks only at its own underscores (<wbr>), never mid-word */
+  word-break: keep-all;
+}
+.chain-you {
+  color: var(--cyan);
+  font-weight: 600;
+}
+.chain-link {
+  flex: none;
+  align-self: center;
+  width: 14px;
+  height: 1px;
+  margin-top: 12px;
+  background: linear-gradient(90deg, rgba(134, 171, 255, 0.2), var(--blue));
+}
+.chain-node[data-role="scope"] .chain-value {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+/* --- participation roster: one person, several relation marks (doc 26 §21) */
+.roster {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.roster-person {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px dashed rgba(160, 210, 255, 0.12);
+}
+.roster-person:last-child {
+  border-bottom: 0;
+}
+.relation-marks {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-left: auto;
+}
+.relation-mark {
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px dotted var(--muted);
+  color: var(--muted);
+}
+.relation-mark[data-relation-kind="participant"] {
+  border: 1px double var(--human);
+  color: var(--human);
+  background: var(--human-bg);
+}
+.relation-mark[data-relation-kind="controller"],
+.relation-mark[data-relation-kind="governance-root"] {
+  border: 1px solid var(--blue);
+  color: var(--blue);
+  background: var(--blue-tint);
+  box-shadow: 0 0 10px rgba(134, 171, 255, 0.18);
+}
+.relation-mark[data-relation-kind="you"] {
+  border: 1px solid var(--cyan);
+  color: var(--cyan);
+}
+/* --- provenance spine (doc 26 §22) */
+.spine {
+  list-style: none;
+  margin: 0 0 var(--space-3);
+  padding: 4px 0 0 18px;
+  position: relative;
+}
+.spine::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 10px;
+  bottom: 10px;
+  width: 1px;
+  background: linear-gradient(180deg, rgba(160, 210, 255, 0.35), rgba(160, 210, 255, 0.08));
+}
+.spine-step {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  padding: 2px 0 10px 8px;
+}
+.spine-point {
+  position: absolute;
+  left: -18px;
+  top: 7px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--blue);
+  box-shadow: 0 0 8px var(--blue-glow);
+}
+.spine-step[data-kind="state"] .spine-point {
+  background: var(--cyan);
+  box-shadow: 0 0 10px var(--cyan-glow);
+}
+.spine-step[data-kind="commit"] .spine-point {
+  background: var(--ink);
+  box-shadow: 0 0 8px rgba(232, 238, 248, 0.4);
+}
+.spine-label {
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.spine-value {
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+/* --- identifiers (doc 26 §23): contained tokens, copyable, never a title */
+.identifiers {
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+.identifier dt {
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.identifier dd {
+  margin: 2px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.token {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  color: var(--ink-soft);
+  background: rgba(7, 11, 20, 0.6);
+  border: 1px solid rgba(160, 210, 255, 0.12);
+  border-radius: 6px;
+  padding: 3px 8px;
+  overflow-wrap: normal;
+  word-break: keep-all;
+  min-width: 0;
+}
+.copy-token {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid rgba(160, 210, 255, 0.16);
+  border-radius: 8px;
+  color: var(--muted);
+  cursor: pointer;
+}
+.copy-token svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+}
+.copy-token:hover,
+.copy-token:focus-visible {
+  color: var(--cyan);
+  border-color: var(--cyan);
+}
+/* --- boundary language (doc 26 §26): classes differ in edge, tone and words; none is an alert */
+.boundary-mark {
+  display: grid;
+  grid-template-columns: 8px minmax(0, 1fr);
+  gap: 2px 12px;
+  margin: var(--space-2) 0 0;
+  padding: 8px 12px 8px 10px;
+  border-radius: 10px;
+  background: rgba(10, 16, 28, 0.6);
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+}
+.boundary-edge {
+  grid-row: 1 / 3;
+  border-left: 2px dashed var(--red-soft);
+  border-radius: 2px;
+}
+.boundary-class {
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--red-soft);
+}
+.boundary-text {
+  grid-column: 2;
+}
+.boundary-mark[data-boundary="NOT_YET_AVAILABLE"] .boundary-edge {
+  border-left: 2px dotted var(--muted);
+}
+.boundary-mark[data-boundary="NOT_YET_AVAILABLE"] .boundary-class {
+  color: var(--muted);
+}
+.boundary-mark[data-boundary="MISSING_AUTHORITY"] .boundary-edge {
+  border-left: 2px solid var(--blue);
+}
+.boundary-mark[data-boundary="MISSING_AUTHORITY"] .boundary-class {
+  color: var(--blue);
+}
+.boundary-mark[data-boundary="MISSING_PARTICIPATION"] .boundary-edge {
+  border-left: 3px double var(--human);
+}
+.boundary-mark[data-boundary="MISSING_PARTICIPATION"] .boundary-class {
+  color: var(--human);
+}
+.boundary-mark[data-boundary="MISSING_PREREQUISITE"] .boundary-edge {
+  border-left: 2px dashed var(--line-strong);
+}
+.boundary-mark[data-boundary="MISSING_PREREQUISITE"] .boundary-class {
   color: var(--ink-soft);
 }
-.proof-depth-body .plain-list > li {
-  padding: var(--space-2) 0;
+.boundary-mark[data-boundary="IRREVERSIBLE_CONFIRMATION"] .boundary-edge,
+.boundary-mark[data-boundary="SEMANTIC_PROHIBITION"] .boundary-edge {
+  border-left: 3px solid var(--red);
+}
+.boundary-mark[data-boundary="IRREVERSIBLE_CONFIRMATION"] .boundary-class,
+.boundary-mark[data-boundary="SEMANTIC_PROHIBITION"] .boundary-class {
+  color: var(--red);
+}
+.boundary-mark[data-boundary="CURRENTLY_POSSIBLE"] .boundary-edge {
+  border-left: 2px solid var(--cyan);
+}
+.boundary-mark[data-boundary="CURRENTLY_POSSIBLE"] .boundary-class {
+  color: var(--cyan);
+}
+/* --- protected human question surface (doc 26 §24) */
+.question-surface {
+  position: relative;
+  padding: 12px 14px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(241, 230, 210, 0.28);
+  background: rgba(12, 18, 30, 0.7);
+  transition: box-shadow var(--motion-hover-in) var(--ease-resonance);
+}
+.question-surface:focus-within {
+  box-shadow:
+    0 0 0 1px rgba(241, 230, 210, 0.25),
+    0 0 30px rgba(88, 220, 255, 0.14);
+}
+.question-seal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  color: var(--human);
+}
+.question-surface textarea {
+  font-family: var(--font-serif);
+  font-size: 1.02rem;
+  color: var(--human);
+  border-color: rgba(241, 230, 210, 0.22);
+}
+.question-surface textarea:focus-visible {
+  border-color: var(--human);
+  box-shadow: 0 0 0 3px rgba(241, 230, 210, 0.14);
+}
+/* the human question field resonates with the core while the human writes (projection-local, no state) */
+.field-stage[data-active-relation="action"] .core[data-core-state="human"] .core-aura {
+  opacity: 1;
+}
+/* --- irreversible confirmation chamber (doc 26 §32) */
+.confirmation-chamber {
+  margin-top: var(--space-3);
+  padding: 12px 16px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--red);
+  background: rgba(30, 10, 14, 0.35);
+  box-shadow: inset 0 0 0 1px rgba(255, 123, 134, 0.12);
+}
+.confirmation-chamber .chamber-head {
+  margin-bottom: var(--space-2);
+}
+.confirmation-facts {
+  list-style: none;
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+}
+.fact-label {
+  display: inline-block;
+  min-width: 11em;
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--red-soft);
+}
+/* --- frozen artifacts (doc 26 §25) */
+.frozen-seal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 var(--space-2);
+  padding: 8px 12px;
+  border: 1px solid var(--blue);
+  border-radius: 12px;
+  background: var(--blue-tint);
+}
+.artifact {
+  position: relative;
+  padding-left: 12px;
+  border-left: 2px solid var(--blue-deep);
+}
+.artifact .verbatim {
+  border-color: var(--blue-deep);
+  box-shadow: inset 0 0 0 1px rgba(134, 171, 255, 0.08);
+}
+.artifact[data-immutable="true"] .verbatim {
+  cursor: default;
+  user-select: text;
+}
+/* --- a committed, re-read outcome is a quiet proof line; the event system carries the moment (doc 26 §27) */
+.effect-outcome[data-quiet="true"] {
+  background: transparent;
+  border: 0;
+  border-left: 2px solid var(--blue);
+  border-radius: 0;
+  padding: 4px 12px;
+  animation: none;
+}
+.effect-outcome[data-quiet="true"] .effect-title {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--blue);
+}
+.effect-outcome[data-quiet="true"] .effect-reconstruction,
+.effect-outcome[data-quiet="true"] .effect-detail {
+  font-size: 0.85rem;
 }
 
-/* ---- origin grammar (21 §16) ---- */
-.origin[data-origin="system-state"] .state {
+/* ============================================================ SF-05 — COMMIT RESONANCE EVENT (doc 26 §27)
+   A small resonance bloom at the bottom centre after a confirmed effect: nucleus → aura → text → particles → hold →
+   collapse. Composited transforms and opacity only; bounded size; pointer-events none; one event at a time. */
+:root {
+  --motion-event-life: 6800ms;
+}
+.field-event {
+  position: fixed;
+  left: 50%;
+  bottom: max(28px, env(safe-area-inset-bottom));
+  z-index: 40;
+  width: min(440px, calc(100vw - 32px));
+  transform: translateX(-50%);
+  text-align: center;
+  pointer-events: none;
+  padding: 26px 20px 14px;
+  animation: event-life var(--motion-event-life) var(--ease-organic) both;
+}
+.event-nucleus {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow:
+    0 0 10px var(--cyan),
+    0 0 26px var(--cyan-glow);
+  animation: event-nucleus var(--motion-event-life) var(--ease-resonance) both;
+}
+.event-aura {
+  position: absolute;
+  left: 50%;
+  top: 5px;
+  width: 140px;
+  height: 140px;
+  margin: -70px 0 0 -70px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(88, 220, 255, 0.28) 0%, rgba(88, 220, 255, 0.08) 40%, transparent 68%);
+  will-change: transform, opacity;
+  animation: event-aura var(--motion-event-life) var(--ease-resonance) both;
+}
+.event-particles {
+  position: absolute;
+  left: 50%;
+  top: 5px;
+}
+.event-particle {
+  position: absolute;
+  left: -2px;
+  top: -2px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 6px var(--cyan-glow);
+  transform: rotate(var(--a)) translateY(0);
+  will-change: transform, opacity;
+  animation: event-particle var(--motion-event-life) var(--ease-resonance) both;
+}
+.event-title {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  color: var(--cyan);
+  text-shadow: 0 0 12px var(--cyan-glow);
+}
+.event-text {
+  margin: 6px 0 0;
+  font-size: 0.95rem;
+  color: var(--ink);
+  text-shadow: 0 1px 12px rgba(3, 6, 12, 0.9);
+}
+@keyframes event-life {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+  }
+  8% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  84% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-6px);
+  }
+}
+@keyframes event-nucleus {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  6% {
+    transform: scale(1.6);
+    opacity: 1;
+  }
+  14% {
+    transform: scale(1);
+  }
+  84% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+}
+@keyframes event-aura {
+  0% {
+    transform: scale(0.2);
+    opacity: 0;
+  }
+  10% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  84% {
+    transform: scale(1.15);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+}
+@keyframes event-particle {
+  0% {
+    transform: rotate(var(--a)) translateY(0);
+    opacity: 0;
+  }
+  6% {
+    opacity: 1;
+  }
+  30% {
+    transform: rotate(var(--a)) translateY(-46px);
+    opacity: 0.8;
+  }
+  84% {
+    transform: rotate(var(--a)) translateY(-58px);
+    opacity: 0.25;
+  }
+  100% {
+    transform: rotate(var(--a)) translateY(-62px);
+    opacity: 0;
+  }
+}
+/* reduced motion: the global rule removes every animation; the event keeps ONE motionless step animation of the
+   same length (present for its hold, then gone), so it still leaves without any timer */
+@media (prefers-reduced-motion: reduce) {
+  .field-event {
+    opacity: 1;
+    transform: translateX(-50%);
+    animation: event-hold var(--motion-event-life) steps(1, end) both !important;
+  }
+  .event-aura {
+    opacity: 0.6;
+  }
+  .event-particle {
+    opacity: 0;
+  }
+}
+@keyframes event-hold {
+  0%,
+  99.9% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ============================================================ SF-05 — LOGIN FIELD (doc 26 §28)
+   Entry into a living field: idle calm; attention on the Login action gathers the field (denser, brighter ambient
+   particles, local action glow, membrane response); focus responds locally; nothing implies success. */
+/* the dense group: quiet at rest, gathered on attention. Per-particle fill-opacity (never a group opacity: an SVG
+   group with opacity is rendered through an offscreen buffer every frame — measured ~7 ms/frame at ×4 throttle) */
+.field-bg .particles-dense .particle {
+  fill-opacity: 0.35;
+  transition: fill-opacity 600ms var(--ease-organic);
+}
+body:has(.access-field[data-attract="login"]) .field-bg .particles-dense .particle {
+  fill-opacity: 1;
+}
+body:has(.access-field[data-attract="login"]) .field-bg .particles-dense .particle {
+  animation-duration: 40s;
+}
+body:has(.access-field[data-attract="login"]) .field-bg .particle {
+  filter: drop-shadow(0 0 3px rgba(88, 220, 255, 0.9));
+}
+body:has(.access-field[data-attract="login"]) .field-bg .nebula-a {
+  opacity: 0.85;
+}
+.access-core {
+  position: relative;
+  transition:
+    box-shadow var(--motion-hover-out) var(--ease-resonance),
+    border-color var(--motion-hover-out) var(--ease-resonance);
+}
+.access-membrane {
+  position: absolute;
+  inset: -6px;
+  border-radius: 30px;
+  border: 1px solid rgba(88, 220, 255, 0.12);
+  opacity: 0.5;
+  pointer-events: none;
+  transition:
+    opacity var(--motion-hover-in) var(--ease-resonance),
+    transform var(--motion-hover-in) var(--ease-resonance);
+}
+.access-field[data-attract="login"] .access-core {
+  border-color: rgba(88, 220, 255, 0.5);
+  box-shadow:
+    0 0 0 1px rgba(88, 220, 255, 0.16),
+    0 0 90px var(--cyan-glow);
+}
+.access-field[data-attract="login"] .access-membrane {
+  opacity: 1;
+  transform: scale(1.015);
+}
+.access-action {
+  position: relative;
+  transition:
+    box-shadow var(--motion-hover-in) var(--ease-resonance),
+    transform var(--motion-hover-in) var(--ease-resonance);
+}
+.access-field[data-attract="login"] .access-action:not([disabled]) {
+  box-shadow:
+    0 0 0 4px rgba(88, 220, 255, 0.14),
+    0 0 34px var(--cyan-glow);
+  transform: translateY(-1px);
+}
+.access-field[data-focus] .access-core {
+  border-color: rgba(134, 171, 255, 0.55);
+}
+.access-core .field:focus-within label {
+  color: var(--cyan);
+}
+.access-core input:focus-visible {
+  box-shadow: 0 0 0 3px rgba(88, 220, 255, 0.16);
+}
+/* a request is a request: the loading core is quiet (no success motion before the server's verdict) */
+.access-core[data-core-state="loading"] {
+  border-style: dashed;
+  box-shadow: none;
+}
+.access-core[data-core-state="boundary"] {
+  border-color: var(--red-soft);
+}
+
+/* ============================================================ SF-05 — BREADCRUMB FIELD PATH (doc 26 §29–§30)
+   One coherent path on desktop: route nodes share the rail's column and compress through their labels' ellipsis
+   (titles keep them inspectable); the current segment keeps at least 22 characters, so a lifecycle state such as
+   QUESTION_GENERATION is never cut and never wraps below the path; the identity stays centred; logout stays clear.
+   Status words of future relations stay in the accessibility tree and become visible only on wide rails. */
+@media (min-width: 768px) {
+  .trace ol {
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+  .trace li {
+    flex: 1 1 auto;
+    min-width: 9ch;
+    max-width: max-content;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .trace li a,
+  .trace li .trace-label {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .trace li[data-status="current"] {
+    flex: 2 1 auto;
+    min-width: min(100%, 22ch);
+  }
+  .trace-status {
+    white-space: nowrap;
+    flex: none;
+  }
+}
+@media (min-width: 768px) {
+  .trace li[data-status="possible"] .trace-status,
+  .trace li[data-status="unavailable"] .trace-status {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+/* ============================================================ SF-05 — DECISION SURFACE in the field language (doc 26 §31) */
+.field-stage[data-surface="decision"] {
+  grid-template-columns: minmax(280px, 0.8fr) minmax(400px, 1.4fr);
+}
+.decision-surface {
+  display: contents;
+}
+.decision-surface [data-testid="workspace-badge"],
+.decision-surface [data-testid="session-state-badge"],
+.decision-surface [data-testid="burst-state"],
+.decision-surface [data-testid="burst-human-only-indicator"],
+.decision-surface [data-testid="burst-frozen-indicator"] {
+  display: inline-block;
+  margin: 0 8px 8px 0;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(160, 210, 255, 0.18);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--ink-soft);
+  overflow-wrap: anywhere;
+}
+.decision-surface [data-testid="session-state-badge"],
+.decision-surface [data-testid="burst-state"] {
+  color: var(--cyan);
+  border-color: rgba(88, 220, 255, 0.4);
+}
+.decision-surface [data-testid="burst-human-only-indicator"] {
+  color: var(--human);
+  border: 1px double var(--human);
+}
+.decision-surface [data-testid="burst-frozen-indicator"] {
+  color: var(--blue);
+  border-color: var(--blue);
+}
+.decision-surface [data-testid="challenge-summary"] h2 {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  margin: var(--space-2) 0 var(--space-1);
+}
+.decision-surface [data-testid="question-list"] {
+  list-style: none;
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.decision-surface [data-testid="question-item"] {
+  padding: 8px 12px;
+  border-left: 2px solid var(--blue-deep);
+  background: rgba(7, 11, 20, 0.5);
+  border-radius: 0 10px 10px 0;
+  font-family: var(--font-serif);
+  color: var(--human);
+  overflow-wrap: anywhere;
+}
+.decision-surface [data-testid="question-origin"],
+.decision-surface [data-testid="question-ai-derived-label"] {
+  display: inline-block;
+  margin-right: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+.decision-surface [data-testid="question-ai-derived-label"] {
+  color: var(--ai);
+  border: 1px dashed var(--ai);
+  border-radius: 999px;
+  padding: 1px 6px;
+}
+/* AI recommendation: derived, never a Decision — the AI origin tone, dashed, apart from the human Decision */
+.decision-surface [data-testid="ai-recommendation-panel"] {
+  margin: 0 0 var(--space-3);
+  padding: 10px 12px;
+  border: 1px dashed var(--ai);
+  border-radius: 12px;
+  background: var(--ai-bg);
+  color: var(--ink-soft);
+}
+.decision-surface [data-testid="ai-recommendation-label"],
+.decision-surface [data-testid="ai-recommendation-derived-label"] {
+  display: inline-block;
+  margin: 0 8px 6px 0;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  color: var(--ai);
+}
+.decision-surface [data-testid="decision-state"] {
+  display: inline-block;
+  margin-bottom: var(--space-2);
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--cyan);
+  color: var(--cyan);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+}
+.decision-surface [data-testid="decision-options-list"] {
+  list-style: none;
+  margin: 0 0 var(--space-3);
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.decision-surface [data-testid="decision-option-item"] {
+  padding: 6px 10px;
+  border-left: 2px solid var(--line-strong);
+  color: var(--ink-soft);
+}
+.decision-surface [data-testid="record-decision-form"] {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px dashed rgba(160, 210, 255, 0.14);
+}
+.decision-surface [data-testid="record-decision-form"] button {
+  justify-self: start;
+  font: inherit;
+  font-weight: 700;
+  min-height: 44px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--cyan);
+  background: var(--cyan);
+  color: var(--cyan-ink);
+  cursor: pointer;
+}
+.decision-surface [data-testid="decision-provenance-view"] {
+  display: grid;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+}
+.decision-surface [data-testid="decision-provenance-view"] > span {
+  padding: 4px 8px;
+  border-left: 2px solid var(--blue-deep);
+  overflow-wrap: anywhere;
+}
+.decision-surface [data-testid="decision-none"] {
+  color: var(--muted);
+}
+.decision-surface [data-testid="denied-banner"],
+.decision-surface [data-testid="indeterminate-banner"],
+.decision-surface [data-testid="decision-rejected-banner"],
+.decision-surface [data-testid="decision-failed-precommit-banner"],
+.decision-surface [data-testid="network-error-banner"],
+.organ [data-testid="denied-banner"],
+.organ [data-testid="indeterminate-banner"],
+.organ [data-testid="network-error-banner"],
+.organ [data-testid="session-view-rejected"] {
+  margin: var(--space-2) 0 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border-left: 3px solid var(--red-soft);
+  background: rgba(10, 16, 28, 0.6);
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  overflow-wrap: anywhere;
+}
+.organ [data-testid="denied-banner"] span + span,
+.organ [data-testid="indeterminate-banner"] span + span {
+  margin-left: 8px;
+  font-family: var(--font-mono);
   font-size: 0.8rem;
+}
+.organ [data-testid="session-view-loading"] {
+  color: var(--muted);
+}
+
+/* ============================================================ SF-05 — AMBIENT AND RELATION INTENSIFICATION (doc 26 §10–§14)
+   PRESERVE + INTENSIFY the left field: stronger auras and reciprocity, more visible pulses, subtle desynchronized
+   node breathing, more alive ambient stars. Opacity/transform only; no new large layers. */
+.node-aura {
+  --aura-rest: calc(0.4 + 0.5 * (var(--weight, 0.7) - 0.4));
+  opacity: var(--aura-rest);
+  /* breathing by opacity only: a scale animation re-rasterizes every aura layer each frame (measured +4 ms at ×4
+     throttle on the Challenge field); opacity on a composited layer costs nothing beyond compositing */
+  animation: node-breathe calc(9s + var(--breath-phase, 0) * 0.4s) var(--ease-organic) calc(var(--breath-phase, 0) * -1s) infinite;
+}
+@keyframes node-breathe {
+  0%,
+  100% {
+    opacity: var(--aura-rest);
+  }
+  50% {
+    opacity: calc(var(--aura-rest) + 0.28);
+  }
+}
+/* the compressed constellation's nodes do not breathe (their currents are hidden too): a tall stack of breathing
+   layers is cost without relation meaning. The core keeps its full anatomy motion (aura, rings, membrane, micro-orbit:
+   doc 25 §6, harness state 51); silencing it there gained nothing measurable (run-9: 20.9 ms vs 21.7 ms at ×4). */
+.field-stage[data-topology="stack"] .node-aura {
+  animation: none;
+}
+.node[data-resonating] .node-aura,
+.node:hover .node-aura,
+.node:focus-within .node-aura {
+  opacity: 1;
+  transform: scale(1.14);
+  animation-play-state: paused;
+}
+.node[data-resonating] .node-body,
+.node:hover .node-body,
+.node:focus-within .node-body {
+  box-shadow:
+    0 0 0 1px var(--field-node-active),
+    0 0 34px var(--tone-glow),
+    0 0 4px var(--tone);
+}
+/* relation currents: a little more presence at rest, clearly more on encounter */
+.orbit-paths .path-base {
+  stroke-width: calc(1.2 + 0.9 * var(--w, 0.7));
+}
+.current-pulse {
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3.5px;
+  opacity: 0.85;
+  box-shadow:
+    0 0 6px var(--current, var(--field-line-active)),
+    0 0 12px var(--current, var(--field-line-active));
+}
+.current-pulse[data-resonating] {
+  width: 9px;
+  height: 9px;
+  margin: -4.5px 0 0 -4.5px;
+  box-shadow:
+    0 0 8px var(--current, var(--field-line-active)),
+    0 0 22px var(--current, var(--field-line-active));
+}
+.orbit-paths .relation[data-resonating] .path-base {
+  opacity: 1;
+  stroke-width: calc(2 + 0.9 * var(--w, 0.7));
+  filter: drop-shadow(0 0 3px var(--current));
+}
+/* the core answers an encounter a little more visibly */
+.field-stage[data-encounter] .core-membrane {
+  box-shadow:
+    0 0 56px var(--core-tone-glow),
+    0 0 0 1px var(--field-core-membrane);
+}
+/* ambient stars: the dense group is also part of the field's depth on every surface (quiet, slow) */
+.field-bg .particle {
+  animation-duration: 84s;
+}
+/* the organ answers the field: a resonating chamber brightens its contour */
+.chamber[data-chamber-resonating] .chamber-contour::before,
+.chamber[data-chamber-resonating] .chamber-contour::after {
+  opacity: 1;
+  box-shadow: 0 0 8px var(--chamber-tone-glow);
+}
+.chamber[data-chamber-resonating]::after {
+  box-shadow: 0 0 16px var(--chamber-tone-glow);
 }

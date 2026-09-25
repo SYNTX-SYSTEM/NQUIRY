@@ -1,17 +1,18 @@
 /**
- * Renders a server capability that is NOT available: the server's own reason
- * text, never a client guess. No disabled button is rendered. An unavailable
- * action has no affordance at all, only its reason.
+ * F02 unavailable capability, projected in the SF-05 boundary grammar (doc 26 §26): the server's own reason stays
+ * verbatim and is the element's text (legacy contract); the boundary CLASS is derived from the reason code and
+ * written in words and structure. A boundary is not an error and not a warning.
  */
 import type { Capability } from "../../lib/api/inquiryClient";
+import { BoundaryMark, boundaryClassOf } from "../field/chambers";
 
 export function Unavailable({ capability, testId }: { readonly capability: Capability; readonly testId: string }) {
   if (capability.available) {
     return null;
   }
   return (
-    <p className="unavailable" data-testid={testId} data-reason-code={capability.reasonCode ?? undefined}>
+    <BoundaryMark boundary={boundaryClassOf(capability.reasonCode)} reasonCode={capability.reasonCode} testId={testId}>
       {capability.reason}
-    </p>
+    </BoundaryMark>
   );
 }

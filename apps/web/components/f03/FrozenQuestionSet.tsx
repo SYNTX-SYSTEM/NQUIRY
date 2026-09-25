@@ -10,8 +10,8 @@ import type { FrozenSet } from "../../lib/api/inquiryClient";
 
 export function FrozenQuestionSet({ frozen }: { readonly frozen: FrozenSet }) {
   return (
-    <div data-testid="frozen-set" data-verified={String(frozen.verified)}>
-      <p>
+    <div data-testid="frozen-set" data-verified={String(frozen.verified)} className="frozen-set">
+      <p className="frozen-seal">
         <span className="tag authority" data-testid="frozen-marker">
           FROZEN
         </span>{" "}
@@ -34,7 +34,7 @@ export function FrozenQuestionSet({ frozen }: { readonly frozen: FrozenSet }) {
       </dl>
       <ol className="question-list" aria-label="Frozen human questions">
         {frozen.questions.map((question) => (
-          <li key={question.questionId} data-testid="frozen-question" data-origin={question.origin}>
+          <li key={question.questionId} data-testid="frozen-question" data-origin={question.origin} className="artifact" data-immutable="true">
             <span className="tag human">human</span>{" "}
             <span className="muted">
               #{question.capturedOrder + 1} · {question.authorName ?? "unknown author"}

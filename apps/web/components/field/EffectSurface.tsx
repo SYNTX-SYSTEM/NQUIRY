@@ -14,9 +14,24 @@
 import type { EffectField, Reconstruction } from "../../lib/field/effectLifecycle";
 import { describeOutcome } from "../../lib/field/outcomeSemantics";
 
-export function EffectIntent({ field, relation }: { readonly field: EffectField; readonly relation: string }) {
+/** A surface owns one relation, or a family of payload-keyed relations sharing a prefix (e.g. `capture:`). */
+function owns(relationOf: string, relation?: string, relationPrefix?: string): boolean {
+  if (relation !== undefined) return relationOf === relation;
+  if (relationPrefix !== undefined) return relationOf.startsWith(relationPrefix);
+  return false;
+}
+
+export function EffectIntent({
+  field,
+  relation,
+  relationPrefix,
+}: {
+  readonly field: EffectField;
+  readonly relation?: string;
+  readonly relationPrefix?: string;
+}) {
   const c = field.current;
-  if (c.phase !== "requested" || c.relation !== relation) return null;
+  if (c.phase !== "requested" || !owns(c.relation, relation, relationPrefix)) return null;
   return (
     <p className="effect-intent t-system" role="status" data-testid="effect-requested" data-effect="requested">
       Requested. Not yet committed: the state shown stays canonical until the server confirms.
@@ -57,12 +72,14 @@ function reconstructionText(reconstruction: Reconstruction, committed: boolean):
 export function EffectOutcome({
   field,
   relation,
+  relationPrefix,
   onReread,
   reasonTestId,
   committedTestId,
 }: {
   readonly field: EffectField;
-  readonly relation: string;
+  readonly relation?: string;
+  readonly relationPrefix?: string;
   readonly onReread?: () => void;
   /** Legacy contract hook: element whose text is exactly the server reason code. */
   readonly reasonTestId?: string;
@@ -70,7 +87,7 @@ export function EffectOutcome({
   readonly committedTestId?: string;
 }) {
   const c = field.current;
-  if (c.phase !== "settled" || c.relation !== relation) return null;
+  if (c.phase !== "settled" || !owns(c.relation, relation, relationPrefix)) return null;
   const semantics = describeOutcome(c.kind, "mutation");
   const committed = c.kind === "committed";
   return (
@@ -80,6 +97,7 @@ export function EffectOutcome({
       data-outcome={c.kind}
       data-consequence={semantics.consequence ?? undefined}
       data-reconstruction={c.reconstruction}
+      data-quiet={committed && c.reconstruction === "done" ? "true" : undefined}
       role={semantics.announce}
     >
       <p className="effect-title t-boundary">
@@ -91,6 +109,11 @@ export function EffectOutcome({
         </p>
       ) : null}
       {!committed ? <p className="effect-consequence">{semantics.consequenceText}</p> : null}
+      {c.detail ? (
+        <p className="effect-detail" data-testid="effect-detail">
+          {c.detail}
+        </p>
+      ) : null}
       <p className="effect-reconstruction muted" data-testid="effect-reconstruction">
         {reconstructionText(c.reconstruction, committed)}
       </p>

@@ -56,3 +56,15 @@ export function intentKeyFor(previous: Intent | null, text: string, makeKey: () 
   if (previous !== null && previous.text === text) return previous;
   return { key: makeKey(), text };
 }
+
+/**
+ * Stable fingerprint of a capture text, used to key the capture relation
+ * (`session:capture:<fingerprint>`): the same text is the same logical intent,
+ * changed text is a new one (09 §108.2). Presentation-side identity only; the
+ * server fingerprints the payload itself.
+ */
+export function textFingerprint(text: string): string {
+  let h = 5381;
+  for (let i = 0; i < text.length; i++) h = ((h << 5) + h + text.charCodeAt(i)) | 0;
+  return `${(h >>> 0).toString(16)}-${text.length}`;
+}

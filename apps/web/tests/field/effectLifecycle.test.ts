@@ -145,3 +145,19 @@ describe("MUST REMAIN IMPOSSIBLE", () => {
     expect(f.current).toMatchObject({ kind: "denied" });
   });
 });
+
+describe("SF-02: relation-specific detail travels with the settled outcome (WU-SF02.1)", () => {
+  it("a settle event may carry a detail; it is kept on the settled state and cleared by the next request", () => {
+    let f = run(
+      { type: "request", relation: "capture:1", intentKey: "k" },
+      { type: "settle", kind: "rejected", reasonCode: "INPUT_NOT_A_QUESTION", detail: "Nothing was stored." },
+    );
+    expect(f.current).toMatchObject({ phase: "settled", kind: "rejected", detail: "Nothing was stored." });
+    f = effectReducer(f, { type: "request", relation: "capture:2", intentKey: "k2" });
+    expect(f.current).toEqual({ phase: "requested", relation: "capture:2", intentKey: "k2" });
+  });
+  it("without a detail the settled state carries null (never undefined leaking into markup)", () => {
+    const f = run({ type: "request", relation: "a", intentKey: null }, { type: "settle", kind: "denied", reasonCode: "X" });
+    expect(f.current).toMatchObject({ detail: null });
+  });
+});

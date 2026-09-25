@@ -22,8 +22,8 @@ import { blocksConsequence, effectReducer, INITIAL_EFFECT_FIELD, intentKeyFor } 
 import type { SettledKind } from "./outcomeSemantics";
 
 export type Settlement<T> =
-  | { readonly kind: "committed"; readonly reasonCode: null; readonly body: T }
-  | { readonly kind: Exclude<SettledKind, "committed">; readonly reasonCode: string };
+  | { readonly kind: "committed"; readonly reasonCode: null; readonly body: T; readonly detail?: string }
+  | { readonly kind: Exclude<SettledKind, "committed">; readonly reasonCode: string; readonly detail?: string };
 
 type EffectRunBase<T> = {
   readonly relation: string;
@@ -81,7 +81,7 @@ export function useEffectField() {
       } catch {
         settlement = { kind: "indeterminate", reasonCode: "UNRECOGNIZED_SERVER_RESPONSE" };
       }
-      dispatch({ type: "settle", kind: settlement.kind, reasonCode: settlement.reasonCode });
+      dispatch({ type: "settle", kind: settlement.kind, reasonCode: settlement.reasonCode, detail: settlement.detail });
       if (settlement.kind === "committed" && spec.onCommitted?.(settlement.body)) return;
       await reread(spec.reconstruct);
     } finally {

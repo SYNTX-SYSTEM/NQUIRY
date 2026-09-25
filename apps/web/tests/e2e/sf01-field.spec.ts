@@ -426,18 +426,30 @@ test.describe("responsive + motion (21 §33, §34)", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Why signups dropped");
 
     const top = async (selector: string) => (await page.locator(selector).first().boundingBox())?.y ?? Number.NaN;
+    // SF-02 (22 §32.6): position → core (h1 inside the core) → active relation plane → governance → proof.
     const y = {
       trace: await top('nav[aria-label="Inquiry position"]'),
+      core: await top('[data-testid="field-core"]'),
       heading: await top("h1"),
-      centre: await top('[data-field-zone="centre"]'),
-      near: await top('[data-field-zone="near"]'),
-      depth: await top('[data-field-zone="depth"]'),
+      action: await top('[data-plane="action"]'),
+      governance: await top('[data-plane="governance"]'),
+      proof: await top('[data-plane="proof"]'),
     };
-    expect(y.trace).toBeLessThan(y.heading);
-    expect(y.heading).toBeLessThan(y.centre);
+    expect(y.trace).toBeLessThan(y.core);
+    expect(y.core).toBeLessThanOrEqual(y.heading);
     if ((page.viewportSize()?.width ?? 1280) <= 860) {
-      expect(y.centre).toBeLessThan(y.near);
-      expect(y.near).toBeLessThan(y.depth);
+      expect(y.core).toBeLessThan(y.action);
+      expect(y.action).toBeLessThan(y.governance);
+      expect(y.governance).toBeLessThan(y.proof);
+    }
+    // Desktop: the core is the visual centre of the topology square; the rings orbit it (22 §23.13).
+    if ((page.viewportSize()?.width ?? 0) > 860) {
+      await expect(page.locator('[data-testid="field-stage"]')).toHaveAttribute("data-topology", "orbit");
+      // SF-03 (doc 23 §7): the topology box follows the viewport and its content; the core is its centre.
+      const topology = await page.locator(".topology").boundingBox();
+      const core = await page.locator('[data-testid="field-core"]').boundingBox();
+      expect(core && topology && Math.abs(core.x + core.width / 2 - (topology.x + topology.width / 2)) < 4).toBe(true);
+      expect(await page.locator(".orbit-paths .path").count()).toBeGreaterThan(0);
     }
     await expect(page.getByTestId("challenge-authority-proof").locator("summary")).toBeVisible();
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
@@ -459,5 +471,11 @@ test.describe("responsive + motion (21 §33, §34)", () => {
     await expect(outcome(page)).toHaveAttribute("role", "status");
     const animation = await outcome(page).evaluate((el) => getComputedStyle(el).animationName);
     expect(animation).toBe("none");
+    // SF-02 (22 §19.7, falsifiers 22/25/60): the living background and the core breathe only when motion is allowed;
+    // pseudo-element animations must stop too (a `*` rule never matches ::before/::after).
+    const bg = await page.locator(".field-bg").evaluate((el) => [getComputedStyle(el, "::after").animationName, getComputedStyle(el.querySelector(".drift")!).animationName]);
+    expect(bg).toEqual(["none", "none"]);
+    expect(await page.locator('[data-testid="field-core"]').evaluate((el) => getComputedStyle(el).animationName)).toBe("none");
+    expect(await page.locator(".orbit-paths .path").first().evaluate((el) => getComputedStyle(el).animationName)).toBe("none");
   });
 });

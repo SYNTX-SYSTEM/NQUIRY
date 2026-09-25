@@ -1,0 +1,3233 @@
+{
+  "base": "http://127.0.0.1:13400",
+  "workspace": "9cf2afb1-308f-466d-98c0-d508b5034f09",
+  "challenge": "aeb066e7-1567-4210-adba-7b30e4c9ff51",
+  "session": "4a36314e-29d2-552f-9499-f26e4c6139d4",
+  "generatedAt": "2026-09-25T15:54:31.881Z",
+  "partial": true,
+  "results": [
+    {
+      "seq": 1,
+      "screenshot": "screenshots/01-desktop-access-login.png",
+      "url": "/login",
+      "route": "/ -> /login",
+      "viewport": "desktop",
+      "reducedMotion": "no-preference",
+      "identity": "anonymous",
+      "canonicalState": "no NQUIRY session (GET /auth/me -> 401 denied)",
+      "expectedRelation": "Access core: dark field, centred identity entrance; no workspace topology; no external provider; Log in reachable",
+      "projection": {
+        "authMe": {
+          "status": 401,
+          "body": {
+            "kind": "denied",
+            "reasonCode": "NO_SESSION"
+          }
+        }
+      },
+      "checks": [
+        {
+          "claim": "server: no session",
+          "kind": "projection",
+          "expected": 401,
+          "actual": 401,
+          "pass": true
+        },
+        {
+          "claim": "ends at /login",
+          "kind": "visible",
+          "expected": "/login",
+          "actual": "/login",
+          "pass": true
+        },
+        {
+          "claim": "form fields",
+          "kind": "visible",
+          "expected": [
+            "Email",
+            "Password"
+          ],
+          "actual": [
+            "Email",
+            "Password"
+          ],
+          "pass": true
+        },
+        {
+          "claim": "submit reachable",
+          "kind": "visible",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        },
+        {
+          "claim": "no workspace topology on access",
+          "kind": "visible",
+          "expected": null,
+          "actual": null,
+          "pass": true
+        },
+        {
+          "claim": "no external provider affordance",
+          "kind": "visible",
+          "expected": 0,
+          "actual": 0,
+          "pass": true
+        },
+        {
+          "claim": "background field present",
+          "kind": "visible",
+          "expected": true,
+          "actual": true,
+          "pass": true
+        },
+        {
+          "claim": "access core marked",
+          "kind": "visible",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        }
+      ],
+      "topology": {
+        "mode": null,
+        "effectiveMode": null,
+        "surface": null,
+        "coreState": null,
+        "coreEyebrow": null,
+        "nodes": [],
+        "paths": [],
+        "coreAnimation": null,
+        "bgAnimation": "field-breathe"
+      },
+      "redirectChain": [
+        "/",
+        "/",
+        "/login"
+      ],
+      "console": [
+        "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "pageErrors": [],
+      "failedRequests": [],
+      "prefetchAborted": [],
+      "http4xx5xx": [
+        "401 GET /api/auth/me"
+      ],
+      "unexpectedHttp": [],
+      "staticRequests": 9,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/2q2grsmv3e0ld.css"
+        ],
+        "tokens": {
+          "cyan": "#58dcff",
+          "blue": "#86abff",
+          "red": "#ff7b86"
+        },
+        "bodyBackground": "rgb(3, 6, 12)",
+        "backgroundField": true
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 3,
+        "withoutVisibleFocus": [],
+        "order": [
+          "input:login-email",
+          "input:login-password",
+          "button:Log in"
+        ]
+      },
+      "localTruthDetected": false,
+      "expectedOffline": false,
+      "pass": true
+    },
+    {
+      "seq": 2,
+      "screenshot": "screenshots/02-desktop-access-denied.png",
+      "url": "/login",
+      "route": "/login",
+      "viewport": "desktop",
+      "reducedMotion": "no-preference",
+      "identity": "anonymous (wrong credentials)",
+      "canonicalState": "POST /auth/login -> denied",
+      "expectedRelation": "boundary announced (role=alert), form retained, no success motion, submit still reachable",
+      "projection": null,
+      "checks": [
+        {
+          "claim": "alert present",
+          "kind": "visible",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        },
+        {
+          "claim": "stays on /login",
+          "kind": "visible",
+          "expected": "/login",
+          "actual": "/login",
+          "pass": true
+        },
+        {
+          "claim": "email retained",
+          "kind": "visible",
+          "expected": "nobody@inspect.local.test",
+          "actual": "nobody@inspect.local.test",
+          "pass": true
+        },
+        {
+          "claim": "submit reachable",
+          "kind": "visible",
+          "expected": true,
+          "actual": true,
+          "pass": true
+        }
+      ],
+      "topology": {
+        "mode": null,
+        "effectiveMode": null,
+        "surface": null,
+        "coreState": null,
+        "coreEyebrow": null,
+        "nodes": [],
+        "paths": [],
+        "coreAnimation": null,
+        "bgAnimation": "field-breathe"
+      },
+      "redirectChain": [],
+      "console": [
+        "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "pageErrors": [],
+      "failedRequests": [],
+      "prefetchAborted": [],
+      "http4xx5xx": [
+        "401 POST /api/auth/login"
+      ],
+      "unexpectedHttp": [],
+      "staticRequests": 0,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/2q2grsmv3e0ld.css"
+        ],
+        "tokens": {
+          "cyan": "#58dcff",
+          "blue": "#86abff",
+          "red": "#ff7b86"
+        },
+        "bodyBackground": "rgb(3, 6, 12)",
+        "backgroundField": true
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 0,
+        "withoutVisibleFocus": [],
+        "order": []
+      },
+      "localTruthDetected": false,
+      "expectedOffline": false,
+      "pass": true
+    },
+    {
+      "seq": 3,
+      "screenshot": "screenshots/03-pixel-7-access-login.png",
+      "url": "/login",
+      "route": "/ -> /login",
+      "viewport": "pixel-7",
+      "reducedMotion": "no-preference",
+      "identity": "anonymous",
+      "canonicalState": "no NQUIRY session (GET /auth/me -> 401 denied)",
+      "expectedRelation": "Access core: dark field, centred identity entrance; no workspace topology; no external provider; Log in reachable",
+      "projection": {
+        "authMe": {
+          "status": 401,
+          "body": {
+            "kind": "denied",
+            "reasonCode": "NO_SESSION"
+          }
+        }
+      },
+      "checks": [
+        {
+          "claim": "server: no session",
+          "kind": "projection",
+          "expected": 401,
+          "actual": 401,
+          "pass": true
+        },
+        {
+          "claim": "ends at /login",
+          "kind": "visible",
+          "expected": "/login",
+          "actual": "/login",
+          "pass": true
+        },
+        {
+          "claim": "form fields",
+          "kind": "visible",
+          "expected": [
+            "Email",
+            "Password"
+          ],
+          "actual": [
+            "Email",
+            "Password"
+          ],
+          "pass": true
+        },
+        {
+          "claim": "submit reachable",
+          "kind": "visible",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        },
+        {
+          "claim": "no workspace topology on access",
+          "kind": "visible",
+          "expected": null,
+          "actual": null,
+          "pass": true
+        },
+        {
+          "claim": "no external provider affordance",
+          "kind": "visible",
+          "expected": 0,
+          "actual": 0,
+          "pass": true
+        },
+        {
+          "claim": "background field present",
+          "kind": "visible",
+          "expected": true,
+          "actual": true,
+          "pass": true
+        },
+        {
+          "claim": "access core marked",
+          "kind": "visible",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        }
+      ],
+      "topology": {
+        "mode": null,
+        "effectiveMode": null,
+        "surface": null,
+        "coreState": null,
+        "coreEyebrow": null,
+        "nodes": [],
+        "paths": [],
+        "coreAnimation": null,
+        "bgAnimation": "field-breathe"
+      },
+      "redirectChain": [
+        "/",
+        "/",
+        "/login"
+      ],
+      "console": [
+        "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "pageErrors": [],
+      "failedRequests": [],
+      "prefetchAborted": [],
+      "http4xx5xx": [
+        "401 GET /api/auth/me"
+      ],
+      "unexpectedHttp": [],
+      "staticRequests": 9,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/2q2grsmv3e0ld.css"
+        ],
+        "tokens": {
+          "cyan": "#58dcff",
+          "blue": "#86abff",
+          "red": "#ff7b86"
+        },
+        "bodyBackground": "rgb(3, 6, 12)",
+        "backgroundField": true
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 3,
+        "withoutVisibleFocus": [],
+        "order": [
+          "input:login-email",
+          "input:login-password",
+          "button:Log in"
+        ]
+      },
+      "localTruthDetected": false,
+      "expectedOffline": false,
+      "pass": true
+    },
+    {
+      "seq": 4,
+      "screenshot": "screenshots/04-pixel-7-access-denied.png",
+      "url": "/login",
+      "route": "/login",
+      "viewport": "pixel-7",
+      "reducedMotion": "no-preference",
+      "identity": "anonymous (wrong credentials)",
+      "canonicalState": "POST /auth/login -> denied",
+      "expectedRelation": "boundary announced (role=alert), form retained, no success motion, submit still reachable",
+      "projection": null,
+      "checks": [
+        {
+          "claim": "alert present",
+          "kind": "visible",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        },
+        {
+          "claim": "stays on /login",
+          "kind": "visible",
+          "expected": "/login",
+          "actual": "/login",
+          "pass": true
+        },
+        {
+          "claim": "email retained",
+          "kind": "visible",
+          "expected": "nobody@inspect.local.test",
+          "actual": "nobody@inspect.local.test",
+          "pass": true
+        },
+        {
+          "claim": "submit reachable",
+          "kind": "visible",
+          "expected": true,
+          "actual": true,
+          "pass": true
+        }
+      ],
+      "topology": {
+        "mode": null,
+        "effectiveMode": null,
+        "surface": null,
+        "coreState": null,
+        "coreEyebrow": null,
+        "nodes": [],
+        "paths": [],
+        "coreAnimation": null,
+        "bgAnimation": "field-breathe"
+      },
+      "redirectChain": [],
+      "console": [
+        "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "pageErrors": [],
+      "failedRequests": [],
+      "prefetchAborted": [],
+      "http4xx5xx": [
+        "401 POST /api/auth/login"
+      ],
+      "unexpectedHttp": [],
+      "staticRequests": 0,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/2q2grsmv3e0ld.css"
+        ],
+        "tokens": {
+          "cyan": "#58dcff",
+          "blue": "#86abff",
+          "red": "#ff7b86"
+        },
+        "bodyBackground": "rgb(3, 6, 12)",
+        "backgroundField": true
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 0,
+        "withoutVisibleFocus": [],
+        "order": []
+      },
+      "localTruthDetected": false,
+      "expectedOffline": false,
+      "pass": true
+    },
+    {
+      "seq": 5,
+      "screenshot": "screenshots/05-desktop-reduced-motion-access-login.png",
+      "url": "/login",
+      "route": "/ -> /login",
+      "viewport": "desktop",
+      "reducedMotion": "reduce",
+      "identity": "anonymous",
+      "canonicalState": "no NQUIRY session (GET /auth/me -> 401 denied)",
+      "expectedRelation": "Access core: dark field, centred identity entrance; no workspace topology; no external provider; Log in reachable",
+      "projection": {
+        "authMe": {
+          "status": 401,
+          "body": {
+            "kind": "denied",
+            "reasonCode": "NO_SESSION"
+          }
+        }
+      },
+      "checks": [
+        {
+          "claim": "server: no session",
+          "kind": "projection",
+          "expected": 401,
+          "actual": 401,
+          "pass": true
+        },
+        {
+          "claim": "ends at /login",
+          "kind": "visible",
+          "expected": "/login",
+          "actual": "/login",
+          "pass": true
+        },
+        {
+          "claim": "form fields",
+          "kind": "visible",
+          "expected": [
+            "Email",
+            "Password"
+          ],
+          "actual": [
+            "Email",
+            "Password"
+          ],
+          "pass": true
+        },
+        {
+          "claim": "submit reachable",
+          "kind": "visible",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        },
+        {
+          "claim": "no workspace topology on access",
+          "kind": "visible",
+          "expected": null,
+          "actual": null,
+          "pass": true
+        },
+        {
+          "claim": "no external provider affordance",
+          "kind": "visible",
+          "expected": 0,
+          "actual": 0,
+          "pass": true
+        },
+        {
+          "claim": "background field present",
+          "kind": "visible",
+          "expected": true,
+          "actual": true,
+          "pass": true
+        },
+        {
+          "claim": "access core marked",
+          "kind": "visible",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        },
+        {
+          "claim": "reduced motion: background animation none",
+          "kind": "visible",
+          "expected": "none",
+          "actual": "none",
+          "pass": true
+        }
+      ],
+      "topology": {
+        "mode": null,
+        "effectiveMode": null,
+        "surface": null,
+        "coreState": null,
+        "coreEyebrow": null,
+        "nodes": [],
+        "paths": [],
+        "coreAnimation": null,
+        "bgAnimation": "none"
+      },
+      "redirectChain": [
+        "/",
+        "/",
+        "/login"
+      ],
+      "console": [
+        "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "pageErrors": [],
+      "failedRequests": [],
+      "prefetchAborted": [],
+      "http4xx5xx": [
+        "401 GET /api/auth/me"
+      ],
+      "unexpectedHttp": [],
+      "staticRequests": 9,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/2q2grsmv3e0ld.css"
+        ],
+        "tokens": {
+          "cyan": "#58dcff",
+          "blue": "#86abff",
+          "red": "#ff7b86"
+        },
+        "bodyBackground": "rgb(3, 6, 12)",
+        "backgroundField": true
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 3,
+        "withoutVisibleFocus": [],
+        "order": [
+          "input:login-email",
+          "input:login-password",
+          "button:Log in"
+        ]
+      },
+      "localTruthDetected": false,
+      "expectedOffline": false,
+      "pass": true
+    },
+    {
+      "seq": 6,
+      "screenshot": "screenshots/06-desktop-reduced-motion-access-denied.png",
+      "url": "/login",
+      "route": "/login",
+      "viewport": "desktop",
+      "reducedMotion": "reduce",
+      "identity": "anonymous (wrong credentials)",
+      "canonicalState": "POST /auth/login -> denied",
+      "expectedRelation": "boundary announced (role=alert), form retained, no success motion, submit still reachable",
+      "projection": null,
+      "checks": [
+        {
+          "claim": "alert present",
+          "kind": "visible",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        },
+        {
+          "claim": "stays on /login",
+          "kind": "visible",
+          "expected": "/login",
+          "actual": "/login",
+          "pass": true
+        },
+        {
+          "claim": "email retained",
+          "kind": "visible",
+          "expected": "nobody@inspect.local.test",
+          "actual": "nobody@inspect.local.test",
+          "pass": true
+        },
+        {
+          "claim": "submit reachable",
+          "kind": "visible",
+          "expected": true,
+          "actual": true,
+          "pass": true
+        }
+      ],
+      "topology": {
+        "mode": null,
+        "effectiveMode": null,
+        "surface": null,
+        "coreState": null,
+        "coreEyebrow": null,
+        "nodes": [],
+        "paths": [],
+        "coreAnimation": null,
+        "bgAnimation": "none"
+      },
+      "redirectChain": [],
+      "console": [
+        "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "pageErrors": [],
+      "failedRequests": [],
+      "prefetchAborted": [],
+      "http4xx5xx": [
+        "401 POST /api/auth/login"
+      ],
+      "unexpectedHttp": [],
+      "staticRequests": 0,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/2q2grsmv3e0ld.css"
+        ],
+        "tokens": {
+          "cyan": "#58dcff",
+          "blue": "#86abff",
+          "red": "#ff7b86"
+        },
+        "bodyBackground": "rgb(3, 6, 12)",
+        "backgroundField": true
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 0,
+        "withoutVisibleFocus": [],
+        "order": []
+      },
+      "localTruthDetected": false,
+      "expectedOffline": false,
+      "pass": true
+    },
+    {
+      "seq": 7,
+      "screenshot": "screenshots/07-desktop-workspace-overview-owner.png",
+      "url": "/workspaces",
+      "route": "/login -> / -> /workspaces",
+      "viewport": "desktop",
+      "reducedMotion": "no-preference",
+      "identity": "owner@inspect.local.test",
+      "canonicalState": "authenticated; accessible Workspaces from GET /workspaces",
+      "expectedRelation": "identity/access core; founding relation possible; accessible Workspaces as nodes (links); trace = access only",
+      "projection": {
+        "authMe": {
+          "kind": "ok",
+          "userId": "bf704975-9aa1-4af7-951b-9c0834820b01"
+        },
+        "workspaces": [
+          "SF-03 Inspection",
+          "Cross-Functional Customer Activation and Retention Inquiry Workspace for the European Enterprise Segment",
+          "SF-03 Inspection",
+          "Cross-Functional Customer Activation and Retention Inquiry Workspace for the European Enterprise Segment",
+          "SF-03 Inspection",
+          "Cross-Functional Customer Activation and Retention Inquiry Workspace for the European Enterprise Segment",
+          "SF-03 Inspection",
+          "Cross-Functional Customer Activation and Retention Inquiry Workspace for the European Enterprise Segment",
+          "SF-03 Inspection",
+          "Cross-Functional Customer Activation and Retention Inquiry Workspace for the European Enterprise Segment",
+          "SF-03 Inspection",
+          "Cross-Functional Customer Activation and Retention Inquiry Workspace for the European Enterprise Segment",
+          "SF-03 Inspection",
+          "Cross-Functional Customer Activation and Retention Inquiry Workspace for the European Enterprise Segment",
+          "SF-03 Inspection",
+          "Cross-Functional Customer Activation and Retention Inquiry Workspace for the European Enterprise Segment",
+          "SF-03 Inspection",
+          "Cross-Functional Customer Activation and Retention Inquiry Workspace for the European Enterprise Segment",
+          "SF-03 Inspection",
+          "Cross-Functional Customer Activation and Retention Inquiry Workspace for the European Enterprise Segment"
+        ]
+      },
+      "checks": [
+        {
+          "claim": "session resolves",
+          "kind": "projection",
+          "expected": "ok",
+          "actual": "ok",
+          "pass": true
+        },
+        {
+          "claim": "workspace links = server list (normalized: one node per canonical id, inner + outer ring)",
+          "kind": "projection",
+          "expected": 20,
+          "actual": 20,
+          "pass": true
+        },
+        {
+          "claim": "workspace names = server names (inner ring first)",
+          "kind": "projection",
+          "expected": [
+            "SF-03 Inspection",
+            "Cross-Functional Customer Activation and Retention Inquiry Workspace for the European Enterprise Segment",
+            "SF-03 Inspection",
+            "Cross-Functional Customer Activation and Retention Inquiry Workspace for the European Enterprise Segment",
+            "SF-03 Inspection"
+          ],
+          "actual": [
+            "SF-03 Inspection",
+            "Cross-Functional Customer Activation and Retention Inquiry Workspace for the European Enterprise Segment",
+            "SF-03 Inspection",
+            "Cross-Functional Customer Activation and Retention Inquiry Workspace for the European Enterprise Segment",
+            "SF-03 Inspection"
+          ],
+          "pass": true
+        },
+        {
+          "claim": "trace = access only",
+          "kind": "projection",
+          "expected": [
+            [
+              "access",
+              "current",
+              "Workspaces"
+            ]
+          ],
+          "actual": [
+            [
+              "access",
+              "current",
+              "Workspaces"
+            ]
+          ],
+          "pass": true
+        },
+        {
+          "claim": "founding node possible",
+          "kind": "visible",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        },
+        {
+          "claim": "core = access, current",
+          "kind": "visible",
+          "expected": "current",
+          "actual": "current",
+          "pass": true
+        },
+        {
+          "claim": "logout reachable after identity confirmed",
+          "kind": "visible",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        }
+      ],
+      "topology": {
+        "mode": "stack",
+        "effectiveMode": "stack",
+        "surface": "workspace-access",
+        "coreState": "current",
+        "coreEyebrow": "Your access",
+        "nodes": [
+          {
+            "state": "possible",
+            "text": "Found a Workspacepossible for every authenticated identityRe"
+          },
+          {
+            "state": "established",
+            "text": "SF-03 InspectionWorkspace · founded 25 Sept, 08:25 UTC · 050"
+          },
+          {
+            "state": "established",
+            "text": "Cross-Functional Customer Activation and Retention Inquiry W"
+          },
+          {
+            "state": "established",
+            "text": "SF-03 InspectionWorkspace · founded 25 Sept, 09:03 UTC · 3d4"
+          },
+          {
+            "state": "established",
+            "text": "Cross-Functional Customer Activation and Retention Inquiry W"
+          },
+          {
+            "state": "established",
+            "text": "SF-03 InspectionWorkspace · founded 25 Sept, 09:15 UTC · 2bc"
+          },
+          {
+            "state": "established",
+            "text": "Cross-Functional Customer Activation and Retention Inquiry W"
+          },
+          {
+            "state": "established",
+            "text": "SF-03 InspectionWorkspace · founded 25 Sept, 09:30 UTC · 11a"
+          },
+          {
+            "state": "established",
+            "text": "Cross-Functional Customer Activation and Retention Inquiry W"
+          },
+          {
+            "state": "established",
+            "text": "SF-03 InspectionWorkspace · founded 25 Sept, 10:12 UTC · 2e5"
+          },
+          {
+            "state": "established",
+            "text": "Cross-Functional Customer Activation and Retention Inquiry W"
+          },
+          {
+            "state": "established",
+            "text": "SF-03 InspectionWorkspace · founded 25 Sept, 10:40 UTC · 74d"
+          },
+          {
+            "state": "established",
+            "text": "Cross-Functional Customer Activation and Retention Inquiry W"
+          },
+          {
+            "state": "established",
+            "text": "SF-03 InspectionWorkspace · founded 25 Sept, 11:14 UTC · c3f"
+          },
+          {
+            "state": "established",
+            "text": "Cross-Functional Customer Activation and Retention Inquiry W"
+          },
+          {
+            "state": "established",
+            "text": "SF-03 InspectionWorkspace · founded 25 Sept, 15:06 UTC · 121"
+          },
+          {
+            "state": "established",
+            "text": "Cross-Functional Customer Activation and Retention Inquiry W"
+          },
+          {
+            "state": "established",
+            "text": "SF-03 InspectionWorkspace · founded 25 Sept, 15:24 UTC · bec"
+          },
+          {
+            "state": "established",
+            "text": "Cross-Functional Customer Activation and Retention Inquiry W"
+          },
+          {
+            "state": "established",
+            "text": "SF-03 InspectionWorkspace · founded 25 Sept, 15:53 UTC · 9cf"
+          },
+          {
+            "state": "established",
+            "text": "Cross-Functional Customer Activation and Retention Inquiry W"
+          }
+        ],
+        "paths": [
+          "possible",
+          "established",
+          "established",
+          "established",
+          "established",
+          "established",
+          "established",
+          "established",
+          "established",
+          "established",
+          "established",
+          "established",
+          "established",
+          "established",
+          "established",
+          "established",
+          "established",
+          "established",
+          "established",
+          "established",
+          "established"
+        ],
+        "coreAnimation": "none",
+        "bgAnimation": "field-breathe"
+      },
+      "redirectChain": [
+        "/login",
+        "/login",
+        "/",
+        "/workspaces"
+      ],
+      "console": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "prefetchAborted": [
+        "GET /workspaces/05064de4-3206-4692-918c-48ecc0f88f1a?_rsc=qJDZTuExLQHW24yN :: net::ERR_ABORTED",
+        "GET /workspaces/f8b31dec-3314-4d0c-a8e3-06339f7bcd06?_rsc=qJDZTuExLQHW24yN :: net::ERR_ABORTED",
+        "GET /workspaces/3d447900-a851-4b43-b239-b6f5fed0c74e?_rsc=qJDZTuExLQHW24yN :: net::ERR_ABORTED",
+        "GET /workspaces/fb5f87c0-09bd-4bb7-87db-4f561c114463?_rsc=qJDZTuExLQHW24yN :: net::ERR_ABORTED",
+        "GET /workspaces/05064de4-3206-4692-918c-48ecc0f88f1a?_rsc=ycP_2DwIC2OCocL2 :: net::ERR_ABORTED",
+        "GET /workspaces/fb5f87c0-09bd-4bb7-87db-4f561c114463?_rsc=ycP_2DwIC2OCocL2 :: net::ERR_ABORTED",
+        "GET /workspaces/f8b31dec-3314-4d0c-a8e3-06339f7bcd06?_rsc=ycP_2DwIC2OCocL2 :: net::ERR_ABORTED",
+        "GET /workspaces/3d447900-a851-4b43-b239-b6f5fed0c74e?_rsc=ycP_2DwIC2OCocL2 :: net::ERR_ABORTED",
+        "GET /workspaces/e7487c61-8a34-4488-9926-0137fe5c9f69?_rsc=ycP_2DwIC2OCocL2 :: net::ERR_ABORTED",
+        "GET /workspaces/2bc2c8b0-f335-46ec-a88f-908ae020deb1?_rsc=ycP_2DwIC2OCocL2 :: net::ERR_ABORTED"
+      ],
+      "http4xx5xx": [],
+      "unexpectedHttp": [],
+      "staticRequests": 11,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/2q2grsmv3e0ld.css"
+        ],
+        "tokens": {
+          "cyan": "#58dcff",
+          "blue": "#86abff",
+          "red": "#ff7b86"
+        },
+        "bodyBackground": "rgb(3, 6, 12)",
+        "backgroundField": true
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 27,
+        "withoutVisibleFocus": [],
+        "order": [
+          "a:Skip to content",
+          "a:nquiry",
+          "button:Log out",
+          "button:Found a Workspace",
+          "a:SF-03 Inspection",
+          "a:Cross-Functional Customer Activation and Retention",
+          "a:SF-03 Inspection",
+          "a:Cross-Functional Customer Activation and Retention",
+          "a:SF-03 Inspection",
+          "a:Cross-Functional Customer Activation and Retention",
+          "a:SF-03 Inspection",
+          "a:Cross-Functional Customer Activation and Retention",
+          "a:SF-03 Inspection",
+          "a:Cross-Functional Customer Activation and Retention",
+          "a:SF-03 Inspection",
+          "a:Cross-Functional Customer Activation and Retention",
+          "a:SF-03 Inspection",
+          "a:Cross-Functional Customer Activation and Retention",
+          "a:SF-03 Inspection",
+          "a:Cross-Functional Customer Activation and Retention",
+          "a:SF-03 Inspection",
+          "a:Cross-Functional Customer Activation and Retention",
+          "a:SF-03 Inspection",
+          "a:Cross-Functional Customer Activation and Retention",
+          "input:workspace-name",
+          "button:Create Workspace",
+          "button:Copy Authenticated identity"
+        ]
+      },
+      "localTruthDetected": false,
+      "expectedOffline": false,
+      "pass": true
+    },
+    {
+      "seq": 8,
+      "screenshot": "screenshots/08-desktop-workspace-field-owner.png",
+      "url": "/workspaces/9cf2afb1-308f-466d-98c0-d508b5034f09",
+      "route": "/workspaces/[w]",
+      "viewport": "desktop",
+      "reducedMotion": "no-preference",
+      "identity": "owner@inspect.local.test",
+      "canonicalState": "Workspace; viewer = governance root (Owner), not Facilitator",
+      "expectedRelation": "workspace core; Challenge relation unavailable with server reason (node + reason); members/authority orbit; add member (governance-capable); proof depth",
+      "projection": {
+        "createChallenge": {
+          "available": false,
+          "reasonCode": "NOT_FACILITATOR",
+          "reason": "Creating a Challenge requires the Facilitator role in this Workspace (AUTH-DEP-CH-001). Your role: Owner."
+        },
+        "challenges": [
+          "Why did activation stall after onboarding?"
+        ],
+        "members": [
+          "Inspect Owner",
+          "Inspect Facilitator"
+        ]
+      },
+      "checks": [
+        {
+          "claim": "challenge links = server",
+          "kind": "projection",
+          "expected": [
+            "Why did activation stall after onboarding?"
+          ],
+          "actual": [
+            "Why did activation stall after onboarding?"
+          ],
+          "pass": true
+        },
+        {
+          "claim": "new-challenge node state = capability",
+          "kind": "projection",
+          "expected": "unavailable",
+          "actual": "unavailable",
+          "pass": true
+        },
+        {
+          "claim": "reason = server reason",
+          "kind": "projection",
+          "expected": "Creating a Challenge requires the Facilitator role in this Workspace (AUTH-DEP-CH-001). Your role: Owner.",
+          "actual": "Creating a Challenge requires the Facilitator role in this Workspace (AUTH-DEP-CH-001). Your role: Owner.",
+          "pass": true
+        },
+        {
+          "claim": "member nodes = server members",
+          "kind": "projection",
+          "expected": 2,
+          "actual": 2,
+          "pass": true
+        },
+        {
+          "claim": "add-member form (governance root)",
+          "kind": "visible",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        },
+        {
+          "claim": "effective topology mode",
+          "kind": "visible",
+          "expected": "orbit",
+          "actual": "orbit",
+          "pass": true
+        },
+        {
+          "claim": "no two nodes overlap (D8)",
+          "kind": "visible",
+          "expected": 0,
+          "actual": 0,
+          "pass": true
+        }
+      ],
+      "topology": {
+        "mode": "orbit",
+        "effectiveMode": "orbit",
+        "surface": "workspace",
+        "coreState": "current",
+        "coreEyebrow": "Workspace",
+        "nodes": [
+          {
+            "state": "unavailable",
+            "text": "New Challengenot available nowRelation state: not available"
+          },
+          {
+            "state": "established",
+            "text": "Why did activation stall after onboarding?ChallengeRelation "
+          },
+          {
+            "state": "governance",
+            "text": "You holdWORKSPACE_​GOVERNANCE_​RIGHTRelation state: authorit"
+          },
+          {
+            "state": "human",
+            "text": "Inspect OwnerOwnerRelation state: human"
+          },
+          {
+            "state": "human",
+            "text": "Inspect FacilitatorFacilitatorRelation state: human"
+          }
+        ],
+        "paths": [
+          "unavailable",
+          "established",
+          "governance",
+          "established",
+          "established"
+        ],
+        "coreAnimation": "none",
+        "bgAnimation": "field-breathe"
+      },
+      "redirectChain": [
+        "/workspaces/9cf2afb1-308f-466d-98c0-d508b5034f09",
+        "/workspaces/9cf2afb1-308f-466d-98c0-d508b5034f09"
+      ],
+      "console": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "prefetchAborted": [],
+      "http4xx5xx": [],
+      "unexpectedHttp": [],
+      "staticRequests": 10,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/2q2grsmv3e0ld.css"
+        ],
+        "tokens": {
+          "cyan": "#58dcff",
+          "blue": "#86abff",
+          "red": "#ff7b86"
+        },
+        "bodyBackground": "rgb(3, 6, 12)",
+        "backgroundField": true
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 12,
+        "withoutVisibleFocus": [],
+        "order": [
+          "a:Skip to content",
+          "a:Workspaces",
+          "a:nquiry",
+          "button:Log out",
+          "a:Why did activation stall after onboarding?",
+          "input:new-member-user-id",
+          "select:ContributorFacilitator",
+          "button:Add member",
+          "summary:Authority you hold here (proof, verify)",
+          "button:Copy Workspace",
+          "button:Copy You",
+          "a:All accessible Workspaces"
+        ]
+      },
+      "localTruthDetected": false,
+      "expectedOffline": false,
+      "pass": true
+    },
+    {
+      "seq": 9,
+      "screenshot": "screenshots/09-pixel-7-workspace-overview-owner.png",
+      "url": "/workspaces",
+      "route": "/login -> / -> /workspaces",
+      "viewport": "pixel-7",
+      "reducedMotion": "no-preference",
+      "identity": "owner@inspect.local.test",
+      "canonicalState": "authenticated; accessible Workspaces from GET /workspaces",
+      "expectedRelation": "identity/access core; founding relation possible; accessible Workspaces as nodes (links); trace = access only",
+      "projection": {
+        "authMe": {
+          "kind": "ok",
+          "userId": "bf704975-9aa1-4af7-951b-9c0834820b01"
+        },
+        "workspaces": [
+          "SF-03 Inspection",
+          "Cross-Functional Customer Activation and Retention Inquiry Workspace for the European Enterprise Segment",
+          "SF-03 Inspection",
+          "Cross-Functional Customer Activation and Retention Inquiry Workspace for the European Enterprise Segment",
+          "SF-03 Inspection",
+          "Cross-Functional Customer Activation and Retention Inquiry Workspace for the European Enterprise Segment",
+          "SF-03 Inspection",
+          "Cross-Functional Customer Activation and Retention Inquiry Workspace for the European Enterprise Segment",
+          "SF-03 Inspection",
+          "Cross-Functional Customer Activation and Retention Inquiry Workspace for the European Enterprise Segment",
+          "SF-03 Inspection",
+          "Cross-Functional Customer Activation and Retention Inquiry Workspace for the European Enterprise Segment",
+          "SF-03 Inspection",
+          "Cross-Functional Customer Activation and Retention Inquiry Workspace for the European Enterprise Segment",
+          "SF-03 Inspection",
+          "Cross-Functional Customer Activation and Retention Inquiry Workspace for the European Enterprise Segment",
+          "SF-03 Inspection",
+          "Cross-Functional Customer Activation and Retention Inquiry Workspace for the European Enterprise Segment",
+          "SF-03 Inspection",
+          "Cross-Functional Customer Activation and Retention Inquiry Workspace for the European Enterprise Segment"
+        ]
+      },
+      "checks": [
+        {
+          "claim": "session resolves",
+          "kind": "projection",
+          "expected": "ok",
+          "actual": "ok",
+          "pass": true
+        },
+        {
+          "claim": "workspace links = server list (normalized: one node per canonical id, inner + outer ring)",
+          "kind": "projection",
+          "expected": 20,
+          "actual": 20,
+          "pass": true
+        },
+        {
+          "claim": "workspace names = server names (inner ring first)",
+          "kind": "projection",
+          "expected": [
+            "SF-03 Inspection",
+            "Cross-Functional Customer Activation and Retention Inquiry Workspace for the European Enterprise Segment",
+            "SF-03 Inspection",
+            "Cross-Functional Customer Activation and Retention Inquiry Workspace for the European Enterprise Segment",
+            "SF-03 Inspection"
+          ],
+          "actual": [
+            "SF-03 Inspection",
+            "Cross-Functional Customer Activation and Retention Inquiry Workspace for the European Enterprise Segment",
+            "SF-03 Inspection",
+            "Cross-Functional Customer Activation and Retention Inquiry Workspace for the European Enterprise Segment",
+            "SF-03 Inspection"
+          ],
+          "pass": true
+        },
+        {
+          "claim": "trace = access only",
+          "kind": "projection",
+          "expected": [
+            [
+              "access",
+              "current",
+              "Workspaces"
+            ]
+          ],
+          "actual": [
+            [
+              "access",
+              "current",
+              "Workspaces"
+            ]
+          ],
+          "pass": true
+        },
+        {
+          "claim": "founding node possible",
+          "kind": "visible",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        },
+        {
+          "claim": "core = access, current",
+          "kind": "visible",
+          "expected": "current",
+          "actual": "current",
+          "pass": true
+        },
+        {
+          "claim": "logout reachable after identity confirmed",
+          "kind": "visible",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        }
+      ],
+      "topology": {
+        "mode": "stack",
+        "effectiveMode": "stack",
+        "surface": "workspace-access",
+        "coreState": "current",
+        "coreEyebrow": "Your access",
+        "nodes": [
+          {
+            "state": "possible",
+            "text": "Found a Workspacepossible for every authenticated identityRe"
+          },
+          {
+            "state": "established",
+            "text": "SF-03 InspectionWorkspace · founded 25 Sept, 08:25 UTC · 050"
+          },
+          {
+            "state": "established",
+            "text": "Cross-Functional Customer Activation and Retention Inquiry W"
+          },
+          {
+            "state": "established",
+            "text": "SF-03 InspectionWorkspace · founded 25 Sept, 09:03 UTC · 3d4"
+          },
+          {
+            "state": "established",
+            "text": "Cross-Functional Customer Activation and Retention Inquiry W"
+          },
+          {
+            "state": "established",
+            "text": "SF-03 InspectionWorkspace · founded 25 Sept, 09:15 UTC · 2bc"
+          },
+          {
+            "state": "established",
+            "text": "Cross-Functional Customer Activation and Retention Inquiry W"
+          },
+          {
+            "state": "established",
+            "text": "SF-03 InspectionWorkspace · founded 25 Sept, 09:30 UTC · 11a"
+          },
+          {
+            "state": "established",
+            "text": "Cross-Functional Customer Activation and Retention Inquiry W"
+          },
+          {
+            "state": "established",
+            "text": "SF-03 InspectionWorkspace · founded 25 Sept, 10:12 UTC · 2e5"
+          },
+          {
+            "state": "established",
+            "text": "Cross-Functional Customer Activation and Retention Inquiry W"
+          },
+          {
+            "state": "established",
+            "text": "SF-03 InspectionWorkspace · founded 25 Sept, 10:40 UTC · 74d"
+          },
+          {
+            "state": "established",
+            "text": "Cross-Functional Customer Activation and Retention Inquiry W"
+          },
+          {
+            "state": "established",
+            "text": "SF-03 InspectionWorkspace · founded 25 Sept, 11:14 UTC · c3f"
+          },
+          {
+            "state": "established",
+            "text": "Cross-Functional Customer Activation and Retention Inquiry W"
+          },
+          {
+            "state": "established",
+            "text": "SF-03 InspectionWorkspace · founded 25 Sept, 15:06 UTC · 121"
+          },
+          {
+            "state": "established",
+            "text": "Cross-Functional Customer Activation and Retention Inquiry W"
+          },
+          {
+            "state": "established",
+            "text": "SF-03 InspectionWorkspace · founded 25 Sept, 15:24 UTC · bec"
+          },
+          {
+            "state": "established",
+            "text": "Cross-Functional Customer Activation and Retention Inquiry W"
+          },
+          {
+            "state": "established",
+            "text": "SF-03 InspectionWorkspace · founded 25 Sept, 15:53 UTC · 9cf"
+          },
+          {
+            "state": "established",
+            "text": "Cross-Functional Customer Activation and Retention Inquiry W"
+          }
+        ],
+        "paths": [
+          "possible",
+          "established",
+          "established",
+          "established",
+          "established",
+          "established",
+          "established",
+          "established",
+          "established",
+          "established",
+          "established",
+          "established",
+          "established",
+          "established",
+          "established",
+          "established",
+          "established",
+          "established",
+          "established",
+          "established",
+          "established"
+        ],
+        "coreAnimation": "none",
+        "bgAnimation": "field-breathe"
+      },
+      "redirectChain": [
+        "/login",
+        "/login",
+        "/",
+        "/workspaces"
+      ],
+      "console": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "prefetchAborted": [
+        "GET /workspaces/05064de4-3206-4692-918c-48ecc0f88f1a?_rsc=qJDZTuExLQHW24yN :: net::ERR_ABORTED",
+        "GET /workspaces/fb5f87c0-09bd-4bb7-87db-4f561c114463?_rsc=qJDZTuExLQHW24yN :: net::ERR_ABORTED",
+        "GET /workspaces/3d447900-a851-4b43-b239-b6f5fed0c74e?_rsc=qJDZTuExLQHW24yN :: net::ERR_ABORTED",
+        "GET /workspaces/05064de4-3206-4692-918c-48ecc0f88f1a?_rsc=ycP_2DwIC2OCocL2 :: net::ERR_ABORTED",
+        "GET /workspaces/fb5f87c0-09bd-4bb7-87db-4f561c114463?_rsc=ycP_2DwIC2OCocL2 :: net::ERR_ABORTED",
+        "GET /workspaces/f8b31dec-3314-4d0c-a8e3-06339f7bcd06?_rsc=ycP_2DwIC2OCocL2 :: net::ERR_ABORTED",
+        "GET /workspaces/3d447900-a851-4b43-b239-b6f5fed0c74e?_rsc=ycP_2DwIC2OCocL2 :: net::ERR_ABORTED"
+      ],
+      "http4xx5xx": [],
+      "unexpectedHttp": [],
+      "staticRequests": 11,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/2q2grsmv3e0ld.css"
+        ],
+        "tokens": {
+          "cyan": "#58dcff",
+          "blue": "#86abff",
+          "red": "#ff7b86"
+        },
+        "bodyBackground": "rgb(3, 6, 12)",
+        "backgroundField": true
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 27,
+        "withoutVisibleFocus": [],
+        "order": [
+          "a:Skip to content",
+          "a:nquiry",
+          "button:Log out",
+          "button:Found a Workspace",
+          "a:SF-03 Inspection",
+          "a:Cross-Functional Customer Activation and Retention",
+          "a:SF-03 Inspection",
+          "a:Cross-Functional Customer Activation and Retention",
+          "a:SF-03 Inspection",
+          "a:Cross-Functional Customer Activation and Retention",
+          "a:SF-03 Inspection",
+          "a:Cross-Functional Customer Activation and Retention",
+          "a:SF-03 Inspection",
+          "a:Cross-Functional Customer Activation and Retention",
+          "a:SF-03 Inspection",
+          "a:Cross-Functional Customer Activation and Retention",
+          "a:SF-03 Inspection",
+          "a:Cross-Functional Customer Activation and Retention",
+          "a:SF-03 Inspection",
+          "a:Cross-Functional Customer Activation and Retention",
+          "a:SF-03 Inspection",
+          "a:Cross-Functional Customer Activation and Retention",
+          "a:SF-03 Inspection",
+          "a:Cross-Functional Customer Activation and Retention",
+          "input:workspace-name",
+          "button:Create Workspace",
+          "button:Copy Authenticated identity"
+        ]
+      },
+      "localTruthDetected": false,
+      "expectedOffline": false,
+      "pass": true
+    },
+    {
+      "seq": 10,
+      "screenshot": "screenshots/10-pixel-7-workspace-field-owner.png",
+      "url": "/workspaces/9cf2afb1-308f-466d-98c0-d508b5034f09",
+      "route": "/workspaces/[w]",
+      "viewport": "pixel-7",
+      "reducedMotion": "no-preference",
+      "identity": "owner@inspect.local.test",
+      "canonicalState": "Workspace; viewer = governance root (Owner), not Facilitator",
+      "expectedRelation": "workspace core; Challenge relation unavailable with server reason (node + reason); members/authority orbit; add member (governance-capable); proof depth",
+      "projection": {
+        "createChallenge": {
+          "available": false,
+          "reasonCode": "NOT_FACILITATOR",
+          "reason": "Creating a Challenge requires the Facilitator role in this Workspace (AUTH-DEP-CH-001). Your role: Owner."
+        },
+        "challenges": [
+          "Why did activation stall after onboarding?"
+        ],
+        "members": [
+          "Inspect Owner",
+          "Inspect Facilitator"
+        ]
+      },
+      "checks": [
+        {
+          "claim": "challenge links = server",
+          "kind": "projection",
+          "expected": [
+            "Why did activation stall after onboarding?"
+          ],
+          "actual": [
+            "Why did activation stall after onboarding?"
+          ],
+          "pass": true
+        },
+        {
+          "claim": "new-challenge node state = capability",
+          "kind": "projection",
+          "expected": "unavailable",
+          "actual": "unavailable",
+          "pass": true
+        },
+        {
+          "claim": "reason = server reason",
+          "kind": "projection",
+          "expected": "Creating a Challenge requires the Facilitator role in this Workspace (AUTH-DEP-CH-001). Your role: Owner.",
+          "actual": "Creating a Challenge requires the Facilitator role in this Workspace (AUTH-DEP-CH-001). Your role: Owner.",
+          "pass": true
+        },
+        {
+          "claim": "member nodes = server members",
+          "kind": "projection",
+          "expected": 2,
+          "actual": 2,
+          "pass": true
+        },
+        {
+          "claim": "add-member form (governance root)",
+          "kind": "visible",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        },
+        {
+          "claim": "effective topology mode",
+          "kind": "visible",
+          "expected": "stack",
+          "actual": "stack",
+          "pass": true
+        },
+        {
+          "claim": "no two nodes overlap (D8)",
+          "kind": "visible",
+          "expected": 0,
+          "actual": 0,
+          "pass": true
+        }
+      ],
+      "topology": {
+        "mode": "orbit",
+        "effectiveMode": "stack",
+        "surface": "workspace",
+        "coreState": "current",
+        "coreEyebrow": "Workspace",
+        "nodes": [
+          {
+            "state": "unavailable",
+            "text": "New Challengenot available nowRelation state: not available"
+          },
+          {
+            "state": "established",
+            "text": "Why did activation stall after onboarding?ChallengeRelation "
+          },
+          {
+            "state": "governance",
+            "text": "You holdWORKSPACE_​GOVERNANCE_​RIGHTRelation state: authorit"
+          },
+          {
+            "state": "human",
+            "text": "Inspect OwnerOwnerRelation state: human"
+          },
+          {
+            "state": "human",
+            "text": "Inspect FacilitatorFacilitatorRelation state: human"
+          }
+        ],
+        "paths": [
+          "unavailable",
+          "established",
+          "governance",
+          "established",
+          "established"
+        ],
+        "coreAnimation": "none",
+        "bgAnimation": "field-breathe"
+      },
+      "redirectChain": [
+        "/workspaces/9cf2afb1-308f-466d-98c0-d508b5034f09",
+        "/workspaces/9cf2afb1-308f-466d-98c0-d508b5034f09"
+      ],
+      "console": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "prefetchAborted": [
+        "GET /workspaces/9cf2afb1-308f-466d-98c0-d508b5034f09/challenges/aeb066e7-1567-4210-adba-7b30e4c9ff51?_rsc=N55_N-d6ae7jbPDL :: net::ERR_ABORTED"
+      ],
+      "http4xx5xx": [],
+      "unexpectedHttp": [],
+      "staticRequests": 10,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/2q2grsmv3e0ld.css"
+        ],
+        "tokens": {
+          "cyan": "#58dcff",
+          "blue": "#86abff",
+          "red": "#ff7b86"
+        },
+        "bodyBackground": "rgb(3, 6, 12)",
+        "backgroundField": true
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 13,
+        "withoutVisibleFocus": [],
+        "order": [
+          "a:Skip to content",
+          "button:Show the route+2",
+          "a:Workspaces",
+          "a:nquiry",
+          "button:Log out",
+          "a:Why did activation stall after onboarding?",
+          "input:new-member-user-id",
+          "select:ContributorFacilitator",
+          "button:Add member",
+          "summary:Authority you hold here (proof, verify)",
+          "button:Copy Workspace",
+          "button:Copy You",
+          "a:All accessible Workspaces"
+        ]
+      },
+      "localTruthDetected": false,
+      "expectedOffline": false,
+      "pass": true
+    },
+    {
+      "seq": 11,
+      "screenshot": "screenshots/11-desktop-challenge-field-PRIMARY-facilitator.png",
+      "url": "/workspaces/9cf2afb1-308f-466d-98c0-d508b5034f09/challenges/aeb066e7-1567-4210-adba-7b30e4c9ff51",
+      "route": "/workspaces/[w]/challenges/[c]",
+      "viewport": "desktop",
+      "reducedMotion": "no-preference",
+      "identity": "facilitator@inspect.local.test",
+      "canonicalState": "Challenge; Facilitator holds SESSION_CONTROL_RIGHT at CHALLENGE:<c>",
+      "expectedRelation": "PRIMARY SURFACE: challenge core central; sessions orbit with New Session POSSIBLE (Open Session effect node) + established session nodes; governance orbit with holder; relation paths; proof depth; living background",
+      "projection": {
+        "openSession": {
+          "available": true,
+          "reasonCode": null,
+          "reason": null
+        },
+        "sessions": [],
+        "controllers": [
+          "Inspect Facilitator"
+        ]
+      },
+      "checks": [
+        {
+          "claim": "trace",
+          "kind": "projection",
+          "expected": [
+            [
+              "access",
+              "established",
+              "Workspaces"
+            ],
+            [
+              "workspace",
+              "established",
+              "SF-03 Inspection"
+            ],
+            [
+              "challenge",
+              "current",
+              "Why did activation stall after onboarding?"
+            ],
+            [
+              "session",
+              "possible",
+              "New Session"
+            ]
+          ],
+          "actual": [
+            [
+              "access",
+              "established",
+              "Workspaces"
+            ],
+            [
+              "workspace",
+              "established",
+              "SF-03 Inspection"
+            ],
+            [
+              "challenge",
+              "current",
+              "Why did activation stall after onboarding?"
+            ],
+            [
+              "session",
+              "possible",
+              "New Session"
+            ]
+          ],
+          "pass": true
+        },
+        {
+          "claim": "New Session node state = capability",
+          "kind": "projection",
+          "expected": "possible",
+          "actual": "possible",
+          "pass": true
+        },
+        {
+          "claim": "Open Session effect reachable iff capability",
+          "kind": "projection",
+          "expected": true,
+          "actual": true,
+          "pass": true
+        },
+        {
+          "claim": "session nodes = server sessions",
+          "kind": "projection",
+          "expected": 0,
+          "actual": 0,
+          "pass": true
+        },
+        {
+          "claim": "governance nodes = server controllers",
+          "kind": "projection",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        },
+        {
+          "claim": "relation paths exist only for real relations",
+          "kind": "visible",
+          "expected": 2,
+          "actual": 2,
+          "pass": true
+        },
+        {
+          "claim": "core state current",
+          "kind": "visible",
+          "expected": "current",
+          "actual": "current",
+          "pass": true
+        },
+        {
+          "claim": "effective topology mode",
+          "kind": "visible",
+          "expected": "orbit",
+          "actual": "orbit",
+          "pass": true
+        },
+        {
+          "claim": "not a card grid: no .panel grid inside the stage",
+          "kind": "visible",
+          "expected": 0,
+          "actual": 0,
+          "pass": true
+        },
+        {
+          "claim": "no two nodes overlap (D8)",
+          "kind": "visible",
+          "expected": 0,
+          "actual": 0,
+          "pass": true
+        }
+      ],
+      "topology": {
+        "mode": "orbit",
+        "effectiveMode": "orbit",
+        "surface": "challenge",
+        "coreState": "current",
+        "coreEyebrow": "Challenge",
+        "nodes": [
+          {
+            "state": "possible",
+            "text": "Open Sessionpossible next relationRelation state: possible"
+          },
+          {
+            "state": "governance",
+            "text": "Inspect FacilitatorSESSION_​CONTROL_​RIGHT · granted by Insp"
+          }
+        ],
+        "paths": [
+          "possible",
+          "governance"
+        ],
+        "coreAnimation": "none",
+        "bgAnimation": "field-breathe"
+      },
+      "redirectChain": [
+        "/login",
+        "/login",
+        "/",
+        "/workspaces",
+        "/workspaces/9cf2afb1-308f-466d-98c0-d508b5034f09/challenges/aeb066e7-1567-4210-adba-7b30e4c9ff51",
+        "/workspaces/9cf2afb1-308f-466d-98c0-d508b5034f09/challenges/aeb066e7-1567-4210-adba-7b30e4c9ff51"
+      ],
+      "console": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "prefetchAborted": [
+        "GET /workspaces/05064de4-3206-4692-918c-48ecc0f88f1a?_rsc=ycP_2DwIC2OCocL2 :: net::ERR_ABORTED",
+        "GET /workspaces/fb5f87c0-09bd-4bb7-87db-4f561c114463?_rsc=ycP_2DwIC2OCocL2 :: net::ERR_ABORTED",
+        "GET /workspaces/f8b31dec-3314-4d0c-a8e3-06339f7bcd06?_rsc=ycP_2DwIC2OCocL2 :: net::ERR_ABORTED",
+        "GET /workspaces/3d447900-a851-4b43-b239-b6f5fed0c74e?_rsc=ycP_2DwIC2OCocL2 :: net::ERR_ABORTED",
+        "GET /workspaces/2bc2c8b0-f335-46ec-a88f-908ae020deb1?_rsc=ycP_2DwIC2OCocL2 :: net::ERR_ABORTED",
+        "GET /workspaces/e7487c61-8a34-4488-9926-0137fe5c9f69?_rsc=ycP_2DwIC2OCocL2 :: net::ERR_ABORTED"
+      ],
+      "http4xx5xx": [],
+      "unexpectedHttp": [],
+      "staticRequests": 21,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/2q2grsmv3e0ld.css"
+        ],
+        "tokens": {
+          "cyan": "#58dcff",
+          "blue": "#86abff",
+          "red": "#ff7b86"
+        },
+        "bodyBackground": "rgb(3, 6, 12)",
+        "backgroundField": true
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 9,
+        "withoutVisibleFocus": [],
+        "order": [
+          "a:Skip to content",
+          "a:Workspaces",
+          "a:SF-03 Inspection",
+          "a:nquiry",
+          "button:Log out",
+          "button:Open Session",
+          "summary:Who holds Session control for this Challenge (proo",
+          "button:Copy Challenge",
+          "button:Copy Workspace"
+        ]
+      },
+      "localTruthDetected": false,
+      "expectedOffline": false,
+      "pass": true
+    },
+    {
+      "seq": 12,
+      "screenshot": "screenshots/12-pixel-7-challenge-field-PRIMARY-facilitator.png",
+      "url": "/workspaces/9cf2afb1-308f-466d-98c0-d508b5034f09/challenges/aeb066e7-1567-4210-adba-7b30e4c9ff51",
+      "route": "/workspaces/[w]/challenges/[c]",
+      "viewport": "pixel-7",
+      "reducedMotion": "no-preference",
+      "identity": "facilitator@inspect.local.test",
+      "canonicalState": "Challenge; Facilitator holds SESSION_CONTROL_RIGHT at CHALLENGE:<c>",
+      "expectedRelation": "PRIMARY SURFACE: challenge core central; sessions orbit with New Session POSSIBLE (Open Session effect node) + established session nodes; governance orbit with holder; relation paths; proof depth; living background",
+      "projection": {
+        "openSession": {
+          "available": true,
+          "reasonCode": null,
+          "reason": null
+        },
+        "sessions": [],
+        "controllers": [
+          "Inspect Facilitator"
+        ]
+      },
+      "checks": [
+        {
+          "claim": "trace",
+          "kind": "projection",
+          "expected": [
+            [
+              "access",
+              "established",
+              "Workspaces"
+            ],
+            [
+              "workspace",
+              "established",
+              "SF-03 Inspection"
+            ],
+            [
+              "challenge",
+              "current",
+              "Why did activation stall after onboarding?"
+            ],
+            [
+              "session",
+              "possible",
+              "New Session"
+            ]
+          ],
+          "actual": [
+            [
+              "access",
+              "established",
+              "Workspaces"
+            ],
+            [
+              "workspace",
+              "established",
+              "SF-03 Inspection"
+            ],
+            [
+              "challenge",
+              "current",
+              "Why did activation stall after onboarding?"
+            ],
+            [
+              "session",
+              "possible",
+              "New Session"
+            ]
+          ],
+          "pass": true
+        },
+        {
+          "claim": "New Session node state = capability",
+          "kind": "projection",
+          "expected": "possible",
+          "actual": "possible",
+          "pass": true
+        },
+        {
+          "claim": "Open Session effect reachable iff capability",
+          "kind": "projection",
+          "expected": true,
+          "actual": true,
+          "pass": true
+        },
+        {
+          "claim": "session nodes = server sessions",
+          "kind": "projection",
+          "expected": 0,
+          "actual": 0,
+          "pass": true
+        },
+        {
+          "claim": "governance nodes = server controllers",
+          "kind": "projection",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        },
+        {
+          "claim": "relation paths exist only for real relations",
+          "kind": "visible",
+          "expected": 2,
+          "actual": 2,
+          "pass": true
+        },
+        {
+          "claim": "core state current",
+          "kind": "visible",
+          "expected": "current",
+          "actual": "current",
+          "pass": true
+        },
+        {
+          "claim": "effective topology mode",
+          "kind": "visible",
+          "expected": "stack",
+          "actual": "stack",
+          "pass": true
+        },
+        {
+          "claim": "not a card grid: no .panel grid inside the stage",
+          "kind": "visible",
+          "expected": 0,
+          "actual": 0,
+          "pass": true
+        },
+        {
+          "claim": "no two nodes overlap (D8)",
+          "kind": "visible",
+          "expected": 0,
+          "actual": 0,
+          "pass": true
+        }
+      ],
+      "topology": {
+        "mode": "orbit",
+        "effectiveMode": "stack",
+        "surface": "challenge",
+        "coreState": "current",
+        "coreEyebrow": "Challenge",
+        "nodes": [
+          {
+            "state": "possible",
+            "text": "Open Sessionpossible next relationRelation state: possible"
+          },
+          {
+            "state": "governance",
+            "text": "Inspect FacilitatorSESSION_​CONTROL_​RIGHT · granted by Insp"
+          }
+        ],
+        "paths": [
+          "possible",
+          "governance"
+        ],
+        "coreAnimation": "none",
+        "bgAnimation": "field-breathe"
+      },
+      "redirectChain": [
+        "/login",
+        "/login",
+        "/",
+        "/workspaces",
+        "/workspaces/9cf2afb1-308f-466d-98c0-d508b5034f09/challenges/aeb066e7-1567-4210-adba-7b30e4c9ff51",
+        "/workspaces/9cf2afb1-308f-466d-98c0-d508b5034f09/challenges/aeb066e7-1567-4210-adba-7b30e4c9ff51"
+      ],
+      "console": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "prefetchAborted": [
+        "GET /workspaces/fb5f87c0-09bd-4bb7-87db-4f561c114463?_rsc=qJDZTuExLQHW24yN :: net::ERR_ABORTED",
+        "GET /workspaces/05064de4-3206-4692-918c-48ecc0f88f1a?_rsc=qJDZTuExLQHW24yN :: net::ERR_ABORTED",
+        "GET /workspaces/3d447900-a851-4b43-b239-b6f5fed0c74e?_rsc=qJDZTuExLQHW24yN :: net::ERR_ABORTED",
+        "GET /workspaces/f8b31dec-3314-4d0c-a8e3-06339f7bcd06?_rsc=qJDZTuExLQHW24yN :: net::ERR_ABORTED",
+        "GET /workspaces/05064de4-3206-4692-918c-48ecc0f88f1a?_rsc=ycP_2DwIC2OCocL2 :: net::ERR_ABORTED",
+        "GET /workspaces/3d447900-a851-4b43-b239-b6f5fed0c74e?_rsc=ycP_2DwIC2OCocL2 :: net::ERR_ABORTED",
+        "GET /workspaces/fb5f87c0-09bd-4bb7-87db-4f561c114463?_rsc=ycP_2DwIC2OCocL2 :: net::ERR_ABORTED"
+      ],
+      "http4xx5xx": [],
+      "unexpectedHttp": [],
+      "staticRequests": 21,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/2q2grsmv3e0ld.css"
+        ],
+        "tokens": {
+          "cyan": "#58dcff",
+          "blue": "#86abff",
+          "red": "#ff7b86"
+        },
+        "bodyBackground": "rgb(3, 6, 12)",
+        "backgroundField": true
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 10,
+        "withoutVisibleFocus": [],
+        "order": [
+          "a:Skip to content",
+          "button:Show the route+3",
+          "a:Workspaces",
+          "a:SF-03 Inspection",
+          "a:nquiry",
+          "button:Log out",
+          "button:Open Session",
+          "summary:Who holds Session control for this Challenge (proo",
+          "button:Copy Challenge",
+          "button:Copy Workspace"
+        ]
+      },
+      "localTruthDetected": false,
+      "expectedOffline": false,
+      "pass": true
+    },
+    {
+      "seq": 13,
+      "screenshot": "screenshots/13-desktop-reduced-motion-challenge-field-PRIMARY-facilitator.png",
+      "url": "/workspaces/9cf2afb1-308f-466d-98c0-d508b5034f09/challenges/aeb066e7-1567-4210-adba-7b30e4c9ff51",
+      "route": "/workspaces/[w]/challenges/[c]",
+      "viewport": "desktop",
+      "reducedMotion": "reduce",
+      "identity": "facilitator@inspect.local.test",
+      "canonicalState": "Challenge; Facilitator holds SESSION_CONTROL_RIGHT at CHALLENGE:<c>",
+      "expectedRelation": "PRIMARY SURFACE: challenge core central; sessions orbit with New Session POSSIBLE (Open Session effect node) + established session nodes; governance orbit with holder; relation paths; proof depth; living background",
+      "projection": {
+        "openSession": {
+          "available": true,
+          "reasonCode": null,
+          "reason": null
+        },
+        "sessions": [],
+        "controllers": [
+          "Inspect Facilitator"
+        ]
+      },
+      "checks": [
+        {
+          "claim": "trace",
+          "kind": "projection",
+          "expected": [
+            [
+              "access",
+              "established",
+              "Workspaces"
+            ],
+            [
+              "workspace",
+              "established",
+              "SF-03 Inspection"
+            ],
+            [
+              "challenge",
+              "current",
+              "Why did activation stall after onboarding?"
+            ],
+            [
+              "session",
+              "possible",
+              "New Session"
+            ]
+          ],
+          "actual": [
+            [
+              "access",
+              "established",
+              "Workspaces"
+            ],
+            [
+              "workspace",
+              "established",
+              "SF-03 Inspection"
+            ],
+            [
+              "challenge",
+              "current",
+              "Why did activation stall after onboarding?"
+            ],
+            [
+              "session",
+              "possible",
+              "New Session"
+            ]
+          ],
+          "pass": true
+        },
+        {
+          "claim": "New Session node state = capability",
+          "kind": "projection",
+          "expected": "possible",
+          "actual": "possible",
+          "pass": true
+        },
+        {
+          "claim": "Open Session effect reachable iff capability",
+          "kind": "projection",
+          "expected": true,
+          "actual": true,
+          "pass": true
+        },
+        {
+          "claim": "session nodes = server sessions",
+          "kind": "projection",
+          "expected": 0,
+          "actual": 0,
+          "pass": true
+        },
+        {
+          "claim": "governance nodes = server controllers",
+          "kind": "projection",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        },
+        {
+          "claim": "relation paths exist only for real relations",
+          "kind": "visible",
+          "expected": 2,
+          "actual": 2,
+          "pass": true
+        },
+        {
+          "claim": "core state current",
+          "kind": "visible",
+          "expected": "current",
+          "actual": "current",
+          "pass": true
+        },
+        {
+          "claim": "effective topology mode",
+          "kind": "visible",
+          "expected": "orbit",
+          "actual": "orbit",
+          "pass": true
+        },
+        {
+          "claim": "not a card grid: no .panel grid inside the stage",
+          "kind": "visible",
+          "expected": 0,
+          "actual": 0,
+          "pass": true
+        },
+        {
+          "claim": "no two nodes overlap (D8)",
+          "kind": "visible",
+          "expected": 0,
+          "actual": 0,
+          "pass": true
+        },
+        {
+          "claim": "reduced motion: core animation none",
+          "kind": "visible",
+          "expected": "none",
+          "actual": "none",
+          "pass": true
+        },
+        {
+          "claim": "reduced motion: New Session still reachable",
+          "kind": "projection",
+          "expected": true,
+          "actual": true,
+          "pass": true
+        }
+      ],
+      "topology": {
+        "mode": "orbit",
+        "effectiveMode": "orbit",
+        "surface": "challenge",
+        "coreState": "current",
+        "coreEyebrow": "Challenge",
+        "nodes": [
+          {
+            "state": "possible",
+            "text": "Open Sessionpossible next relationRelation state: possible"
+          },
+          {
+            "state": "governance",
+            "text": "Inspect FacilitatorSESSION_​CONTROL_​RIGHT · granted by Insp"
+          }
+        ],
+        "paths": [
+          "possible",
+          "governance"
+        ],
+        "coreAnimation": "none",
+        "bgAnimation": "none"
+      },
+      "redirectChain": [
+        "/login",
+        "/login",
+        "/",
+        "/workspaces",
+        "/workspaces/9cf2afb1-308f-466d-98c0-d508b5034f09/challenges/aeb066e7-1567-4210-adba-7b30e4c9ff51",
+        "/workspaces/9cf2afb1-308f-466d-98c0-d508b5034f09/challenges/aeb066e7-1567-4210-adba-7b30e4c9ff51"
+      ],
+      "console": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "prefetchAborted": [
+        "GET /workspaces/3d447900-a851-4b43-b239-b6f5fed0c74e?_rsc=qJDZTuExLQHW24yN :: net::ERR_ABORTED",
+        "GET /workspaces/fb5f87c0-09bd-4bb7-87db-4f561c114463?_rsc=qJDZTuExLQHW24yN :: net::ERR_ABORTED",
+        "GET /workspaces/05064de4-3206-4692-918c-48ecc0f88f1a?_rsc=ycP_2DwIC2OCocL2 :: net::ERR_ABORTED",
+        "GET /workspaces/3d447900-a851-4b43-b239-b6f5fed0c74e?_rsc=ycP_2DwIC2OCocL2 :: net::ERR_ABORTED",
+        "GET /workspaces/e7487c61-8a34-4488-9926-0137fe5c9f69?_rsc=ycP_2DwIC2OCocL2 :: net::ERR_ABORTED",
+        "GET /workspaces/2bc2c8b0-f335-46ec-a88f-908ae020deb1?_rsc=ycP_2DwIC2OCocL2 :: net::ERR_ABORTED"
+      ],
+      "http4xx5xx": [],
+      "unexpectedHttp": [],
+      "staticRequests": 21,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/2q2grsmv3e0ld.css"
+        ],
+        "tokens": {
+          "cyan": "#58dcff",
+          "blue": "#86abff",
+          "red": "#ff7b86"
+        },
+        "bodyBackground": "rgb(3, 6, 12)",
+        "backgroundField": true
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 9,
+        "withoutVisibleFocus": [],
+        "order": [
+          "a:Skip to content",
+          "a:Workspaces",
+          "a:SF-03 Inspection",
+          "a:nquiry",
+          "button:Log out",
+          "button:Open Session",
+          "summary:Who holds Session control for this Challenge (proo",
+          "button:Copy Challenge",
+          "button:Copy Workspace"
+        ]
+      },
+      "localTruthDetected": false,
+      "expectedOffline": false,
+      "pass": true
+    },
+    {
+      "seq": 14,
+      "screenshot": "screenshots/14-desktop-session-draft-no-control.png",
+      "url": "/workspaces/9cf2afb1-308f-466d-98c0-d508b5034f09/sessions/4a36314e-29d2-552f-9499-f26e4c6139d4",
+      "route": "/workspaces/[w]/sessions/[s]",
+      "viewport": "desktop",
+      "reducedMotion": "no-preference",
+      "identity": "facilitator@inspect.local.test",
+      "canonicalState": "Session DRAFT (created via the Open Session effect + re-read); Facilitator has NO SESSION-scoped control (HD-1)",
+      "expectedRelation": "session core state DRAFT; lifecycle orbit with DRAFT current; Begin setup visible only as unavailable with server reason; no controller affordance",
+      "projection": {
+        "state": "DRAFT",
+        "beginSetup": {
+          "available": false,
+          "reasonCode": "NO_SESSION_CONTROL",
+          "reason": "Requires SESSION_CONTROL_RIGHT for this Session (scope SESSION:4a36314e-29d2-552f-9499-f26e4c6139d4). Only the Workspace governance root can grant it.",
+          "relevant": true
+        },
+        "phases": [
+          "DRAFT:current"
+        ]
+      },
+      "checks": [
+        {
+          "claim": "state = server",
+          "kind": "projection",
+          "expected": "DRAFT",
+          "actual": "DRAFT",
+          "pass": true
+        },
+        {
+          "claim": "current lifecycle node = server current phase",
+          "kind": "projection",
+          "expected": "DRAFT",
+          "actual": "DRAFT",
+          "pass": true
+        },
+        {
+          "claim": "Begin setup control iff capability",
+          "kind": "projection",
+          "expected": false,
+          "actual": false,
+          "pass": true
+        },
+        {
+          "claim": "lifecycle nodes = 13 projected phases",
+          "kind": "projection",
+          "expected": 13,
+          "actual": 13,
+          "pass": true
+        },
+        {
+          "claim": "core state",
+          "kind": "visible",
+          "expected": "current",
+          "actual": "current",
+          "pass": true
+        }
+      ],
+      "topology": {
+        "mode": "orbit",
+        "effectiveMode": "orbit",
+        "surface": "session",
+        "coreState": "current",
+        "coreEyebrow": "Session · QUESTION_BURST 1.0",
+        "nodes": [
+          {
+            "state": "current",
+            "text": "1. DraftRelation state: current"
+          },
+          {
+            "state": "future",
+            "text": "2. SetupRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "Challenge captureRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "Question generation (protected)Relation state: later"
+          },
+          {
+            "state": "future",
+            "text": "Question captureRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "AnalysisRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "ReflectionRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "Question selectionRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "InvestigationRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "ExperimentRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "ActionRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "ReviewRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "ClosedRelation state: later"
+          },
+          {
+            "state": "unavailable",
+            "text": "Participationno participant and no controller yetRelation st"
+          }
+        ],
+        "paths": [
+          "current",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "unavailable"
+        ],
+        "coreAnimation": "none",
+        "bgAnimation": "field-breathe"
+      },
+      "redirectChain": [
+        "/login",
+        "/login",
+        "/",
+        "/workspaces",
+        "/workspaces/9cf2afb1-308f-466d-98c0-d508b5034f09/challenges/aeb066e7-1567-4210-adba-7b30e4c9ff51",
+        "/workspaces/9cf2afb1-308f-466d-98c0-d508b5034f09/challenges/aeb066e7-1567-4210-adba-7b30e4c9ff51",
+        "/workspaces/9cf2afb1-308f-466d-98c0-d508b5034f09/sessions/4a36314e-29d2-552f-9499-f26e4c6139d4"
+      ],
+      "console": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "prefetchAborted": [
+        "GET /workspaces/05064de4-3206-4692-918c-48ecc0f88f1a?_rsc=ycP_2DwIC2OCocL2 :: net::ERR_ABORTED",
+        "GET /workspaces/3d447900-a851-4b43-b239-b6f5fed0c74e?_rsc=ycP_2DwIC2OCocL2 :: net::ERR_ABORTED",
+        "GET /workspaces/fb5f87c0-09bd-4bb7-87db-4f561c114463?_rsc=ycP_2DwIC2OCocL2 :: net::ERR_ABORTED",
+        "GET /workspaces/2bc2c8b0-f335-46ec-a88f-908ae020deb1?_rsc=ycP_2DwIC2OCocL2 :: net::ERR_ABORTED",
+        "GET /workspaces/9cf2afb1-308f-466d-98c0-d508b5034f09?_rsc=8g08J_4Rw_1KLU8p :: net::ERR_ABORTED"
+      ],
+      "http4xx5xx": [],
+      "unexpectedHttp": [],
+      "staticRequests": 22,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/2q2grsmv3e0ld.css"
+        ],
+        "tokens": {
+          "cyan": "#58dcff",
+          "blue": "#86abff",
+          "red": "#ff7b86"
+        },
+        "bodyBackground": "rgb(3, 6, 12)",
+        "backgroundField": true
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 8,
+        "withoutVisibleFocus": [],
+        "order": [
+          "a:Skip to content",
+          "a:Workspaces",
+          "a:SF-03 Inspection",
+          "a:Why did activation stall after onboarding?",
+          "a:nquiry",
+          "button:Log out",
+          "summary:Identifiers (proof, reconstruct)",
+          "a:Enter the Decision surface"
+        ]
+      },
+      "localTruthDetected": false,
+      "expectedOffline": false,
+      "pass": true
+    },
+    {
+      "seq": 15,
+      "screenshot": "screenshots/15-desktop-session-grant-committed-owner.png",
+      "url": "/workspaces/9cf2afb1-308f-466d-98c0-d508b5034f09/sessions/4a36314e-29d2-552f-9499-f26e4c6139d4",
+      "route": "/workspaces/[w]/sessions/[s]",
+      "viewport": "desktop",
+      "reducedMotion": "no-preference",
+      "identity": "owner@inspect.local.test",
+      "canonicalState": "SESSION_CONTROL_RIGHT granted at SESSION scope (committed + re-read)",
+      "expectedRelation": "committed outcome (blue, re-read line), governance node for the holder appears after re-read; no cyan/green success",
+      "projection": {
+        "controllers": [
+          "Inspect Facilitator"
+        ]
+      },
+      "checks": [
+        {
+          "claim": "outcome committed + reconstruction done",
+          "kind": "visible",
+          "expected": [
+            "committed",
+            "done"
+          ],
+          "actual": [
+            "committed",
+            "done"
+          ],
+          "pass": true
+        },
+        {
+          "claim": "commit resonance after the re-read names the SESSION scope (doc 26 §27, §43.4)",
+          "kind": "visible",
+          "expected": true,
+          "actual": true,
+          "pass": true
+        },
+        {
+          "claim": "the committed outcome stays as a quiet proof line",
+          "kind": "visible",
+          "expected": "true",
+          "actual": "true",
+          "pass": true
+        },
+        {
+          "claim": "holder in governance provenance",
+          "kind": "projection",
+          "expected": true,
+          "actual": true,
+          "pass": true
+        },
+        {
+          "claim": "controller node present in relation orbit",
+          "kind": "projection",
+          "expected": true,
+          "actual": true,
+          "pass": true
+        }
+      ],
+      "topology": {
+        "mode": "orbit",
+        "effectiveMode": "orbit",
+        "surface": "session",
+        "coreState": "current",
+        "coreEyebrow": "Session · QUESTION_BURST 1.0",
+        "nodes": [
+          {
+            "state": "current",
+            "text": "1. DraftRelation state: current"
+          },
+          {
+            "state": "future",
+            "text": "2. SetupRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "Challenge captureRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "Question generation (protected)Relation state: later"
+          },
+          {
+            "state": "future",
+            "text": "Question captureRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "AnalysisRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "ReflectionRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "Question selectionRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "InvestigationRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "ExperimentRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "ActionRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "ReviewRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "ClosedRelation state: later"
+          },
+          {
+            "state": "governance",
+            "text": "Inspect FacilitatorSession controller · granted by Inspect O"
+          }
+        ],
+        "paths": [
+          "current",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "governance"
+        ],
+        "coreAnimation": "none",
+        "bgAnimation": "field-breathe"
+      },
+      "redirectChain": [
+        "/workspaces/9cf2afb1-308f-466d-98c0-d508b5034f09/sessions/4a36314e-29d2-552f-9499-f26e4c6139d4",
+        "/workspaces/9cf2afb1-308f-466d-98c0-d508b5034f09/sessions/4a36314e-29d2-552f-9499-f26e4c6139d4"
+      ],
+      "console": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "prefetchAborted": [
+        "GET /workspaces/9cf2afb1-308f-466d-98c0-d508b5034f09?_rsc=IdwKiNBZgi2vt0J4 :: net::ERR_ABORTED"
+      ],
+      "http4xx5xx": [],
+      "unexpectedHttp": [],
+      "staticRequests": 10,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/2q2grsmv3e0ld.css"
+        ],
+        "tokens": {
+          "cyan": "#58dcff",
+          "blue": "#86abff",
+          "red": "#ff7b86"
+        },
+        "bodyBackground": "rgb(3, 6, 12)",
+        "backgroundField": true
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 2,
+        "withoutVisibleFocus": [],
+        "order": [
+          "summary:Identifiers (proof, reconstruct)",
+          "a:Enter the Decision surface"
+        ]
+      },
+      "localTruthDetected": false,
+      "expectedOffline": false,
+      "pass": true
+    },
+    {
+      "seq": 16,
+      "screenshot": "screenshots/16-desktop-session-challenge-capture-burst-prepared.png",
+      "url": "/workspaces/9cf2afb1-308f-466d-98c0-d508b5034f09/sessions/4a36314e-29d2-552f-9499-f26e4c6139d4",
+      "route": "/workspaces/[w]/sessions/[s]",
+      "viewport": "desktop",
+      "reducedMotion": "no-preference",
+      "identity": "facilitator@inspect.local.test",
+      "canonicalState": "CHALLENGE_CAPTURE; Burst PREPARED; no participant yet",
+      "expectedRelation": "lifecycle reconstructed (DRAFT, SETUP passed; CHALLENGE_CAPTURE current); Open question generation BLOCKED with server reason (participant); admit affordance",
+      "projection": {
+        "state": "CHALLENGE_CAPTURE",
+        "open": {
+          "available": false,
+          "reasonCode": "NO_SESSION_PARTICIPANT",
+          "reason": "Admit at least one participant before question generation opens (HD-8).",
+          "relevant": true
+        }
+      },
+      "checks": [
+        {
+          "claim": "state = server",
+          "kind": "projection",
+          "expected": "CHALLENGE_CAPTURE",
+          "actual": "CHALLENGE_CAPTURE",
+          "pass": true
+        },
+        {
+          "claim": "open-generation control iff capability",
+          "kind": "projection",
+          "expected": false,
+          "actual": false,
+          "pass": true
+        },
+        {
+          "claim": "reason shown when unavailable",
+          "kind": "projection",
+          "expected": "Admit at least one participant before question generation opens (HD-8).",
+          "actual": "Admit at least one participant before question generation opens (HD-8).",
+          "pass": true
+        },
+        {
+          "claim": "passed phases = server done",
+          "kind": "projection",
+          "expected": 2,
+          "actual": 2,
+          "pass": true
+        }
+      ],
+      "topology": {
+        "mode": "orbit",
+        "effectiveMode": "orbit",
+        "surface": "session",
+        "coreState": "current",
+        "coreEyebrow": "Session · QUESTION_BURST 1.0",
+        "nodes": [
+          {
+            "state": "established",
+            "text": "1. DraftRelation state: passed"
+          },
+          {
+            "state": "established",
+            "text": "2. SetupRelation state: passed"
+          },
+          {
+            "state": "current",
+            "text": "3. Challenge captureRelation state: current"
+          },
+          {
+            "state": "future",
+            "text": "4. Question generation (protected)Relation state: later"
+          },
+          {
+            "state": "future",
+            "text": "Question captureRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "AnalysisRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "ReflectionRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "Question selectionRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "InvestigationRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "ExperimentRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "ActionRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "ReviewRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "ClosedRelation state: later"
+          },
+          {
+            "state": "governance",
+            "text": "Inspect FacilitatorSession controller · granted by Inspect O"
+          }
+        ],
+        "paths": [
+          "historical",
+          "historical",
+          "current",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "governance"
+        ],
+        "coreAnimation": "none",
+        "bgAnimation": "field-breathe"
+      },
+      "redirectChain": [
+        "/workspaces/9cf2afb1-308f-466d-98c0-d508b5034f09/sessions/4a36314e-29d2-552f-9499-f26e4c6139d4",
+        "/workspaces/9cf2afb1-308f-466d-98c0-d508b5034f09/sessions/4a36314e-29d2-552f-9499-f26e4c6139d4"
+      ],
+      "console": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "prefetchAborted": [
+        "GET /workspaces/9cf2afb1-308f-466d-98c0-d508b5034f09/sessions/4a36314e-29d2-552f-9499-f26e4c6139d4/decision?_rsc=IdwKiNBZgi2vt0J4 :: net::ERR_ABORTED",
+        "GET /workspaces/9cf2afb1-308f-466d-98c0-d508b5034f09?_rsc=IdwKiNBZgi2vt0J4 :: net::ERR_ABORTED",
+        "GET /workspaces/9cf2afb1-308f-466d-98c0-d508b5034f09/challenges/aeb066e7-1567-4210-adba-7b30e4c9ff51?_rsc=IdwKiNBZgi2vt0J4 :: net::ERR_ABORTED"
+      ],
+      "http4xx5xx": [],
+      "unexpectedHttp": [],
+      "staticRequests": 10,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/2q2grsmv3e0ld.css"
+        ],
+        "tokens": {
+          "cyan": "#58dcff",
+          "blue": "#86abff",
+          "red": "#ff7b86"
+        },
+        "bodyBackground": "rgb(3, 6, 12)",
+        "backgroundField": true
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 3,
+        "withoutVisibleFocus": [],
+        "order": [
+          "select:Choose a member…Inspect OwnerInspect Facilitator",
+          "summary:Identifiers (proof, reconstruct)",
+          "a:Enter the Decision surface"
+        ]
+      },
+      "localTruthDetected": false,
+      "expectedOffline": false,
+      "pass": true
+    },
+    {
+      "seq": 17,
+      "screenshot": "screenshots/17-desktop-human-question-field-rejected-input.png",
+      "url": "/workspaces/9cf2afb1-308f-466d-98c0-d508b5034f09/sessions/4a36314e-29d2-552f-9499-f26e4c6139d4",
+      "route": "/workspaces/[w]/sessions/[s]",
+      "viewport": "desktop",
+      "reducedMotion": "no-preference",
+      "identity": "facilitator@inspect.local.test",
+      "canonicalState": "QUESTION_GENERATION; Burst ACTIVE HUMAN_ONLY; capture REJECTED (HD-12 form rule)",
+      "expectedRelation": "core = Human question field (cyan); REJECTED boundary announced with plain-words reason, text retained, nothing stored",
+      "projection": {
+        "state": "QUESTION_GENERATION",
+        "burst": "ACTIVE",
+        "mine": 0
+      },
+      "checks": [
+        {
+          "claim": "core = human",
+          "kind": "visible",
+          "expected": "human",
+          "actual": "human",
+          "pass": true
+        },
+        {
+          "claim": "outcome rejected",
+          "kind": "visible",
+          "expected": [
+            "rejected",
+            "alert"
+          ],
+          "actual": [
+            "rejected",
+            "alert"
+          ],
+          "pass": true
+        },
+        {
+          "claim": "nothing stored (server mine = 0)",
+          "kind": "projection",
+          "expected": 0,
+          "actual": 0,
+          "pass": true
+        },
+        {
+          "claim": "text retained",
+          "kind": "visible",
+          "expected": "The checkout is slow.",
+          "actual": "The checkout is slow.",
+          "pass": true
+        }
+      ],
+      "topology": {
+        "mode": "orbit",
+        "effectiveMode": "orbit",
+        "surface": "session",
+        "coreState": "human",
+        "coreEyebrow": "Human question field · ACTIVE HUMAN_ONLY",
+        "nodes": [
+          {
+            "state": "established",
+            "text": "1. DraftRelation state: passed"
+          },
+          {
+            "state": "established",
+            "text": "2. SetupRelation state: passed"
+          },
+          {
+            "state": "established",
+            "text": "3. Challenge captureRelation state: passed"
+          },
+          {
+            "state": "current",
+            "text": "4. Question generation (protected)Relation state: current"
+          },
+          {
+            "state": "future",
+            "text": "5. Question captureRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "AnalysisRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "ReflectionRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "Question selectionRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "InvestigationRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "ExperimentRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "ActionRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "ReviewRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "ClosedRelation state: later"
+          },
+          {
+            "state": "human",
+            "text": "Inspect Facilitatorparticipant · Session controllerRelation "
+          },
+          {
+            "state": "human",
+            "text": "Inspect OwnerparticipantRelation state: human"
+          }
+        ],
+        "paths": [
+          "historical",
+          "historical",
+          "historical",
+          "current",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "established",
+          "established"
+        ],
+        "coreAnimation": "none",
+        "bgAnimation": "field-breathe"
+      },
+      "redirectChain": [],
+      "console": [
+        "error: Failed to load resource: the server responded with a status of 400 (Bad Request)"
+      ],
+      "pageErrors": [],
+      "failedRequests": [],
+      "prefetchAborted": [],
+      "http4xx5xx": [
+        "400 POST /api/workspaces/9cf2afb1-308f-466d-98c0-d508b5034f09/sessions/4a36314e-29d2-552f-9499-f26e4c6139d4/burst/questions"
+      ],
+      "unexpectedHttp": [],
+      "staticRequests": 0,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/2q2grsmv3e0ld.css"
+        ],
+        "tokens": {
+          "cyan": "#58dcff",
+          "blue": "#86abff",
+          "red": "#ff7b86"
+        },
+        "bodyBackground": "rgb(3, 6, 12)",
+        "backgroundField": true
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 2,
+        "withoutVisibleFocus": [],
+        "order": [
+          "summary:Identifiers (proof, reconstruct)",
+          "a:Enter the Decision surface"
+        ]
+      },
+      "localTruthDetected": false,
+      "expectedOffline": false,
+      "pass": true
+    },
+    {
+      "seq": 18,
+      "screenshot": "screenshots/18-desktop-human-question-field-own-question-controller.png",
+      "url": "/workspaces/9cf2afb1-308f-466d-98c0-d508b5034f09/sessions/4a36314e-29d2-552f-9499-f26e4c6139d4",
+      "route": "/workspaces/[w]/sessions/[s]",
+      "viewport": "desktop",
+      "reducedMotion": "no-preference",
+      "identity": "facilitator@inspect.local.test",
+      "canonicalState": "QUESTION_GENERATION; own question committed; viewer = controller + participant",
+      "expectedRelation": "own question (exact text, human) after commit + re-read; count for controller; timer presentation-only; Complete Burst offered; no peer content",
+      "projection": {
+        "mine": [
+          "Which step do most new users abandon first?"
+        ],
+        "capturedCount": 1,
+        "complete": {
+          "available": true,
+          "reasonCode": null,
+          "reason": null,
+          "relevant": true
+        }
+      },
+      "checks": [
+        {
+          "claim": "own texts = server (exact)",
+          "kind": "projection",
+          "expected": [
+            "Which step do most new users abandon first?"
+          ],
+          "actual": [
+            "Which step do most new users abandon first?"
+          ],
+          "pass": true
+        },
+        {
+          "claim": "count = server",
+          "kind": "projection",
+          "expected": "1",
+          "actual": "1",
+          "pass": true
+        },
+        {
+          "claim": "Complete Burst iff capability",
+          "kind": "projection",
+          "expected": true,
+          "actual": true,
+          "pass": true
+        },
+        {
+          "claim": "timer is presentation only",
+          "kind": "visible",
+          "expected": true,
+          "actual": true,
+          "pass": true
+        },
+        {
+          "claim": "no BEGIN_ANALYSIS",
+          "kind": "visible",
+          "expected": 0,
+          "actual": 0,
+          "pass": true
+        }
+      ],
+      "topology": {
+        "mode": "orbit",
+        "effectiveMode": "orbit",
+        "surface": "session",
+        "coreState": "human",
+        "coreEyebrow": "Human question field · ACTIVE HUMAN_ONLY",
+        "nodes": [
+          {
+            "state": "established",
+            "text": "1. DraftRelation state: passed"
+          },
+          {
+            "state": "established",
+            "text": "2. SetupRelation state: passed"
+          },
+          {
+            "state": "established",
+            "text": "3. Challenge captureRelation state: passed"
+          },
+          {
+            "state": "current",
+            "text": "4. Question generation (protected)Relation state: current"
+          },
+          {
+            "state": "future",
+            "text": "5. Question captureRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "AnalysisRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "ReflectionRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "Question selectionRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "InvestigationRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "ExperimentRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "ActionRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "ReviewRelation state: later"
+          },
+          {
+            "state": "future",
+            "text": "ClosedRelation state: later"
+          },
+          {
+            "state": "human",
+            "text": "Inspect Facilitatorparticipant · Session controllerRelation "
+          },
+          {
+            "state": "human",
+            "text": "Inspect OwnerparticipantRelation state: human"
+          }
+        ],
+        "paths": [
+          "historical",
+          "historical",
+          "historical",
+          "current",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "dependency",
+          "established",
+          "established"
+        ],
+        "coreAnimation": "none",
+        "bgAnimation": "field-breathe"
+      },
+      "redirectChain": [],
+      "console": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "prefetchAborted": [],
+      "http4xx5xx": [],
+      "unexpectedHttp": [],
+      "staticRequests": 0,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/2q2grsmv3e0ld.css"
+        ],
+        "tokens": {
+          "cyan": "#58dcff",
+          "blue": "#86abff",
+          "red": "#ff7b86"
+        },
+        "bodyBackground": "rgb(3, 6, 12)",
+        "backgroundField": true
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 3,
+        "withoutVisibleFocus": [],
+        "order": [
+          "button:Complete Burst…",
+          "summary:Identifiers (proof, reconstruct)",
+          "a:Enter the Decision surface"
+        ]
+      },
+      "localTruthDetected": false,
+      "expectedOffline": false,
+      "pass": true
+    }
+  ]
+}

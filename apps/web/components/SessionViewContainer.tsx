@@ -1,50 +1,49 @@
 "use client";
 
 /**
- * Composes the typed client (`lib/api/client.ts`) with the display
- * components into 12 §24's own full PKG-28 surface. A Client Component
- * (`"use client"`) issuing its `fetch` inside `useEffect` -- see
- * `lib/api/client.ts`'s own header docstring for why this must run in
- * the BROWSER, not during Next.js SSR: Playwright's `page.route()`
- * network interception (this package's own E2E proof mechanism,
- * `tests/e2e/session-view.spec.ts`) can only see requests the browser
- * itself issues.
+ * Composes the typed client (`lib/api/client.ts`) with the display components into 12 §24's own full PKG-28 surface —
+ * the Decision Surface (PKG-29). A Client Component issuing its `fetch` inside `useEffect` (see `lib/api/client.ts`),
+ * a pure dispatcher over `SessionReadResult`'s own cases: it never re-derives or overrides the server's verdict.
  *
- * This component is a pure dispatcher over `SessionReadResult`'s own
- * three cases -- it never re-derives or overrides the server's own
- * verdict (this package's own BOUNDARIES line).
- *
- * RETROFIT: `LoadState` now has an explicit `"error"` case, and the
- * `fetchSessionView` call now has a `.catch()`. External review found
- * the original version had neither -- a rejected `fetchSessionView`
- * promise (network failure, aborted request, or a `parseSessionReadResult`
- * fail-closed throw) had no handler at all, so the component stayed on
- * `"loading"` forever, invisible to the viewer, while the browser
- * logged an unhandled promise rejection. See `NetworkErrorBanner`'s
- * own docstring for the full disclosure.
- *
- * PKG-29 EXTENSION: the `ok` branch now also renders `DecisionSection`
- * (12 §24 items 11/12/15) whenever the resolved `SessionView` carries
- * a `decision`/`aiRecommendation` -- itself still a pure pass-through
- * of whatever the server's own response contained, same as every
- * other field this component already renders.
+ * SF-05 (doc 26 §31): the surface enters the field language — the same frame, background and organ grammar as the
+ * Session Field — WITHOUT changing what it renders: every PKG-28/29 component, test id and text is kept; the
+ * NON_PROOF status is written where the Session Field links here; no chart, gauge or metric is invented. In every
+ * non-ok case (denied / indeterminate / rejected / network error) `main` still contains no action element.
  */
 import { useEffect, useState } from "react";
 import { fetchSessionView } from "../lib/api/client";
 import type { SessionId, SessionReadResult, WorkspaceId } from "../lib/api/types";
+import { LogoutButton } from "./LogoutButton";
 import { BurstPanel } from "./BurstPanel";
 import { ChallengeSummary } from "./ChallengeSummary";
 import { DecisionSection } from "./DecisionSection";
 import { DeniedBanner } from "./DeniedBanner";
+import { ChamberHead } from "./field/chambers";
+import { FieldFrame } from "./field/FieldFrame";
+import { FieldCore } from "./field/topology/FieldCore";
+import { FieldStage, Plane, Planes } from "./field/topology/FieldStage";
 import { IndeterminateBanner } from "./IndeterminateBanner";
 import { NetworkErrorBanner } from "./NetworkErrorBanner";
 import { SessionStateBadge } from "./SessionStateBadge";
 import { WorkspaceBadge } from "./WorkspaceBadge";
+import type { TraceSegment } from "../lib/field/position";
 
 type LoadState =
   | { readonly kind: "loading" }
   | { readonly kind: "error" }
   | { readonly kind: "loaded"; readonly result: SessionReadResult };
+
+function decisionTrace(workspaceId: string, sessionId: string, loaded: { readonly challengeTitle: string; readonly state: string } | null): TraceSegment[] {
+  const base: TraceSegment[] = [{ coordinate: "access", label: "Workspaces", status: "established", href: "/workspaces" }];
+  if (!loaded) return base;
+  return [
+    ...base,
+    { coordinate: "workspace", label: "Workspace", status: "established", href: `/workspaces/${encodeURIComponent(workspaceId)}` },
+    { coordinate: "challenge", label: loaded.challengeTitle, status: "established" },
+    { coordinate: "session", label: `Session · ${loaded.state}`, status: "established", href: `/workspaces/${encodeURIComponent(workspaceId)}/sessions/${encodeURIComponent(sessionId)}` },
+    { coordinate: "session-state", label: "Decision surface", status: "current" },
+  ];
+}
 
 export function SessionViewContainer({
   workspaceId,
@@ -73,40 +72,74 @@ export function SessionViewContainer({
     };
   }, [workspaceId, sessionId]);
 
+  const ok = state.kind === "loaded" && state.result.kind === "ok" ? state.result.data : null;
+  const trace = decisionTrace(workspaceId, sessionId, ok ? { challengeTitle: ok.challenge.title, state: ok.session.state } : null);
+
+  let body: React.ReactNode;
   if (state.kind === "loading") {
-    return <p data-testid="session-view-loading">Loading...</p>;
-  }
-  if (state.kind === "error") {
-    return <NetworkErrorBanner />;
+    body = <p data-testid="session-view-loading">Loading...</p>;
+  } else if (state.kind === "error") {
+    body = <NetworkErrorBanner />;
+  } else {
+    const result = state.result;
+    switch (result.kind) {
+      case "ok":
+        body = (
+          <div data-testid="session-view-ok" className="decision-surface">
+            <Plane kind="context" semantic="context" labelledBy="decision-context-title">
+              <ChamberHead id="decision-context-title" semantic="context" title="Context" marker="NON_PROOF" />
+              <WorkspaceBadge workspaceId={result.data.workspaceId} />
+              <ChallengeSummary challenge={result.data.challenge} />
+              <SessionStateBadge state={result.data.session.state} />
+            </Plane>
+            {result.data.burst !== null ? (
+              <Plane kind="proof" semantic={result.data.burst.state === "COMPLETED" ? "frozen" : "question"} labelledBy="decision-burst-title">
+                <ChamberHead id="decision-burst-title" semantic={result.data.burst.state === "COMPLETED" ? "frozen" : "question"} title="Evidence: the Burst" marker={result.data.burst.mode} />
+                <BurstPanel burst={result.data.burst} />
+              </Plane>
+            ) : null}
+            <Plane kind="action" semantic="decision-entry" labelledBy="decision-chamber-title">
+              <ChamberHead id="decision-chamber-title" semantic="decision-entry" title="Decision" marker="human authority" />
+              <DecisionSection decision={result.data.decision} aiRecommendation={result.data.aiRecommendation} />
+            </Plane>
+          </div>
+        );
+        break;
+      case "denied":
+        body = <DeniedBanner result={result.result} reasonCode={result.reasonCode} />;
+        break;
+      case "indeterminate":
+        body = <IndeterminateBanner blockedTargetRef={result.blockedTargetRef} />;
+        break;
+      case "rejected":
+        // F02 WU-02.12 (FBR-C): the server rejected the request as malformed. A verdict, not a network failure, and
+        // not an authority denial.
+        body = (
+          <div data-testid="session-view-rejected" role="alert">
+            Rejected: this address does not name a valid Workspace or Session ({result.reasonCode}). No authority decision
+            was made.
+          </div>
+        );
+        break;
+    }
   }
 
-  const result = state.result;
-  switch (result.kind) {
-    case "ok":
-      return (
-        <div data-testid="session-view-ok">
-          <WorkspaceBadge workspaceId={result.data.workspaceId} />
-          <ChallengeSummary challenge={result.data.challenge} />
-          <SessionStateBadge state={result.data.session.state} />
-          {result.data.burst !== null ? <BurstPanel burst={result.data.burst} /> : null}
-          <DecisionSection
-            decision={result.data.decision}
-            aiRecommendation={result.data.aiRecommendation}
+  return (
+    <FieldFrame trace={trace} regime={ok ? "session" : state.kind === "loaded" ? "boundary" : "session"} exit={<LogoutButton />}>
+      <FieldStage mode="stack" surface="decision">
+        <div className="stack-column">
+          <FieldCore
+            kind="decision"
+            state={ok ? "current" : state.kind === "loading" ? "loading" : "boundary"}
+            eyebrow="Decision surface · PKG-29 prototype view"
+            title={ok ? ok.challenge.title : state.kind === "loading" ? "Reading the Session…" : "This Session cannot be projected"}
+            titleAs="p"
+            stateText={ok ? ok.session.state : undefined}
+            meta="NON_PROOF: records a human Decision under the server's own authority check; proves nothing beyond what the server returns."
           />
         </div>
-      );
-    case "denied":
-      return <DeniedBanner result={result.result} reasonCode={result.reasonCode} />;
-    case "indeterminate":
-      return <IndeterminateBanner blockedTargetRef={result.blockedTargetRef} />;
-    case "rejected":
-      // F02 WU-02.12 (FBR-C): the server rejected the request as malformed.
-      // A verdict, not a network failure, and not an authority denial.
-      return (
-        <div data-testid="session-view-rejected" role="alert">
-          Rejected: this address does not name a valid Workspace or Session ({result.reasonCode}). No
-          authority decision was made.
-        </div>
-      );
-  }
+        <Planes header={{ eyebrow: "Grown from", title: ok ? ok.challenge.title : "Decision surface", state: ok ? ok.session.state : state.kind === "loading" ? "reading…" : "boundary" }}>{body}</Planes>
+      </FieldStage>
+    </FieldFrame>
+  );
 }

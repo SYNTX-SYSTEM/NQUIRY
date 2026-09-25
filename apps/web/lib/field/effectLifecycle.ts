@@ -30,6 +30,8 @@ export type EffectState =
       readonly intentKey: string | null;
       readonly kind: SettledKind;
       readonly reasonCode: string | null;
+      /** Relation-specific explanation supplied by the caller (e.g. an input-rejection reason in plain words). */
+      readonly detail: string | null;
       readonly reconstruction: Reconstruction;
     };
 
@@ -41,7 +43,7 @@ export type EffectField = {
 
 export type EffectEvent =
   | { readonly type: "request"; readonly relation: string; readonly intentKey: string | null }
-  | { readonly type: "settle"; readonly kind: SettledKind; readonly reasonCode: string | null }
+  | { readonly type: "settle"; readonly kind: SettledKind; readonly reasonCode: string | null; readonly detail?: string }
   | { readonly type: "reconstruction"; readonly result: "reading" | "done" | "failed" };
 
 export const INITIAL_EFFECT_FIELD: EffectField = { current: { phase: "possible" }, retained: {} };
@@ -75,6 +77,7 @@ export function effectReducer(field: EffectField, event: EffectEvent): EffectFie
           intentKey: current.intentKey,
           kind: event.kind,
           reasonCode: event.reasonCode,
+          detail: event.detail ?? null,
           reconstruction: "not_started",
         },
       };

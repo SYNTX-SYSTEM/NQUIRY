@@ -33,7 +33,7 @@ export default defineConfig({
   },
   projects: [
     { name: "desktop", use: { ...devices["Desktop Chrome"], viewport: { width: 1280, height: 860 } } },
-    { name: "mobile", testMatch: /sf01-.*\.spec\.ts$/, use: { ...devices["Pixel 7"] } },
+    { name: "mobile", testMatch: /sf0[1345]-.*\.spec\.ts$/, use: { ...devices["Pixel 7"] } },
   ],
   webServer: {
     command: `npx next dev -p ${PORT}`,

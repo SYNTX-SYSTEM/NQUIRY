@@ -1,6 +1,7 @@
 "use client";
 /**
- * The protected Burst working surface (F03).
+ * The protected Burst working surface (F03), re-homed on the SF-02 effect
+ * lifecycle (22 §25, §26, §30).
  *
  * PROJECTION AND CONTROL SURFACE, NEVER AUTHORITY (20 §13):
  * - the capture form exists only when the SERVER offers `CAPTURE_QUESTION`; an
@@ -9,96 +10,88 @@
  * - what is listed comes from the server's visibility filter (HD-13): the
  *   viewer's own questions while the Burst is ACTIVE, a count for the
  *   controller, the full frozen set afterwards;
- * - origin and author are never sent; the text is sent byte-exact;
- * - one Idempotency-Key per logical capture; UI debounce is not idempotency.
+ * - origin and author are never sent; the text is sent byte-exact.
  *
- * AI is absent from this surface. Time passing changes nothing here.
+ * Effect law: every submission runs through the page's ONE effect lifecycle
+ * (request → server verdict → canonical re-read → reconstruction). The capture
+ * relation is keyed by the exact text (`session:capture:<hash>`), so a retry
+ * after an UNKNOWN outcome (network loss or server INDETERMINATE) reuses the
+ * same Idempotency-Key while changed text is a new intent; the server rejects a
+ * reused key with a different payload. AI is absent from this surface. Time
+ * passing changes nothing here (HD-11).
  */
-import { useRef, useState } from "react";
-import {
-  captureBurstQuestion,
-  completeBurst,
-  newIntentKey,
-  type SessionPosition,
-} from "../../lib/api/inquiryClient";
-import { explainCaptureRejection, intentKeyFor, type Intent } from "../../lib/burst";
-import type { ShownOutcome } from "../f02/Outcome";
+import { useState } from "react";
+import { captureBurstQuestion, completeBurst, type SessionPosition } from "../../lib/api/inquiryClient";
+import { explainCaptureRejection, textFingerprint } from "../../lib/burst";
+import { settleCommand, type useEffectField } from "../../lib/field/useEffectField";
 import { Unavailable } from "../f02/Unavailable";
+import { BoundaryMark, ChamberHead } from "../field/chambers";
 import { BurstTimer } from "./BurstTimer";
 import { FrozenQuestionSet } from "./FrozenQuestionSet";
 import { OwnQuestions } from "./OwnQuestions";
+
+export const CAPTURE_RELATION_PREFIX = "session:capture:";
+export const COMPLETE_RELATION = "session:complete-burst";
 
 type Props = {
   readonly workspaceId: string;
   readonly sessionId: string;
   readonly position: SessionPosition;
-  readonly onPosition: (position: SessionPosition) => void;
-  readonly onOutcome: (outcome: ShownOutcome) => void;
-  readonly reload: () => Promise<void>;
+  readonly effect: ReturnType<typeof useEffectField>;
+  readonly reload: () => Promise<boolean>;
 };
 
-export function BurstCapturePanel({ workspaceId, sessionId, position, onPosition, onOutcome, reload }: Props) {
+export function BurstCapturePanel({ workspaceId, sessionId, position, effect, reload }: Props) {
   const [text, setText] = useState("");
-  const [busy, setBusy] = useState(false);
   const [confirming, setConfirming] = useState(false);
-  const captureIntent = useRef<Intent | null>(null);
-  const completeIntent = useRef<string | null>(null);
 
   const burst = position.burst;
   if (burst === null) return null;
   const set = position.questionSet;
   const capture = position.actions.CAPTURE_QUESTION;
   const complete = position.actions.COMPLETE_BURST;
+  const busy = effect.blocked;
 
   function submit() {
     if (busy || burst === null || text.length === 0) return;
-    setBusy(true);
-    captureIntent.current = intentKeyFor(captureIntent.current, text, newIntentKey);
-    const intent = captureIntent.current;
-    void captureBurstQuestion(workspaceId, sessionId, text, burst.version, intent.key).then((result) => {
-      setBusy(false);
-      if (result.kind === "committed") {
-        captureIntent.current = null;
+    const submitted = text;
+    void effect.run({
+      relation: `${CAPTURE_RELATION_PREFIX}${textFingerprint(submitted)}`,
+      keyed: true,
+      send: async (intentKey) => {
+        const result = await captureBurstQuestion(workspaceId, sessionId, submitted, burst.version, intentKey);
+        const settled = settleCommand(result);
+        if (settled.kind === "committed") return { ...settled, detail: "Your question was captured exactly as you typed it." };
+        if (settled.kind === "rejected") return { ...settled, detail: explainCaptureRejection(settled.reasonCode) };
+        if (settled.kind === "blocked") return { ...settled, detail: "The Burst no longer accepts questions. Your text was not stored." };
+        if (settled.kind === "network_failure" || settled.kind === "indeterminate") {
+          return { ...settled, detail: "Submitting the same text again retries the same submission; it cannot create a duplicate." };
+        }
+        return settled;
+      },
+      reconstruct: reload,
+      onCommitted: () => {
         setText("");
-        onPosition(result.body.position);
-        onOutcome({ kind: "committed", detail: "Your question was captured exactly as you typed it." });
-        return;
-      }
-      if (result.kind === "network_failure") {
-        // Keep the intent: submitting again retries the SAME submission.
-        onOutcome({ ...result, detail: "Submitting again retries the same submission; it cannot create a duplicate." });
-        return;
-      }
-      captureIntent.current = null;
-      onOutcome(
-        result.kind === "rejected"
-          ? { ...result, detail: explainCaptureRejection(result.reasonCode) }
-          : result.kind === "blocked"
-            ? { ...result, detail: "The Burst no longer accepts questions. Your text was not stored." }
-            : result,
-      );
-      if (result.kind !== "rejected") void reload();
+        return false;
+      },
     });
   }
 
   function confirmComplete() {
     if (busy || burst === null) return;
-    setBusy(true);
-    completeIntent.current = completeIntent.current ?? newIntentKey();
-    void completeBurst(workspaceId, sessionId, position.session.version, burst.version, completeIntent.current).then(
-      (result) => {
-        setBusy(false);
-        if (result.kind !== "network_failure") completeIntent.current = null;
-        if (result.kind === "committed") {
-          setConfirming(false);
-          onPosition(result.body.position);
-          onOutcome({ kind: "committed", detail: "The Burst is completed and the human question set is frozen." });
-          return;
-        }
-        onOutcome(result);
-        if (result.kind !== "network_failure") void reload();
+    void effect.run({
+      relation: COMPLETE_RELATION,
+      keyed: true,
+      send: async (intentKey) => {
+        const settled = settleCommand(await completeBurst(workspaceId, sessionId, position.session.version, burst.version, intentKey));
+        return settled.kind === "committed" ? { ...settled, detail: "The Burst is completed and the human question set is frozen." } : settled;
       },
-    );
+      reconstruct: reload,
+      onCommitted: () => {
+        setConfirming(false);
+        return false;
+      },
+    });
   }
 
   return (
@@ -111,13 +104,17 @@ export function BurstCapturePanel({ workspaceId, sessionId, position, onPosition
         <>
           {capture.available ? (
             <form
-              className="stack"
+              className="stack question-surface"
+              data-human-only={burst.mode === "HUMAN_ONLY" ? "true" : undefined}
               data-testid="capture-form"
               onSubmit={(event) => {
                 event.preventDefault();
                 submit();
               }}
             >
+              <p className="question-seal" aria-hidden="true">
+                <span className="tag human">human</span> <span>{burst.mode}</span> <span>· AI absent while the Burst is open</span>
+              </p>
               <div className="field">
                 <label htmlFor="capture-text">Your question</label>
                 <textarea
@@ -169,41 +166,35 @@ export function BurstCapturePanel({ workspaceId, sessionId, position, onPosition
           {complete.relevant ? (
             complete.available ? (
               confirming ? (
-                <div role="group" aria-labelledby="confirm-title" className="panel" data-testid="complete-confirm">
-                  <h3 id="confirm-title">Close the Burst?</h3>
-                  <p>
-                    This freezes {set.capturedCount ?? "the"} submitted question(s) as the human question set. No
-                    question can be added afterwards. This cannot be undone.
-                  </p>
+                <div role="group" aria-labelledby="confirm-title" className="confirmation-chamber" data-boundary="IRREVERSIBLE_CONFIRMATION" data-testid="complete-confirm">
+                  <ChamberHead id="confirm-title" level={3} semantic="confirmation" title="Close the Burst?" marker="irreversible" />
+                  <BoundaryMark boundary="IRREVERSIBLE_CONFIRMATION">
+                    This freezes {set.capturedCount ?? "the"} submitted question(s) as the human question set. No question can be added
+                    afterwards. This cannot be undone.
+                  </BoundaryMark>
+                  <ul className="confirmation-facts">
+                    <li>
+                      <span className="fact-label">becomes immutable</span> the human question set ({set.capturedCount ?? "all submitted"} question(s))
+                    </li>
+                    <li>
+                      <span className="fact-label">cannot happen afterwards</span> adding, removing or rewriting a question
+                    </li>
+                    <li>
+                      <span className="fact-label">stays possible</span> keeping the Burst open (cancel below)
+                    </li>
+                  </ul>
                   <div className="actions-row">
-                    <button
-                      className="button"
-                      type="button"
-                      disabled={busy}
-                      onClick={confirmComplete}
-                      data-testid="complete-confirm-button"
-                    >
+                    <button className="button" type="button" disabled={busy} onClick={confirmComplete} data-testid="complete-confirm-button">
                       Freeze the set and complete the Burst
                     </button>
-                    <button
-                      className="button secondary"
-                      type="button"
-                      disabled={busy}
-                      onClick={() => setConfirming(false)}
-                    >
+                    <button className="button secondary" type="button" disabled={busy} onClick={() => setConfirming(false)}>
                       Keep the Burst open
                     </button>
                   </div>
                 </div>
               ) : (
                 <div className="actions-row">
-                  <button
-                    className="button secondary"
-                    type="button"
-                    disabled={busy}
-                    onClick={() => setConfirming(true)}
-                    data-testid="complete-button"
-                  >
+                  <button className="button secondary" type="button" disabled={busy} onClick={() => setConfirming(true)} data-testid="complete-button">
                     Complete Burst…
                   </button>
                 </div>
@@ -216,8 +207,8 @@ export function BurstCapturePanel({ workspaceId, sessionId, position, onPosition
       ) : null}
 
       {burst.state === "COMPLETED" && set.frozen !== null ? (
-        <section aria-labelledby="frozen-title">
-          <h3 id="frozen-title">Frozen human question set</h3>
+        <section aria-labelledby="frozen-title" className="frozen-artifact" data-immutable="true">
+          <ChamberHead id="frozen-title" level={3} semantic="frozen" title="Frozen human question set" marker="immutable" />
           <FrozenQuestionSet frozen={set.frozen} />
         </section>
       ) : null}

@@ -60,6 +60,16 @@ const TITLE: Readonly<Record<SettledKind, string>> = {
   network_failure: "The canonical system could not be reached.",
 };
 
+/**
+ * Read-path titles for the two kinds whose mutation title speaks of a
+ * "requested change" (22 §4.7: read failure must not use mutation language;
+ * SF-01 browser review D-2). A read has no request to be uncertain about:
+ * the projection is simply not available.
+ */
+const READ_TITLE: Readonly<Partial<Record<SettledKind, string>>> = {
+  indeterminate: "The current projection could not be confirmed.",
+};
+
 const CONSEQUENCE_TEXT: Readonly<Record<Consequence, string>> = {
   committed: "The change is canonical.",
   none: "No change was made.",
@@ -80,7 +90,7 @@ export function describeOutcome(kind: SettledKind, path: EffectPath): OutcomeSem
   const onMutation = path === "mutation";
   return {
     kind,
-    title: TITLE[kind],
+    title: (path === "read" ? READ_TITLE[kind] : undefined) ?? TITLE[kind],
     consequence,
     consequenceText: consequence === null ? null : CONSEQUENCE_TEXT[consequence],
     announce: kind === "committed" ? "status" : "alert",

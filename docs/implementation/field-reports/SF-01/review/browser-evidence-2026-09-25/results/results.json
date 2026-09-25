@@ -1,0 +1,2051 @@
+{
+  "base": "http://127.0.0.1:13100",
+  "workspace": "7f9be38a-20a6-43ac-9a67-8773d9863007",
+  "challenge": "3c646e0a-c53f-40a2-820b-29a2e48f4ec2",
+  "session": "e9359f30-b993-53fb-9021-e6c271cc19c8",
+  "generatedAt": "2026-09-24T22:10:24.105Z",
+  "results": [
+    {
+      "seq": 1,
+      "screenshot": "screenshots/01-desktop-login-anonymous.png",
+      "url": "/login",
+      "route": "/ -> /login",
+      "viewport": "desktop",
+      "identity": "anonymous",
+      "canonicalState": "no NQUIRY session (GET /auth/me -> 401 denied)",
+      "expectedRelation": "root redirects an anonymous visitor to /login; login form with Email, Password, Log in",
+      "projection": {
+        "authMe": {
+          "status": 401,
+          "body": {
+            "kind": "denied",
+            "reasonCode": "NO_SESSION"
+          }
+        }
+      },
+      "checks": [
+        {
+          "claim": "server says: no session",
+          "kind": "projection",
+          "expected": 401,
+          "actual": 401,
+          "pass": true
+        },
+        {
+          "claim": "redirect ends at /login",
+          "kind": "visible",
+          "expected": "/login",
+          "actual": "/login",
+          "pass": true
+        },
+        {
+          "claim": "form fields",
+          "kind": "visible",
+          "expected": [
+            "Email",
+            "Password"
+          ],
+          "actual": [
+            "Email",
+            "Password"
+          ],
+          "pass": true
+        },
+        {
+          "claim": "submit control present",
+          "kind": "visible",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        },
+        {
+          "claim": "login uses a layout container (shell/field/button classes)",
+          "kind": "style",
+          "expected": true,
+          "actual": false,
+          "pass": false
+        }
+      ],
+      "redirectChain": [
+        "/",
+        "/",
+        "/login"
+      ],
+      "console": [
+        "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "pageErrors": [],
+      "failedRequests": [],
+      "http4xx5xx": [
+        "401 GET /api/auth/me"
+      ],
+      "unexpectedHttp": [],
+      "staticRequests": 9,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/155y1v2gu283g.css"
+        ],
+        "tokenAccent": "#33427a",
+        "bodyBackground": "rgb(247, 246, 243)"
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 3,
+        "withoutVisibleFocus": [],
+        "order": [
+          "input:login-email",
+          "input:login-password",
+          "button:Log in"
+        ]
+      },
+      "localTruthDetected": false,
+      "pass": false
+    },
+    {
+      "seq": 2,
+      "screenshot": "screenshots/02-pixel-7-login-anonymous.png",
+      "url": "/login",
+      "route": "/ -> /login",
+      "viewport": "pixel-7",
+      "identity": "anonymous",
+      "canonicalState": "no NQUIRY session (GET /auth/me -> 401 denied)",
+      "expectedRelation": "root redirects an anonymous visitor to /login; login form with Email, Password, Log in",
+      "projection": {
+        "authMe": {
+          "status": 401,
+          "body": {
+            "kind": "denied",
+            "reasonCode": "NO_SESSION"
+          }
+        }
+      },
+      "checks": [
+        {
+          "claim": "server says: no session",
+          "kind": "projection",
+          "expected": 401,
+          "actual": 401,
+          "pass": true
+        },
+        {
+          "claim": "redirect ends at /login",
+          "kind": "visible",
+          "expected": "/login",
+          "actual": "/login",
+          "pass": true
+        },
+        {
+          "claim": "form fields",
+          "kind": "visible",
+          "expected": [
+            "Email",
+            "Password"
+          ],
+          "actual": [
+            "Email",
+            "Password"
+          ],
+          "pass": true
+        },
+        {
+          "claim": "submit control present",
+          "kind": "visible",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        },
+        {
+          "claim": "login uses a layout container (shell/field/button classes)",
+          "kind": "style",
+          "expected": true,
+          "actual": false,
+          "pass": false
+        }
+      ],
+      "redirectChain": [
+        "/",
+        "/",
+        "/login"
+      ],
+      "console": [
+        "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "pageErrors": [],
+      "failedRequests": [],
+      "http4xx5xx": [
+        "401 GET /api/auth/me"
+      ],
+      "unexpectedHttp": [],
+      "staticRequests": 9,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/155y1v2gu283g.css"
+        ],
+        "tokenAccent": "#33427a",
+        "bodyBackground": "rgb(247, 246, 243)"
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 3,
+        "withoutVisibleFocus": [],
+        "order": [
+          "input:login-email",
+          "input:login-password",
+          "button:Log in"
+        ]
+      },
+      "localTruthDetected": false,
+      "pass": false
+    },
+    {
+      "seq": 3,
+      "screenshot": "screenshots/03-desktop-landing-owner.png",
+      "url": "/workspaces",
+      "route": "/login -> / -> /workspaces",
+      "viewport": "desktop",
+      "identity": "owner@inspect.local.test",
+      "canonicalState": "authenticated; member of SF-01 Inspection",
+      "expectedRelation": "after login: redirect to /workspaces; list shows exactly the server's accessible Workspaces; access-context trace only",
+      "projection": {
+        "authMe": {
+          "kind": "ok",
+          "userId": "9c5845ee-871a-48fa-9f35-c87f37a3dee3"
+        },
+        "workspaces": [
+          "SF-01 Inspection"
+        ]
+      },
+      "checks": [
+        {
+          "claim": "session resolves to a user",
+          "kind": "projection",
+          "expected": "ok",
+          "actual": "ok",
+          "pass": true
+        },
+        {
+          "claim": "visible Workspaces = server list",
+          "kind": "projection",
+          "expected": [
+            "SF-01 Inspection"
+          ],
+          "actual": [
+            "SF-01 Inspection"
+          ],
+          "pass": true
+        },
+        {
+          "claim": "trace = access context only",
+          "kind": "projection",
+          "expected": [
+            [
+              "access",
+              "current",
+              "Workspaces"
+            ]
+          ],
+          "actual": [
+            [
+              "access",
+              "current",
+              "Workspaces"
+            ]
+          ],
+          "pass": true
+        },
+        {
+          "claim": "redirect chain passes / and ends at /workspaces",
+          "kind": "visible",
+          "expected": true,
+          "actual": true,
+          "pass": true
+        }
+      ],
+      "redirectChain": [
+        "/login",
+        "/login",
+        "/",
+        "/workspaces"
+      ],
+      "console": [],
+      "pageErrors": [],
+      "failedRequests": [
+        "GET http://127.0.0.1:13100/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007?_rsc=ycP_2DwIC2OCocL2 :: net::ERR_ABORTED"
+      ],
+      "http4xx5xx": [],
+      "unexpectedHttp": [],
+      "staticRequests": 11,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/155y1v2gu283g.css"
+        ],
+        "tokenAccent": "#33427a",
+        "bodyBackground": "rgb(247, 246, 243)"
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 6,
+        "withoutVisibleFocus": [],
+        "order": [
+          "a:Skip to content",
+          "a:nquiry",
+          "button:Log out",
+          "a:SF-01 Inspection",
+          "input:workspace-name",
+          "button:Create Workspace"
+        ]
+      },
+      "localTruthDetected": false,
+      "pass": false
+    },
+    {
+      "seq": 4,
+      "screenshot": "screenshots/04-desktop-workspace-owner.png",
+      "url": "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007",
+      "route": "/workspaces/[w]",
+      "viewport": "desktop",
+      "identity": "owner@inspect.local.test",
+      "canonicalState": "Workspace SF-01 Inspection; viewer = governance root (Owner), not Facilitator",
+      "expectedRelation": "Challenge relation visible but unavailable with the server reason; Add member offered (governance-capable); Challenges listed from the server",
+      "projection": {
+        "createChallenge": {
+          "available": false,
+          "reasonCode": "NOT_FACILITATOR",
+          "reason": "Creating a Challenge requires the Facilitator role in this Workspace (AUTH-DEP-CH-001). Your role: Owner."
+        },
+        "challenges": [
+          "Why did activation stall after onboarding?"
+        ],
+        "role": "Owner"
+      },
+      "checks": [
+        {
+          "claim": "Challenges = server list",
+          "kind": "projection",
+          "expected": [
+            "Why did activation stall after onboarding?"
+          ],
+          "actual": [
+            "Why did activation stall after onboarding?"
+          ],
+          "pass": true
+        },
+        {
+          "claim": "create-challenge form iff capability available",
+          "kind": "projection",
+          "expected": false,
+          "actual": false,
+          "pass": true
+        },
+        {
+          "claim": "unavailable reason = server reason",
+          "kind": "projection",
+          "expected": "Creating a Challenge requires the Facilitator role in this Workspace (AUTH-DEP-CH-001). Your role: Owner.",
+          "actual": "Creating a Challenge requires the Facilitator role in this Workspace (AUTH-DEP-CH-001). Your role: Owner.",
+          "pass": true
+        },
+        {
+          "claim": "trace challenge relation status",
+          "kind": "projection",
+          "expected": "unavailable",
+          "actual": "unavailable",
+          "pass": true
+        },
+        {
+          "claim": "add-member form (governance root)",
+          "kind": "visible",
+          "expected": true,
+          "actual": true,
+          "pass": true
+        }
+      ],
+      "redirectChain": [
+        "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007",
+        "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007"
+      ],
+      "console": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "http4xx5xx": [],
+      "unexpectedHttp": [],
+      "staticRequests": 11,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/155y1v2gu283g.css"
+        ],
+        "tokenAccent": "#33427a",
+        "bodyBackground": "rgb(247, 246, 243)"
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 9,
+        "withoutVisibleFocus": [],
+        "order": [
+          "a:Skip to content",
+          "a:nquiry",
+          "a:Workspaces",
+          "button:Log out",
+          "a:Why did activation stall after onboarding?",
+          "input:new-member-user-id",
+          "select:ContributorFacilitator",
+          "button:Add member",
+          "summary:Authority you hold here (proof, verify)"
+        ]
+      },
+      "localTruthDetected": false,
+      "pass": true
+    },
+    {
+      "seq": 5,
+      "screenshot": "screenshots/05-desktop-challenge-owner.png",
+      "url": "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/challenges/3c646e0a-c53f-40a2-820b-29a2e48f4ec2",
+      "route": "/workspaces/[w]/challenges/[c]",
+      "viewport": "desktop",
+      "identity": "owner@inspect.local.test",
+      "canonicalState": "Challenge framed; 1 Session DRAFT; Owner holds no Challenge-scoped Session control",
+      "expectedRelation": "New Session relation unavailable with server reason; Governance grant form offered; authority proof closed by default",
+      "projection": {
+        "openSession": {
+          "available": false,
+          "reasonCode": "NO_CHALLENGE_SESSION_CONTROL",
+          "reason": "Opening a Session requires SESSION_CONTROL_RIGHT for this Challenge (scope CHALLENGE:3c646e0a-c53f-40a2-820b-29a2e48f4ec2). Only the Workspace governance root can grant it."
+        },
+        "sessions": [
+          "CHALLENGE_CAPTURE"
+        ],
+        "grant": true
+      },
+      "checks": [
+        {
+          "claim": "trace",
+          "kind": "projection",
+          "expected": [
+            [
+              "access",
+              "established",
+              "Workspaces"
+            ],
+            [
+              "workspace",
+              "established",
+              "SF-01 Inspection"
+            ],
+            [
+              "challenge",
+              "current",
+              "Why did activation stall after onboarding?"
+            ],
+            [
+              "session",
+              "unavailable",
+              "New Session"
+            ]
+          ],
+          "actual": [
+            [
+              "access",
+              "established",
+              "Workspaces"
+            ],
+            [
+              "workspace",
+              "established",
+              "SF-01 Inspection"
+            ],
+            [
+              "challenge",
+              "current",
+              "Why did activation stall after onboarding?"
+            ],
+            [
+              "session",
+              "unavailable",
+              "New Session"
+            ]
+          ],
+          "pass": true
+        },
+        {
+          "claim": "Session states = server",
+          "kind": "projection",
+          "expected": [
+            "CHALLENGE_CAPTURE"
+          ],
+          "actual": [
+            "CHALLENGE_CAPTURE"
+          ],
+          "pass": true
+        },
+        {
+          "claim": "Open Session control iff capability",
+          "kind": "projection",
+          "expected": false,
+          "actual": false,
+          "pass": true
+        },
+        {
+          "claim": "grant form iff capability",
+          "kind": "projection",
+          "expected": true,
+          "actual": true,
+          "pass": true
+        },
+        {
+          "claim": "proof closed by default",
+          "kind": "visible",
+          "expected": null,
+          "actual": null,
+          "pass": true
+        }
+      ],
+      "redirectChain": [
+        "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/challenges/3c646e0a-c53f-40a2-820b-29a2e48f4ec2",
+        "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/challenges/3c646e0a-c53f-40a2-820b-29a2e48f4ec2"
+      ],
+      "console": [],
+      "pageErrors": [],
+      "failedRequests": [
+        "GET http://127.0.0.1:13100/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007?_rsc=JelTNLTciVMoQEN7 :: net::ERR_ABORTED"
+      ],
+      "http4xx5xx": [],
+      "unexpectedHttp": [],
+      "staticRequests": 11,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/155y1v2gu283g.css"
+        ],
+        "tokenAccent": "#33427a",
+        "bodyBackground": "rgb(247, 246, 243)"
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 9,
+        "withoutVisibleFocus": [],
+        "order": [
+          "a:Skip to content",
+          "a:nquiry",
+          "a:Workspaces",
+          "a:SF-01 Inspection",
+          "button:Log out",
+          "a:Session opened Sep 25, 2026, 12:01:58 AM",
+          "select:Choose a member…Inspect Owner (Owner)Inspect Facilitator (Fa",
+          "button:Grant session control for this Challenge",
+          "summary:Who holds Session control for this Challenge (proof, verify)"
+        ]
+      },
+      "localTruthDetected": false,
+      "pass": false
+    },
+    {
+      "seq": 6,
+      "screenshot": "screenshots/06-pixel-7-landing-owner.png",
+      "url": "/workspaces",
+      "route": "/login -> / -> /workspaces",
+      "viewport": "pixel-7",
+      "identity": "owner@inspect.local.test",
+      "canonicalState": "authenticated; member of SF-01 Inspection",
+      "expectedRelation": "after login: redirect to /workspaces; list shows exactly the server's accessible Workspaces; access-context trace only",
+      "projection": {
+        "authMe": {
+          "kind": "ok",
+          "userId": "9c5845ee-871a-48fa-9f35-c87f37a3dee3"
+        },
+        "workspaces": [
+          "SF-01 Inspection"
+        ]
+      },
+      "checks": [
+        {
+          "claim": "session resolves to a user",
+          "kind": "projection",
+          "expected": "ok",
+          "actual": "ok",
+          "pass": true
+        },
+        {
+          "claim": "visible Workspaces = server list",
+          "kind": "projection",
+          "expected": [
+            "SF-01 Inspection"
+          ],
+          "actual": [
+            "SF-01 Inspection"
+          ],
+          "pass": true
+        },
+        {
+          "claim": "trace = access context only",
+          "kind": "projection",
+          "expected": [
+            [
+              "access",
+              "current",
+              "Workspaces"
+            ]
+          ],
+          "actual": [
+            [
+              "access",
+              "current",
+              "Workspaces"
+            ]
+          ],
+          "pass": true
+        },
+        {
+          "claim": "redirect chain passes / and ends at /workspaces",
+          "kind": "visible",
+          "expected": true,
+          "actual": true,
+          "pass": true
+        }
+      ],
+      "redirectChain": [
+        "/login",
+        "/login",
+        "/",
+        "/workspaces"
+      ],
+      "console": [],
+      "pageErrors": [],
+      "failedRequests": [
+        "GET http://127.0.0.1:13100/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007?_rsc=ycP_2DwIC2OCocL2 :: net::ERR_ABORTED"
+      ],
+      "http4xx5xx": [],
+      "unexpectedHttp": [],
+      "staticRequests": 11,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/155y1v2gu283g.css"
+        ],
+        "tokenAccent": "#33427a",
+        "bodyBackground": "rgb(247, 246, 243)"
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 6,
+        "withoutVisibleFocus": [],
+        "order": [
+          "a:Skip to content",
+          "a:nquiry",
+          "button:Log out",
+          "a:SF-01 Inspection",
+          "input:workspace-name",
+          "button:Create Workspace"
+        ]
+      },
+      "localTruthDetected": false,
+      "pass": false
+    },
+    {
+      "seq": 7,
+      "screenshot": "screenshots/07-pixel-7-workspace-owner.png",
+      "url": "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007",
+      "route": "/workspaces/[w]",
+      "viewport": "pixel-7",
+      "identity": "owner@inspect.local.test",
+      "canonicalState": "Workspace SF-01 Inspection; viewer = governance root (Owner), not Facilitator",
+      "expectedRelation": "Challenge relation visible but unavailable with the server reason; Add member offered (governance-capable); Challenges listed from the server",
+      "projection": {
+        "createChallenge": {
+          "available": false,
+          "reasonCode": "NOT_FACILITATOR",
+          "reason": "Creating a Challenge requires the Facilitator role in this Workspace (AUTH-DEP-CH-001). Your role: Owner."
+        },
+        "challenges": [
+          "Why did activation stall after onboarding?"
+        ],
+        "role": "Owner"
+      },
+      "checks": [
+        {
+          "claim": "Challenges = server list",
+          "kind": "projection",
+          "expected": [
+            "Why did activation stall after onboarding?"
+          ],
+          "actual": [
+            "Why did activation stall after onboarding?"
+          ],
+          "pass": true
+        },
+        {
+          "claim": "create-challenge form iff capability available",
+          "kind": "projection",
+          "expected": false,
+          "actual": false,
+          "pass": true
+        },
+        {
+          "claim": "unavailable reason = server reason",
+          "kind": "projection",
+          "expected": "Creating a Challenge requires the Facilitator role in this Workspace (AUTH-DEP-CH-001). Your role: Owner.",
+          "actual": "Creating a Challenge requires the Facilitator role in this Workspace (AUTH-DEP-CH-001). Your role: Owner.",
+          "pass": true
+        },
+        {
+          "claim": "trace challenge relation status",
+          "kind": "projection",
+          "expected": "unavailable",
+          "actual": "unavailable",
+          "pass": true
+        },
+        {
+          "claim": "add-member form (governance root)",
+          "kind": "visible",
+          "expected": true,
+          "actual": true,
+          "pass": true
+        }
+      ],
+      "redirectChain": [
+        "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007",
+        "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007"
+      ],
+      "console": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "http4xx5xx": [],
+      "unexpectedHttp": [],
+      "staticRequests": 11,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/155y1v2gu283g.css"
+        ],
+        "tokenAccent": "#33427a",
+        "bodyBackground": "rgb(247, 246, 243)"
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 9,
+        "withoutVisibleFocus": [],
+        "order": [
+          "a:Skip to content",
+          "a:nquiry",
+          "a:Workspaces",
+          "button:Log out",
+          "a:Why did activation stall after onboarding?",
+          "input:new-member-user-id",
+          "select:ContributorFacilitator",
+          "button:Add member",
+          "summary:Authority you hold here (proof, verify)"
+        ]
+      },
+      "localTruthDetected": false,
+      "pass": true
+    },
+    {
+      "seq": 8,
+      "screenshot": "screenshots/08-pixel-7-challenge-owner.png",
+      "url": "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/challenges/3c646e0a-c53f-40a2-820b-29a2e48f4ec2",
+      "route": "/workspaces/[w]/challenges/[c]",
+      "viewport": "pixel-7",
+      "identity": "owner@inspect.local.test",
+      "canonicalState": "Challenge framed; 1 Session DRAFT; Owner holds no Challenge-scoped Session control",
+      "expectedRelation": "New Session relation unavailable with server reason; Governance grant form offered; authority proof closed by default",
+      "projection": {
+        "openSession": {
+          "available": false,
+          "reasonCode": "NO_CHALLENGE_SESSION_CONTROL",
+          "reason": "Opening a Session requires SESSION_CONTROL_RIGHT for this Challenge (scope CHALLENGE:3c646e0a-c53f-40a2-820b-29a2e48f4ec2). Only the Workspace governance root can grant it."
+        },
+        "sessions": [
+          "CHALLENGE_CAPTURE"
+        ],
+        "grant": true
+      },
+      "checks": [
+        {
+          "claim": "trace",
+          "kind": "projection",
+          "expected": [
+            [
+              "access",
+              "established",
+              "Workspaces"
+            ],
+            [
+              "workspace",
+              "established",
+              "SF-01 Inspection"
+            ],
+            [
+              "challenge",
+              "current",
+              "Why did activation stall after onboarding?"
+            ],
+            [
+              "session",
+              "unavailable",
+              "New Session"
+            ]
+          ],
+          "actual": [
+            [
+              "access",
+              "established",
+              "Workspaces"
+            ],
+            [
+              "workspace",
+              "established",
+              "SF-01 Inspection"
+            ],
+            [
+              "challenge",
+              "current",
+              "Why did activation stall after onboarding?"
+            ],
+            [
+              "session",
+              "unavailable",
+              "New Session"
+            ]
+          ],
+          "pass": true
+        },
+        {
+          "claim": "Session states = server",
+          "kind": "projection",
+          "expected": [
+            "CHALLENGE_CAPTURE"
+          ],
+          "actual": [
+            "CHALLENGE_CAPTURE"
+          ],
+          "pass": true
+        },
+        {
+          "claim": "Open Session control iff capability",
+          "kind": "projection",
+          "expected": false,
+          "actual": false,
+          "pass": true
+        },
+        {
+          "claim": "grant form iff capability",
+          "kind": "projection",
+          "expected": true,
+          "actual": true,
+          "pass": true
+        },
+        {
+          "claim": "proof closed by default",
+          "kind": "visible",
+          "expected": null,
+          "actual": null,
+          "pass": true
+        }
+      ],
+      "redirectChain": [
+        "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/challenges/3c646e0a-c53f-40a2-820b-29a2e48f4ec2",
+        "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/challenges/3c646e0a-c53f-40a2-820b-29a2e48f4ec2"
+      ],
+      "console": [],
+      "pageErrors": [],
+      "failedRequests": [
+        "GET http://127.0.0.1:13100/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007?_rsc=hpqt06vJB14Izs0M :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:13100/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007?_rsc=JelTNLTciVMoQEN7 :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:13100/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/sessions/7189d011-977b-5634-af1f-826bfc463d92?_rsc=JelTNLTciVMoQEN7 :: net::ERR_ABORTED"
+      ],
+      "http4xx5xx": [],
+      "unexpectedHttp": [],
+      "staticRequests": 11,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/155y1v2gu283g.css"
+        ],
+        "tokenAccent": "#33427a",
+        "bodyBackground": "rgb(247, 246, 243)"
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 9,
+        "withoutVisibleFocus": [],
+        "order": [
+          "a:Skip to content",
+          "a:nquiry",
+          "a:Workspaces",
+          "a:SF-01 Inspection",
+          "button:Log out",
+          "a:Session opened Sep 25, 2026, 12:01:58 AM",
+          "select:Choose a member…Inspect Owner (Owner)Inspect Facilitator (Fa",
+          "button:Grant session control for this Challenge",
+          "summary:Who holds Session control for this Challenge (proof, verify)"
+        ]
+      },
+      "localTruthDetected": false,
+      "pass": false
+    },
+    {
+      "seq": 9,
+      "screenshot": "screenshots/09-desktop-workspace-facilitator.png",
+      "url": "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007",
+      "route": "/workspaces/[w]",
+      "viewport": "desktop",
+      "identity": "facilitator@inspect.local.test",
+      "canonicalState": "Workspace; viewer = Facilitator (not governance root)",
+      "expectedRelation": "Frame-a-Challenge form offered (server capability); no Add member form",
+      "projection": {
+        "createChallenge": {
+          "available": true,
+          "reasonCode": null,
+          "reason": null
+        }
+      },
+      "checks": [
+        {
+          "claim": "create-challenge form iff capability",
+          "kind": "projection",
+          "expected": true,
+          "actual": false,
+          "pass": false
+        },
+        {
+          "claim": "no add-member form",
+          "kind": "visible",
+          "expected": 0,
+          "actual": 0,
+          "pass": true
+        }
+      ],
+      "redirectChain": [
+        "/login",
+        "/login",
+        "/",
+        "/workspaces",
+        "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007",
+        "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007"
+      ],
+      "console": [
+        "error: Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        "GET http://127.0.0.1:13100/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007?_rsc=qJDZTuExLQHW24yN :: net::ERR_ABORTED"
+      ],
+      "http4xx5xx": [
+        "502 GET /api/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/overview"
+      ],
+      "unexpectedHttp": [
+        "502 GET /api/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/overview"
+      ],
+      "staticRequests": 22,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/155y1v2gu283g.css"
+        ],
+        "tokenAccent": "#33427a",
+        "bodyBackground": "rgb(247, 246, 243)"
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 5,
+        "withoutVisibleFocus": [],
+        "order": [
+          "a:Skip to content",
+          "a:nquiry",
+          "a:Workspaces",
+          "button:Log out",
+          "summary:Authority you hold here (proof, verify)"
+        ]
+      },
+      "localTruthDetected": true,
+      "pass": false
+    },
+    {
+      "seq": 10,
+      "screenshot": "screenshots/10-desktop-challenge-facilitator-PRIMARY.png",
+      "url": "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/challenges/3c646e0a-c53f-40a2-820b-29a2e48f4ec2",
+      "route": "/workspaces/[w]/challenges/[c]",
+      "viewport": "desktop",
+      "identity": "facilitator@inspect.local.test",
+      "canonicalState": "Challenge; Facilitator holds SESSION_CONTROL_RIGHT at CHALLENGE:<c>; 1 Session DRAFT",
+      "expectedRelation": "PRIMARY SF-01 SURFACE: trace Workspaces → SF-01 Inspection → Challenge (current) → New Session (possible); Open Session offered; Sessions named by server projection; authority proof depth",
+      "projection": {
+        "openSession": {
+          "available": true,
+          "reasonCode": null,
+          "reason": null
+        },
+        "controllers": [
+          "Inspect Facilitator"
+        ]
+      },
+      "checks": [
+        {
+          "claim": "trace",
+          "kind": "projection",
+          "expected": [
+            [
+              "access",
+              "established",
+              "Workspaces"
+            ],
+            [
+              "workspace",
+              "established",
+              "SF-01 Inspection"
+            ],
+            [
+              "challenge",
+              "current",
+              "Why did activation stall after onboarding?"
+            ],
+            [
+              "session",
+              "possible",
+              "New Session"
+            ]
+          ],
+          "actual": [
+            [
+              "access",
+              "established",
+              "Workspaces"
+            ],
+            [
+              "workspace",
+              "established",
+              "SF-01 Inspection"
+            ],
+            [
+              "challenge",
+              "current",
+              "Why did activation stall after onboarding?"
+            ],
+            [
+              "session",
+              "possible",
+              "New Session"
+            ]
+          ],
+          "pass": true
+        },
+        {
+          "claim": "Open Session offered",
+          "kind": "projection",
+          "expected": true,
+          "actual": true,
+          "pass": true
+        },
+        {
+          "claim": "no client ordinal",
+          "kind": "visible",
+          "expected": 0,
+          "actual": 0,
+          "pass": true
+        }
+      ],
+      "redirectChain": [
+        "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/challenges/3c646e0a-c53f-40a2-820b-29a2e48f4ec2",
+        "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/challenges/3c646e0a-c53f-40a2-820b-29a2e48f4ec2"
+      ],
+      "console": [],
+      "pageErrors": [],
+      "failedRequests": [
+        "GET http://127.0.0.1:13100/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/sessions/7189d011-977b-5634-af1f-826bfc463d92?_rsc=hpqt06vJB14Izs0M :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:13100/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/sessions/7189d011-977b-5634-af1f-826bfc463d92?_rsc=JelTNLTciVMoQEN7 :: net::ERR_ABORTED"
+      ],
+      "http4xx5xx": [],
+      "unexpectedHttp": [],
+      "staticRequests": 11,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/155y1v2gu283g.css"
+        ],
+        "tokenAccent": "#33427a",
+        "bodyBackground": "rgb(247, 246, 243)"
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 8,
+        "withoutVisibleFocus": [],
+        "order": [
+          "a:Skip to content",
+          "a:nquiry",
+          "a:Workspaces",
+          "a:SF-01 Inspection",
+          "button:Log out",
+          "a:Session opened Sep 25, 2026, 12:01:58 AM",
+          "button:Open Session",
+          "summary:Who holds Session control for this Challenge (proof, verify)"
+        ]
+      },
+      "localTruthDetected": false,
+      "pass": false
+    },
+    {
+      "seq": 11,
+      "screenshot": "screenshots/11-desktop-challenge-facilitator-proof-open.png",
+      "url": "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/challenges/3c646e0a-c53f-40a2-820b-29a2e48f4ec2",
+      "route": "/workspaces/[w]/challenges/[c]",
+      "viewport": "desktop",
+      "identity": "facilitator@inspect.local.test",
+      "canonicalState": "same, D2 authority proof opened by keyboard",
+      "expectedRelation": "proof opens in place; lists the server's Session controllers with grantor and scope; position kept",
+      "projection": {
+        "controllers": [
+          "Inspect Facilitator"
+        ]
+      },
+      "checks": [
+        {
+          "claim": "proof open",
+          "kind": "visible",
+          "expected": "",
+          "actual": "",
+          "pass": true
+        },
+        {
+          "claim": "controllers = server",
+          "kind": "projection",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        },
+        {
+          "claim": "focus stays on summary",
+          "kind": "visible",
+          "expected": "summary",
+          "actual": "summary",
+          "pass": true
+        }
+      ],
+      "redirectChain": [],
+      "console": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "http4xx5xx": [],
+      "unexpectedHttp": [],
+      "staticRequests": 0,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/155y1v2gu283g.css"
+        ],
+        "tokenAccent": "#33427a",
+        "bodyBackground": "rgb(247, 246, 243)"
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": null,
+      "localTruthDetected": false,
+      "pass": true
+    },
+    {
+      "seq": 12,
+      "screenshot": "screenshots/12-pixel-7-challenge-facilitator-PRIMARY.png",
+      "url": "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/challenges/3c646e0a-c53f-40a2-820b-29a2e48f4ec2",
+      "route": "/workspaces/[w]/challenges/[c]",
+      "viewport": "pixel-7",
+      "identity": "facilitator@inspect.local.test",
+      "canonicalState": "same as desktop primary surface",
+      "expectedRelation": "relational order on phone: position → Challenge → Sessions → Open Session → proof; no overflow",
+      "projection": null,
+      "checks": [
+        {
+          "claim": "vertical relational order",
+          "kind": "visible",
+          "expected": true,
+          "actual": true,
+          "pass": true
+        }
+      ],
+      "redirectChain": [
+        "/login",
+        "/login",
+        "/",
+        "/workspaces",
+        "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/challenges/3c646e0a-c53f-40a2-820b-29a2e48f4ec2",
+        "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/challenges/3c646e0a-c53f-40a2-820b-29a2e48f4ec2"
+      ],
+      "console": [],
+      "pageErrors": [],
+      "failedRequests": [
+        "GET http://127.0.0.1:13100/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007?_rsc=JelTNLTciVMoQEN7 :: net::ERR_ABORTED"
+      ],
+      "http4xx5xx": [],
+      "unexpectedHttp": [],
+      "staticRequests": 22,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/155y1v2gu283g.css"
+        ],
+        "tokenAccent": "#33427a",
+        "bodyBackground": "rgb(247, 246, 243)"
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 8,
+        "withoutVisibleFocus": [],
+        "order": [
+          "a:Skip to content",
+          "a:nquiry",
+          "a:Workspaces",
+          "a:SF-01 Inspection",
+          "button:Log out",
+          "a:Session opened Sep 25, 2026, 12:01:58 AM",
+          "button:Open Session",
+          "summary:Who holds Session control for this Challenge (proof, verify)"
+        ]
+      },
+      "localTruthDetected": false,
+      "pass": false
+    },
+    {
+      "seq": 13,
+      "screenshot": "screenshots/13-desktop-session-draft-facilitator.png",
+      "url": "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/sessions/e9359f30-b993-53fb-9021-e6c271cc19c8",
+      "route": "/workspaces/[w]/sessions/[s]",
+      "viewport": "desktop",
+      "identity": "facilitator@inspect.local.test",
+      "canonicalState": "Session DRAFT; Facilitator has NO SESSION-scoped control yet (HD-1)",
+      "expectedRelation": "Begin setup visible only as unavailable with the server reason (no disabled control)",
+      "projection": {
+        "state": "DRAFT",
+        "beginSetup": {
+          "available": false,
+          "reasonCode": "NO_SESSION_CONTROL",
+          "reason": "Requires SESSION_CONTROL_RIGHT for this Session (scope SESSION:e9359f30-b993-53fb-9021-e6c271cc19c8). Only the Workspace governance root can grant it.",
+          "relevant": true
+        }
+      },
+      "checks": [
+        {
+          "claim": "state = server",
+          "kind": "projection",
+          "expected": "DRAFT",
+          "actual": "DRAFT",
+          "pass": true
+        },
+        {
+          "claim": "Begin setup control iff capability",
+          "kind": "projection",
+          "expected": false,
+          "actual": false,
+          "pass": true
+        }
+      ],
+      "redirectChain": [
+        "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/challenges/3c646e0a-c53f-40a2-820b-29a2e48f4ec2",
+        "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/challenges/3c646e0a-c53f-40a2-820b-29a2e48f4ec2",
+        "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/sessions/e9359f30-b993-53fb-9021-e6c271cc19c8"
+      ],
+      "console": [],
+      "pageErrors": [],
+      "failedRequests": [
+        "GET http://127.0.0.1:13100/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007?_rsc=JelTNLTciVMoQEN7 :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:13100/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/sessions/7189d011-977b-5634-af1f-826bfc463d92?_rsc=JelTNLTciVMoQEN7 :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:13100/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/challenges/3c646e0a-c53f-40a2-820b-29a2e48f4ec2?_rsc=FjltKBpjfw1Rzdmr :: net::ERR_ABORTED"
+      ],
+      "http4xx5xx": [],
+      "unexpectedHttp": [],
+      "staticRequests": 12,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/155y1v2gu283g.css"
+        ],
+        "tokenAccent": "#33427a",
+        "bodyBackground": "rgb(247, 246, 243)"
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 7,
+        "withoutVisibleFocus": [],
+        "order": [
+          "a:Skip to content",
+          "a:nquiry",
+          "a:Workspaces",
+          "a:SF-01 Inspection",
+          "a:Why did activation stall after onboarding?",
+          "button:Log out",
+          "a:Decision surface"
+        ]
+      },
+      "localTruthDetected": false,
+      "pass": false
+    },
+    {
+      "seq": 14,
+      "screenshot": "screenshots/14-desktop-session-question-generation-controller-participant.png",
+      "url": "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/sessions/e9359f30-b993-53fb-9021-e6c271cc19c8",
+      "route": "/workspaces/[w]/sessions/[s]",
+      "viewport": "desktop",
+      "identity": "facilitator@inspect.local.test",
+      "canonicalState": "Session QUESTION_GENERATION; Burst ACTIVE HUMAN_ONLY; viewer = controller + participant",
+      "expectedRelation": "capture form; own questions only (HD-13); presentation-only timer; Complete Burst offered to controller",
+      "projection": {
+        "state": "QUESTION_GENERATION",
+        "burst": "ACTIVE",
+        "visibility": "OWN_ONLY_WHILE_ACTIVE",
+        "mine": 1,
+        "complete": {
+          "available": true,
+          "reasonCode": null,
+          "reason": null,
+          "relevant": true
+        }
+      },
+      "checks": [
+        {
+          "claim": "state = server",
+          "kind": "projection",
+          "expected": "QUESTION_GENERATION",
+          "actual": "QUESTION_GENERATION",
+          "pass": true
+        },
+        {
+          "claim": "burst = server",
+          "kind": "projection",
+          "expected": "ACTIVE",
+          "actual": "ACTIVE",
+          "pass": true
+        },
+        {
+          "claim": "own questions = server mine",
+          "kind": "projection",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        },
+        {
+          "claim": "capture form iff capability",
+          "kind": "projection",
+          "expected": true,
+          "actual": true,
+          "pass": true
+        },
+        {
+          "claim": "Complete Burst iff capability",
+          "kind": "projection",
+          "expected": true,
+          "actual": true,
+          "pass": true
+        },
+        {
+          "claim": "no BEGIN_ANALYSIS anywhere",
+          "kind": "visible",
+          "expected": 0,
+          "actual": 0,
+          "pass": true
+        }
+      ],
+      "redirectChain": [
+        "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/sessions/e9359f30-b993-53fb-9021-e6c271cc19c8",
+        "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/sessions/e9359f30-b993-53fb-9021-e6c271cc19c8"
+      ],
+      "console": [],
+      "pageErrors": [],
+      "failedRequests": [
+        "GET http://127.0.0.1:13100/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/sessions/e9359f30-b993-53fb-9021-e6c271cc19c8/decision?_rsc=VGvzlyQtPaMIwaj_ :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:13100/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/sessions/e9359f30-b993-53fb-9021-e6c271cc19c8/decision?_rsc=FjltKBpjfw1Rzdmr :: net::ERR_ABORTED"
+      ],
+      "http4xx5xx": [],
+      "unexpectedHttp": [],
+      "staticRequests": 10,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/155y1v2gu283g.css"
+        ],
+        "tokenAccent": "#33427a",
+        "bodyBackground": "rgb(247, 246, 243)"
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 2,
+        "withoutVisibleFocus": [],
+        "order": [
+          "button:Complete Burst…",
+          "a:Decision surface"
+        ]
+      },
+      "localTruthDetected": false,
+      "pass": false
+    },
+    {
+      "seq": 15,
+      "screenshot": "screenshots/15-desktop-session-question-generation-owner-participant.png",
+      "url": "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/sessions/e9359f30-b993-53fb-9021-e6c271cc19c8",
+      "route": "/workspaces/[w]/sessions/[s]",
+      "viewport": "desktop",
+      "identity": "owner@inspect.local.test",
+      "canonicalState": "QUESTION_GENERATION; Owner = participant, not Session controller",
+      "expectedRelation": "sees only own question (HD-13), no Complete Burst",
+      "projection": {
+        "visibility": "OWN_ONLY_WHILE_ACTIVE",
+        "mine": [
+          "What did users expect to happen after signup?"
+        ]
+      },
+      "checks": [
+        {
+          "claim": "own questions = server mine (exact text)",
+          "kind": "projection",
+          "expected": [
+            "What did users expect to happen after signup?"
+          ],
+          "actual": [
+            "What did users expect to happen after signup?"
+          ],
+          "pass": true
+        },
+        {
+          "claim": "no Complete Burst",
+          "kind": "visible",
+          "expected": 0,
+          "actual": 0,
+          "pass": true
+        },
+        {
+          "claim": "peer question not visible",
+          "kind": "visible",
+          "expected": 0,
+          "actual": 0,
+          "pass": true
+        }
+      ],
+      "redirectChain": [
+        "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/sessions/e9359f30-b993-53fb-9021-e6c271cc19c8",
+        "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/sessions/e9359f30-b993-53fb-9021-e6c271cc19c8",
+        "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/sessions/e9359f30-b993-53fb-9021-e6c271cc19c8",
+        "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/sessions/e9359f30-b993-53fb-9021-e6c271cc19c8"
+      ],
+      "console": [],
+      "pageErrors": [],
+      "failedRequests": [
+        "GET http://127.0.0.1:13100/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/challenges/3c646e0a-c53f-40a2-820b-29a2e48f4ec2?_rsc=VGvzlyQtPaMIwaj_ :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:13100/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007?_rsc=FjltKBpjfw1Rzdmr :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:13100/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/challenges/3c646e0a-c53f-40a2-820b-29a2e48f4ec2?_rsc=FjltKBpjfw1Rzdmr :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:13100/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/sessions/e9359f30-b993-53fb-9021-e6c271cc19c8/decision?_rsc=VGvzlyQtPaMIwaj_ :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:13100/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/sessions/e9359f30-b993-53fb-9021-e6c271cc19c8/decision?_rsc=FjltKBpjfw1Rzdmr :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:13100/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007?_rsc=FjltKBpjfw1Rzdmr :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:13100/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/challenges/3c646e0a-c53f-40a2-820b-29a2e48f4ec2?_rsc=FjltKBpjfw1Rzdmr :: net::ERR_ABORTED"
+      ],
+      "http4xx5xx": [],
+      "unexpectedHttp": [],
+      "staticRequests": 20,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/155y1v2gu283g.css"
+        ],
+        "tokenAccent": "#33427a",
+        "bodyBackground": "rgb(247, 246, 243)"
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 2,
+        "withoutVisibleFocus": [],
+        "order": [
+          "select:Choose a member…Inspect OwnerInspect Facilitator",
+          "a:Decision surface"
+        ]
+      },
+      "localTruthDetected": false,
+      "pass": false
+    },
+    {
+      "seq": 16,
+      "screenshot": "screenshots/16-desktop-session-question-capture-frozen-facilitator.png",
+      "url": "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/sessions/e9359f30-b993-53fb-9021-e6c271cc19c8",
+      "route": "/workspaces/[w]/sessions/[s]",
+      "viewport": "desktop",
+      "identity": "facilitator@inspect.local.test",
+      "canonicalState": "Session QUESTION_CAPTURE; Burst COMPLETED; frozen human set (fingerprint verified)",
+      "expectedRelation": "frozen set for every member with authors; no capture form; no Complete Burst; no BEGIN_ANALYSIS",
+      "projection": {
+        "state": "QUESTION_CAPTURE",
+        "burst": "COMPLETED",
+        "verified": true,
+        "members": 2
+      },
+      "checks": [
+        {
+          "claim": "state = server",
+          "kind": "projection",
+          "expected": "QUESTION_CAPTURE",
+          "actual": "QUESTION_CAPTURE",
+          "pass": true
+        },
+        {
+          "claim": "frozen texts = server (order, exact)",
+          "kind": "projection",
+          "expected": [
+            "Which step do most new users abandon first?",
+            "What did users expect to happen after signup?"
+          ],
+          "actual": [
+            "Which step do most new users abandon first?",
+            "What did users expect to happen after signup?"
+          ],
+          "pass": true
+        },
+        {
+          "claim": "verified flag = server",
+          "kind": "projection",
+          "expected": "true",
+          "actual": "true",
+          "pass": true
+        },
+        {
+          "claim": "no capture form",
+          "kind": "visible",
+          "expected": 0,
+          "actual": 0,
+          "pass": true
+        },
+        {
+          "claim": "no BEGIN_ANALYSIS",
+          "kind": "visible",
+          "expected": 0,
+          "actual": 0,
+          "pass": true
+        }
+      ],
+      "redirectChain": [
+        "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/sessions/e9359f30-b993-53fb-9021-e6c271cc19c8",
+        "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/sessions/e9359f30-b993-53fb-9021-e6c271cc19c8",
+        "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/sessions/e9359f30-b993-53fb-9021-e6c271cc19c8",
+        "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/sessions/e9359f30-b993-53fb-9021-e6c271cc19c8"
+      ],
+      "console": [],
+      "pageErrors": [],
+      "failedRequests": [
+        "GET http://127.0.0.1:13100/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007?_rsc=VGvzlyQtPaMIwaj_ :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:13100/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007?_rsc=FjltKBpjfw1Rzdmr :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:13100/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/challenges/3c646e0a-c53f-40a2-820b-29a2e48f4ec2?_rsc=FjltKBpjfw1Rzdmr :: net::ERR_ABORTED"
+      ],
+      "http4xx5xx": [],
+      "unexpectedHttp": [],
+      "staticRequests": 20,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/155y1v2gu283g.css"
+        ],
+        "tokenAccent": "#33427a",
+        "bodyBackground": "rgb(247, 246, 243)"
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 7,
+        "withoutVisibleFocus": [],
+        "order": [
+          "a:Skip to content",
+          "a:nquiry",
+          "a:Workspaces",
+          "a:SF-01 Inspection",
+          "a:Why did activation stall after onboarding?",
+          "button:Log out",
+          "a:Decision surface"
+        ]
+      },
+      "localTruthDetected": false,
+      "pass": false
+    },
+    {
+      "seq": 17,
+      "screenshot": "screenshots/17-desktop-session-question-capture-frozen-owner.png",
+      "url": "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/sessions/e9359f30-b993-53fb-9021-e6c271cc19c8",
+      "route": "/workspaces/[w]/sessions/[s]",
+      "viewport": "desktop",
+      "identity": "owner@inspect.local.test",
+      "canonicalState": "Session QUESTION_CAPTURE; Burst COMPLETED; frozen human set (fingerprint verified)",
+      "expectedRelation": "frozen set for every member with authors; no capture form; no Complete Burst; no BEGIN_ANALYSIS",
+      "projection": {
+        "state": "QUESTION_CAPTURE",
+        "burst": "COMPLETED",
+        "verified": true,
+        "members": 2
+      },
+      "checks": [
+        {
+          "claim": "state = server",
+          "kind": "projection",
+          "expected": "QUESTION_CAPTURE",
+          "actual": "QUESTION_CAPTURE",
+          "pass": true
+        },
+        {
+          "claim": "frozen texts = server (order, exact)",
+          "kind": "projection",
+          "expected": [
+            "Which step do most new users abandon first?",
+            "What did users expect to happen after signup?"
+          ],
+          "actual": [
+            "Which step do most new users abandon first?",
+            "What did users expect to happen after signup?"
+          ],
+          "pass": true
+        },
+        {
+          "claim": "verified flag = server",
+          "kind": "projection",
+          "expected": "true",
+          "actual": "true",
+          "pass": true
+        },
+        {
+          "claim": "no capture form",
+          "kind": "visible",
+          "expected": 0,
+          "actual": 0,
+          "pass": true
+        },
+        {
+          "claim": "no BEGIN_ANALYSIS",
+          "kind": "visible",
+          "expected": 0,
+          "actual": 0,
+          "pass": true
+        }
+      ],
+      "redirectChain": [
+        "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/sessions/e9359f30-b993-53fb-9021-e6c271cc19c8",
+        "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/sessions/e9359f30-b993-53fb-9021-e6c271cc19c8"
+      ],
+      "console": [],
+      "pageErrors": [],
+      "failedRequests": [
+        "GET http://127.0.0.1:13100/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/sessions/e9359f30-b993-53fb-9021-e6c271cc19c8/decision?_rsc=FjltKBpjfw1Rzdmr :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:13100/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007?_rsc=FjltKBpjfw1Rzdmr :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:13100/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/challenges/3c646e0a-c53f-40a2-820b-29a2e48f4ec2?_rsc=FjltKBpjfw1Rzdmr :: net::ERR_ABORTED"
+      ],
+      "http4xx5xx": [],
+      "unexpectedHttp": [],
+      "staticRequests": 10,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/155y1v2gu283g.css"
+        ],
+        "tokenAccent": "#33427a",
+        "bodyBackground": "rgb(247, 246, 243)"
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 8,
+        "withoutVisibleFocus": [],
+        "order": [
+          "a:Skip to content",
+          "a:nquiry",
+          "a:Workspaces",
+          "a:SF-01 Inspection",
+          "a:Why did activation stall after onboarding?",
+          "button:Log out",
+          "select:Choose a member…Inspect OwnerInspect Facilitator",
+          "a:Decision surface"
+        ]
+      },
+      "localTruthDetected": false,
+      "pass": false
+    },
+    {
+      "seq": 18,
+      "screenshot": "screenshots/18-pixel-7-session-question-capture-frozen-owner.png",
+      "url": "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/sessions/e9359f30-b993-53fb-9021-e6c271cc19c8",
+      "route": "/workspaces/[w]/sessions/[s]",
+      "viewport": "pixel-7",
+      "identity": "owner@inspect.local.test",
+      "canonicalState": "QUESTION_CAPTURE, frozen set",
+      "expectedRelation": "frozen set readable on phone; no overflow",
+      "projection": null,
+      "checks": [],
+      "redirectChain": [
+        "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/sessions/e9359f30-b993-53fb-9021-e6c271cc19c8",
+        "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/sessions/e9359f30-b993-53fb-9021-e6c271cc19c8"
+      ],
+      "console": [],
+      "pageErrors": [],
+      "failedRequests": [
+        "GET http://127.0.0.1:13100/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007?_rsc=FjltKBpjfw1Rzdmr :: net::ERR_ABORTED"
+      ],
+      "http4xx5xx": [],
+      "unexpectedHttp": [],
+      "staticRequests": 10,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/155y1v2gu283g.css"
+        ],
+        "tokenAccent": "#33427a",
+        "bodyBackground": "rgb(247, 246, 243)"
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 8,
+        "withoutVisibleFocus": [],
+        "order": [
+          "a:Skip to content",
+          "a:nquiry",
+          "a:Workspaces",
+          "a:SF-01 Inspection",
+          "a:Why did activation stall after onboarding?",
+          "button:Log out",
+          "select:Choose a member…Inspect OwnerInspect Facilitator",
+          "a:Decision surface"
+        ]
+      },
+      "localTruthDetected": false,
+      "pass": false
+    },
+    {
+      "seq": 19,
+      "screenshot": "screenshots/19-desktop-landing-outsider-empty.png",
+      "url": "/workspaces",
+      "route": "/workspaces",
+      "viewport": "desktop",
+      "identity": "outsider@inspect.local.test",
+      "canonicalState": "authenticated; member of nothing",
+      "expectedRelation": "empty state (no Workspaces), founding offered",
+      "projection": {
+        "workspaces": 0
+      },
+      "checks": [
+        {
+          "claim": "empty state visible",
+          "kind": "projection",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        }
+      ],
+      "redirectChain": [
+        "/login",
+        "/login",
+        "/",
+        "/workspaces"
+      ],
+      "console": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "http4xx5xx": [],
+      "unexpectedHttp": [],
+      "staticRequests": 11,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/155y1v2gu283g.css"
+        ],
+        "tokenAccent": "#33427a",
+        "bodyBackground": "rgb(247, 246, 243)"
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 5,
+        "withoutVisibleFocus": [],
+        "order": [
+          "a:Skip to content",
+          "a:nquiry",
+          "button:Log out",
+          "input:workspace-name",
+          "button:Create Workspace"
+        ]
+      },
+      "localTruthDetected": false,
+      "pass": true
+    },
+    {
+      "seq": 20,
+      "screenshot": "screenshots/20-desktop-workspace-outsider-denied.png",
+      "url": "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007",
+      "route": "/workspaces/[w]",
+      "viewport": "desktop",
+      "identity": "outsider@inspect.local.test",
+      "canonicalState": "not a member → server denies",
+      "expectedRelation": "denied boundary with the server reason; nothing of the Workspace shown",
+      "projection": {
+        "kind": "denied",
+        "result": "DENY",
+        "reasonCode": "NOT_A_WORKSPACE_MEMBER"
+      },
+      "checks": [
+        {
+          "claim": "denied boundary shown",
+          "kind": "projection",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        },
+        {
+          "claim": "reason = server",
+          "kind": "projection",
+          "expected": "NOT_A_WORKSPACE_MEMBER",
+          "actual": "NOT_A_WORKSPACE_MEMBER",
+          "pass": true
+        },
+        {
+          "claim": "no h1 with the Workspace name",
+          "kind": "visible",
+          "expected": 0,
+          "actual": 0,
+          "pass": true
+        }
+      ],
+      "redirectChain": [
+        "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007",
+        "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007"
+      ],
+      "console": [
+        "error: Failed to load resource: the server responded with a status of 403 (Forbidden)"
+      ],
+      "pageErrors": [],
+      "failedRequests": [],
+      "http4xx5xx": [
+        "403 GET /api/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/overview"
+      ],
+      "unexpectedHttp": [],
+      "staticRequests": 11,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/155y1v2gu283g.css"
+        ],
+        "tokenAccent": "#33427a",
+        "bodyBackground": "rgb(247, 246, 243)"
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 4,
+        "withoutVisibleFocus": [],
+        "order": [
+          "a:Skip to content",
+          "a:nquiry",
+          "a:Workspaces",
+          "button:Log out"
+        ]
+      },
+      "localTruthDetected": false,
+      "pass": true
+    },
+    {
+      "seq": 21,
+      "screenshot": "screenshots/21-desktop-challenge-not-found.png",
+      "url": "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/challenges/00000000-0000-4000-8000-000000000000",
+      "route": "/workspaces/[w]/challenges/[unknown]",
+      "viewport": "desktop",
+      "identity": "facilitator@inspect.local.test",
+      "canonicalState": "Challenge id unknown in this Workspace",
+      "expectedRelation": "NOT_FOUND boundary; trace reduced to the confirmed access context; nothing invented",
+      "projection": {
+        "kind": "not_found",
+        "reasonCode": "CHALLENGE_NOT_FOUND"
+      },
+      "checks": [
+        {
+          "claim": "load-failure boundary is not_found",
+          "kind": "projection",
+          "expected": "not_found",
+          "actual": "not_found",
+          "pass": true
+        },
+        {
+          "claim": "trace = access only",
+          "kind": "projection",
+          "expected": [
+            [
+              "access",
+              "established",
+              "Workspaces"
+            ]
+          ],
+          "actual": [
+            [
+              "access",
+              "established",
+              "Workspaces"
+            ]
+          ],
+          "pass": true
+        }
+      ],
+      "redirectChain": [
+        "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/challenges/00000000-0000-4000-8000-000000000000",
+        "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/challenges/00000000-0000-4000-8000-000000000000"
+      ],
+      "console": [
+        "error: Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        "GET http://127.0.0.1:13100/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/sessions/e9359f30-b993-53fb-9021-e6c271cc19c8/decision?_rsc=FjltKBpjfw1Rzdmr :: net::ERR_ABORTED"
+      ],
+      "http4xx5xx": [
+        "404 GET /api/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/challenges/00000000-0000-4000-8000-000000000000"
+      ],
+      "unexpectedHttp": [],
+      "staticRequests": 11,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/155y1v2gu283g.css"
+        ],
+        "tokenAccent": "#33427a",
+        "bodyBackground": "rgb(247, 246, 243)"
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 4,
+        "withoutVisibleFocus": [],
+        "order": [
+          "a:Skip to content",
+          "a:nquiry",
+          "a:Workspaces",
+          "button:Log out"
+        ]
+      },
+      "localTruthDetected": false,
+      "pass": false
+    },
+    {
+      "seq": 22,
+      "screenshot": "screenshots/22-desktop-workspace-malformed-rejected.png",
+      "url": "/workspaces/not-a-uuid",
+      "route": "/workspaces/not-a-uuid",
+      "viewport": "desktop",
+      "identity": "facilitator@inspect.local.test",
+      "canonicalState": "malformed id → server rejects (input, not authority)",
+      "expectedRelation": "REJECTED boundary, distinct from denied",
+      "projection": {
+        "kind": "rejected",
+        "reasonCode": "badly formed hexadecimal UUID string"
+      },
+      "checks": [
+        {
+          "claim": "rejected boundary shown",
+          "kind": "projection",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        }
+      ],
+      "redirectChain": [
+        "/workspaces/not-a-uuid",
+        "/workspaces/not-a-uuid"
+      ],
+      "console": [
+        "error: Failed to load resource: the server responded with a status of 400 (Bad Request)",
+        "error: Failed to load resource: the server responded with a status of 400 (Bad Request)"
+      ],
+      "pageErrors": [],
+      "failedRequests": [],
+      "http4xx5xx": [
+        "400 GET /api/workspaces/not-a-uuid/overview",
+        "400 GET /api/workspaces/not-a-uuid"
+      ],
+      "unexpectedHttp": [],
+      "staticRequests": 11,
+      "staticNon200": [],
+      "css": {
+        "stylesheets": [
+          "/_next/static/chunks/155y1v2gu283g.css"
+        ],
+        "tokenAccent": "#33427a",
+        "bodyBackground": "rgb(247, 246, 243)"
+      },
+      "overflowPx": 0,
+      "axeSeriousCritical": [],
+      "axeOther": [],
+      "keyboard": {
+        "reachable": 4,
+        "withoutVisibleFocus": [],
+        "order": [
+          "a:Skip to content",
+          "a:nquiry",
+          "a:Workspaces",
+          "button:Log out"
+        ]
+      },
+      "localTruthDetected": false,
+      "pass": true
+    },
+    {
+      "seq": 23,
+      "screenshot": "screenshots/23-desktop-challenge-loading-latency-2s.png",
+      "url": "/workspaces/7f9be38a-20a6-43ac-9a67-8773d9863007/challenges/3c646e0a-c53f-40a2-820b-29a2e48f4ec2",
+      "route": "/workspaces/[w]/challenges/[c]",
+      "viewport": "desktop",
+      "identity": "facilitator@inspect.local.test",
+      "canonicalState": "projection not yet confirmed (2 s network latency, CDP emulation; no interception)",
+      "expectedRelation": "loading state; trace holds only the confirmed access context",
+      "checks": [
+        {
+          "claim": "trace while loading",
+          "kind": "projection",
+          "expected": [
+            [
+              "access",
+              "established",
+              "Workspaces"
+            ]
+          ],
+          "actual": [
+            [
+              "access",
+              "established",
+              "Workspaces"
+            ]
+          ],
+          "pass": true
+        }
+      ],
+      "pass": true
+    }
+  ]
+}

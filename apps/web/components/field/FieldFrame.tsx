@@ -12,17 +12,23 @@
  * On wide screens the primary column holds centre + near and the secondary
  * column holds outer + depth. Only the column count changes with width.
  *
- * Page chrome (skip link, brand, exit) stays outside <main>, as in the F02
- * AppShell, so the F02 "no action element in main" proofs keep their scope.
- * The F02 AppShell itself is left untouched: the Session page (F03 contact
- * zone) still uses it until the post-F03 synchronization.
+ * Page chrome (skip link, orientation rail, centred identity, exit) stays outside <main>, as in the F02
+ * AppShell, so the F02 "no action element in main" proofs keep their scope. SF-03 (doc 23 §9–§10): the rail is
+ * trace · identity · exit, one grid, the identity centred on desktop; the trace is the orientation relation.
+ * SF-02: the frame mounts the Background Presentation Field (22 §17) with the
+ * surface class as its regime; the background carries no authoritative claim.
+ * The exit control ("Log out") is an effect on the identity relation, so a
+ * surface passes `exit={null}` while its authoritative read is still pending:
+ * no access affordance is shown before identity is confirmed (22 §21.7,
+ * §28.9). Denied / not-found boundaries keep it (the identity exists).
  */
-import Link from "next/link";
 import { LogoutButton } from "../LogoutButton";
 import type { TraceSegment } from "../../lib/field/position";
+import { FieldBackground, type BackgroundRegime } from "./FieldBackground";
+import { Identity } from "./Identity";
 import { RelationTrace } from "./RelationTrace";
 
-export type FieldRegime = "workspace-access" | "workspace" | "challenge";
+export type FieldRegime = BackgroundRegime;
 
 export function FieldFrame({
   trace,
@@ -37,15 +43,14 @@ export function FieldFrame({
 }) {
   return (
     <>
+      <FieldBackground regime={regime} />
       <a className="skip-link" href="#main">
         Skip to content
       </a>
       <header className="shell-header field-header">
-        <Link className="brand" href="/workspaces">
-          nquiry
-        </Link>
         <RelationTrace segments={trace} />
-        {exit}
+        <Identity />
+        <div className="rail-exit">{exit}</div>
       </header>
       <main id="main" className="shell-main field-main" data-field-regime={regime}>
         {children}

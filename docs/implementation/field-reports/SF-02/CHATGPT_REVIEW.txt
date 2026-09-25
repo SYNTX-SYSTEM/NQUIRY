@@ -1,0 +1,40 @@
+NQUIRY FIELD REVIEW
+FIELD: SF-02 — NQIRY SYMBIOTIC INTERACTION FIELD (materialization of doc 22 on the whole frontend)
+HEAD: 644e1c8 (SF-01 synced with published F03) + uncommitted SF-02 on branch frontend-symbiotic (worktree /home/codi/Entwicklung/nquiry/worktrees/frontend-symbiotic)
+STATUS: READY_FOR_HUMAN_FRONTEND_REVIEW (local proof GREEN on the final tree; FIELD_GREEN NOT claimed; NOT committed / tagged / pushed / PUBLISHED)
+ARCHITECTURAL AUTHORITY: docs/implementation/frontend/22_NQIRY_SYMBIOTIC_SURFACE_ARCHITECTURE.md (governing; §41 falsifiers 1–77, §42 autonomy, §43 protected semantics, §45 Case-3 register), doc 21 / SF-01 foundation, 20 SFE, published F01/F02/F03 contracts.
+HUMAN DECISIONS USED: SFE::MATERIALIZE_APPROVED_ARCHITECTURE (2026-09-25): complete materialization, Challenge Field primary, Session Field = reconstructing lifecycle Field, real backend everywhere, preserve F03 / Human Question Law / authority / tests, no tag/publish/push/PUBLISHED, no F04, no ledger writes (WAIT_FOR_F04_ARCHITECTURE_RECONCILIATION), do not touch other Fields' services.
+
+MISSION: Bind doc 22 to the real repository and make the whole frontend a dark, relational Field (Core / Orbit / Node / Relation Path / depth planes / living background / proof depth / state-bound motion; cyan living, blue stable, red boundary, neutral otherwise, no green) without inventing any relation the backend does not establish.
+
+BINDING GATE (WU-SF02.0): every 22 §9 relation mapped to a real domain handler, projection, capability, authority, command route, persistence and frontend/test contact. Case-3 register §45 closed by repository fact (no Case 3): external providers not established → not shown; analysis contact absent → absent, no mock; participant names visible / content hidden (F02/F03); unavailable reasons shown; denied vs not found decided by the server. Protected semantics §43: no contradiction; SF-01 review D-2 (read failure with mutation wording) repaired.
+
+FIRST BROKEN RELATION (bootstrap): CANONICAL RELATION GRAPH -> VISIBLE FIELD. The pages were header + panels + forms + lists on a light theme with a green "settled" identity; the Session page was a static process page with a second outcome state inside the F03 panel; /login had no layout. Root repair: pure topology derivation (unit-circle positions, ring capacity, affordance from capability, label density by gravity, human position as a label), presentation primitives (FieldStage / FieldCore / Orbit / FieldBackground), one dark identity, and all five surfaces rewritten on ONE effect lifecycle per surface with relation families and relation-specific consequences.
+
+WHAT CHANGED:
+  New: components/field/topology/{FieldStage,FieldCore,Orbit}.tsx, components/field/FieldBackground.tsx, lib/field/{topology,humanPosition}.ts, tests/field/{topology,humanPosition}.test.ts.
+  Rewritten: app/login, app/workspaces, app/workspaces/[w], app/workspaces/[w]/challenges/[c], app/workspaces/[w]/sessions/[s]; components/f03/BurstCapturePanel.tsx (re-homed on the page lifecycle; every F03 test id / label preserved); app/globals.css (dark Field identity, tokens, topology, stack transformation, motion law).
+  Extended: effectLifecycle (settled detail), useEffectField (Settlement.detail), outcomeSemantics (read-path INDETERMINATE title), EffectSurface (relation / relationPrefix, effect-detail), lib/burst.ts (textFingerprint), tests/field/gates.test.ts (SF-02 gate set), tests/e2e/sf01-field.spec.ts (new selectors, desktop orbit + phone stack, reduced-motion pseudo-elements), primitives/effectLifecycle/outcomeSemantics tests.
+  Not changed: lib/api/inquiryClient.ts, components/f02/**, components/f03/{BurstTimer,FrozenQuestionSet,OwnQuestions}, packages/**, apps/api/**, apps/worker/**, migrations/**, dependencies, every pre-existing test file except the SF-01 e2e spec's selectors, legacy /decision, docs/architecture, ledgers (16 §41, 20 §15B), F04 worktree, other Fields' running services.
+  Gates (MUST REMAIN IMPOSSIBLE): no timers except BurstTimer; no role/viewer-flag inference except humanPosition (label); no F04 vocabulary (BEGIN_ANALYSIS, MockProvider, ai_gateway, AIOP, AnalysisContact); no AI invocation; no client persistence; no F02 Outcome import; allowlisted files never call commands; no green in the stylesheet. Each predicate proven non-vacuous.
+
+DEFECTS FOUND BY PROOF, REPAIRED AT THE ROOT (each with its First Broken Relation in the WU reports):
+  logout race (exit relation rendered before the identity read; mocked lane) · D1 reduced motion missed pseudo-elements · D2 node control accessible name included meta (real stack + harness) · D3 phone stack kept ring widths / duplicated dot numbers (real-stack screenshot) · D4 text animated in opacity -> transient WCAG contrast failure right after a commit (real-stack axe) · D7 phone core offset introduced by D5 (caught by the mocked overflow test) · D8 ring-2 node on a ring-1 spoke intercepted the Open Session click (harness run-5; outer rings now start half an inner step later) · D5 rotating viewport-sized background rings + viewport-sized breathing layer + backdrop-filter starved the frame budget on software rendering (real-stack 90 s timeouts; reconstructed with harness/perf-ab.mjs: rAF 96–143 ms -> 16.6/29 ms at x4 throttle) · D6 node meta overflow.
+
+MIGRATIONS: none. NEW DEPENDENCIES: none.
+
+TEST COMMANDS:
+  (cd apps/web && npx eslint . && npx tsc --noEmit && npx vitest run)
+  (cd apps/web && npx playwright test --config playwright.sf01.config.ts --output=/tmp/sf02-mocked)   # isolated mocked lane; afterwards remove apps/web/AGENTS.md, CLAUDE.md, restore next-env.d.ts
+  bash scripts/run_sf01_real_stack.sh                                                                 # isolated real stack (run it ALONE)
+  EVIDENCE_RUN=run-5 node docs/implementation/field-reports/SF-02/review/browser-evidence-2026-09-25/harness/review-harness.mjs <WS> <CH>   # from apps/web, runtime per review/FRONTEND_BROWSER_REVIEW.md
+
+PROOF (final tree): L0 vitest 219/219 (RED non-vacuity on 644e1c8: 3 files unloadable + 8 failed / 38 passed); L5 tsc 0, eslint clean, gates GREEN; L3 mocked 81/81 (1.4 min; re-run alone on the final tree after the ladder-4 mocked stage failed 49/81 with dev-server timeouts on unchanged legacy pages — environment, host load average 6–8 from other Fields' containers); L7 real stack 14/14 (8.5 min, lane alone; F03 protected-question spec desktop 1.4 min within its 90 s budget this run); browser evidence run-6 30/30 (85 explicit checks + D3/D8 guards; axe serious/critical 0 on every state; overflow 0; no unexpected HTTP) (30 states: login, denied, overview, workspace, challenge PRIMARY, session DRAFT/grant/capture/burst, rejected, own question, participant own-only, phone, completion confirm, frozen x3, empty, denied, not found, rejected, loading, unknown; desktop, Pixel 7, reduced motion; axe serious/critical 0 everywhere; keyboard reachability). PROOF_MATRIX.md maps falsifiers 1–77 to lanes.
+
+CEILINGS: visible-identity falsifiers (23, 29, 31, 34–36, 65–67) need the human's eyes (screenshots run-6); no reduced-motion screenshot of a Session/Frozen state; L7 runs next dev (production build proven under the harness); ladder run 2 exposed D7 (8 mobile mocked + 7 real-stack failures); ladder run 3 ran on the final tree with no edit during the run; evidence PNGs (up to ~17 MB per run x 6) untracked, human decides.
+
+OPEN VISIBLE ITEMS (Case 2, human preference): OV-1 closed as D8; OV-2 lifecycle label density (one next phase named); OV-3 reduced-motion Session/Frozen evidence.
+
+GIT: uncommitted; index empty; nothing outside apps/web and docs/implementation. Commit only on explicit human instruction.
+
+REVIEW QUESTION FOR THE HUMAN: Does the visible Field (run-6 screenshots 11–13 Challenge PRIMARY; 14–24 Session) satisfy doc 22's identity claims (falsifiers 65–67, 35–36) and the colour law (30–32)? Everything machine-provable is GREEN; those are the human's verdict.

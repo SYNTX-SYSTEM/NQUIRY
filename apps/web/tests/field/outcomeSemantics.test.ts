@@ -118,3 +118,20 @@ describe("MUST REMAIN IMPOSSIBLE", () => {
     expect(() => describeOutcome("closed" as SettledKind, "mutation")).toThrow();
   });
 });
+
+describe("SF-02: read failure must not use mutation language (22 §4.7, falsifier 13; SF-01 review D-2)", () => {
+  it("INDETERMINATE and NETWORK_FAILURE on a READ speak of the projection, never of a requested change", () => {
+    for (const kind of ["indeterminate", "network_failure"] as const) {
+      const d = describeOutcome(kind, "read");
+      expect(d.title.toLowerCase()).not.toMatch(/requested change|committed|change was made/);
+      expect(d.title.toLowerCase()).toMatch(/projection|reached/);
+    }
+  });
+  it("the same kinds on a MUTATION keep the 21 §39 consequence language", () => {
+    expect(describeOutcome("indeterminate", "mutation").title).toMatch(/requested change committed/);
+  });
+  it("read titles stay distinct per kind (no generic error collapse)", () => {
+    const titles = SETTLED_KINDS.filter((k) => k !== "committed").map((k) => describeOutcome(k, "read").title);
+    expect(new Set(titles).size).toBe(titles.length);
+  });
+});

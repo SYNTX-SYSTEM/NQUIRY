@@ -7,6 +7,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { EffectIntent, EffectOutcome, ReconstructionNote } from "../../components/field/EffectSurface";
 import { FieldFrame, FieldLayout, FieldZone } from "../../components/field/FieldFrame";
+import { Orbit } from "../../components/field/topology/Orbit";
 import { OriginMark, StateName } from "../../components/field/Origin";
 import { ProofDepth } from "../../components/field/ProofDepth";
 import { ReadBoundary } from "../../components/field/ReadBoundary";
@@ -133,6 +134,25 @@ describe("EffectIntent / EffectOutcome", () => {
   });
 });
 
+describe("SF-02: EffectOutcome detail and relation prefix (WU-SF02.1)", () => {
+  it("renders the relation-specific detail after the consequence line", () => {
+    const html = renderToStaticMarkup(
+      <EffectOutcome
+        field={field(REQ, { type: "settle", kind: "rejected", reasonCode: "INPUT_NOT_A_QUESTION", detail: "Only questions are accepted. Nothing was stored." })}
+        relation="rel"
+      />,
+    );
+    expect(html).toContain('data-testid="effect-detail"');
+    expect(textOf(html)).toContain("Nothing was stored.");
+  });
+  it("matches a relation family by prefix, so a payload-keyed relation still shows its outcome", () => {
+    const f = field({ type: "request", relation: "capture:abc", intentKey: "k" }, { type: "settle", kind: "committed", reasonCode: null });
+    expect(renderToStaticMarkup(<EffectOutcome field={f} relationPrefix="capture:" />)).toContain('data-outcome="committed"');
+    expect(renderToStaticMarkup(<EffectOutcome field={f} relationPrefix="grant" />)).toBe("");
+    expect(renderToStaticMarkup(<EffectIntent field={field({ type: "request", relation: "capture:abc", intentKey: "k" })} relationPrefix="capture:" />)).toContain("effect-requested");
+  });
+});
+
 describe("ReconstructionNote", () => {
   it("marks the projection as last confirmed only when a re-read failed", () => {
     const settled = field(REQ, { type: "settle", kind: "stale", reasonCode: "STALE_VERSION" }, { type: "reconstruction", result: "reading" });
@@ -229,5 +249,31 @@ describe("Origin grammar", () => {
     const html = renderToStaticMarkup(<StateName state="DRAFT" />);
     expect(html).toContain('data-origin="system-state"');
     expect(textOf(html)).toBe("System state: DRAFT");
+  });
+});
+
+describe("SF-02: Orbit nodes (WU-SF02.2)", () => {
+  const html = renderToStaticMarkup(
+    <Orbit
+      kind="containment"
+      ring={1}
+      heading="Sessions"
+      nodes={[
+        { key: "n", state: "possible", label: "New Session", actionLabel: "Open Session", onActivate: () => undefined, meta: "possible next relation" },
+        { key: "s", state: "established", label: "Session opened today", meta: "DRAFT", href: "/x" },
+        { key: "u", state: "unavailable", label: "New Challenge", meta: "not available now" },
+      ]}
+    />,
+  );
+  it("a link's or button's accessible name is exactly the node label: meta and state marker are siblings, not children", () => {
+    expect(html).toMatch(/<a[^>]*href="\/x"[^>]*>(?:<span[^>]*>)*Session opened today(?:<\/span>)*<\/a>/);
+    expect(html).toMatch(/<button[^>]*>(?:<span[^>]*>)*Open Session(?:<\/span>)*<\/button>/);
+    expect(html).not.toMatch(/Session opened today<\/span><span class="node-meta">/);
+  });
+  it("every node states its relation in text (never colour or geometry alone), in semantic DOM order", () => {
+    expect(textOf(html)).toMatch(/Open Session.*possible.*Session opened today.*established.*New Challenge.*not available/);
+    expect(html).toContain('data-node-state="possible"');
+    expect(html).toContain('data-node-state="unavailable"');
+    expect(html.match(/class="path path-base"/g)).toHaveLength(3); // SF-04: curved relation currents (doc 25 §8)
   });
 });
