@@ -42,6 +42,19 @@ const PARTICLES: readonly { x: number; y: number; r: number; d: number }[] = [
   { x: 1180, y: 640, r: 1.2, d: -18 },
   { x: 1700, y: 820, r: 1.0, d: -80 },
   { x: 620, y: 420, r: 0.9, d: -35 },
+  // human direction: a few more living particles across the whole field (same opacity-only twinkle, staggered)
+  { x: 60, y: 480, r: 1.0, d: -7 },
+  { x: 380, y: 60, r: 0.9, d: -52 },
+  { x: 700, y: 260, r: 1.2, d: -29 },
+  { x: 980, y: 520, r: 0.9, d: -66 },
+  { x: 1260, y: 90, r: 1.1, d: -12 },
+  { x: 1420, y: 520, r: 1.0, d: -44 },
+  { x: 1760, y: 380, r: 1.2, d: -85 },
+  { x: 180, y: 940, r: 1.1, d: -58 },
+  { x: 560, y: 780, r: 0.9, d: -3 },
+  { x: 1080, y: 860, r: 1.0, d: -38 },
+  { x: 1600, y: 960, r: 0.9, d: -71 },
+  { x: 820, y: 640, r: 0.8, d: -24 },
 ];
 
 export function FieldBackground({ regime }: { readonly regime: BackgroundRegime }) {
@@ -50,6 +63,10 @@ export function FieldBackground({ regime }: { readonly regime: BackgroundRegime 
       <div className="nebula nebula-a" />
       <div className="nebula nebula-b" />
       <div className="nebula nebula-c" />
+      {/* human direction: a fine irregular star layer (one static tile) and two quiet nebular veils */}
+      <div className="starfield" />
+      <div className="nebula nebula-d" />
+      <div className="nebula nebula-e" />
       <svg className="traces" viewBox="0 0 1000 1000" focusable="false">
         <g className="drift">
           <circle cx="500" cy="500" r="300" fill="none" stroke="rgba(134,171,255,0.16)" strokeWidth="1" strokeDasharray="3 14" />

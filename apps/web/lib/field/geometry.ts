@@ -28,6 +28,8 @@ export type NodeContent = {
   readonly weight?: number;
   /** SF-04 (doc 25 §7.4): projected orbit band → radius class; from `projection.ts`, never from position. */
   readonly band?: "inner" | "middle" | "outer";
+  /** A fixed frame (a family sphere with its satellite cluster): used instead of the text estimate. */
+  readonly box?: Box;
 };
 
 export type Box = { readonly w: number; readonly h: number };
@@ -85,7 +87,7 @@ const GAP_CORE = 20; // px between the core's outer corner and the inner ring's 
 const GAP_RINGS = 24; // px between the frames of two rings
 const STAGE_MARGIN = 8; // px kept free at the stage edge
 const FIT_TOLERANCE = 12; // px a frame may reach into the stage's outer gap before the layout is called an overflow
-const MAX_STRETCH = 1.3; // the longer stage axis may stretch a ring up to this factor (doc 23 §7.6)
+const MAX_STRETCH = 1; // rings are circles (human review): no elliptical stretch into the longer stage axis; only an exhausted width grows a ring vertically (below)
 /** Breathing-room fractions of the shorter stage side: a ring is never tighter than this when space exists. */
 const BREATHE = [0.29, 0.41] as const;
 /** Orbit bands (doc 25 §7.6): inner / middle / outer radius fractions of the shorter stage side. */
@@ -103,12 +105,13 @@ export function seeds(key: string): [number, number] {
   return [a, b];
 }
 
-/** Doc 25 §7.7: angle offset ±4°–11°, radius offset ±3 %–8 %, both fixed per node key. */
+/** Doc 25 §7.7 (calmed after human review): angle offset ±2°–5°, radius offset ±3 %–8 %, both fixed per node key —
+ * controlled asymmetry, never a clump. */
 export function organicOffset(key: string): { readonly angleDeg: number; readonly radiusFactor: number } {
   const [a, b] = seeds(key);
   const angleSign = a < 0.5 ? -1 : 1;
   const radiusSign = b < 0.5 ? -1 : 1;
-  const angleDeg = angleSign * (4 + 7 * Math.abs(a * 2 - 1));
+  const angleDeg = angleSign * (2 + 3 * Math.abs(a * 2 - 1));
   const radiusFactor = 1 + radiusSign * (0.03 + 0.05 * Math.abs(b * 2 - 1));
   return { angleDeg: Math.round(angleDeg * 1000) / 1000, radiusFactor: Math.round(radiusFactor * 10000) / 10000 };
 }
@@ -186,7 +189,9 @@ export function estimateCoreBox(core: CoreContent): Box {
   const metaLines = core.meta ? lines(core.meta, 6.4, inner) : 0;
   const w = Math.max(196, Math.round(inner + 52));
   const h = Math.max(196, Math.round(48 + 14 + titleLines * titleLine + (core.stateText ? 20 : 0) + metaLines * 15 + 8));
-  return { w, h };
+  // the nucleus is a circle in the orbit (human review): its frame is the square of its longer side
+  const side = Math.max(w, h);
+  return { w: side, h: side };
 }
 
 const rad = (deg: number) => (deg * Math.PI) / 180;
@@ -262,6 +267,27 @@ function allocate(boxes: readonly Box[], startDeg: number): { angles: number[]; 
   }
   const shift = angles[0] - startDeg;
   return { angles: angles.map((a) => a - shift), arcTotal };
+}
+
+/**
+ * Balanced interleave for an outer ring (human review: "arrange the fields more beautifully"): each outer node takes
+ * the centre of the currently widest free arc between the inner ring's nodes, so an outer family fills the open sides
+ * of the field instead of starting at a fixed offset. Deterministic (ties → the gap that starts first), and the
+ * returned angles run clockwise from the ring's start, so the semantic order stays clockwise.
+ */
+function gapSlots(inner: readonly number[], k: number, start: number): number[] {
+  const norm = (a: number) => ((a % 360) + 360) % 360;
+  const sorted = [...new Set(inner.map((a) => Math.round(norm(a) * 1000) / 1000))].sort((x, y) => x - y);
+  if (sorted.length === 0 || k === 0) return [];
+  const gaps = sorted.map((s, i) => ({ start: s, size: i + 1 < sorted.length ? sorted[i + 1] - s : sorted[0] + 360 - s, m: 0 }));
+  for (let j = 0; j < k; j += 1) {
+    let best = gaps[0];
+    for (const g of gaps) if (g.size / (g.m + 1) > best.size / (best.m + 1) + 1e-9) best = g;
+    best.m += 1;
+  }
+  const slots = gaps.flatMap((g) => Array.from({ length: g.m }, (_, j) => g.start + (g.size * (j + 1)) / (g.m + 1)));
+  const cw = (a: number) => norm(a - start);
+  return slots.sort((x, y) => cw(x) - cw(y)).map((a) => start + cw(a));
 }
 
 function angularDistance(a: number, b: number): number {
@@ -343,7 +369,7 @@ function layoutOnce(
       // mass is presence, not type: the stylesheet grows the membrane's padding by 6 px / 4 px per side per unit of
       // (mass − 0.9) and the aura outside the frame; the estimate follows exactly that law (never a scaled frame,
       // which would over-estimate and decide the stack before the rendered frames could refine it)
-      const box = m && m.w > 0 && m.h > 0 ? { w: m.w, h: m.h } : { w: Math.round(est.w + 12 * (scale - 0.9)), h: Math.round(est.h + 8 * (scale - 0.9)) };
+      const box = c.box ? { w: c.box.w, h: c.box.h } : m && m.w > 0 && m.h > 0 ? { w: m.w, h: m.h } : { w: Math.round(est.w + 12 * (scale - 0.9)), h: Math.round(est.h + 8 * (scale - 0.9)) };
       // heavier entities sit slightly closer to the core (doc 25 §7.6: primary nodes closer, larger)
       const closeness = 1 - 0.05 * ((c.weight ?? 0.7) - 0.7);
       const offset = c.key ? organicOffset(c.key) : { angleDeg: 0, radiusFactor: 1 };
@@ -355,7 +381,10 @@ function layoutOnce(
     const maxH = boxes.reduce((m, b) => Math.max(m, b.h), 0);
     // an outer ring starts half an inner share later, so no outer node sits on the first inner spoke
     const startDeg = ringIndex === 0 ? start : start + innerShare / 2;
-    const { angles: even, arcTotal } = allocate(boxes, startDeg);
+    const { angles: weighted, arcTotal } = allocate(boxes, startDeg);
+    // an outer ring interleaves into the inner ring's widest free arcs; the inner ring keeps its content-weighted
+    // allocation from the top
+    const even = ringIndex > 0 && innerAngles.length > 0 ? gapSlots(innerAngles, boxes.length, start) : weighted;
     // deterministic organic angle offsets (doc 25 §7.7): fixed per node key, never random
     const allocated = even.map((a, i) => a + (contents[i].key ? organicOffset(contents[i].key as string).angleDeg * organic : 0));
     // nudge any outer node off an inner spoke (deterministic, order-preserving; doc 23 §7.5)

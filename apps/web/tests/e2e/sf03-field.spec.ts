@@ -81,7 +81,9 @@ async function probe(page: Page): Promise<Probe> {
     const inside = (inner: DOMRect, outer: DOMRect) => inner.left >= outer.left - 1 && inner.right <= outer.right + 1 && inner.top >= outer.top - 1 && inner.bottom <= outer.bottom + 1;
     // SF-04: the organism's decorative layers (auras, rings, membranes; aria-hidden, absolutely positioned) extend
     // beyond their frame by design and would inflate scrollWidth/Height; the scroll metric measures material content
-    const decorative = [...document.querySelectorAll<HTMLElement>(".node-aura, .core-aura, .core-rings, .core-membrane, .core-orbit-trace, .route-membrane, .organ-bridge")];
+    // SF-06: a satellite's label is an encounter pop-over beside its small sphere (revealed on hover / focus), not
+    // content inside the sphere; it is measured as its own frame by the text checks below, never as a scroll overflow
+    const decorative = [...document.querySelectorAll<HTMLElement>(".node-aura, .core-aura, .core-rings, .core-membrane, .core-orbit-trace, .route-membrane, .organ-bridge, .node[data-satellite] .node-label")];
     const hidden = decorative.map((d) => d.style.display);
     for (const d of decorative) d.style.display = "none";
     const scrolls = bodies.map((b) => b.scrollWidth > b.clientWidth + 2 || b.scrollHeight > b.clientHeight + 2);

@@ -24,7 +24,7 @@ import { ProofDepth } from "../../../components/field/ProofDepth";
 import { ReadBoundary } from "../../../components/field/ReadBoundary";
 import { FieldCore } from "../../../components/field/topology/FieldCore";
 import { FieldStage, Plane, Planes, Topology } from "../../../components/field/topology/FieldStage";
-import { Orbit, type OrbitNode, nodeContent } from "../../../components/field/topology/Orbit";
+import { Orbit, type OrbitNode, hubContent, type OrbitHub } from "../../../components/field/topology/Orbit";
 import { Unavailable } from "../../../components/f02/Unavailable";
 import { fetchCurrentSession } from "../../../lib/api/authClient";
 import {
@@ -191,19 +191,25 @@ export default function WorkspacePage() {
       ]
     : [];
   const memberNodes: OrbitNode[] = ov
+    ? ov.members.map((m): OrbitNode => ({ key: m.userId, state: "human", label: m.name, meta: m.role ?? "no role", size: "sm" }))
+    : [];
+  const authorityNodes: OrbitNode[] = ov
+    ? confirmed.heldAuthorityClasses.map((c): OrbitNode => ({ key: `auth-${c}`, state: "governance", label: `You hold ${c}`, meta: "authority binding", size: "sm" }))
+    : [];
+  // variant A (human direction): each relation family is one sphere on the ring, with the server's count; its
+  // entries orbit it as satellites. A family without entries has no sphere.
+  const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+  const families: { readonly hub: Omit<OrbitHub, "slot">; readonly nodes: OrbitNode[]; readonly kind: "containment" | "participation" | "governance"; readonly testId: string; readonly aria: string }[] = ov
     ? [
-        ...confirmed.heldAuthorityClasses.map(
-          (c): OrbitNode => ({ key: `auth-${c}`, state: "governance", label: "You hold", meta: c, size: "sm" }),
-        ),
-        ...ov.members.map(
-          (m): OrbitNode => ({ key: m.userId, state: "human", label: m.name, meta: m.role ?? "no role", size: "sm" }),
-        ),
-      ]
+        { hub: { key: "hub-people", label: "People", count: plural(ov.members.length, "member", "members"), glyph: "people" as const }, nodes: memberNodes, kind: "participation" as const, testId: "members-orbit", aria: "Members of this Workspace" },
+        { hub: { key: "hub-challenges", label: "Challenges", count: plural(ov.challenges.length, "Challenge", "Challenges"), glyph: "challenges" as const }, nodes: challengeNodes, kind: "containment" as const, testId: "challenges-list", aria: "Challenges of this Workspace" },
+        ...(authorityNodes.length > 0 ? [{ hub: { key: "hub-authority", label: "Authority", count: plural(authorityNodes.length, "binding held", "bindings held"), glyph: "authority" as const }, nodes: authorityNodes, kind: "governance" as const, testId: "authority-orbit", aria: "Authority you hold in this Workspace" }] : []),
+      ].filter((f) => f.nodes.length > 0)
     : [];
   const position = humanPosition({ userId: ov?.viewer.userId ?? "", role: confirmed.role, governanceCapable: confirmed.governanceCapable }, { scope: "workspace" });
   const layoutInput = {
     core: { title: confirmed.workspace.name, stateText: ov ? `${ov.challenges.length} Challenges · ${ov.members.length} members` : "reading…", meta: position.relations.join(" · ") },
-    rings: ov ? [challengeNodes.map((n) => nodeContent(n, "containment")), memberNodes.map((n) => nodeContent(n, "participation"))] : [],
+    rings: ov ? [families.map((f) => hubContent(f.hub, f.nodes.length))] : [],
   };
 
   return (
@@ -222,8 +228,9 @@ export default function WorkspacePage() {
           </FieldCore>
           {ov ? (
             <>
-              <Orbit kind="containment" ring={1} heading="Challenges" nodes={challengeNodes} testId="challenges-list" listAriaLabel="Challenges of this Workspace" />
-              <Orbit kind="participation" ring={2} heading="Members and authority" nodes={memberNodes} testId="members-orbit" listAriaLabel="Members and your authority in this Workspace" />
+              {families.map((f, slot) => (
+                <Orbit key={f.hub.key} kind={f.kind} ring={1} hub={{ ...f.hub, slot }} heading={f.hub.label} nodes={f.nodes} testId={f.testId} listAriaLabel={f.aria} />
+              ))}
             </>
           ) : null}
         </Topology>

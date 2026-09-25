@@ -90,6 +90,90 @@ function defaultPath(state: NodeState): PathState {
   }
 }
 
+/**
+ * Family sphere (human direction, variant A): one relation family (Challenges, People, Authority, …) is ONE sphere on
+ * the ring carrying its canonical count; its entries orbit it as satellites on a small local orbit, facing away from
+ * the core. Every satellite is still the entry's own link or button (the semantic list is unchanged); its label is
+ * revealed on hover / focus of the satellite or of its sphere. The count is the server's number in words.
+ */
+export type HubGlyph = "challenges" | "people" | "authority" | "sessions";
+export type OrbitHub = {
+  /** This family's position on the ring (index into the ring's layout). */
+  readonly slot: number;
+  readonly key: string;
+  readonly label: string;
+  readonly count: string;
+  readonly glyph: HubGlyph;
+};
+
+export const HUB_DIAMETER = 104;
+const SATELLITE = 26;
+const SATELLITE_GAP = 12;
+
+/** Radius of a family's satellite orbit: clear of the sphere, and long enough for every satellite. */
+export function satelliteRadius(n: number): number {
+  return Math.round(Math.max(HUB_DIAMETER / 2 + 12 + SATELLITE / 2, (Math.max(n, 1) * (SATELLITE + SATELLITE_GAP)) / (2 * Math.PI)));
+}
+
+/** The layout content of a family sphere: a fixed square frame that holds the sphere and its satellite orbit. */
+export function hubContent(hub: { readonly key: string; readonly label: string; readonly count: string }, satellites: number): NodeContent {
+  const side = 2 * (satelliteRadius(satellites) + SATELLITE / 2 + 4);
+  return { key: hub.key, label: hub.label, meta: hub.count, size: "md", weight: 0.8, band: "inner", box: { w: side, h: side } };
+}
+
+/** Satellite angles: an arc centred on the direction away from the core (a full circle for many entries). */
+function satelliteAngles(n: number, outwardDeg: number): number[] {
+  if (n === 0) return [];
+  const step = n === 1 ? 0 : Math.min(44, 330 / n);
+  return Array.from({ length: n }, (_, i) => outwardDeg + (i - (n - 1) / 2) * step);
+}
+
+function HubGlyphIcon({ glyph }: { readonly glyph: HubGlyph }) {
+  const common = { viewBox: "0 0 24 24", className: "hub-glyph", "aria-hidden": true, focusable: false } as const;
+  switch (glyph) {
+    case "people":
+      return (
+        <svg {...common}>
+          <circle cx="9" cy="8" r="3.2" />
+          <path d="M3.5 19c.6-3.3 2.8-5 5.5-5s4.9 1.7 5.5 5" />
+          <circle cx="16.5" cy="9" r="2.6" />
+          <path d="M15.2 14.2c2.6-.3 4.6 1.2 5.3 4.3" />
+        </svg>
+      );
+    case "authority":
+      return (
+        <svg {...common}>
+          <path d="M12 3l7 3v5.5c0 4.3-3 7.7-7 9.5-4-1.8-7-5.2-7-9.5V6l7-3z" />
+          <path d="M9 12l2.2 2.2L15.5 10" />
+        </svg>
+      );
+    case "sessions":
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="8" />
+          <circle cx="12" cy="12" r="3.5" />
+          <path d="M12 4v4.5M12 15.5V20" />
+        </svg>
+      );
+    case "challenges":
+      return (
+        <svg {...common}>
+          <path d="M3 19l6.5-11 3.5 6 2.5-4L21 19H3z" />
+          <path d="M9.5 8l1.3 2.3" />
+        </svg>
+      );
+  }
+}
+
+/** Decorative moons travelling a ring (aria-hidden; no meaning): deterministic size, speed and phase per ring. */
+function ringPath(cx: number, cy: number, rx: number, ry: number): string {
+  return `M ${(cx - rx).toFixed(1)} ${cy.toFixed(1)} a ${rx.toFixed(1)} ${ry.toFixed(1)} 0 1 0 ${(2 * rx).toFixed(1)} 0 a ${rx.toFixed(1)} ${ry.toFixed(1)} 0 1 0 ${(-2 * rx).toFixed(1)} 0`;
+}
+const MOONS: readonly { readonly d: number; readonly t: number; readonly phase: number }[] = [
+  { d: 11, t: 140, phase: 0.18 },
+  { d: 7, t: 95, phase: 0.63 },
+];
+
 function textOf(node: ReactNode): string {
   if (node == null || typeof node === "boolean") return "";
   if (typeof node === "string" || typeof node === "number") return String(node);
@@ -150,6 +234,7 @@ export function Orbit({
   nodes,
   testId,
   listAriaLabel,
+  hub,
 }: {
   readonly kind: OrbitKind;
   /** Ring index (1 = inner). */
@@ -158,6 +243,8 @@ export function Orbit({
   readonly nodes: readonly OrbitNode[];
   readonly testId?: string;
   readonly listAriaLabel?: string;
+  /** Render this orbit as a family sphere with satellites (orbit topology only). */
+  readonly hub?: OrbitHub;
 }) {
   const layout = useFieldLayout();
   const report = useReportBoxes();
@@ -166,7 +253,7 @@ export function Orbit({
   // doc 23 §7.1: after render, the RENDERED frames (position-independent: content-sized) refine the estimate once
   useEffect(() => {
     const list = listRef.current;
-    if (!list || !report || mode !== "orbit") return;
+    if (!list || !report || mode !== "orbit" || hub) return;
     const boxes: Record<string, Box> = {};
     for (const li of list.querySelectorAll<HTMLElement>(":scope > li.node")) {
       const key = li.dataset.key;
@@ -185,6 +272,17 @@ export function Orbit({
   const cy = stage.h / 2;
   const coreHalf = Math.min(layout?.core.w ?? 196, layout?.core.h ?? 196) / 2;
   const relation = relationOfOrbit(kind);
+  // family sphere: the ring holds the sphere; the entries sit on its satellite orbit, facing away from the core
+  const hubPlace = hub && mode === "orbit" ? ringLayout?.nodes[hub.slot] : undefined;
+  const satR = hub ? satelliteRadius(nodes.length) : 0;
+  const satellites = hubPlace
+    ? satelliteAngles(nodes.length, (Math.atan2(hubPlace.y, hubPlace.x) * 180) / Math.PI).map((a) => {
+        const r = (a * Math.PI) / 180;
+        const side = Math.cos(r) > 0.5 ? "r" : Math.cos(r) < -0.5 ? "l" : Math.sin(r) < 0 ? "t" : "b";
+        return { x: hubPlace.x + Math.cos(r) * satR, y: hubPlace.y + Math.sin(r) * satR, side };
+      })
+    : null;
+  const drawRing = ringLayout && (!hub || hub.slot === 0);
   const projected = nodes.map((n) => {
     const node = projectNode({ key: n.key, kind, state: n.state, label: textOf(n.label), relationCount: n.relationCount });
     const rel = projectRelation({ id: `core->${n.key}`, kind, state: n.state });
@@ -197,8 +295,17 @@ export function Orbit({
   return (
     <>
       <svg className="orbit-paths" data-orbit={kind} viewBox={`0 0 ${stage.w} ${stage.h}`} preserveAspectRatio="none" aria-hidden="true" focusable="false">
-        {ringLayout ? <ellipse className="ring" data-orbit={kind} cx={cx} cy={cy} rx={ringLayout.rx} ry={ringLayout.ry} vectorEffect="non-scaling-stroke" /> : null}
-        {nodes.map((n, i) => {
+        {drawRing ? <ellipse className="ring" data-orbit={kind} cx={cx} cy={cy} rx={ringLayout.rx} ry={ringLayout.ry} vectorEffect="non-scaling-stroke" /> : null}
+        {hubPlace && hub && satellites ? (
+          <g className="relation family-relation" data-key={hub.key} data-path="established" data-relation-type={projected[0]?.rel.type.value ?? "directional"} data-direction={projected[0]?.rel.direction?.value ?? "none"}>
+            <path className="path path-base" data-path="established" d={arcPath(cx, cy, cx + hubPlace.x, cy + hubPlace.y, hub.key, Math.min(0.9, coreHalf / (Math.hypot(hubPlace.x, hubPlace.y) || 1)))} vectorEffect="non-scaling-stroke" />
+            <circle className="satellite-orbit" cx={cx + hubPlace.x} cy={cy + hubPlace.y} r={satR} vectorEffect="non-scaling-stroke" />
+            {satellites.map((sp, i) => (
+              <line key={nodes[i].key} className="satellite-link" x1={cx + hubPlace.x + ((sp.x - hubPlace.x) * (HUB_DIAMETER / 2)) / satR} y1={cy + hubPlace.y + ((sp.y - hubPlace.y) * (HUB_DIAMETER / 2)) / satR} x2={cx + sp.x} y2={cy + sp.y} vectorEffect="non-scaling-stroke" />
+            ))}
+          </g>
+        ) : null}
+        {!hubPlace && nodes.map((n, i) => {
           const p = ringLayout?.nodes[i];
           if (!p) return null;
           const { rel } = projected[i];
@@ -228,7 +335,19 @@ export function Orbit({
       {/* the current itself: one small pulse per non-latent relation travelling the same arc on a CSS motion path
           (a transform animation on its own compositor layer — the SVG never repaints for motion; doc 25 §19) */}
       <div className="currents" data-orbit={kind} aria-hidden="true">
-        {nodes.map((n, i) => {
+        {drawRing && mode === "orbit"
+          ? MOONS.slice(0, ring === 1 ? 2 : 1).map((m, i) => (
+              <span
+                key={`moon-${i}`}
+                className="moon"
+                style={{ offsetPath: `path("${ringPath(cx, cy, ringLayout.rx, ringLayout.ry)}")`, ["--moon-d" as string]: `${m.d}px`, animationDuration: `${m.t}s`, animationDelay: `${-m.t * m.phase}s` }}
+              />
+            ))
+          : null}
+        {hubPlace && hub ? (
+          <span className="current-pulse" data-key={hub.key} data-path="established" data-relation-type="directional" data-direction="source-to-target" style={{ offsetPath: `path("${arcPath(cx, cy, cx + hubPlace.x, cy + hubPlace.y, hub.key, Math.min(0.9, coreHalf / (Math.hypot(hubPlace.x, hubPlace.y) || 1)))}")` }} />
+        ) : null}
+        {!hubPlace && nodes.map((n, i) => {
           const p = ringLayout?.nodes[i];
           const { rel } = projected[i];
           if (!p || rel.type.value === "latent") return null;
@@ -249,10 +368,24 @@ export function Orbit({
           );
         })}
       </div>
-      <ul ref={listRef} className="orbit" data-orbit={kind} data-relation={relation} data-testid={testId} aria-label={listAriaLabel ?? heading}>
+      {hub ? (
+        <div
+          className="family-hub"
+          data-family={kind}
+          data-glyph={hub.glyph}
+          data-testid={testId ? `${testId}-hub` : undefined}
+          style={{ ["--x" as string]: `${(hubPlace?.x ?? 0).toFixed(1)}px`, ["--y" as string]: `${(hubPlace?.y ?? 0).toFixed(1)}px`, ["--breath-phase" as string]: (seeds(hub.key)[0] * 11).toFixed(2), ["--hub-d" as string]: `${HUB_DIAMETER}px` }}
+        >
+          <span className="hub-orb" aria-hidden="true" />
+          <HubGlyphIcon glyph={hub.glyph} />
+          <span className="hub-label">{hub.label}</span>
+          <span className="hub-count">{hub.count}</span>
+        </div>
+      ) : null}
+      <ul ref={listRef} className="orbit" data-orbit={kind} data-relation={relation} data-hub={hub ? "true" : undefined} data-testid={testId} aria-label={listAriaLabel ?? heading}>
         {nodes.map((n, i) => {
           const marker = n.markerText ?? MARKER[n.state];
-          const p = ringLayout?.nodes[i];
+          const p = satellites ? satellites[i] : ringLayout?.nodes[i];
           const { node } = projected[i];
           // The control (link/button) contains ONLY the label, so its accessible name is exactly the node
           // identity; meta and the state marker are siblings inside the frame (22 §14.1, §34.3).
@@ -274,11 +407,12 @@ export function Orbit({
               data-role={node.role.value}
               data-provenance={provenanceOf(node)}
               data-testid={n.testId}
+              data-satellite={satellites ? satellites[i].side : undefined}
               aria-current={n.ariaCurrent}
               style={{
                 ["--x" as string]: `${(p?.x ?? 0).toFixed(1)}px`,
                 ["--y" as string]: `${(p?.y ?? 0).toFixed(1)}px`,
-                ["--mass" as string]: String(p?.scale ?? 1),
+                ["--mass" as string]: String(p && "scale" in p ? p.scale : 1),
                 ["--weight" as string]: String(node.semanticWeight.value),
                 ["--breath-phase" as string]: (seeds(n.key)[0] * 11).toFixed(2),
               }}

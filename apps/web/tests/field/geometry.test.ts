@@ -85,15 +85,29 @@ describe("layoutField (doc 23 §7.3–§7.5)", () => {
     expect(roomy.rings[0].radius).toBeGreaterThan(few.rings[0].radius);
   });
 
-  it("stretches a ring into the longer stage axis for breathing room, staying inside the stage (viewport-aware ellipse)", () => {
+  it("keeps rings round on a non-square stage (human review: no flattened ellipse), staying inside the stage", () => {
     const rings = [[node("Open Session", { meta: "possible next relation" }), ...Array.from({ length: 4 }, (_, i) => node(`Session opened Sep 25, 2026, 2:${i}0 AM`, { meta: "QUESTION_CAPTURE" }))], [node("Inspect Facilitator", { meta: "SESSION_CONTROL_RIGHT · granted by Inspect Owner", size: "sm" })]];
     const wide = layoutField({ core, rings, stage: { w: 760, h: 900 } });
-    expect(wide.rings[0].ry).toBeGreaterThan(wide.rings[0].rx);
+    for (const r of wide.rings) expect(r.rx).toBeCloseTo(r.ry, 6);
+    const landscape = layoutField({ core, rings, stage: { w: 1000, h: 800 } });
+    for (const r of landscape.rings) expect(r.rx).toBeCloseTo(r.ry, 6);
     for (const n of wide.rings.flatMap((r) => r.nodes)) {
       expect(Math.abs(n.x) + n.w / 2).toBeLessThanOrEqual(380);
       expect(Math.abs(n.y) + n.h / 2).toBeLessThanOrEqual(450);
     }
     expect(wide.fits).toBe(true);
+  });
+
+  it("interleaves an outer ring into the inner ring's widest free arcs (balanced field, no clump)", () => {
+    const ring1 = [node("Top", { key: "t" }), node("Bottom", { key: "b" })];
+    const ring2 = [node("One", { key: "o1", size: "sm" }), node("Two", { key: "o2", size: "sm" }), node("Three", { key: "o3", size: "sm" })];
+    const l = layoutField({ core, rings: [ring1, ring2], stage: 1000 });
+    const side = (a: number) => Math.cos((a * Math.PI) / 180);
+    const outer = l.rings[1].nodes.map((n) => n.angleDeg);
+    // the inner ring sits on the vertical axis; the outer family fills both open sides, never one clump
+    expect(outer.some((a) => side(a) > 0.3)).toBe(true);
+    expect(outer.some((a) => side(a) < -0.3)).toBe(true);
+    for (let i = 1; i < outer.length; i += 1) expect(outer[i]).toBeGreaterThan(outer[i - 1]);
   });
 
   it("is deterministic and stable: the same content yields the identical layout", () => {
@@ -119,7 +133,7 @@ describe("SF-04 living field entity geometry (doc 25 §5.3, §7.6, §7.7)", () =
     expect(l.rings[0].radius).toBeLessThan(l.rings[1].radius);
     expect(l.rings[1].radius).toBeLessThan(l.rings[2].radius);
   });
-  it("organic offsets are deterministic per node key, bounded (angle ±4–11°, radius ±3–8 %) and never random", () => {
+  it("organic offsets are deterministic per node key, bounded (angle ±2–5°, radius ±3–8 %) and never random", () => {
     const a = layoutField({ core, rings: [ring("inner", 6)], stage: 1000 });
     const b = layoutField({ core, rings: [ring("inner", 6)], stage: 1000 });
     expect(a).toEqual(b);
@@ -127,8 +141,8 @@ describe("SF-04 living field entity geometry (doc 25 §5.3, §7.6, §7.7)", () =
     const even = nodes.map((_, i) => -90 + (360 * i) / nodes.length);
     for (let i = 0; i < nodes.length; i += 1) {
       const dAngle = Math.abs(nodes[i].angleDeg - even[i]);
-      expect(dAngle).toBeGreaterThanOrEqual(4 - 1e-6);
-      expect(dAngle).toBeLessThanOrEqual(11 + 1e-6);
+      expect(dAngle).toBeGreaterThanOrEqual(2 - 1e-6);
+      expect(dAngle).toBeLessThanOrEqual(5 + 1e-6);
       const r = Math.hypot(nodes[i].x / (a.rings[0].rx / a.rings[0].radius), nodes[i].y / (a.rings[0].ry / a.rings[0].radius));
       const dr = Math.abs(r - a.rings[0].radius) / a.rings[0].radius;
       expect(dr).toBeGreaterThanOrEqual(0.03 - 1e-6);
