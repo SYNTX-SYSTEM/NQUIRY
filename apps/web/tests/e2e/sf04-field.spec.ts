@@ -333,7 +333,8 @@ test.describe("Contextual Semantic Organ (doc 25 §10; falsifiers 5, 6)", () => 
     await expect(organ.locator(".organ-title")).toHaveText("Why did activation stall after onboarding?");
     await expect(organ.locator(".organ-state")).toHaveText("3 Sessions");
     const shell = await organ.evaluate((el) => ({ radius: getComputedStyle(el).borderTopLeftRadius, border: getComputedStyle(el).borderTopWidth }));
-    expect(shell.radius).toBe("32px");
+    // SF-06 (human direction): the organ is a translucent HUD lens with an 8 px radius, not a rounded card
+    expect(shell.radius).toBe("8px");
     expect(shell.border).toBe("1px");
     const chambers = await organ.locator(".plane").evaluateAll((els) =>
       els.map((e) => ({ chamber: e.getAttribute("data-chamber"), shadow: getComputedStyle(e).boxShadow, borderTop: parseFloat(getComputedStyle(e).borderTopWidth), borderColor: getComputedStyle(e).borderTopColor, bg: getComputedStyle(e).backgroundColor })),
@@ -437,7 +438,7 @@ test.describe("Responsive redistribution (doc 25 §15; falsifier 10)", () => {
     const first = (await page.locator('[data-testid="sessions-list"] .node').first().boundingBox())!;
     expect(first.y).toBeGreaterThan(core.y + core.height - 1);
     const sheet = await page.getByTestId("context-organ").evaluate((el) => ({ tl: getComputedStyle(el).borderTopLeftRadius, bl: getComputedStyle(el).borderBottomLeftRadius, live: el.getAttribute("aria-live") }));
-    expect(sheet).toMatchObject({ tl: "32px", bl: "0px", live: "polite" });
+    expect(sheet).toMatchObject({ tl: "8px", bl: "0px", live: "polite" });
     const p = await probe(page);
     expect(p.hOverflow).toBeLessThanOrEqual(1);
     expect(p.escaping).toEqual([]);

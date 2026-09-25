@@ -3654,3 +3654,348 @@ body:has(.access-field[data-attract="login"]) .field-bg .nebula-a {
 .chamber[data-chamber-resonating]::after {
   box-shadow: 0 0 16px var(--chamber-tone-glow);
 }
+
+/* ============================================================ SF-06 — RIGHT ORGAN AS A LIVING HUD LENS (human direction,
+   design only). The right side stops being a card stack: one translucent lens held by technical corner brackets,
+   fed by the field through the bridge, with ONE luminous relation spine on which every chamber hangs as a node.
+   Chambers are hairline panels whose contours breathe; titles read as instrument labels with a hairline running to
+   their canonical marker; nested boxes dissolve into dashed sub-contours. Nothing here carries meaning the text does
+   not carry; no data is drawn. Motion: opacity / transform, plus one 3 px background strip (the spine current);
+   `prefers-reduced-motion` stops all of it (global rule). */
+.organ {
+  --spine-x: 16px;
+  --organ-pad-left: 38px;
+  --lens-line: rgba(88, 220, 255, 0.34);
+  padding: 14px 16px 20px var(--organ-pad-left);
+  border-radius: 8px;
+  /* a lens, not a card: translucent depth with a soft glow on the edge that faces the field (static paint) */
+  background:
+    radial-gradient(90% 38% at 0% 12%, rgba(46, 150, 190, 0.13), transparent 70%),
+    rgba(7, 21, 30, 0.4);
+  border: 1px solid transparent;
+  box-shadow: none;
+}
+/* technical frame: four corner brackets (one bounded pseudo-element, static paint, breathing opacity) */
+.organ::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(var(--lens-line), var(--lens-line)) top left / 22px 1px no-repeat,
+    linear-gradient(var(--lens-line), var(--lens-line)) top left / 1px 22px no-repeat,
+    linear-gradient(var(--lens-line), var(--lens-line)) top right / 22px 1px no-repeat,
+    linear-gradient(var(--lens-line), var(--lens-line)) top right / 1px 22px no-repeat,
+    linear-gradient(var(--lens-line), var(--lens-line)) bottom left / 22px 1px no-repeat,
+    linear-gradient(var(--lens-line), var(--lens-line)) bottom left / 1px 22px no-repeat,
+    linear-gradient(var(--lens-line), var(--lens-line)) bottom right / 22px 1px no-repeat,
+    linear-gradient(var(--lens-line), var(--lens-line)) bottom right / 1px 22px no-repeat;
+  animation: lens-breathe 9s ease-in-out infinite;
+}
+/* the relation spine: a static line with a current travelling down it (the field feeding the chambers) */
+.organ::after {
+  content: "";
+  position: absolute;
+  left: calc(var(--spine-x) - 1.5px);
+  top: 28px;
+  bottom: 26px;
+  width: 3px;
+  pointer-events: none;
+  background:
+    linear-gradient(to bottom, transparent, rgba(170, 244, 255, 0.95), transparent) center -120px / 3px 110px no-repeat,
+    linear-gradient(to bottom, rgba(88, 220, 255, 0.55), rgba(88, 220, 255, 0.12)) center 0 / 1px 100% no-repeat;
+  animation: spine-current 7s linear infinite;
+}
+@keyframes lens-breathe {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes spine-current {
+  from {
+    background-position:
+      center -120px,
+      center 0;
+  }
+  to {
+    background-position:
+      center calc(100% + 120px),
+      center 0;
+  }
+}
+/* the bridge from the field reaches the organ's nucleus on the spine; a pulse crosses it */
+.organ-bridge {
+  top: 28px;
+  right: calc(100% - var(--spine-x));
+  width: calc(var(--space-5) + var(--spine-x));
+  height: 1px;
+  opacity: 0.8;
+  background: linear-gradient(90deg, transparent, var(--lens-line) 40%, var(--cyan));
+}
+.organ-bridge::after {
+  right: auto;
+  left: 0;
+  top: -2px;
+  width: 5px;
+  height: 5px;
+  box-shadow: 0 0 8px var(--cyan-glow);
+  animation: bridge-pulse 3.6s ease-in-out infinite;
+}
+@keyframes bridge-pulse {
+  0% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(calc(var(--space-5) + var(--spine-x) - 5px));
+    opacity: 0;
+  }
+}
+/* organ header: the context nucleus sits on the spine; a fine instrument scale under the title */
+.organ-header {
+  margin: 0 0 var(--space-3);
+  padding: 6px 0 12px;
+  border-bottom: 1px dashed rgba(88, 220, 255, 0.16);
+}
+.organ-header::before {
+  left: calc(var(--spine-x) - var(--organ-pad-left) - 5px);
+  top: 9px;
+  width: 10px;
+  height: 10px;
+  animation: nucleus-pulse 4.8s ease-in-out infinite;
+}
+.organ-header::after {
+  content: "";
+  display: block;
+  margin-top: 8px;
+  width: 132px;
+  height: 5px;
+  opacity: 0.6;
+  background: repeating-linear-gradient(90deg, rgba(88, 220, 255, 0.55) 0 1px, transparent 1px 7px);
+}
+@keyframes nucleus-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.18);
+  }
+}
+.organ-body {
+  gap: 14px;
+}
+/* phone: the lens stays a sheet attached to the field (flat bottom edge), with the lens radius */
+@media (max-width: 767px) {
+  .organ {
+    border-radius: 8px 8px 0 0;
+  }
+}
+/* chambers: hairline instrument panels on the spine, faint grid inside, no card surface */
+.plane.chamber {
+  padding: 12px 16px 16px 18px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background-color: rgba(12, 36, 46, 0.26);
+}
+@media (min-width: 768px) {
+  .plane.chamber {
+    background-image:
+      linear-gradient(rgba(88, 220, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(88, 220, 255, 0.03) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+}
+/* the chamber's node on the spine … */
+.plane.chamber::before,
+.plane.chamber + .plane.chamber::before {
+  display: block;
+  content: "";
+  position: absolute;
+  left: calc(var(--spine-x) - var(--organ-pad-left) - 5px);
+  right: auto;
+  top: 17px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--bg-deep);
+  border: 1.5px solid var(--chamber-tone);
+  box-shadow: 0 0 10px var(--chamber-tone-glow);
+  animation: nucleus-pulse 5.2s ease-in-out infinite;
+}
+/* … and its relation into the chamber (replaces the tone bar) */
+.plane.chamber::after {
+  left: calc(var(--spine-x) - var(--organ-pad-left) + 5px);
+  top: 22px;
+  bottom: auto;
+  width: calc(var(--organ-pad-left) - var(--spine-x) - 5px);
+  height: 1px;
+  border-radius: 0;
+  opacity: 0.7;
+  background: linear-gradient(90deg, var(--chamber-tone), transparent);
+  box-shadow: none;
+}
+/* breathing contour: the tone hairline + two brighter corner brackets, one layer per chamber (opacity only) */
+.chamber-contour {
+  inset: -1px;
+  border: 1px solid color-mix(in srgb, var(--chamber-tone) 38%, transparent);
+  border-radius: inherit;
+  box-shadow: inset 0 0 26px -14px var(--chamber-tone-glow);
+  opacity: 0.5;
+  animation: contour-breathe 7.5s ease-in-out infinite;
+}
+.chamber-contour::before,
+.chamber-contour::after {
+  width: 12px;
+  height: 12px;
+  opacity: 1;
+  border-width: 1.5px;
+  border-radius: 0;
+}
+.chamber-contour::before {
+  left: -1px;
+  right: auto;
+  top: -1px;
+  border: 1.5px solid var(--chamber-tone);
+  border-right: 0;
+  border-bottom: 0;
+}
+.chamber-contour::after {
+  right: -1px;
+  bottom: -1px;
+  border: 1.5px solid var(--chamber-tone);
+  border-left: 0;
+  border-top: 0;
+}
+@keyframes contour-breathe {
+  0%,
+  100% {
+    opacity: 0.42;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.organ-body > .plane.chamber:nth-child(2) .chamber-contour,
+.organ-body > .plane.chamber:nth-child(2)::before {
+  animation-delay: -1.9s;
+}
+.organ-body > .plane.chamber:nth-child(3) .chamber-contour,
+.organ-body > .plane.chamber:nth-child(3)::before {
+  animation-delay: -3.8s;
+}
+.organ-body > .plane.chamber:nth-child(4) .chamber-contour,
+.organ-body > .plane.chamber:nth-child(4)::before {
+  animation-delay: -5.4s;
+}
+.organ-body > .plane.chamber:nth-child(5) .chamber-contour,
+.organ-body > .plane.chamber:nth-child(5)::before {
+  animation-delay: -2.7s;
+}
+.chamber[data-chamber-resonating] .chamber-contour {
+  animation: none;
+  opacity: 1;
+}
+/* chamber head: glyph · instrument label · hairline · canonical marker */
+.chamber-head {
+  gap: 10px;
+}
+.chamber-glyph {
+  order: 0;
+}
+.chamber-title {
+  order: 1;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+h3.chamber-title {
+  font-size: 0.74rem;
+}
+.chamber-head::after {
+  content: "";
+  order: 2;
+  flex: 1 1 16px;
+  min-width: 16px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--chamber-tone), transparent);
+  opacity: 0.45;
+}
+.chamber-marker {
+  order: 3;
+  margin-left: 0;
+  border-radius: 3px;
+  padding: 1px 7px;
+  background: color-mix(in srgb, var(--chamber-tone) 9%, transparent);
+}
+/* nested boxes dissolve into dashed sub-contours */
+.authority-relation {
+  border-radius: 4px;
+  background: transparent;
+  border: 1px dashed rgba(134, 171, 255, 0.24);
+}
+.authority-relation[data-held="true"] {
+  border-style: solid;
+  border-color: rgba(88, 220, 255, 0.36);
+  background: rgba(88, 220, 255, 0.04);
+}
+.question-surface {
+  border-radius: 6px;
+  border: 1px dashed rgba(241, 230, 210, 0.3);
+  background: rgba(20, 22, 26, 0.3);
+}
+.confirmation-chamber {
+  border-radius: 6px;
+}
+.frozen-seal {
+  border-radius: 4px;
+}
+.boundary-mark {
+  border-radius: 4px;
+  background: rgba(6, 14, 22, 0.45);
+}
+.chamber-action {
+  border-top-color: rgba(88, 220, 255, 0.16);
+}
+/* controls as instrument elements */
+.chamber input,
+.chamber select,
+.chamber textarea {
+  border-radius: 4px;
+  background: rgba(3, 12, 18, 0.55);
+  border-color: rgba(88, 220, 255, 0.18);
+}
+.chamber .button {
+  border-radius: 4px;
+  background: rgba(88, 220, 255, 0.14);
+  color: var(--cyan);
+  border: 1px solid var(--cyan);
+  box-shadow:
+    inset 0 0 14px rgba(88, 220, 255, 0.14),
+    0 0 14px rgba(88, 220, 255, 0.14);
+  letter-spacing: 0.02em;
+}
+.chamber .button:hover {
+  background: rgba(88, 220, 255, 0.24);
+  box-shadow:
+    inset 0 0 18px rgba(88, 220, 255, 0.2),
+    0 0 24px var(--cyan-glow);
+}
+.chamber .button.secondary {
+  background: transparent;
+  border-color: rgba(88, 220, 255, 0.45);
+  box-shadow: none;
+}
