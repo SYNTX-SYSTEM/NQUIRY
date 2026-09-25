@@ -110,6 +110,8 @@ async function probe(page: Page): Promise<Probe> {
       const r = b.getBoundingClientRect();
       for (const t of b.querySelectorAll<HTMLElement>(".node-label, .node-meta, .node-marker, .core-title, .core-state, .core-meta, h2, h3, p, .trace-label, a")) {
         if (t.closest("details:not([open])") || t.classList.contains("visually-hidden")) continue;
+        // SF-06: a satellite's label is an encounter pop-over beside its small sphere, not content inside it
+        if (t.closest(".node[data-satellite]") && t.classList.contains("node-label")) continue;
         const tr = t.getBoundingClientRect();
         if (tr.width === 0) continue;
         if (tr.left < r.left - 1.5 || tr.right > r.right + 1.5 || tr.top < r.top - 1.5 || tr.bottom > r.bottom + 1.5) escaping.push(`${t.className}:${t.textContent?.slice(0, 24)}`);
@@ -198,7 +200,8 @@ test.describe("Living Field Entities + Relational Currents (doc 25 §7, §8; fal
       expect(parseFloat(n.mass)).toBeGreaterThan(0.8);
       expect(parseFloat(n.mass)).toBeLessThan(1.25);
     }
-    const rels = await page.locator("g.relation").evaluateAll((els) => els.map((e) => ({ key: e.getAttribute("data-key"), type: e.getAttribute("data-relation-type"), dir: e.getAttribute("data-direction"), prov: e.getAttribute("data-provenance") })));
+    // SF-06: every entry keeps its own relation; a family sphere adds its own relation to the core on top
+    const rels = await page.locator("g.relation:not(.family-relation)").evaluateAll((els) => els.map((e) => ({ key: e.getAttribute("data-key"), type: e.getAttribute("data-relation-type"), dir: e.getAttribute("data-direction"), prov: e.getAttribute("data-provenance") })));
     expect(rels.length).toBe(nodes.length);
     for (const r of rels) {
       expect(["directional", "reciprocal", "latent", "context"]).toContain(r.type);
@@ -212,7 +215,7 @@ test.describe("Living Field Entities + Relational Currents (doc 25 §7, §8; fal
     await routes(page);
     await page.goto(challengeUrl);
     await page.getByTestId("field-core").waitFor();
-    const motion = await page.locator("g.relation").evaluateAll((els) =>
+    const motion = await page.locator("g.relation:not(.family-relation)").evaluateAll((els) =>
       els.map((e) => {
         const key = e.getAttribute("data-key")!;
         const pulse = document.querySelector(`.current-pulse[data-key="${CSS.escape(key)}"]`);

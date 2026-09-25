@@ -4010,13 +4010,13 @@ h3.chamber-title {
 @media (min-width: 768px) {
   /* --- the core: a luminous sphere (round in the orbit), a slowly turning plasma veil behind the text */
   .field-stage[data-topology="orbit"] .core {
-    width: var(--core-max);
-    aspect-ratio: 1;
+    width: 240px;
+    /* round while the content fits; very long content grows it rather than being clipped (doc 23 §6.2) */
+    min-height: 240px;
     border-radius: 50%;
   }
   .field-stage[data-topology="orbit"] .core-nucleus {
-    overflow: hidden;
-    padding: 30px 36px;
+    padding: 28px 26px; /* a 188 px text column: exactly what the geometry estimates for the round nucleus */
     background: radial-gradient(circle at 50% 50%, rgba(5, 12, 28, 0.94) 0%, rgba(8, 22, 48, 0.9) 50%, rgba(22, 66, 128, 0.78) 78%, rgba(88, 200, 255, 0.5) 100%);
     box-shadow:
       inset 0 0 34px rgba(88, 220, 255, 0.32),
@@ -4024,10 +4024,15 @@ h3.chamber-title {
       0 0 64px rgba(88, 220, 255, 0.26),
       0 0 0 1px var(--core-tone-glow);
   }
-  .field-stage[data-topology="orbit"] .core-nucleus::before {
-    content: "";
+  .field-stage[data-topology="orbit"] .core-plasma {
     position: absolute;
-    inset: -12%;
+    /* a centred disc as wide as the nucleus: turning a circle never changes its footprint, so the veil stays inside
+       the sphere even when very long content makes the nucleus taller than wide (and nothing is clipped, doc 23 §6.2) */
+    left: 50%;
+    top: 50%;
+    width: 100%;
+    aspect-ratio: 1;
+    translate: -50% -50%;
     border-radius: 50%;
     pointer-events: none;
     background:
@@ -4036,7 +4041,7 @@ h3.chamber-title {
     will-change: transform;
     animation: plasma-turn 90s linear infinite;
   }
-  .field-stage[data-topology="orbit"] .core-nucleus > * {
+  .field-stage[data-topology="orbit"] .core-nucleus > :not(.core-plasma) {
     position: relative;
     z-index: 1;
   }
@@ -4295,4 +4300,752 @@ h3.chamber-title {
   .field-bg .starfield {
     opacity: 0.55;
   }
+}
+
+/* ============================================================ SF-06 — LIVING ORGANISM, STEP 2 (human direction)
+   Satellites glide and rest around their sphere (never a continuously moving target; paused while their family is
+   encountered); the focus lens; slower, larger breathing entities; a dormant — not alarming — "not available";
+   relation lines and currents that speak their state; a deeper sky. Motion: rotate / translate / scale / opacity /
+   offset-distance only; reduced motion stops all of it (global rule). */
+@media (min-width: 768px) {
+  /* --- satellites: positioned from their top-left (no centring transform, so the rotation origin is exact) and
+     turned around the sphere's centre in 15° glides with long rests; the membrane counter-turns to stay upright */
+  .field-stage[data-topology="orbit"] .node[data-satellite] {
+    transform: none;
+    left: calc(50% + var(--x, 0px) - 13px);
+    top: calc(50% + var(--y, 0px) - 13px);
+    transform-origin: calc(13px + var(--ox, 0px)) calc(13px + var(--oy, 0px));
+    animation: satellite-orbit 480s ease-in-out infinite;
+    animation-delay: var(--orbit-phase, 0s);
+  }
+  .field-stage[data-topology="orbit"] .node[data-satellite] .node-body {
+    animation: satellite-upright 480s ease-in-out infinite;
+    animation-delay: var(--orbit-phase, 0s);
+  }
+  /* the spokes and their currents turn with the satellites (same timeline, origin = the sphere's centre) */
+  .field-stage[data-topology="orbit"] .family-spokes {
+    transform-box: view-box;
+    animation: satellite-orbit 480s ease-in-out infinite;
+    animation-delay: var(--orbit-phase, 0s);
+  }
+  .field-stage[data-topology="orbit"] .family-currents {
+    /* a sizeless frame at the stage origin: the pulses keep their stage coordinates, and the turning frame never
+       widens the page (a stage-sized turning box did) */
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0;
+    height: 0;
+    animation: satellite-orbit 480s ease-in-out infinite;
+    animation-delay: var(--orbit-phase, 0s);
+  }
+  /* any encounter in the field (a hovered or focused entry, the lens) holds the whole family motion together */
+  .field-stage[data-encounter][data-topology="orbit"] .node[data-satellite],
+  .field-stage[data-encounter][data-topology="orbit"] .node[data-satellite] .node-body,
+  .field-stage[data-encounter][data-topology="orbit"] .family-spokes,
+  .field-stage[data-encounter][data-topology="orbit"] .family-currents {
+    animation-play-state: paused;
+  }
+  /* the satellite's own label sits below it (the focus lens carries the facts) */
+  .field-stage[data-topology="orbit"] .node[data-satellite] .node-label,
+  .field-stage[data-topology="orbit"] .node[data-satellite="l"] .node-label,
+  .field-stage[data-topology="orbit"] .node[data-satellite="t"] .node-label,
+  .field-stage[data-topology="orbit"] .node[data-satellite="b"] .node-label {
+    top: calc(100% + 8px);
+    bottom: auto;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    text-align: center;
+  }
+  /* --- family spheres breathe (glow opacity) while they float */
+  .hub-orb::before {
+    content: "";
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    box-shadow: 0 0 34px var(--hub-glow), inset 0 0 18px color-mix(in srgb, var(--hub-tone) 22%, transparent);
+    opacity: 0.35;
+    animation: hub-breathe 9s ease-in-out infinite;
+    animation-delay: calc(var(--breath-phase, 0) * -0.8s);
+  }
+  .family-hub .hub-label {
+    font-size: 0.9rem;
+  }
+  /* --- entities: a little larger, breathing slowly through aura and membrane glow (the frame never moves) */
+  .field-stage[data-topology="orbit"] .node:not([data-satellite]):not([data-node-size="sm"]):not([data-node-size="dot"]) .node-body {
+    padding: calc(11px + 4px * (var(--mass, 1) - 0.9)) calc(18px + 6px * (var(--mass, 1) - 0.9));
+  }
+}
+@keyframes hub-breathe {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.field-stage[data-topology="orbit"] .node .node-aura {
+  animation-duration: 10s;
+}
+/* --- "not available" is dormant, not alarming: a dashed, dimmed membrane with a faint warm-red halo */
+.node[data-node-state="unavailable"] {
+  --tone: var(--red-soft);
+  --tone-glow: rgba(229, 141, 149, 0.14);
+}
+.node[data-node-state="unavailable"] .node-body {
+  border-style: dashed;
+  border-color: rgba(229, 141, 149, 0.4);
+  background: radial-gradient(circle at 50% 45%, rgba(70, 20, 32, 0.32), rgba(9, 13, 25, 0.9) 72%);
+  color: var(--ink-soft);
+}
+.node[data-node-state="unavailable"] .node-label {
+  color: var(--ink-soft);
+}
+.node[data-node-state="unavailable"] .node-aura {
+  animation-duration: 14s;
+}
+/* --- relation lines speak their state */
+.orbit-paths .path[data-path="possible"] {
+  stroke: var(--cyan);
+  stroke-dasharray: 3 7;
+  opacity: 0.8;
+}
+.orbit-paths .path[data-path="established"] {
+  stroke: #7fa8ff;
+  opacity: 0.5;
+}
+.orbit-paths .path[data-path="current"] {
+  stroke: var(--cyan);
+  filter: drop-shadow(0 0 3px rgba(88, 220, 255, 0.5));
+}
+.orbit-paths .path[data-path="governance"],
+.orbit-paths .path[data-path="authority"] {
+  stroke: #a594ff;
+  stroke-dasharray: 8 3 1 3;
+  opacity: 0.75;
+}
+.orbit-paths .path[data-path="unavailable"] {
+  stroke: var(--red-soft);
+  stroke-dasharray: 1 8;
+  opacity: 0.45;
+}
+.orbit-paths .relation[data-relation-type="reciprocal"] .path-base {
+  stroke: #f1d8b8;
+  opacity: 0.55;
+}
+.current-pulse[data-path="possible"] {
+  --current: var(--cyan);
+  animation-duration: calc(var(--motion-current-drift) * 0.6);
+}
+.current-pulse[data-path="governance"],
+.current-pulse[data-path="authority"] {
+  --current: #a594ff;
+}
+.current-pulse[data-relation-type="reciprocal"] {
+  --current: #f1d8b8;
+}
+.current-pulse[data-path="established"] {
+  animation-duration: calc(var(--motion-current-drift) * 1.4);
+}
+/* --- the focus lens */
+.lens-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, rgba(2, 8, 18, 0.3), rgba(2, 6, 14, 0.6) 70%);
+  animation: lens-veil-in 0.45s ease 0.3s both;
+}
+.focus-lens {
+  --lens-tone: var(--cyan);
+  --lens-glow: var(--cyan-glow);
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  z-index: 61;
+  width: min(520px, calc(100vw - 32px));
+  max-height: calc(100vh - 48px);
+  overflow: hidden;
+  transform: translate(-50%, -50%);
+  padding: 26px 30px 24px;
+  border-radius: 36px 26px 40px 24px / 28px 38px 26px 34px;
+  background: rgba(6, 18, 32, 0.9);
+  border: 1px solid color-mix(in srgb, var(--lens-tone) 55%, transparent);
+  box-shadow:
+    inset 0 0 44px color-mix(in srgb, var(--lens-tone) 16%, transparent),
+    0 0 70px var(--lens-glow),
+    0 30px 80px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  animation:
+    lens-in 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) 0.3s both,
+    lens-breathe 7s ease-in-out 0.9s infinite;
+}
+.focus-lens[data-tone="stable"] {
+  --lens-tone: var(--blue);
+  --lens-glow: var(--blue-glow);
+}
+.focus-lens[data-tone="boundary"] {
+  --lens-tone: var(--red-soft);
+  --lens-glow: rgba(229, 141, 149, 0.2);
+}
+.focus-lens[data-tone="neutral"] {
+  --lens-tone: var(--muted);
+  --lens-glow: rgba(160, 190, 230, 0.14);
+}
+.focus-lens-contour {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--lens-tone) 35%, transparent),
+    inset 0 0 70px color-mix(in srgb, var(--lens-tone) 20%, transparent);
+  animation: hub-breathe 7s ease-in-out infinite;
+}
+.focus-lens-eyebrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 10px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--lens-tone);
+}
+.focus-lens-state {
+  padding: 2px 9px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--lens-tone) 60%, transparent);
+  letter-spacing: 0.06em;
+}
+.focus-lens-title {
+  margin: 0 0 16px;
+  font-family: var(--font-serif);
+  font-size: 1.42rem;
+  line-height: 1.3;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.focus-lens-facts {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 14px 0 0;
+  border-top: 1px dashed color-mix(in srgb, var(--lens-tone) 30%, transparent);
+}
+.focus-lens-fact {
+  display: grid;
+  grid-template-columns: minmax(96px, 34%) minmax(0, 1fr);
+  gap: 12px;
+  align-items: baseline;
+}
+.focus-lens-fact dt {
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.focus-lens-fact dd {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+  overflow-wrap: anywhere;
+}
+.focus-lens-hint {
+  margin: 16px 0 0;
+  font-size: 0.8rem;
+  color: var(--lens-tone);
+}
+@keyframes lens-veil-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes lens-in {
+  from {
+    opacity: 0;
+    translate: 0 12px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+@keyframes lens-breathe {
+  0%,
+  100% {
+    scale: 1;
+  }
+  50% {
+    scale: 1.012;
+  }
+}
+/* --- a deeper sky: a second, finer star tile at another scale, and warmer nebular colour */
+.field-bg .starfield::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: inherit;
+  background-size: 820px 820px;
+  background-position: 190px 310px;
+  opacity: 0.55;
+}
+.field-bg .nebula-d {
+  background: radial-gradient(ellipse at 50% 50%, rgba(128, 100, 236, 0.15), rgba(128, 100, 236, 0.04) 50%, transparent 70%);
+}
+.field-bg .nebula-e {
+  background: radial-gradient(ellipse at 50% 50%, rgba(40, 196, 220, 0.14), rgba(40, 196, 220, 0.035) 50%, transparent 70%);
+}
+@keyframes satellite-orbit {
+  0.0000% {
+    rotate: 0deg;
+  }
+  0.7292% {
+    rotate: 15deg;
+  }
+  4.1667% {
+    rotate: 15deg;
+  }
+  4.8958% {
+    rotate: 30deg;
+  }
+  8.3333% {
+    rotate: 30deg;
+  }
+  9.0625% {
+    rotate: 45deg;
+  }
+  12.5000% {
+    rotate: 45deg;
+  }
+  13.2292% {
+    rotate: 60deg;
+  }
+  16.6667% {
+    rotate: 60deg;
+  }
+  17.3958% {
+    rotate: 75deg;
+  }
+  20.8333% {
+    rotate: 75deg;
+  }
+  21.5625% {
+    rotate: 90deg;
+  }
+  25.0000% {
+    rotate: 90deg;
+  }
+  25.7292% {
+    rotate: 105deg;
+  }
+  29.1667% {
+    rotate: 105deg;
+  }
+  29.8958% {
+    rotate: 120deg;
+  }
+  33.3333% {
+    rotate: 120deg;
+  }
+  34.0625% {
+    rotate: 135deg;
+  }
+  37.5000% {
+    rotate: 135deg;
+  }
+  38.2292% {
+    rotate: 150deg;
+  }
+  41.6667% {
+    rotate: 150deg;
+  }
+  42.3958% {
+    rotate: 165deg;
+  }
+  45.8333% {
+    rotate: 165deg;
+  }
+  46.5625% {
+    rotate: 180deg;
+  }
+  50.0000% {
+    rotate: 180deg;
+  }
+  50.7292% {
+    rotate: 195deg;
+  }
+  54.1667% {
+    rotate: 195deg;
+  }
+  54.8958% {
+    rotate: 210deg;
+  }
+  58.3333% {
+    rotate: 210deg;
+  }
+  59.0625% {
+    rotate: 225deg;
+  }
+  62.5000% {
+    rotate: 225deg;
+  }
+  63.2292% {
+    rotate: 240deg;
+  }
+  66.6667% {
+    rotate: 240deg;
+  }
+  67.3958% {
+    rotate: 255deg;
+  }
+  70.8333% {
+    rotate: 255deg;
+  }
+  71.5625% {
+    rotate: 270deg;
+  }
+  75.0000% {
+    rotate: 270deg;
+  }
+  75.7292% {
+    rotate: 285deg;
+  }
+  79.1667% {
+    rotate: 285deg;
+  }
+  79.8958% {
+    rotate: 300deg;
+  }
+  83.3333% {
+    rotate: 300deg;
+  }
+  84.0625% {
+    rotate: 315deg;
+  }
+  87.5000% {
+    rotate: 315deg;
+  }
+  88.2292% {
+    rotate: 330deg;
+  }
+  91.6667% {
+    rotate: 330deg;
+  }
+  92.3958% {
+    rotate: 345deg;
+  }
+  95.8333% {
+    rotate: 345deg;
+  }
+  96.5625% {
+    rotate: 360deg;
+  }
+  100% {
+    rotate: 360deg;
+  }
+}
+@keyframes satellite-upright {
+  0.0000% {
+    rotate: 0deg;
+  }
+  0.7292% {
+    rotate: -15deg;
+  }
+  4.1667% {
+    rotate: -15deg;
+  }
+  4.8958% {
+    rotate: -30deg;
+  }
+  8.3333% {
+    rotate: -30deg;
+  }
+  9.0625% {
+    rotate: -45deg;
+  }
+  12.5000% {
+    rotate: -45deg;
+  }
+  13.2292% {
+    rotate: -60deg;
+  }
+  16.6667% {
+    rotate: -60deg;
+  }
+  17.3958% {
+    rotate: -75deg;
+  }
+  20.8333% {
+    rotate: -75deg;
+  }
+  21.5625% {
+    rotate: -90deg;
+  }
+  25.0000% {
+    rotate: -90deg;
+  }
+  25.7292% {
+    rotate: -105deg;
+  }
+  29.1667% {
+    rotate: -105deg;
+  }
+  29.8958% {
+    rotate: -120deg;
+  }
+  33.3333% {
+    rotate: -120deg;
+  }
+  34.0625% {
+    rotate: -135deg;
+  }
+  37.5000% {
+    rotate: -135deg;
+  }
+  38.2292% {
+    rotate: -150deg;
+  }
+  41.6667% {
+    rotate: -150deg;
+  }
+  42.3958% {
+    rotate: -165deg;
+  }
+  45.8333% {
+    rotate: -165deg;
+  }
+  46.5625% {
+    rotate: -180deg;
+  }
+  50.0000% {
+    rotate: -180deg;
+  }
+  50.7292% {
+    rotate: -195deg;
+  }
+  54.1667% {
+    rotate: -195deg;
+  }
+  54.8958% {
+    rotate: -210deg;
+  }
+  58.3333% {
+    rotate: -210deg;
+  }
+  59.0625% {
+    rotate: -225deg;
+  }
+  62.5000% {
+    rotate: -225deg;
+  }
+  63.2292% {
+    rotate: -240deg;
+  }
+  66.6667% {
+    rotate: -240deg;
+  }
+  67.3958% {
+    rotate: -255deg;
+  }
+  70.8333% {
+    rotate: -255deg;
+  }
+  71.5625% {
+    rotate: -270deg;
+  }
+  75.0000% {
+    rotate: -270deg;
+  }
+  75.7292% {
+    rotate: -285deg;
+  }
+  79.1667% {
+    rotate: -285deg;
+  }
+  79.8958% {
+    rotate: -300deg;
+  }
+  83.3333% {
+    rotate: -300deg;
+  }
+  84.0625% {
+    rotate: -315deg;
+  }
+  87.5000% {
+    rotate: -315deg;
+  }
+  88.2292% {
+    rotate: -330deg;
+  }
+  91.6667% {
+    rotate: -330deg;
+  }
+  92.3958% {
+    rotate: -345deg;
+  }
+  95.8333% {
+    rotate: -345deg;
+  }
+  96.5625% {
+    rotate: -360deg;
+  }
+  100% {
+    rotate: -360deg;
+  }
+}
+
+/* ============================================================ SF-06 — LIVING TRACE (human direction)
+   The route is a luminous thread: every station carries a small light node in its relation state, a pulse travels
+   the thread toward the current station, and the current membrane breathes. Presentation only; the text never moves;
+   the pulse is a 2 px background strip (paint of a 2 px line), the node pulse a transform on a 7 px dot. */
+.trace ol {
+  position: relative;
+  isolation: isolate; /* the thread and its pulse live BEHIND the station membranes, never across the text */
+}
+.trace ol::before,
+.trace ol::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 50%;
+  z-index: -1;
+  pointer-events: none;
+}
+.trace ol::before {
+  height: 1px;
+  margin-top: -0.5px;
+  background: linear-gradient(90deg, rgba(134, 171, 255, 0.1), rgba(88, 220, 255, 0.42) 70%, rgba(88, 220, 255, 0.12));
+}
+.trace ol::after {
+  height: 2px;
+  margin-top: -1px;
+  background: linear-gradient(90deg, transparent, rgba(170, 244, 255, 0.95), transparent) -140px 0 / 140px 2px no-repeat;
+  animation: trace-current 7s cubic-bezier(0.45, 0.05, 0.3, 1) infinite;
+}
+@keyframes trace-current {
+  from {
+    background-position: -140px 0;
+  }
+  to {
+    background-position: calc(100% + 140px) 0;
+  }
+}
+@media (min-width: 768px) {
+  .trace li {
+    padding-left: 24px;
+  }
+}
+.route-membrane {
+  background: rgba(8, 20, 36, 0.78);
+  box-shadow: inset 0 0 12px rgba(88, 220, 255, 0.05);
+}
+.trace li[data-status="current"] .route-membrane {
+  background: rgba(10, 34, 52, 0.86);
+  box-shadow:
+    inset 0 0 14px rgba(88, 220, 255, 0.16),
+    0 0 22px var(--cyan-glow);
+}
+/* the station's light node (a line of stations from 768 px up; the phone chip stays plain) */
+@media (max-width: 767px) {
+  .route-membrane::before {
+    display: none;
+  }
+}
+.route-membrane::before {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  margin-top: -3.5px;
+  border-radius: 50%;
+  background: var(--blue);
+  box-shadow: 0 0 6px var(--blue-glow);
+  opacity: 0.75;
+}
+.trace li[data-status="current"] .route-membrane::before {
+  background: var(--cyan);
+  box-shadow:
+    0 0 0 3px rgba(88, 220, 255, 0.14),
+    0 0 10px var(--cyan-glow);
+  opacity: 1;
+  animation: nucleus-pulse 3.6s ease-in-out infinite;
+}
+.trace li[data-status="possible"] .route-membrane::before {
+  background: transparent;
+  border: 1px dashed var(--cyan);
+  box-shadow: none;
+}
+.trace li[data-status="unavailable"] .route-membrane::before {
+  background: transparent;
+  border: 1px dotted var(--red-soft);
+  box-shadow: none;
+  opacity: 0.6;
+}
+.trace li:hover .route-membrane::before,
+.trace li:focus-within .route-membrane::before {
+  opacity: 1;
+  box-shadow: 0 0 10px var(--cyan-glow);
+}
+/* future stations keep a solid membrane (the thread passes behind them, never through their text) */
+.trace li[data-status="possible"] .route-membrane,
+.trace li[data-status="unavailable"] .route-membrane {
+  opacity: 1;
+  border-color: rgba(134, 190, 255, 0.28);
+}
+.focus-lens {
+  background: rgba(5, 15, 28, 0.97);
+}
+
+@media (min-width: 768px) {
+  .trace li[data-status="current"] {
+    min-width: min(100%, calc(22ch + 36px));
+  }
+}
+
+/* later lifecycle phases as small spheres on the ring (desktop orbit); name in the accessibility tree and the lens */
+@media (min-width: 768px) {
+  .field-stage[data-topology="orbit"] .node[data-node-size="dot"] .node-body {
+    width: 22px;
+    height: 22px;
+    min-height: 0;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--tone) 55%, transparent);
+    background: radial-gradient(circle at 36% 30%, color-mix(in srgb, var(--tone) 40%, white 6%) 0%, color-mix(in srgb, var(--tone) 18%, transparent) 42%, rgba(6, 14, 30, 0.95) 80%);
+    box-shadow: 0 0 10px var(--tone-glow);
+  }
+  .field-stage[data-topology="orbit"] .node[data-node-size="dot"] .node-main {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+  }
+  .field-stage[data-topology="orbit"] .node[data-node-size="dot"] .node-meta,
+  .field-stage[data-topology="orbit"] .node[data-node-size="dot"] .node-marker {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+/* a station's ground is solid under its breathing membrane: the thread never shows through the label */
+.trace li {
+  background: rgb(6, 14, 26);
+}
+
+/* the plasma veil exists only in the orbit (the orbit rule above is more specific) */
+.core-plasma {
+  display: none;
 }

@@ -184,7 +184,8 @@ export type CoreContent = { readonly title: string; readonly eyebrow?: string; r
 export function estimateCoreBox(core: CoreContent): Box {
   const titleChar = 8.4;
   const titleLine = 22;
-  const inner = Math.min(204, Math.max(140, textWidth(core.title, titleChar)));
+  // the round nucleus is 240 px wide in the orbit (human review): its text column is 188 px
+  const inner = Math.min(188, Math.max(140, textWidth(core.title, titleChar)));
   const titleLines = lines(core.title, titleChar, inner);
   const metaLines = core.meta ? lines(core.meta, 6.4, inner) : 0;
   const w = Math.max(196, Math.round(inner + 52));
@@ -322,15 +323,26 @@ export function layoutField(input: {
     return first;
   };
   // organic offsets (doc 25 §7.7) breathe within the room the content leaves: full offsets when they fit, else
-  // halved, quartered, none — deterministic, and never the reason a field falls out of its orbit (doc 23 §7.6)
-  let best = attempt(1);
-  if (best.fits) return best;
-  for (const organic of ORGANIC_STEPS) {
-    const candidate = attempt(organic);
-    if (candidate.fits) return candidate;
-    if (countOverlaps(candidate) < countOverlaps(best)) best = candidate;
-  }
-  return best;
+  // halved, quartered, none — deterministic, and never the reason a field falls out of its orbit (doc 23 §7.6).
+  // Human review: a ROUND orbit that fits beats a vertically grown one, even if it costs organic offset; the grown
+  // ellipse is the last resort. When nothing fits, the round candidate with the fewest collisions wins, so the height
+  // derived from it (the stage's content need) stays the round one.
+  const candidates = [1, ...ORGANIC_STEPS].map((organic) => attempt(organic));
+  const roundFit = candidates.find((c) => c.fits && isRound(c));
+  if (roundFit) return roundFit;
+  const anyFit = candidates.find((c) => c.fits);
+  if (anyFit) return anyFit;
+  return candidates.reduce((best, c) => {
+    const dc = countOverlaps(c) - countOverlaps(best);
+    if (dc !== 0) return dc < 0 ? c : best;
+    if (isRound(c) !== isRound(best)) return isRound(c) ? c : best;
+    return requiredHalfHeight(c) < requiredHalfHeight(best) ? c : best;
+  });
+}
+
+/** Every ring is a circle (no vertical growth was needed). */
+function isRound(layout: FieldLayout): boolean {
+  return layout.rings.every((r) => Math.abs(r.ry - r.rx) < 0.5);
 }
 
 const ORGANIC_STEPS = [0.5, 0.25, 0] as const;

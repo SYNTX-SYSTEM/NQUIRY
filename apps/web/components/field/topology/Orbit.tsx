@@ -28,6 +28,7 @@ import { estimateCoreBox, layoutField, organicOffset, seeds, type Box, type Node
 import { assertProvenance, projectNode, projectRelation, type ProjectedSemanticNode, type ProjectedSemanticRelation } from "../../../lib/field/projection";
 import { relationOfOrbit, type OrbitKind } from "../../../lib/field/reciprocity";
 import type { Emphasis, NodeState, PathState } from "../../../lib/field/topology";
+import { FOCUS_LENS_ID, useFocusLens, type LensFact } from "./FocusLens";
 import { NOMINAL_STAGE, useFieldLayout, useReportBoxes, useStageMode } from "./FieldStage";
 
 export type OrbitNode = {
@@ -54,6 +55,10 @@ export type OrbitNode = {
   readonly markerText?: string;
   /** Number of canonical relations this entity holds to the core context (relation density, doc 25 §7.3). */
   readonly relationCount?: number;
+  /** The canonical facts the page already holds for this entry, shown in the focus lens (never inferred). */
+  readonly details?: readonly LensFact[];
+  /** What selecting the entry does, in words, for the focus lens. */
+  readonly lensHint?: string;
 };
 
 const MARKER: Readonly<Record<NodeState, string>> = {
@@ -106,7 +111,7 @@ export type OrbitHub = {
   readonly glyph: HubGlyph;
 };
 
-export const HUB_DIAMETER = 104;
+export const HUB_DIAMETER = 112;
 const SATELLITE = 26;
 const SATELLITE_GAP = 12;
 
@@ -248,6 +253,7 @@ export function Orbit({
 }) {
   const layout = useFieldLayout();
   const report = useReportBoxes();
+  const lens = useFocusLens();
   const mode = useStageMode();
   const listRef = useRef<HTMLUListElement>(null);
   // doc 23 §7.1: after render, the RENDERED frames (position-independent: content-sized) refine the estimate once
@@ -278,8 +284,7 @@ export function Orbit({
   const satellites = hubPlace
     ? satelliteAngles(nodes.length, (Math.atan2(hubPlace.y, hubPlace.x) * 180) / Math.PI).map((a) => {
         const r = (a * Math.PI) / 180;
-        const side = Math.cos(r) > 0.5 ? "r" : Math.cos(r) < -0.5 ? "l" : Math.sin(r) < 0 ? "t" : "b";
-        return { x: hubPlace.x + Math.cos(r) * satR, y: hubPlace.y + Math.sin(r) * satR, side };
+        return { x: hubPlace.x + Math.cos(r) * satR, y: hubPlace.y + Math.sin(r) * satR };
       })
     : null;
   const drawRing = ringLayout && (!hub || hub.slot === 0);
@@ -300,9 +305,31 @@ export function Orbit({
           <g className="relation family-relation" data-key={hub.key} data-path="established" data-relation-type={projected[0]?.rel.type.value ?? "directional"} data-direction={projected[0]?.rel.direction?.value ?? "none"}>
             <path className="path path-base" data-path="established" d={arcPath(cx, cy, cx + hubPlace.x, cy + hubPlace.y, hub.key, Math.min(0.9, coreHalf / (Math.hypot(hubPlace.x, hubPlace.y) || 1)))} vectorEffect="non-scaling-stroke" />
             <circle className="satellite-orbit" cx={cx + hubPlace.x} cy={cy + hubPlace.y} r={satR} vectorEffect="non-scaling-stroke" />
-            {satellites.map((sp, i) => (
-              <line key={nodes[i].key} className="satellite-link" x1={cx + hubPlace.x + ((sp.x - hubPlace.x) * (HUB_DIAMETER / 2)) / satR} y1={cy + hubPlace.y + ((sp.y - hubPlace.y) * (HUB_DIAMETER / 2)) / satR} x2={cx + sp.x} y2={cy + sp.y} vectorEffect="non-scaling-stroke" />
-            ))}
+          </g>
+        ) : null}
+        {hubPlace && hub && satellites ? (
+          // every entry keeps its own canonical relation current (doc 25 §8): a short curved spoke from its family
+          // sphere, turning with the satellites (same glide-and-rest timeline, same origin: the sphere's centre)
+          <g className="family-spokes" data-family-key={hub.key} style={{ transformOrigin: `${(cx + hubPlace.x).toFixed(1)}px ${(cy + hubPlace.y).toFixed(1)}px`, ["--orbit-phase" as string]: `${(-seeds(hub.key)[1] * 480).toFixed(1)}s` }}>
+            {nodes.map((n, i) => {
+              const sp = satellites[i];
+              const { rel } = projected[i];
+              const d = arcPath(cx + hubPlace.x, cy + hubPlace.y, cx + sp.x, cy + sp.y, n.key, Math.min(0.9, HUB_DIAMETER / 2 / satR));
+              return (
+                <g
+                  key={n.key}
+                  className="relation"
+                  data-key={n.key}
+                  data-path={n.path ?? defaultPath(n.state)}
+                  data-relation-type={rel.type.value}
+                  data-direction={rel.direction?.value ?? "none"}
+                  data-provenance={relationProvenance(rel)}
+                  style={{ ["--w" as string]: String(rel.weight.value) }}
+                >
+                  <path className="path path-base" data-path={n.path ?? defaultPath(n.state)} d={d} vectorEffect="non-scaling-stroke" />
+                </g>
+              );
+            })}
           </g>
         ) : null}
         {!hubPlace && nodes.map((n, i) => {
@@ -344,6 +371,26 @@ export function Orbit({
               />
             ))
           : null}
+        {hubPlace && hub && satellites ? (
+          <div className="family-currents" style={{ transformOrigin: `${(cx + hubPlace.x).toFixed(1)}px ${(cy + hubPlace.y).toFixed(1)}px`, ["--orbit-phase" as string]: `${(-seeds(hub.key)[1] * 480).toFixed(1)}s` }}>
+            {nodes.map((n, i) => {
+              const sp = satellites[i];
+              const { rel } = projected[i];
+              if (rel.type.value === "latent") return null;
+              return (
+                <span
+                  key={n.key}
+                  className="current-pulse"
+                  data-key={n.key}
+                  data-path={n.path ?? defaultPath(n.state)}
+                  data-relation-type={rel.type.value}
+                  data-direction={rel.direction?.value ?? "none"}
+                  style={{ offsetPath: `path("${arcPath(cx + hubPlace.x, cy + hubPlace.y, cx + sp.x, cy + sp.y, n.key, Math.min(0.9, HUB_DIAMETER / 2 / satR))}")` }}
+                />
+              );
+            })}
+          </div>
+        ) : null}
         {hubPlace && hub ? (
           <span className="current-pulse" data-key={hub.key} data-path="established" data-relation-type="directional" data-direction="source-to-target" style={{ offsetPath: `path("${arcPath(cx, cy, cx + hubPlace.x, cy + hubPlace.y, hub.key, Math.min(0.9, coreHalf / (Math.hypot(hubPlace.x, hubPlace.y) || 1)))}")` }} />
         ) : null}
@@ -389,6 +436,20 @@ export function Orbit({
           const { node } = projected[i];
           // The control (link/button) contains ONLY the label, so its accessible name is exactly the node
           // identity; meta and the state marker are siblings inside the frame (22 §14.1, §34.3).
+          const sat = satellites ? satellites[i] : null;
+          // the focus lens opens for every entry that carries canonical facts (satellites and plain nodes alike)
+          const lensContent = (sat && hub) || n.details
+            ? {
+                key: n.key,
+                family: hub?.label ?? heading,
+                title: textOf(n.onActivate && n.actionLabel ? n.actionLabel : n.label),
+                state: marker,
+                tone: node.visualTone.value,
+                facts: n.details ?? (n.meta ? [{ label: "Relation", value: textOf(n.meta) }] : []),
+                hint: n.lensHint ?? (n.href ? "Select to open" : n.onActivate && !n.disabled ? `Select to ${(n.actionLabel ?? "act").toLowerCase()}` : undefined),
+              }
+            : null;
+          const describedBy = lensContent ? [n.describedBy, FOCUS_LENS_ID].filter(Boolean).join(" ") : n.describedBy;
           const main = (
             <span className={`node-label${n.labelVisibility === "assistive" ? " assistive visually-hidden" : ""}`}>
               {n.onActivate && n.actionLabel ? n.actionLabel : n.label}
@@ -407,28 +468,37 @@ export function Orbit({
               data-role={node.role.value}
               data-provenance={provenanceOf(node)}
               data-testid={n.testId}
-              data-satellite={satellites ? satellites[i].side : undefined}
+              data-satellite={sat ? "true" : undefined}
               aria-current={n.ariaCurrent}
+              onMouseEnter={lensContent && lens ? () => lens.open(lensContent) : undefined}
+              onMouseLeave={lensContent && lens ? () => lens.close(n.key) : undefined}
+              onFocus={lensContent && lens ? () => lens.open(lensContent) : undefined}
+              onBlur={lensContent && lens ? () => lens.close(n.key) : undefined}
+              onKeyDown={lensContent && lens ? (e) => (e.key === "Escape" ? lens.close(n.key) : undefined) : undefined}
               style={{
                 ["--x" as string]: `${(p?.x ?? 0).toFixed(1)}px`,
                 ["--y" as string]: `${(p?.y ?? 0).toFixed(1)}px`,
                 ["--mass" as string]: String(p && "scale" in p ? p.scale : 1),
                 ["--weight" as string]: String(node.semanticWeight.value),
                 ["--breath-phase" as string]: (seeds(n.key)[0] * 11).toFixed(2),
+                // a satellite glides and rests around its sphere: the rotation origin is the sphere's centre
+                ...(sat && hubPlace && hub
+                  ? { ["--ox" as string]: `${(hubPlace.x - sat.x).toFixed(1)}px`, ["--oy" as string]: `${(hubPlace.y - sat.y).toFixed(1)}px`, ["--orbit-phase" as string]: `${(-seeds(hub.key)[1] * 480).toFixed(1)}s` }
+                  : {}),
               }}
             >
               <div className="node-body">
                 <span className="node-aura" aria-hidden="true" />
                 {n.href ? (
-                  <Link href={n.href} className="node-main" aria-describedby={n.describedBy}>
+                  <Link href={n.href} className="node-main" aria-describedby={describedBy}>
                     {main}
                   </Link>
                 ) : n.onActivate ? (
-                  <button type="button" className="node-main" onClick={n.onActivate} disabled={n.disabled} aria-describedby={n.describedBy}>
+                  <button type="button" className="node-main" onClick={n.onActivate} disabled={n.disabled} aria-describedby={describedBy}>
                     {main}
                   </button>
                 ) : (
-                  <span className="node-main" aria-describedby={n.describedBy}>
+                  <span className="node-main" aria-describedby={describedBy}>
                     {main}
                   </span>
                 )}

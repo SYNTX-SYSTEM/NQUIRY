@@ -46,6 +46,9 @@ type Orientation = { readonly kind: "checking" } | { readonly kind: "loaded"; re
 const CREATE_CHALLENGE = "create-challenge";
 const ADD_MEMBER = "add-member";
 
+/** Dates in the focus lens: the server's timestamps, formatted for the reader. */
+const WHEN = new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" });
+
 export default function WorkspacePage() {
   const { workspaceId } = useParams<{ workspaceId: string }>();
   const router = useRouter();
@@ -178,6 +181,11 @@ export default function WorkspacePage() {
           meta: frameCap!.available ? "possible next relation" : "not available now",
           describedBy: frameCap!.available ? undefined : "challenge-create-unavailable",
           testId: "new-challenge-node",
+          details: [
+            { label: "Capability", value: frameCap!.available ? "possible for you now" : "not available now" },
+            ...(frameCap!.available ? [] : [{ label: "Why", value: frameCap!.reason ?? frameCap!.reasonCode ?? "not possible" }]),
+          ],
+          lensHint: frameCap!.available ? "Select to frame a new Challenge" : undefined,
         },
         ...ov.challenges.map(
           (c): OrbitNode => ({
@@ -186,15 +194,48 @@ export default function WorkspacePage() {
             label: c.title,
             meta: "Challenge",
             href: `/workspaces/${workspaceId}/challenges/${c.challengeId}`,
+            details: [
+              { label: "Framed", value: WHEN.format(new Date(c.createdAt)) },
+              ...(c.description ? [{ label: "Description", value: c.description }] : []),
+              { label: "Challenge id", value: c.challengeId },
+            ],
+            lensHint: "Select to enter the Challenge field",
           }),
         ),
       ]
     : [];
   const memberNodes: OrbitNode[] = ov
-    ? ov.members.map((m): OrbitNode => ({ key: m.userId, state: "human", label: m.name, meta: m.role ?? "no role", size: "sm" }))
+    ? ov.members.map(
+        (m): OrbitNode => ({
+          key: m.userId,
+          state: "human",
+          label: m.name,
+          meta: m.role ?? "no role",
+          size: "sm",
+          details: [
+            { label: "Membership role", value: m.role ?? "no role" },
+            { label: "Email", value: m.email },
+            ...(m.userId === ov.viewer.userId ? [{ label: "Relation to you", value: "this is you" }] : []),
+            { label: "Identity", value: m.userId },
+          ],
+        }),
+      )
     : [];
   const authorityNodes: OrbitNode[] = ov
-    ? confirmed.heldAuthorityClasses.map((c): OrbitNode => ({ key: `auth-${c}`, state: "governance", label: `You hold ${c}`, meta: "authority binding", size: "sm" }))
+    ? confirmed.heldAuthorityClasses.map(
+        (c): OrbitNode => ({
+          key: `auth-${c}`,
+          state: "governance",
+          label: `You hold ${c}`,
+          meta: "authority binding",
+          size: "sm",
+          details: [
+            { label: "Authority class", value: c },
+            { label: "Scope", value: "this Workspace" },
+            { label: "Held by", value: "you" },
+          ],
+        }),
+      )
     : [];
   // variant A (human direction): each relation family is one sphere on the ring, with the server's count; its
   // entries orbit it as satellites. A family without entries has no sphere.

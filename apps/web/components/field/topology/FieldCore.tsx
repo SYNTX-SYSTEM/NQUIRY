@@ -51,6 +51,8 @@ export function FieldCore({
         <span className="core-orbit-dot" />
       </div>
       <div className="core-nucleus">
+        {/* the plasma veil (decorative, like the aura and rings): turns slowly behind the text in the orbit */}
+        <span className="core-plasma" aria-hidden="true" />
         <p className="eyebrow">{eyebrow}</p>
         <Title id={`${kind}-core-title`} className="core-title">
           {title}

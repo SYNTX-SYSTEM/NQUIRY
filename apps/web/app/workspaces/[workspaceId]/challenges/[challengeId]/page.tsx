@@ -29,7 +29,7 @@ import { ProofDepth } from "../../../../../components/field/ProofDepth";
 import { ReadBoundary } from "../../../../../components/field/ReadBoundary";
 import { FieldCore } from "../../../../../components/field/topology/FieldCore";
 import { FieldStage, Plane, Planes, Topology } from "../../../../../components/field/topology/FieldStage";
-import { Orbit, type OrbitNode, nodeContent } from "../../../../../components/field/topology/Orbit";
+import { Orbit, type OrbitNode, hubContent } from "../../../../../components/field/topology/Orbit";
 import { Unavailable } from "../../../../../components/f02/Unavailable";
 import {
   type ChallengeDetail,
@@ -47,6 +47,8 @@ const OPEN_SESSION = "open-session";
 const GRANT = "grant-challenge-session-control";
 
 const OPENED_AT = new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" });
+const SESSIONS_HUB = (n: number) => ({ key: "hub-sessions", label: "Sessions", count: `${n} ${n === 1 ? "Session" : "Sessions"}`, glyph: "sessions" as const });
+const CONTROL_HUB = (n: number) => ({ key: "hub-control", label: "Control", count: n === 0 ? "nobody holds it" : `${n} ${n === 1 ? "holder" : "holders"}`, glyph: "authority" as const });
 
 export default function ChallengePage() {
   const { workspaceId, challengeId } = useParams<{ workspaceId: string; challengeId: string }>();
@@ -145,6 +147,11 @@ export default function ChallengePage() {
       meta: open.available ? "possible next relation" : "not available now",
       describedBy: open.available ? undefined : "session-create-unavailable",
       testId: "new-session-node",
+      details: [
+        { label: "Capability", value: open.available ? "possible for you now" : "not available now" },
+        ...(open.available ? [] : [{ label: "Why", value: open.reason ?? open.reasonCode ?? "not possible" }]),
+      ],
+      lensHint: open.available ? "Select to open a Session" : undefined,
     },
     ...d.sessions.map(
       (s): OrbitNode => ({
@@ -153,12 +160,19 @@ export default function ChallengePage() {
         label: `Session opened ${OPENED_AT.format(new Date(s.createdAt))}`,
         meta: <StateName state={s.state} />,
         href: `/workspaces/${workspaceId}/sessions/${s.sessionId}`,
+        details: [
+          { label: "State", value: s.state },
+          { label: "Opened", value: OPENED_AT.format(new Date(s.createdAt)) },
+          { label: "Version", value: String(s.version) },
+          { label: "Session id", value: s.sessionId },
+        ],
+        lensHint: "Select to enter the Session field",
       }),
     ),
   ];
   const governanceNodes: OrbitNode[] =
     d.sessionControllers.length === 0
-      ? [{ key: "no-control", state: "unavailable", path: "governance", label: "Session control", meta: "nobody holds it yet", size: "sm" }]
+      ? [{ key: "no-control", state: "unavailable", path: "governance", label: "Session control", meta: "nobody holds it yet", size: "sm", details: [{ label: "Session control", value: "nobody holds it for this Challenge yet" }] }]
       : d.sessionControllers.map(
           (b): OrbitNode => ({
             key: b.bindingId,
@@ -166,11 +180,19 @@ export default function ChallengePage() {
             label: b.holderName,
             meta: `${b.authorityClass} · granted by ${b.grantedByName}`,
             size: "sm",
+            details: [
+              { label: "Authority", value: b.authorityClass },
+              { label: "Held by", value: b.holderName },
+              { label: "Granted by", value: b.grantedByName },
+              { label: "Granted", value: OPENED_AT.format(new Date(b.grantedAt)) },
+              { label: "Scope", value: "this Challenge" },
+            ],
           }),
         );
   const layoutInput = {
     core: { title: d.challenge.title, stateText: `${d.sessions.length} Sessions`, meta: d.workspace.name },
-    rings: [sessionNodes.map((n) => nodeContent(n, "containment")), governanceNodes.map((n) => nodeContent(n, "governance"))],
+    // variant A (human direction): Sessions and Session control as family spheres on one round orbit
+    rings: [[hubContent(SESSIONS_HUB(d.sessions.length), sessionNodes.length), hubContent(CONTROL_HUB(d.sessionControllers.length), governanceNodes.length)]],
   };
 
   return (
@@ -187,8 +209,8 @@ export default function ChallengePage() {
           >
             <ReconstructionNote field={effect.field} />
           </FieldCore>
-          <Orbit kind="containment" ring={1} heading="Sessions" nodes={sessionNodes} testId="sessions-list" listAriaLabel="Sessions of this Challenge" />
-          <Orbit kind="governance" ring={2} heading="Session control" nodes={governanceNodes} testId="challenge-governance-orbit" listAriaLabel="Session control for this Challenge" />
+          <Orbit kind="containment" ring={1} hub={{ ...SESSIONS_HUB(d.sessions.length), slot: 0 }} heading="Sessions" nodes={sessionNodes} testId="sessions-list" listAriaLabel="Sessions of this Challenge" />
+          <Orbit kind="governance" ring={1} hub={{ ...CONTROL_HUB(d.sessionControllers.length), slot: 1 }} heading="Session control" nodes={governanceNodes} testId="challenge-governance-orbit" listAriaLabel="Session control for this Challenge" />
         </Topology>
 
         <Planes header={{ eyebrow: "Grown from", title: d.challenge.title, state: `${d.sessions.length} ${d.sessions.length === 1 ? "Session" : "Sessions"}` }}>

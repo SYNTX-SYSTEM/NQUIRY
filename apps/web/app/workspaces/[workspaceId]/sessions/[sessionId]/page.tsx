@@ -105,6 +105,9 @@ function coreRegime(p: SessionPosition): { readonly state: CoreState; readonly e
   return { state: "current", eyebrow: `Session · ${p.session.method}`, regime: "session" };
 }
 
+/** Dates in the focus lens: the server's timestamps, formatted for the reader. */
+const WHEN = new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" });
+
 export default function SessionPage() {
   const { workspaceId, sessionId } = useParams<{ workspaceId: string; sessionId: string }>();
   const router = useRouter();
@@ -223,9 +226,17 @@ export default function SessionPage() {
     // compact name — emphasis is weight, never visibility
     label: emphasis.get(phase.state) === "full" ? `${i + 1}. ${PHASE_LABELS[phase.state] ?? phase.state}` : (PHASE_LABELS[phase.state] ?? phase.state),
     markerText: phase.status === "done" ? "passed" : phase.status === "current" ? "current" : "later",
-    size: "sm",
+    // later phases (beyond the next one) are small spheres on the ring: their name stays the node's accessible name
+    // and appears in the focus lens on encounter; passed, current and next phases keep their full frame
+    size: emphasis.get(phase.state) === "full" ? "sm" : "dot",
+    labelVisibility: emphasis.get(phase.state) === "full" ? "visible" : "assistive",
     emphasis: emphasis.get(phase.state),
     ariaCurrent: phase.status === "current" ? "step" : undefined,
+    details: [
+      { label: "Phase", value: `${i + 1}. ${PHASE_LABELS[phase.state] ?? phase.state}` },
+      { label: "Status", value: phase.status === "done" ? "passed" : phase.status === "current" ? "current" : "later" },
+      { label: "Canonical state", value: phase.state },
+    ],
   }));
   const relationNodes: OrbitNode[] = [
     ...p.participants.map(
@@ -234,7 +245,14 @@ export default function SessionPage() {
         state: "human",
         label: x.name ?? "participant",
         meta: controllerIds.has(x.userId) ? "participant · Session controller" : "participant",
-        size: "sm",
+        // people are small spheres on the outer ring (as on the Workspace field): name and facts in the focus lens
+        size: "dot",
+        labelVisibility: "assistive",
+        details: [
+          { label: "Relation", value: controllerIds.has(x.userId) ? "participant · Session controller" : "participant" },
+          { label: "Joined", value: WHEN.format(new Date(x.joinedAt)) },
+          { label: "Identity", value: x.userId },
+        ],
       }),
     ),
     ...p.sessionControllers
@@ -245,15 +263,24 @@ export default function SessionPage() {
           state: "governance",
           label: b.holderName,
           meta: `Session controller · granted by ${b.grantedByName}`,
-          size: "sm",
+          size: "dot",
+          labelVisibility: "assistive",
+          details: [
+            { label: "Authority", value: b.authorityClass },
+            { label: "Granted by", value: b.grantedByName },
+            { label: "Granted", value: WHEN.format(new Date(b.grantedAt)) },
+            { label: "Scope", value: "this Session" },
+          ],
         }),
       ),
   ];
   if (relationNodes.length === 0) {
-    relationNodes.push({ key: "none", state: "unavailable", path: "unavailable", label: "Participation", meta: "no participant and no controller yet", size: "sm" });
+    relationNodes.push({ key: "none", state: "unavailable", path: "unavailable", label: "Participation", meta: "no participant and no controller yet", size: "sm", details: [{ label: "Participation", value: "no participant and no controller yet" }] });
   }
   const layoutInput = {
     core: { title: p.challenge.title ?? "Session", stateText: p.session.state, meta: `version ${p.session.version} · ${position_.sentence}` },
+    // the lifecycle is the ring (its order is its meaning); participants and controllers keep their own nodes on the
+    // outer ring (a family sphere there needs more width than the field column offers) and open the focus lens
     rings: [lifecycleNodes.map((n) => nodeContent(n, "lifecycle")), relationNodes.map((n) => nodeContent(n, "participation"))],
   };
   const phasePlane = core.state === "human" ? "human" : core.state === "frozen" ? "frozen" : "action";

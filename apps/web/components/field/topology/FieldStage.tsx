@@ -20,6 +20,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { DECISION_STAGE, estimateCoreBox, layoutField, requiredHalfHeight, stageMode, viewportClass, type Box, type CoreContent, type FieldLayout, type NodeContent, type StageBox, type ViewportClass } from "../../../lib/field/geometry";
 import { REST_FIELD_STATE, type ProjectedFieldState } from "../../../lib/field/projection";
 import type { SemanticChamber } from "../chambers";
+import { FocusLens, LensContext, type LensContent, type LensControl } from "./FocusLens";
 import type { RelationFamily } from "../../../lib/field/reciprocity";
 
 const RELATION_ATTR = "data-relation";
@@ -65,6 +66,12 @@ export function FieldStage({
   readonly children: ReactNode;
 }) {
   const [field, setField] = useState<ProjectedFieldState>(REST_FIELD_STATE);
+  // the focus lens (projection-local): which satellite's facts are shown in the middle of the screen, if any
+  const [lens, setLens] = useState<LensContent | null>(null);
+  const lensControl = useMemo<LensControl>(
+    () => ({ open: (content) => setLens(content), close: (key) => setLens((prev) => (prev && prev.key === key ? null : prev)) }),
+    [],
+  );
   const ref = useRef<HTMLDivElement>(null);
   const [vp, setVp] = useState<ViewportClass>("desktop");
   // rendered frames (doc 23 §7.1): content-sized, so independent of position; reported only in orbit mode, so a
@@ -124,6 +131,7 @@ export function FieldStage({
   // geometry or the orbits (the measured frames change only when a frame changes)
   const measureValue = useMemo(() => ({ frames, report }), [frames, report]);
   return (
+    <LensContext.Provider value={lensControl}>
     <ModeContext.Provider value={decided}>
     <MeasureContext.Provider value={measureValue}>
     <div
@@ -154,9 +162,11 @@ export function FieldStage({
       }}
     >
       {children}
+      {lens ? <FocusLens key={lens.key} content={lens} /> : null}
     </div>
     </MeasureContext.Provider>
     </ModeContext.Provider>
+    </LensContext.Provider>
   );
 }
 
