@@ -336,9 +336,10 @@ test.describe("Contextual Semantic Organ (doc 25 §10; falsifiers 5, 6)", () => 
     await expect(organ.locator(".organ-title")).toHaveText("Why did activation stall after onboarding?");
     await expect(organ.locator(".organ-state")).toHaveText("3 Sessions");
     const shell = await organ.evaluate((el) => ({ radius: getComputedStyle(el).borderTopLeftRadius, border: getComputedStyle(el).borderTopWidth }));
-    // SF-06 (human direction): the organ is a translucent HUD lens with an 8 px radius, not a rounded card
+    // SF-06 (human direction): the organ dissolves into a bento of glass chambers — the container itself carries no
+    // membrane (border 0); each chamber carries its own translucent membrane (checked below)
     expect(shell.radius).toBe("8px");
-    expect(shell.border).toBe("1px");
+    expect(shell.border).toBe("0px");
     const chambers = await organ.locator(".plane").evaluateAll((els) =>
       els.map((e) => ({ chamber: e.getAttribute("data-chamber"), shadow: getComputedStyle(e).boxShadow, borderTop: parseFloat(getComputedStyle(e).borderTopWidth), borderColor: getComputedStyle(e).borderTopColor, bg: getComputedStyle(e).backgroundColor })),
     );
@@ -418,7 +419,8 @@ test.describe("Responsive redistribution (doc 25 §15; falsifier 10)", () => {
       await page.waitForTimeout(400);
       const topology = (await page.locator(".topology").boundingBox())!;
       const organ = (await page.getByTestId("context-organ").boundingBox())!;
-      if (v.columns === 2) expect(organ.x).toBeGreaterThanOrEqual(topology.x + topology.width - 1);
+      // SF-06: the organ leans into the field by design (≤ 120 px), its glass being translucent; it never covers the core
+      if (v.columns === 2) expect(organ.x).toBeGreaterThanOrEqual(topology.x + topology.width - 120);
       else expect(organ.y).toBeGreaterThanOrEqual(topology.y + topology.height - 1);
       const p = await probe(page);
       expect(p.hOverflow, "horizontal overflow").toBeLessThanOrEqual(1);

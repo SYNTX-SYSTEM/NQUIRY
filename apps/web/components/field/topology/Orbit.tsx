@@ -109,6 +109,8 @@ export type OrbitHub = {
   readonly label: string;
   readonly count: string;
   readonly glyph: HubGlyph;
+  /** The family has no entries yet (only affordances): the sphere glows quietly, "not yet". */
+  readonly empty?: boolean;
 };
 
 export const HUB_DIAMETER = 112;
@@ -420,6 +422,7 @@ export function Orbit({
           className="family-hub"
           data-family={kind}
           data-glyph={hub.glyph}
+          data-empty={hub.empty ? "true" : undefined}
           data-testid={testId ? `${testId}-hub` : undefined}
           style={{ ["--x" as string]: `${(hubPlace?.x ?? 0).toFixed(1)}px`, ["--y" as string]: `${(hubPlace?.y ?? 0).toFixed(1)}px`, ["--breath-phase" as string]: (seeds(hub.key)[0] * 11).toFixed(2), ["--hub-d" as string]: `${HUB_DIAMETER}px` }}
         >

@@ -167,13 +167,17 @@ test.describe("content-aware geometry (doc 23 §7; falsifiers 12–18)", () => {
     await page.goto(`/workspaces/${WS}/challenges/${CH}`);
     await page.getByTestId("field-core").waitFor();
     await page.waitForTimeout(400);
-    const few = await page.locator(".orbit-paths[data-orbit='containment'] ellipse").getAttribute("rx");
+    // SF-06: Sessions are satellites of their family sphere; the content grows the sphere's satellite orbit (the
+    // family ring itself stays bounded by the stage, so the orbit is round and inside)
+    const few = await page.locator(".orbit-paths[data-orbit='containment'] .satellite-orbit").getAttribute("r");
     await stressRoutes(page, 9);
     await page.goto(`/workspaces/${WS}/challenges/${CH}`);
     await page.getByTestId("field-core").waitFor();
     await page.waitForTimeout(400);
-    const many = await page.locator(".orbit-paths[data-orbit='containment'] ellipse").getAttribute("rx");
+    const many = await page.locator(".orbit-paths[data-orbit='containment'] .satellite-orbit").getAttribute("r");
+    // the orbit never shrinks for more entries (it grows once the arc is full; below that the satellites spread)
     expect(Number(many)).toBeGreaterThanOrEqual(Number(few));
+    expect(await page.locator('[data-testid="sessions-list"] li.node[data-satellite]').count()).toBe(10);
     expect((await probe(page)).overlaps).toEqual([]);
   });
 });
@@ -210,7 +214,7 @@ test.describe("orientation rail: centred identity and symbiotic breadcrumb (doc 
 });
 
 test.describe("instrument constellation and reciprocity (doc 23 §8, §11; falsifiers 25–39)", () => {
-  test("on a wide desktop the instruments compose in two columns: the active relation first, governance and proof beside it", async ({ page }) => {
+  test("on a wide desktop the chambers compose as a bento: two columns, the action and the governance chamber side by side, proof full width below", async ({ page }) => {
     test.skip(isPhone(page), "phone stacks");
     await page.setViewportSize({ width: 1600, height: 900 });
     await stressRoutes(page);
@@ -221,9 +225,13 @@ test.describe("instrument constellation and reciprocity (doc 23 §8, §11; falsi
     const action = await page.locator('.plane[data-plane="action"]').boundingBox();
     const gov = await page.locator('.plane[data-plane="governance"]').boundingBox();
     const proof = await page.locator('.plane[data-plane="proof"]').boundingBox();
+    // SF-06 bento (human direction): the session control (tall) beside the action; the proof stacked under the
+    // action in the first column — no hole
     expect(gov!.x).toBeGreaterThan(action!.x + action!.width - 1);
-    expect(proof!.x).toBeGreaterThan(action!.x + action!.width - 1);
-    expect(gov!.y).toBeLessThan(proof!.y);
+    expect(Math.abs(proof!.x - action!.x)).toBeLessThan(2);
+    expect(proof!.y).toBeGreaterThan(action!.y + action!.height - 2);
+    expect(proof!.y).toBeLessThan(gov!.y + gov!.height);
+    expect(Math.abs(proof!.width - action!.width)).toBeLessThan(2);
     await expect(page.getByRole("button", { name: "Grant session control for this Challenge" })).toBeVisible();
     await expect(page.getByTestId("challenge-authority-proof")).toBeVisible();
   });

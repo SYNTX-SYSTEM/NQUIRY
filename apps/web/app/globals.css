@@ -742,25 +742,7 @@ h3 {
   gap: var(--space-4);
   min-width: 0;
 }
-/* wide desktop: the active relation (action / human / frozen / boundary) holds the first column with primary
-   gravity; governance, proof and context compose beside it in the second column (doc 23 §11.3, §11.7) */
-@media (min-width: 1500px) {
-  .instruments {
-    grid-template-columns: minmax(320px, 1.15fr) minmax(300px, 1fr);
-  }
-  .instruments > .plane[data-plane="action"],
-  .instruments > .plane[data-plane="human"],
-  .instruments > .plane[data-plane="frozen"],
-  .instruments > .plane[data-plane="boundary"] {
-    grid-column: 1;
-    grid-row: 1 / span 4;
-  }
-  .instruments > .plane[data-plane="governance"],
-  .instruments > .plane[data-plane="proof"],
-  .instruments > .plane[data-plane="context"] {
-    grid-column: 2;
-  }
-}
+/* (the SF-03 wide-desktop two-column law was replaced by the SF-06 bento, composed by the organ's own width) */
 /* tablet (doc 25 §15.3: 768–1199): the field oval takes the width on top, the contextual organ attaches below
    it and its chambers compose in two columns (SF-03 threshold weakness: two columns of 700 + 400 px never fit
    between 1100 and 1199 px — the desktop composition now starts at 1200 px) */
@@ -781,9 +763,6 @@ h3 {
     max-width: 960px;
     width: 100%;
     margin: 0 auto;
-  }
-  .instruments {
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   }
   .organ-bridge {
     display: none;
@@ -5048,4 +5027,1259 @@ h3.chamber-title {
 /* the plasma veil exists only in the orbit (the orbit rule above is more specific) */
 .core-plasma {
   display: none;
+}
+
+/* ============================================================ SF-06 — RIGHT ORGAN AS GLASS BENTO (human direction,
+   reference image: organic glass panels on a luminous flow beside the field). The organ itself dissolves: its
+   chambers become translucent glass bodies with soft glowing edges that compose as a bento (two columns when the
+   organ is wide enough, one below), joined to the field by a luminous flow band. Chamber heads: an icon well, a
+   plain-case title, a subtitle, a marker pill. People are glowing orbs with initials. No invented data: every count,
+   role, name and state is the server's. Motion: opacity / transform only (glow breath); no blur on large areas. */
+.organ {
+  --organ-pad-left: 22px;
+  padding: 6px 0 20px;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  overflow: visible;
+  container-type: inline-size;
+}
+.organ::before,
+.organ::after {
+  content: none;
+}
+/* the flow: a soft luminous band reaching from the field into the organ (static paint on a bounded box) */
+.organ-bridge {
+  top: 6px;
+  right: calc(100% - 40px);
+  bottom: 12%;
+  width: min(140px, 18vw);
+  height: auto;
+  opacity: 1;
+  border-radius: 40% 0 0 40%;
+  background:
+    radial-gradient(60% 40% at 70% 22%, rgba(88, 220, 255, 0.16), transparent 70%),
+    radial-gradient(55% 45% at 60% 70%, rgba(128, 100, 236, 0.12), transparent 70%),
+    linear-gradient(90deg, transparent, rgba(88, 220, 255, 0.05));
+  animation: hub-breathe 11s ease-in-out infinite;
+}
+.organ-bridge::after {
+  display: none;
+}
+.organ-header {
+  margin: 0 0 14px;
+  padding: 10px 18px 12px 46px;
+  border: 0;
+  border-radius: 30px 20px 26px 18px / 22px 28px 18px 26px;
+  background: linear-gradient(120deg, rgba(88, 220, 255, 0.08), rgba(12, 28, 52, 0.42) 40%, rgba(128, 100, 236, 0.06));
+  box-shadow: inset 0 0 0 1px rgba(150, 220, 255, 0.16);
+}
+.organ-header::before {
+  left: 18px;
+  top: 16px;
+  width: 12px;
+  height: 12px;
+}
+.organ-header::after {
+  content: none;
+}
+.organ-title {
+  font-size: 1.15rem;
+}
+/* --- bento composition, by the organ's own width (container query), never by the viewport */
+.organ-body,
+.instruments {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+@container (min-width: 640px) {
+  .organ-body,
+  .instruments {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-flow: dense;
+  }
+  /* wide bodies span both columns: rosters, proof, the human question field, frozen artefacts, the last chamber */
+  .organ-body > .plane[data-semantic="participation"],
+  .organ-body > .plane[data-semantic="proof"],
+  .organ-body > .plane[data-semantic="question"],
+  .organ-body > .plane[data-semantic="frozen"],
+  .organ-body > .plane[data-semantic="confirmation"],
+  .organ-body > .plane[data-semantic="boundary"],
+  .organ-body > .plane:last-child,
+  .field-stage[data-surface="session"] .organ-body > .plane[data-semantic="authority"] {
+    grid-column: 1 / -1;
+  }
+}
+/* --- glass chambers: organic corners, a glowing hairline edge, an inner highlight, a breathing halo */
+.plane.chamber {
+  --chamber-tone: var(--cyan);
+  --chamber-tone-glow: var(--cyan-glow);
+  position: relative;
+  padding: 18px 20px 20px;
+  border-radius: 28px 22px 30px 20px / 24px 30px 20px 28px;
+  /* the membrane stays faint (doc 26 §17: alpha < 0.2); the glowing edge of the glass is the contour's halo */
+  border: 1px solid color-mix(in srgb, var(--chamber-tone) 18%, transparent);
+  background:
+    radial-gradient(120% 90% at 8% 0%, color-mix(in srgb, var(--chamber-tone) 13%, transparent), transparent 55%),
+    linear-gradient(160deg, rgba(14, 30, 56, 0.66), rgba(8, 18, 36, 0.58));
+  background-image:
+    radial-gradient(120% 90% at 8% 0%, color-mix(in srgb, var(--chamber-tone) 13%, transparent), transparent 55%),
+    linear-gradient(160deg, rgba(14, 30, 56, 0.66), rgba(8, 18, 36, 0.58));
+  background-size: auto;
+  box-shadow:
+    inset 0 1px 0 rgba(220, 245, 255, 0.14),
+    inset 0 0 40px -24px var(--chamber-tone-glow),
+    0 18px 40px -22px rgba(0, 0, 0, 0.7);
+}
+.plane.chamber::before,
+.plane.chamber + .plane.chamber::before,
+.plane.chamber::after {
+  content: none;
+}
+.chamber-contour {
+  inset: -1px;
+  border: 0;
+  border-radius: inherit;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--chamber-tone) 22%, transparent),
+    0 0 34px -10px var(--chamber-tone-glow);
+  opacity: 0.6;
+  animation: contour-breathe 9s ease-in-out infinite;
+}
+.chamber-contour::before,
+.chamber-contour::after {
+  content: none;
+}
+.chamber[data-chamber-resonating] {
+  border-color: color-mix(in srgb, var(--chamber-tone) 70%, transparent);
+}
+.chamber[data-chamber-resonating] .chamber-contour {
+  animation: none;
+  opacity: 1;
+  box-shadow: 0 0 44px -8px var(--chamber-tone-glow);
+}
+/* --- chamber head: icon well · title (plain case) · marker pill; the lede becomes the subtitle */
+.chamber-head {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 12px;
+  margin: 0 0 12px;
+}
+.chamber-head::after {
+  content: none;
+}
+.chamber-glyph {
+  order: 0;
+  width: 40px;
+  height: 40px;
+  padding: 9px;
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--chamber-tone) 12%, rgba(6, 16, 32, 0.6));
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--chamber-tone) 35%, transparent),
+    0 0 16px -4px var(--chamber-tone-glow);
+  filter: none;
+}
+.chamber-title,
+h3.chamber-title {
+  order: 1;
+  font-size: 1.08rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink);
+}
+h3.chamber-title {
+  font-size: 0.98rem;
+}
+.chamber-marker {
+  order: 2;
+  justify-self: end;
+  max-width: none;
+  overflow: visible;
+  white-space: nowrap;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 0.66rem;
+  background: color-mix(in srgb, var(--chamber-tone) 10%, transparent);
+}
+.chamber-title,
+h3.chamber-title {
+  font-size: 1rem;
+  line-height: 1.25;
+}
+.chamber-head + .chamber-lede,
+.chamber-head + .muted {
+  margin: -8px 0 14px 52px;
+  font-size: 0.86rem;
+  color: var(--muted);
+}
+.chamber-action {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid color-mix(in srgb, var(--chamber-tone) 18%, transparent);
+}
+/* --- people: glowing orbs with initials, name and relations beneath (a grid of persons) */
+.roster {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+  gap: 12px 8px;
+  margin: 0 0 4px;
+}
+.roster-person {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 8px 4px 10px;
+  border: 0;
+  border-radius: 18px;
+  text-align: center;
+  transition: background var(--motion-hover-in) var(--ease-resonance);
+}
+.roster-person:hover {
+  background: rgba(88, 220, 255, 0.05);
+}
+.roster-person > strong {
+  font-size: 0.86rem;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.roster-person .tag.human {
+  order: 3;
+  font-size: 0.72rem; /* material text never below 11.5 px (doc 23 §6.1) */
+  padding: 0 6px;
+  opacity: 0.75;
+}
+.roster-person .relation-marks {
+  order: 2;
+  justify-content: center;
+  margin: 0;
+  gap: 4px;
+}
+.person-orb {
+  --orb: 190 60% 60%;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 34% 28%, rgba(230, 248, 255, 0.28), transparent 40%),
+    radial-gradient(circle at 50% 55%, hsl(var(--orb) / 0.55), hsl(var(--orb) / 0.16) 55%, rgba(6, 14, 30, 0.95) 92%);
+  border: 1px solid hsl(var(--orb) / 0.6);
+  box-shadow:
+    0 0 18px hsl(var(--orb) / 0.28),
+    inset 0 0 14px hsl(var(--orb) / 0.2);
+}
+.person-orb[data-seed="1"] {
+  --orb: 205 70% 62%;
+}
+.person-orb[data-seed="2"] {
+  --orb: 262 60% 66%;
+}
+.person-orb[data-seed="3"] {
+  --orb: 172 55% 56%;
+}
+.person-orb[data-seed="4"] {
+  --orb: 226 62% 66%;
+}
+.person-orb[data-seed="5"] {
+  --orb: 38 55% 66%;
+}
+.roster-person[data-you] .person-orb {
+  box-shadow:
+    0 0 0 2px rgba(4, 12, 24, 1),
+    0 0 0 3.5px var(--cyan),
+    0 0 22px var(--cyan-glow);
+}
+/* --- authority bindings as small glass cards; identifiers stay tokens */
+.authority-chain {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+.authority-relation {
+  border-radius: 16px;
+  border: 1px solid rgba(165, 148, 255, 0.28);
+  background: linear-gradient(160deg, rgba(165, 148, 255, 0.08), rgba(8, 18, 36, 0.5));
+}
+/* --- forms compose in a row where the chamber is wide enough (the field / role / action of the image) */
+.chamber form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px 12px;
+}
+.chamber form > .field {
+  flex: 1 1 200px;
+  min-width: 0;
+  margin: 0;
+}
+.chamber form > .field:has(textarea) {
+  flex-basis: 100%;
+}
+.chamber form > .actions-row {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+}
+.chamber .button {
+  max-width: 100%;
+  white-space: normal;
+  text-align: center;
+}
+.chamber form > .chamber-head,
+.chamber form > .effect-intent,
+.chamber form > .effect-outcome,
+.chamber form > p,
+.chamber form > .question-seal,
+.chamber form > .stack {
+  flex-basis: 100%;
+}
+.chamber .button {
+  border-radius: 999px;
+  padding-inline: 20px;
+  background: linear-gradient(135deg, rgba(88, 220, 255, 0.28), rgba(88, 220, 255, 0.12));
+}
+.chamber input,
+.chamber select,
+.chamber textarea {
+  border-radius: 12px;
+}
+/* --- the field takes more of a wide screen, so the organ sits closer to it (less empty middle) */
+@media (min-width: 1500px) {
+  .field-stage,
+  .field-stage[data-surface="session"] {
+    grid-template-columns: minmax(760px, 1.25fr) minmax(560px, 1fr);
+    gap: var(--space-4);
+  }
+  .topology {
+    max-width: none;
+  }
+}
+/* --- breadcrumb as in the reference: light dot · name, chevrons between, the current station a glowing pill */
+.trace ol {
+  gap: 2px 4px;
+  isolation: auto;
+}
+.trace ol::before,
+.trace ol::after {
+  content: none;
+}
+.trace li {
+  padding: 4px 12px 4px 26px;
+  background: transparent;
+  margin-left: 18px;
+}
+.trace li:first-child {
+  margin-left: 0;
+}
+.trace li + li::before {
+  content: "›" / "";
+  right: 100%;
+  top: 50%;
+  width: 18px;
+  height: auto;
+  margin: 0;
+  transform: translateY(-50%);
+  background: none;
+  text-align: center;
+  font-size: 1.05rem;
+  line-height: 1;
+  color: rgba(134, 190, 255, 0.55);
+  animation: rail-energy var(--motion-rail) ease-in-out infinite;
+}
+.route-membrane {
+  border-radius: 999px;
+  border: 1px solid rgba(150, 210, 255, 0.14);
+  background: rgba(10, 22, 40, 0.55);
+  box-shadow: none;
+  opacity: 0.7;
+}
+.trace li[data-status="current"] .route-membrane {
+  border-color: rgba(88, 220, 255, 0.55);
+  background: rgba(88, 220, 255, 0.1);
+  box-shadow: 0 0 18px var(--cyan-glow);
+}
+/* --- the satellite's own label yields to the lens; an empty family glows "not yet" */
+.field-stage:has(.focus-lens) .node[data-satellite] .node-label {
+  opacity: 0 !important;
+}
+.family-hub[data-empty] .hub-orb {
+  border-style: dashed;
+  opacity: 0.85;
+}
+.family-hub[data-empty] .hub-count {
+  color: var(--muted);
+}
+/* the chevron lives outside the station: the station must not clip it (its label still clips with an ellipsis) */
+@media (min-width: 768px) {
+  .trace li {
+    overflow: visible;
+  }
+}
+/* chamber head: the marker steps under the title (right-aligned) when the chamber is too narrow for both */
+.chamber-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.chamber-head .chamber-glyph {
+  flex: none;
+}
+.chamber-head .chamber-title {
+  flex: 1 1 14ch;
+  min-width: 0;
+}
+.chamber-head .chamber-marker {
+  flex: none;
+  margin-left: auto;
+}
+/* the organ keeps its width in every composition (inline-size containment has no intrinsic width of its own) */
+.organ {
+  width: 100%;
+  min-width: 0;
+}
+
+/* ============================================================ SF-06 — GLASS BENTO, SECOND PASS (human direction: "much more
+   organic"). Brighter, bluer glass with a luminous rim; irregular organic shapes that differ from chamber to chamber;
+   a plasma flow (static tendrils + slowly drifting veils) behind the whole organ, reaching into the field; large plain
+   titles with a subtitle; bare glowing icons; bigger member orbs. Laws kept: the plane's own border stays ≤ 1 px at
+   alpha < 0.2 (the rim is the contour's ring), fills stay translucent, no green, text ≥ 11.5 px. */
+.organ {
+  isolation: isolate;
+  padding: 10px 6px 24px 10px;
+}
+/* the flow: tendrils and veils behind the chambers, bleeding into the field on the left */
+.organ::before {
+  content: "";
+  position: absolute;
+  inset: -40px -20px -20px -180px;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: 40%;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1000' height='1300' viewBox='0 0 1000 1300'%3E%3Cdefs%3E%3Cfilter id='b' x='-20%25' y='-20%25' width='140%25' height='140%25'%3E%3CfeGaussianBlur stdDeviation='9'/%3E%3C/filter%3E%3Cfilter id='s' x='-20%25' y='-20%25' width='140%25' height='140%25'%3E%3CfeGaussianBlur stdDeviation='0.7'/%3E%3C/filter%3E%3C/defs%3E%3Cpath d='M -80 596 C 232 850, 550 661, 1080 764' fill='none' stroke='#6fe0ff' stroke-width='7.5' stroke-opacity='0.22' filter='url(#b)'/%3E%3Cpath d='M -80 291 C 222 368, 642 90, 1080 394' fill='none' stroke='#c0a8ff' stroke-width='11.1' stroke-opacity='0.11' filter='url(#b)'/%3E%3Cpath d='M -80 183 C 282 299, 432 1315, 1080 1254' fill='none' stroke='#6fe0ff' stroke-width='7.7' stroke-opacity='0.13' filter='url(#b)'/%3E%3Cpath d='M -80 825 C 243 620, 424 689, 1080 77' fill='none' stroke='#c0a8ff' stroke-width='8.6' stroke-opacity='0.14' filter='url(#b)'/%3E%3Cpath d='M -80 297 C 168 15, 550 568, 1080 1095' fill='none' stroke='#6fe0ff' stroke-width='6.6' stroke-opacity='0.13' filter='url(#b)'/%3E%3Cpath d='M -80 672 C 248 672, 605 591, 1080 362' fill='none' stroke='#c0a8ff' stroke-width='7.9' stroke-opacity='0.17' filter='url(#b)'/%3E%3Cpath d='M -80 1217 C 319 1421, 618 395, 1080 299' fill='none' stroke='#8fb4ff' stroke-width='11.0' stroke-opacity='0.12' filter='url(#b)'/%3E%3Cpath d='M -80 410 C 134 569, 532 1128, 1080 502' fill='none' stroke='#c0a8ff' stroke-width='9.9' stroke-opacity='0.17' filter='url(#b)'/%3E%3Cpath d='M -80 1172 C 289 872, 479 1216, 1080 611' fill='none' stroke='#8fb4ff' stroke-width='7.5' stroke-opacity='0.12' filter='url(#b)'/%3E%3Cpath d='M -80 1198 C 199 941, 596 1034, 1080 351' fill='none' stroke='#6fe0ff' stroke-width='12.5' stroke-opacity='0.13' filter='url(#b)'/%3E%3Cpath d='M -80 179 C 187 458, 632 123, 1080 320' fill='none' stroke='#6fe0ff' stroke-width='7.3' stroke-opacity='0.18' filter='url(#b)'/%3E%3Cpath d='M -80 195 C 132 373, 470 732, 1080 582' fill='none' stroke='#c0a8ff' stroke-width='7.6' stroke-opacity='0.21' filter='url(#b)'/%3E%3Cpath d='M -80 297 C 266 76, 600 121, 1080 547' fill='none' stroke='#8fb4ff' stroke-width='10.8' stroke-opacity='0.15' filter='url(#b)'/%3E%3Cpath d='M -80 323 C 174 605, 645 380, 1080 1150' fill='none' stroke='#6fe0ff' stroke-width='6.9' stroke-opacity='0.16' filter='url(#b)'/%3E%3Cpath d='M -80 596 C 232 850, 550 661, 1080 764' fill='none' stroke='#9fe8ff' stroke-width='1.0' stroke-opacity='0.67' filter='url(#s)'/%3E%3Cpath d='M -80 291 C 222 368, 642 90, 1080 394' fill='none' stroke='#9fe8ff' stroke-width='1.2' stroke-opacity='0.76' filter='url(#s)'/%3E%3Cpath d='M -80 183 C 282 299, 432 1315, 1080 1254' fill='none' stroke='#9fe8ff' stroke-width='1.0' stroke-opacity='0.43' filter='url(#s)'/%3E%3Cpath d='M -80 825 C 243 620, 424 689, 1080 77' fill='none' stroke='#d6ccff' stroke-width='1.8' stroke-opacity='0.41' filter='url(#s)'/%3E%3Cpath d='M -80 297 C 168 15, 550 568, 1080 1095' fill='none' stroke='#9fe8ff' stroke-width='1.3' stroke-opacity='0.73' filter='url(#s)'/%3E%3Cpath d='M -80 672 C 248 672, 605 591, 1080 362' fill='none' stroke='#d6ccff' stroke-width='0.8' stroke-opacity='0.45' filter='url(#s)'/%3E%3Cpath d='M -80 1217 C 319 1421, 618 395, 1080 299' fill='none' stroke='#dff8ff' stroke-width='1.5' stroke-opacity='0.38' filter='url(#s)'/%3E%3Cpath d='M -80 410 C 134 569, 532 1128, 1080 502' fill='none' stroke='#9fe8ff' stroke-width='1.2' stroke-opacity='0.38' filter='url(#s)'/%3E%3Cpath d='M -80 1172 C 289 872, 479 1216, 1080 611' fill='none' stroke='#dff8ff' stroke-width='1.0' stroke-opacity='0.59' filter='url(#s)'/%3E%3Cpath d='M -80 1198 C 199 941, 596 1034, 1080 351' fill='none' stroke='#dff8ff' stroke-width='0.8' stroke-opacity='0.41' filter='url(#s)'/%3E%3Cpath d='M -80 179 C 187 458, 632 123, 1080 320' fill='none' stroke='#9fe8ff' stroke-width='1.8' stroke-opacity='0.65' filter='url(#s)'/%3E%3Cpath d='M -80 195 C 132 373, 470 732, 1080 582' fill='none' stroke='#d6ccff' stroke-width='1.3' stroke-opacity='0.78' filter='url(#s)'/%3E%3Cpath d='M -80 297 C 266 76, 600 121, 1080 547' fill='none' stroke='#d6ccff' stroke-width='0.7' stroke-opacity='0.36' filter='url(#s)'/%3E%3Cpath d='M -80 323 C 174 605, 645 380, 1080 1150' fill='none' stroke='#9fe8ff' stroke-width='1.5' stroke-opacity='0.78' filter='url(#s)'/%3E%3Ccircle cx='21' cy='827' r='1.8' fill='#cfefff' fill-opacity='0.77'/%3E%3Ccircle cx='319' cy='1299' r='1.1' fill='#cfefff' fill-opacity='0.67'/%3E%3Ccircle cx='737' cy='1170' r='2.2' fill='#cfefff' fill-opacity='0.75'/%3E%3Ccircle cx='793' cy='1190' r='1.6' fill='#cfefff' fill-opacity='0.74'/%3E%3Ccircle cx='901' cy='1132' r='1.7' fill='#cfefff' fill-opacity='0.80'/%3E%3Ccircle cx='863' cy='745' r='2.0' fill='#cfefff' fill-opacity='0.59'/%3E%3Ccircle cx='583' cy='792' r='1.1' fill='#cfefff' fill-opacity='0.72'/%3E%3Ccircle cx='993' cy='1144' r='2.2' fill='#cfefff' fill-opacity='0.59'/%3E%3Ccircle cx='735' cy='755' r='1.7' fill='#cfefff' fill-opacity='0.82'/%3E%3Ccircle cx='84' cy='975' r='1.0' fill='#cfefff' fill-opacity='0.70'/%3E%3Ccircle cx='481' cy='299' r='2.1' fill='#cfefff' fill-opacity='0.65'/%3E%3Ccircle cx='615' cy='1197' r='1.4' fill='#cfefff' fill-opacity='0.41'/%3E%3Ccircle cx='301' cy='882' r='1.3' fill='#cfefff' fill-opacity='0.48'/%3E%3Ccircle cx='906' cy='858' r='1.7' fill='#cfefff' fill-opacity='0.85'/%3E%3Ccircle cx='327' cy='866' r='1.3' fill='#cfefff' fill-opacity='0.62'/%3E%3Ccircle cx='806' cy='1188' r='2.4' fill='#cfefff' fill-opacity='0.59'/%3E%3Ccircle cx='583' cy='411' r='1.2' fill='#cfefff' fill-opacity='0.65'/%3E%3Ccircle cx='837' cy='1103' r='2.1' fill='#cfefff' fill-opacity='0.88'/%3E%3Ccircle cx='277' cy='220' r='1.7' fill='#cfefff' fill-opacity='0.54'/%3E%3Ccircle cx='214' cy='538' r='2.0' fill='#cfefff' fill-opacity='0.65'/%3E%3Ccircle cx='315' cy='1091' r='2.6' fill='#cfefff' fill-opacity='0.63'/%3E%3Ccircle cx='75' cy='41' r='2.4' fill='#cfefff' fill-opacity='0.42'/%3E%3Ccircle cx='709' cy='742' r='1.5' fill='#cfefff' fill-opacity='0.80'/%3E%3Ccircle cx='19' cy='177' r='1.7' fill='#cfefff' fill-opacity='0.41'/%3E%3Ccircle cx='830' cy='309' r='1.2' fill='#cfefff' fill-opacity='0.42'/%3E%3Ccircle cx='629' cy='580' r='2.0' fill='#cfefff' fill-opacity='0.73'/%3E%3Ccircle cx='807' cy='1246' r='2.1' fill='#cfefff' fill-opacity='0.50'/%3E%3Ccircle cx='475' cy='232' r='1.0' fill='#cfefff' fill-opacity='0.64'/%3E%3C/svg%3E") left top / 100% 100% no-repeat,
+    radial-gradient(38% 30% at 12% 18%, rgba(88, 200, 255, 0.2), transparent 70%),
+    radial-gradient(40% 34% at 82% 8%, rgba(150, 120, 255, 0.16), transparent 70%),
+    radial-gradient(45% 36% at 20% 78%, rgba(60, 170, 230, 0.16), transparent 70%),
+    radial-gradient(36% 30% at 88% 70%, rgba(128, 100, 236, 0.12), transparent 70%);
+  opacity: 0.9;
+  animation: none;
+}
+.organ::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: -120px;
+  top: 10%;
+  width: 60%;
+  height: 46%;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, rgba(88, 220, 255, 0.14), transparent 70%);
+  will-change: transform;
+  animation: nebula-a calc(var(--motion-ambient) * 1.4) ease-in-out infinite alternate;
+}
+.organ-bridge {
+  display: none;
+}
+/* header: the context line as a soft glass ribbon */
+.organ-header {
+  padding: 12px 20px 14px 48px;
+  border-radius: 34px 24px 30px 20px / 26px 32px 22px 30px;
+  background: linear-gradient(120deg, rgba(88, 200, 255, 0.12), rgba(20, 50, 96, 0.44) 45%, rgba(150, 120, 255, 0.1));
+  box-shadow:
+    inset 0 1px 0 rgba(220, 245, 255, 0.22),
+    inset 0 0 0 1px rgba(160, 225, 255, 0.18);
+}
+.organ-body,
+.instruments {
+  gap: 16px;
+}
+/* chambers: brighter, bluer glass; organic shapes that vary per chamber */
+.plane.chamber {
+  padding: 22px 24px 24px;
+  border-radius: 38px 30px 42px 26px / 30px 40px 28px 36px;
+  background-image:
+    radial-gradient(90% 70% at 10% 0%, color-mix(in srgb, var(--chamber-tone) 22%, transparent), transparent 60%),
+    radial-gradient(60% 50% at 100% 100%, rgba(150, 120, 255, 0.1), transparent 70%),
+    linear-gradient(155deg, rgba(34, 78, 138, 0.5), rgba(14, 40, 84, 0.46) 55%, rgba(10, 28, 60, 0.5));
+  box-shadow:
+    inset 0 1px 0 rgba(225, 246, 255, 0.28),
+    inset 0 0 60px -30px var(--chamber-tone-glow),
+    inset 0 -20px 40px -30px rgba(88, 200, 255, 0.18);
+}
+.organ-body > .plane:nth-child(2n) {
+  border-radius: 28px 44px 30px 40px / 40px 26px 38px 30px;
+}
+.organ-body > .plane:nth-child(3n) {
+  border-radius: 44px 28px 36px 40px / 28px 40px 30px 42px;
+}
+.chamber-contour {
+  box-shadow:
+    0 0 0 1.5px color-mix(in srgb, var(--chamber-tone) 46%, rgba(220, 245, 255, 0.3)),
+    0 0 28px -6px var(--chamber-tone-glow),
+    0 0 60px -20px var(--chamber-tone-glow);
+  opacity: 0.75;
+}
+@keyframes contour-breathe {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+/* per-family tint of the glass */
+.plane.chamber[data-semantic="identity"] {
+  --chamber-tone: #b9a6ff;
+  --chamber-tone-glow: rgba(185, 166, 255, 0.28);
+}
+.plane.chamber[data-semantic="participation"] {
+  --chamber-tone: #7fe3d4;
+  --chamber-tone-glow: rgba(127, 227, 212, 0.26);
+}
+.plane.chamber[data-semantic="proof"] {
+  --chamber-tone: #8fb4ff;
+  --chamber-tone-glow: rgba(143, 180, 255, 0.26);
+}
+/* heads: a bare glowing icon, a large plain title, the subtitle right beneath */
+.chamber-head {
+  gap: 2px 14px;
+  margin-bottom: 14px;
+}
+.chamber-glyph {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  stroke-width: 1.5;
+  filter: drop-shadow(0 0 8px var(--chamber-tone-glow)) drop-shadow(0 0 2px var(--chamber-tone));
+}
+.chamber-title,
+h3.chamber-title {
+  font-size: 1.28rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+h3.chamber-title {
+  font-size: 1.08rem;
+}
+.chamber-marker {
+  font-size: 0.68rem;
+  padding: 4px 11px;
+  border-color: color-mix(in srgb, var(--chamber-tone) 55%, transparent);
+  background: color-mix(in srgb, var(--chamber-tone) 14%, transparent);
+}
+.chamber-head + .chamber-lede,
+.chamber-head + .muted {
+  margin: -8px 0 16px 48px;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+}
+/* people: bigger orbs with a luminous ring, like portraits */
+.roster {
+  grid-template-columns: repeat(auto-fill, minmax(124px, 1fr));
+  gap: 14px 10px;
+}
+.person-orb {
+  width: 66px;
+  height: 66px;
+  font-size: 1.25rem;
+  box-shadow:
+    0 0 0 2px rgba(4, 12, 24, 1),
+    0 0 0 3px hsl(var(--orb) / 0.7),
+    0 0 22px hsl(var(--orb) / 0.35),
+    inset 0 0 18px hsl(var(--orb) / 0.25);
+}
+.roster-person[data-you] .person-orb {
+  box-shadow:
+    0 0 0 2px rgba(4, 12, 24, 1),
+    0 0 0 3.5px var(--cyan),
+    0 0 26px var(--cyan-glow),
+    inset 0 0 18px rgba(88, 220, 255, 0.28);
+}
+.roster-person > strong {
+  font-size: 0.9rem;
+}
+/* controls on glass */
+.chamber input,
+.chamber select,
+.chamber textarea {
+  background: rgba(6, 18, 40, 0.55);
+  border-color: rgba(170, 225, 255, 0.24);
+  border-radius: 14px;
+}
+.chamber .button {
+  background: linear-gradient(135deg, rgba(88, 220, 255, 0.34), rgba(88, 220, 255, 0.16));
+  box-shadow:
+    inset 0 1px 0 rgba(225, 246, 255, 0.3),
+    0 0 18px rgba(88, 220, 255, 0.22);
+}
+/* the organ leans into the field: its flow overlaps the field column on wide screens */
+@media (min-width: 1200px) {
+  .field-stage:not([data-topology="stack"]) .organ {
+    margin-left: -24px;
+  }
+}
+
+/* ============================================================ SF-06 — GLASS BENTO, THIRD PASS (human direction: no scrolling,
+   field and organ flow into each other). The organ stays inside the viewport: it is sticky beside the field and its
+   body scrolls internally only when a surface is too tall (a soft fade marks the continuation); chambers are denser;
+   the context ribbon is one line. The organ leans into the field: the outer orbit passes behind the first glass
+   bodies (translucent), and the plasma flow reaches around it. */
+.organ::before {
+  border-radius: 0;
+  inset: -60px -30px -40px -260px;
+  opacity: 1;
+}
+@media (min-width: 1200px) {
+  .field-stage:not([data-topology="stack"]) .organ {
+    position: sticky;
+    top: calc(var(--rail-h) + 8px);
+    margin-left: -72px;
+    z-index: 3;
+    max-height: calc(100vh - var(--rail-h) - 16px);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .field-stage:not([data-topology="stack"]) .organ-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+    padding: 6px 6px 40px 8px;
+    margin: -6px -6px 0 -8px;
+    mask-image: linear-gradient(180deg, #000 0, #000 calc(100% - 56px), transparent 100%);
+  }
+  .field-stage:not([data-topology="stack"]) .organ-body::-webkit-scrollbar {
+    display: none;
+  }
+}
+@media (min-width: 1500px) {
+  .field-stage:not([data-topology="stack"]) .organ {
+    margin-left: -110px;
+  }
+  .field-stage,
+  .field-stage[data-surface="session"] {
+    gap: 0;
+  }
+}
+/* the context ribbon on one line */
+.organ-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 14px;
+  margin: 0 0 12px;
+  padding: 8px 18px 8px 40px;
+  border-radius: 999px;
+}
+.organ-header::before {
+  top: 50%;
+  margin-top: -6px;
+  left: 16px;
+}
+.organ-header .eyebrow {
+  margin: 0;
+}
+.organ-title {
+  font-size: 1.02rem;
+}
+.organ-state {
+  margin: 0;
+}
+/* denser chambers */
+.plane.chamber {
+  padding: 16px 20px 18px;
+}
+.chamber-head {
+  margin-bottom: 8px;
+}
+.chamber-head + .chamber-lede,
+.chamber-head + .muted {
+  margin: -4px 0 10px 48px;
+  font-size: 0.86rem;
+}
+.chamber-title,
+h3.chamber-title {
+  font-size: 1.16rem;
+}
+h3.chamber-title {
+  font-size: 1rem;
+}
+.chamber textarea {
+  min-height: 64px;
+}
+.chamber .field {
+  margin-bottom: 0;
+}
+.chamber .field label {
+  margin-bottom: 4px;
+}
+.roster {
+  gap: 8px 6px;
+  margin-bottom: 0;
+}
+.roster-person {
+  padding: 4px 2px 6px;
+}
+.person-orb {
+  width: 58px;
+  height: 58px;
+  font-size: 1.1rem;
+}
+.chamber-action {
+  margin-top: 10px;
+  padding-top: 10px;
+}
+.organ-body,
+.instruments {
+  gap: 12px;
+}
+
+/* ============================================================ SF-06 — BENTO PLACEMENT PER SURFACE (human direction: no holes)
+   Each surface composes its chambers explicitly when the organ is wide: the tall body takes one column, the short
+   bodies stack beside it, the wide bodies span. The viewport holds the whole page: the organ's height is bounded by
+   the stage (the body scrolls inside when a surface is too tall), and nothing below the stage extends the document. */
+@container (min-width: 640px) {
+  /* Workspace: the framing form (tall) left; "you" and the authority stacked right; members across */
+  .field-stage[data-surface="workspace"] .organ-body > .plane[data-semantic="action"] {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+  }
+  .field-stage[data-surface="workspace"] .organ-body > .plane[data-semantic="identity"] {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .field-stage[data-surface="workspace"] .organ-body > .plane[data-semantic="authority"] {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .field-stage[data-surface="workspace"] .organ-body > .plane[data-semantic="participation"] {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+  /* Challenge: the session control (tall) right; opening a Session and the proof stacked left */
+  .field-stage[data-surface="challenge"] .organ-body > .plane[data-semantic="action"] {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .field-stage[data-surface="challenge"] .organ-body > .plane[data-semantic="authority"] {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+  .field-stage[data-surface="challenge"] .organ-body > .plane[data-semantic="proof"] {
+    grid-column: 1;
+    grid-row: 2;
+  }
+}
+/* the organ never grows past the stage's own height (the stage has 24 px above and below) */
+@media (min-width: 1200px) {
+  .field-stage:not([data-topology="stack"]) .organ {
+    max-height: calc(100vh - var(--rail-h) - 48px);
+  }
+  .topology {
+    height: max(clamp(560px, calc(100vh - var(--rail-h) - 52px), 900px), var(--stage-h, 0px));
+  }
+}
+/* glows that reach beyond the stage never extend the document */
+.field-stage {
+  overflow: clip;
+  overflow-clip-margin: 24px;
+}
+
+/* ============================================================ SF-06 — LIVING TRACE, SECOND PASS (human direction). The route
+   reads like the reference rail: a glowing glyph per kind of station and its name, light flowing along the chevrons
+   toward the current station, which rests in a breathing glass pill; established stations are bare text that gains
+   a membrane on encounter; a future station is a faint dashed ring. Text never moves (only glyph and glow animate). */
+@media (min-width: 768px) {
+  .trace ol {
+    gap: 2px 2px;
+    font-size: 0.92rem;
+  }
+  .trace li {
+    padding: 5px 12px 5px 30px;
+    margin-left: 22px;
+  }
+  .trace li:first-child {
+    margin-left: 0;
+  }
+  .route-membrane {
+    opacity: 0.35;
+    background: transparent;
+    border-color: transparent;
+    transition:
+      opacity var(--motion-hover-in) var(--ease-resonance),
+      background var(--motion-hover-in) var(--ease-resonance),
+      border-color var(--motion-hover-in) var(--ease-resonance);
+  }
+  .trace li:hover .route-membrane,
+  .trace li:focus-within .route-membrane {
+    opacity: 1;
+    background: rgba(88, 220, 255, 0.06);
+    border-color: rgba(150, 210, 255, 0.28);
+  }
+  .trace li[data-status="current"] .route-membrane {
+    opacity: 1;
+    background: linear-gradient(120deg, rgba(88, 220, 255, 0.16), rgba(20, 60, 110, 0.5) 60%, rgba(150, 120, 255, 0.12));
+    border-color: rgba(120, 230, 255, 0.6);
+    box-shadow:
+      inset 0 1px 0 rgba(225, 246, 255, 0.24),
+      0 0 22px var(--cyan-glow);
+  }
+  .trace li[data-status="established"] a {
+    color: var(--ink-soft);
+    text-decoration: none;
+  }
+  .trace li[data-status="established"]:hover a {
+    color: var(--cyan);
+  }
+  /* the glyph of the station kind */
+  .route-membrane::before {
+    left: 10px;
+    width: 11px;
+    height: 11px;
+    margin-top: -5.5px;
+    opacity: 0.85;
+    background: radial-gradient(circle at 36% 30%, rgba(230, 248, 255, 0.9), var(--blue) 45%, rgba(8, 20, 40, 0.9) 100%);
+    box-shadow: 0 0 8px var(--blue-glow);
+  }
+  .trace li[data-coordinate="access"] .route-membrane::before {
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(230, 248, 255, 0.95) 0 25%, transparent 30%);
+    box-shadow:
+      0 0 0 1.5px rgba(150, 210, 255, 0.7),
+      0 0 8px var(--blue-glow);
+  }
+  .trace li[data-coordinate="challenge"] .route-membrane::before {
+    background: radial-gradient(circle at 36% 30%, rgba(230, 248, 255, 0.9), #7fe3d4 45%, rgba(8, 20, 40, 0.9) 100%);
+    box-shadow:
+      0 0 0 2px rgba(6, 14, 26, 1),
+      0 0 0 3px rgba(127, 227, 212, 0.45),
+      0 0 10px rgba(127, 227, 212, 0.3);
+  }
+  .trace li[data-coordinate="session"] .route-membrane::before,
+  .trace li[data-coordinate="state"] .route-membrane::before {
+    background: radial-gradient(circle at 36% 30%, rgba(230, 248, 255, 0.9), var(--cyan) 45%, rgba(8, 20, 40, 0.9) 100%);
+    box-shadow:
+      0 0 0 2px rgba(6, 14, 26, 1),
+      0 0 0 3px rgba(88, 220, 255, 0.4),
+      0 0 10px var(--cyan-glow);
+  }
+  .trace li[data-status="current"] .route-membrane::before {
+    opacity: 1;
+    animation: nucleus-pulse 3.6s ease-in-out infinite;
+  }
+  .trace li[data-status="possible"] .route-membrane::before,
+  .trace li[data-status="unavailable"] .route-membrane::before {
+    background: transparent;
+    border: 1px dashed rgba(150, 210, 255, 0.55);
+    box-shadow: none;
+  }
+  /* light flows along the chevrons toward the current station */
+  .trace li + li::before {
+    width: 22px;
+    font-size: 1.15rem;
+    color: rgba(150, 215, 255, 0.35);
+    text-shadow: 0 0 8px rgba(88, 220, 255, 0);
+    animation: trace-flow 3.2s ease-in-out infinite;
+  }
+  .trace li:nth-child(2)::before {
+    animation-delay: 0s;
+  }
+  .trace li:nth-child(3)::before {
+    animation-delay: 0.45s;
+  }
+  .trace li:nth-child(4)::before {
+    animation-delay: 0.9s;
+  }
+  .trace li:nth-child(5)::before {
+    animation-delay: 1.35s;
+  }
+  .trace li:nth-child(6)::before {
+    animation-delay: 1.8s;
+  }
+}
+@keyframes trace-flow {
+  0%,
+  70%,
+  100% {
+    opacity: 0.35;
+    text-shadow: 0 0 8px rgba(88, 220, 255, 0);
+  }
+  18% {
+    opacity: 1;
+    text-shadow: 0 0 10px rgba(120, 230, 255, 0.9);
+  }
+}
+
+/* ============================================================ SF-06 — THE NQUIRY WORDMARK (assets/logo, transparent PNG)
+   The designed logo replaces the drawn mark: it sits centred in the rail with a soft breathing glow behind it, and larger
+   on the access field. The glow is a bounded radial layer (opacity only). */
+.identity {
+  position: relative;
+  padding: 2px 10px;
+  border: 0;
+}
+.identity:hover {
+  border: 0;
+}
+.identity-logo {
+  display: block;
+  height: 38px;
+  width: auto;
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 0 6px rgba(88, 220, 255, 0.35));
+}
+.identity-glow {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 150%;
+  height: 220%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 50%, rgba(88, 220, 255, 0.22), rgba(88, 160, 255, 0.08) 45%, transparent 70%);
+  opacity: 0.7;
+  animation: hub-breathe 7s ease-in-out infinite;
+}
+.identity:hover .identity-glow,
+.identity:focus-visible .identity-glow {
+  opacity: 1;
+  animation: none;
+}
+.identity .identity-mark {
+  display: none;
+}
+.access-rail .identity-logo {
+  height: 64px;
+}
+@media (max-width: 860px) {
+  .identity-logo {
+    height: 30px;
+  }
+}
+/* Workspace: two columns of two — the framing form and the members left, "you" and the authority right (fits
+   the viewport without scrolling on a 1100 px tall screen) */
+@container (min-width: 640px) {
+  .field-stage[data-surface="workspace"] .organ-body > .plane[data-semantic="action"] {
+    grid-row: 1;
+  }
+  .field-stage[data-surface="workspace"] .organ-body > .plane[data-semantic="participation"] {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .field-stage[data-surface="workspace"] .organ-body > .plane[data-semantic="authority"] {
+    grid-column: 2;
+    grid-row: 2;
+  }
+}
+/* the access field carries the wordmark large, above a glass access chamber */
+.access-rail .identity-logo {
+  height: 104px;
+  filter: drop-shadow(0 0 14px rgba(88, 220, 255, 0.4));
+}
+.access-rail .identity-glow {
+  width: 170%;
+  height: 260%;
+}
+/* ============================================================ SF-06 — FIT THE VIEWPORT (human direction: no scrolling)
+   Denser chambers, a one-row roster, and per-surface placement that keeps the Workspace, Challenge and Session organs
+   inside a 1100 px tall screen at the reviewer's width. */
+@container (min-width: 640px) {
+  /* Workspace: framing | you · members across · authority across */
+  .field-stage[data-surface="workspace"] .organ-body > .plane[data-semantic="participation"] {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .field-stage[data-surface="workspace"] .organ-body > .plane[data-semantic="authority"] {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+  /* Session: question | control · participants | proof · decision entry across */
+  .field-stage[data-surface="session"] .organ-body > .plane[data-semantic="question"],
+  .field-stage[data-surface="session"] .organ-body > .plane[data-semantic="frozen"],
+  .field-stage[data-surface="session"] .organ-body > .plane[data-semantic="action"]:first-child {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .field-stage[data-surface="session"] .organ-body > .plane[data-semantic="authority"] {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .field-stage[data-surface="session"] .organ-body > .plane[data-semantic="participation"] {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .field-stage[data-surface="session"] .organ-body > .plane[data-semantic="proof"] {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .field-stage[data-surface="session"] .organ-body > .plane[data-semantic="decision-entry"] {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+}
+.plane.chamber {
+  padding: 14px 18px 16px;
+}
+.chamber-head {
+  margin-bottom: 6px;
+}
+.chamber-head + .chamber-lede,
+.chamber-head + .muted {
+  margin: -2px 0 8px 48px;
+}
+/* one-row roster: smaller orbs, marks inline */
+.roster {
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  gap: 6px 4px;
+}
+.person-orb {
+  width: 46px;
+  height: 46px;
+  font-size: 0.95rem;
+}
+.roster-person > strong {
+  font-size: 0.8rem;
+}
+.roster-person .relation-marks {
+  gap: 3px;
+}
+.relation-mark {
+  font-size: 0.66rem;
+  padding: 1px 6px;
+}
+.roster-person .tag.human {
+  font-size: 0.72rem;
+  padding: 0 5px;
+  line-height: 1.3;
+}
+/* proof depth and identifiers tighter */
+.proof-depth > summary {
+  min-height: 36px;
+}
+.identifiers {
+  gap: 4px;
+}
+.identifier dd {
+  margin-top: 0;
+}
+.spine-step {
+  padding-bottom: 6px;
+}
+.chamber .stack > * + * {
+  margin-top: 8px;
+}
+/* sub-heads (h3) sit lighter: smaller icon, tighter margins */
+.chamber-head:has(h3.chamber-title) {
+  margin: 8px 0 4px;
+}
+.chamber-head:has(h3.chamber-title) .chamber-glyph {
+  width: 24px;
+  height: 24px;
+}
+.chamber-head:has(h3.chamber-title) + .chamber-lede,
+.chamber-head:has(h3.chamber-title) + .muted {
+  margin-left: 38px;
+}
+.organ-body,
+.instruments {
+  gap: 10px;
+}
+.organ-header {
+  margin-bottom: 10px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+.chamber .button {
+  min-height: 40px;
+  padding-block: 8px;
+}
+/* the roster keeps one row: cards wide enough for their role mark, the origin tag stays in the accessibility tree */
+.roster {
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+}
+.relation-mark {
+  white-space: nowrap;
+}
+.roster-person .tag.human {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+/* phones: the flow stays inside the viewport (a right-hand bleed widened the page by 6 px) */
+@media (max-width: 767px) {
+  .organ::before {
+    inset: -30px 0 -20px -30px;
+  }
+  .organ::after {
+    display: none;
+  }
+  .field-stage {
+    overflow-clip-margin: 0;
+  }
+}
+
+/* ============================================================ SF-06 — LIFE IN THE GLASS (human direction: "more life")
+   Each chamber carries: a light mote that slowly travels its membrane (offset-path, compositor only), a soft inner
+   light that drifts behind the content (a bounded layer, transform only), a breathing glow disc behind its icon and
+   a second, out-of-phase contour. Actions breathe through a glow layer; boundary notes become warm glass. All
+   decorative (pseudo-elements / aria-hidden), all opacity / transform; reduced motion stops everything (global). */
+@media (min-width: 768px) {
+  .plane.chamber::before {
+    content: "";
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 6px;
+    height: 6px;
+    margin: -3px 0 0 -3px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--chamber-tone) 80%, white 20%);
+    box-shadow:
+      0 0 8px var(--chamber-tone),
+      0 0 16px var(--chamber-tone-glow);
+    opacity: 0.9;
+    pointer-events: none;
+    z-index: 2;
+    offset-path: inset(0 round 30px);
+    offset-rotate: 0deg;
+    animation: mote-travel 42s linear infinite;
+    animation-delay: calc(var(--mote-phase, 0) * -1s);
+  }
+  .organ-body > .plane:nth-child(2)::before {
+    --mote-phase: 11;
+  }
+  .organ-body > .plane:nth-child(3)::before {
+    --mote-phase: 23;
+  }
+  .organ-body > .plane:nth-child(4)::before {
+    --mote-phase: 31;
+  }
+  .organ-body > .plane:nth-child(5)::before {
+    --mote-phase: 7;
+  }
+  /* the inner light drifting behind the content */
+  .chamber-contour::before {
+    content: "";
+    position: absolute;
+    left: 10%;
+    top: 0;
+    width: 55%;
+    height: 60%;
+    border-radius: 50%;
+    border: 0;
+    opacity: 0.55;
+    background: radial-gradient(ellipse at 50% 50%, color-mix(in srgb, var(--chamber-tone) 16%, transparent), transparent 70%);
+    will-change: transform;
+    animation: inner-light 26s ease-in-out infinite alternate;
+    animation-delay: calc(var(--mote-phase, 0) * -0.5s);
+  }
+  /* the second contour, out of phase */
+  .chamber-contour::after {
+    content: "";
+    position: absolute;
+    inset: 4px;
+    width: auto;
+    height: auto;
+    border: 0;
+    border-radius: inherit;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--chamber-tone) 22%, transparent);
+    opacity: 0.5;
+    animation: contour-breathe 9s ease-in-out -4.5s infinite;
+  }
+  /* the icon's breathing glow disc */
+  .chamber-head {
+    position: relative;
+  }
+  .chamber-head::before {
+    content: "";
+    position: absolute;
+    left: -6px;
+    top: 50%;
+    width: 46px;
+    height: 46px;
+    margin-top: -23px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--chamber-tone-glow), transparent 70%);
+    opacity: 0.6;
+    animation: hub-breathe 6s ease-in-out infinite;
+    animation-delay: calc(var(--mote-phase, 0) * -0.3s);
+    pointer-events: none;
+  }
+  .chamber-head:has(h3.chamber-title)::before {
+    width: 34px;
+    height: 34px;
+    margin-top: -17px;
+    left: -4px;
+  }
+  /* actions breathe */
+  .chamber .button:not([disabled]) {
+    position: relative;
+    isolation: isolate;
+  }
+  .chamber .button:not([disabled])::after {
+    content: "";
+    position: absolute;
+    inset: -6px;
+    border-radius: inherit;
+    z-index: -1;
+    background: radial-gradient(ellipse at 50% 50%, rgba(88, 220, 255, 0.28), transparent 70%);
+    opacity: 0.5;
+    animation: hub-breathe 5s ease-in-out infinite;
+    pointer-events: none;
+  }
+}
+@keyframes mote-travel {
+  from {
+    offset-distance: 0%;
+  }
+  to {
+    offset-distance: 100%;
+  }
+}
+@keyframes inner-light {
+  from {
+    transform: translate(0, 0);
+  }
+  to {
+    transform: translate(60%, 45%);
+  }
+}
+/* boundary notes as warm glass */
+.boundary-mark {
+  border-radius: 16px;
+  background: linear-gradient(150deg, rgba(90, 30, 48, 0.28), rgba(10, 18, 36, 0.55));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 200, 210, 0.1),
+    inset 0 0 30px -18px rgba(255, 123, 134, 0.4);
+}
+.boundary-edge {
+  border-left: 2px dashed rgba(229, 141, 149, 0.8);
+  box-shadow: 0 0 10px rgba(255, 123, 134, 0.25);
+}
+/* the flow answers an encounter in the field */
+.field-stage[data-encounter] .organ::after {
+  opacity: 1.3;
 }

@@ -225,6 +225,19 @@ export function AuthorityRelation({
 
 export type PersonRelation = "you" | "owner" | "facilitator" | "contributor" | "member" | "participant" | "controller" | "governance-root";
 
+/** A person's initials for the decorative orb (the name itself stays the text). */
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  const pick = parts.length >= 2 ? [parts[0], parts[parts.length - 1]] : parts.slice(0, 1);
+  return pick.map((p) => p.replace(/^[^\p{L}\p{N}]+/u, "").charAt(0).toUpperCase()).join("") || "·";
+}
+/** Deterministic hue seed (0–5) per identity, so the same person always has the same orb tone. */
+function orbSeed(userId: string): number {
+  let h = 0;
+  for (const ch of userId) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return h % 6;
+}
+
 const RELATION_WORDS: Readonly<Record<PersonRelation, string>> = {
   you: "you",
   owner: "Owner role",
@@ -251,7 +264,10 @@ export function ParticipationRoster({ people, testId, labelledBy }: { readonly p
   return (
     <ul className="roster" data-testid={testId} aria-labelledby={labelledBy}>
       {people.map((person) => (
-        <li key={person.userId} className="roster-person" data-user={person.userId}>
+        <li key={person.userId} className="roster-person" data-user={person.userId} data-you={person.relations.includes("you") ? "true" : undefined}>
+          <span className="person-orb" aria-hidden="true" data-seed={orbSeed(person.userId)}>
+            {initials(person.name)}
+          </span>
           <span className="tag human">human</span>{" "}
           <strong data-relation-key={person.relationKey}>{person.name}</strong>
           <span className="relation-marks">

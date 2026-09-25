@@ -243,8 +243,8 @@ export default function WorkspacePage() {
   const families: { readonly hub: Omit<OrbitHub, "slot">; readonly nodes: OrbitNode[]; readonly kind: "containment" | "participation" | "governance"; readonly testId: string; readonly aria: string }[] = ov
     ? [
         { hub: { key: "hub-people", label: "People", count: plural(ov.members.length, "member", "members"), glyph: "people" as const }, nodes: memberNodes, kind: "participation" as const, testId: "members-orbit", aria: "Members of this Workspace" },
-        { hub: { key: "hub-challenges", label: "Challenges", count: plural(ov.challenges.length, "Challenge", "Challenges"), glyph: "challenges" as const }, nodes: challengeNodes, kind: "containment" as const, testId: "challenges-list", aria: "Challenges of this Workspace" },
-        ...(authorityNodes.length > 0 ? [{ hub: { key: "hub-authority", label: "Authority", count: plural(authorityNodes.length, "binding held", "bindings held"), glyph: "authority" as const }, nodes: authorityNodes, kind: "governance" as const, testId: "authority-orbit", aria: "Authority you hold in this Workspace" }] : []),
+        { hub: { key: "hub-challenges", label: "Challenges", count: ov.challenges.length === 0 ? "none yet" : plural(ov.challenges.length, "Challenge", "Challenges"), glyph: "challenges" as const, empty: ov.challenges.length === 0 }, nodes: challengeNodes, kind: "containment" as const, testId: "challenges-list", aria: "Challenges of this Workspace" },
+        ...(authorityNodes.length > 0 ? [{ hub: { key: "hub-authority", label: "Authority", count: plural(authorityNodes.length, "held", "held"), glyph: "authority" as const }, nodes: authorityNodes, kind: "governance" as const, testId: "authority-orbit", aria: "Authority you hold in this Workspace" }] : []),
       ].filter((f) => f.nodes.length > 0)
     : [];
   const position = humanPosition({ userId: ov?.viewer.userId ?? "", role: confirmed.role, governanceCapable: confirmed.governanceCapable }, { scope: "workspace" });

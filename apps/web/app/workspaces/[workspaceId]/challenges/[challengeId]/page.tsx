@@ -47,8 +47,8 @@ const OPEN_SESSION = "open-session";
 const GRANT = "grant-challenge-session-control";
 
 const OPENED_AT = new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" });
-const SESSIONS_HUB = (n: number) => ({ key: "hub-sessions", label: "Sessions", count: `${n} ${n === 1 ? "Session" : "Sessions"}`, glyph: "sessions" as const });
-const CONTROL_HUB = (n: number) => ({ key: "hub-control", label: "Control", count: n === 0 ? "nobody holds it" : `${n} ${n === 1 ? "holder" : "holders"}`, glyph: "authority" as const });
+const SESSIONS_HUB = (n: number) => ({ key: "hub-sessions", label: "Sessions", count: n === 0 ? "none yet" : `${n} ${n === 1 ? "Session" : "Sessions"}`, glyph: "sessions" as const, empty: n === 0 });
+const CONTROL_HUB = (n: number) => ({ key: "hub-control", label: "Control", count: n === 0 ? "nobody yet" : `${n} ${n === 1 ? "holder" : "holders"}`, glyph: "authority" as const, empty: n === 0 });
 
 export default function ChallengePage() {
   const { workspaceId, challengeId } = useParams<{ workspaceId: string; challengeId: string }>();

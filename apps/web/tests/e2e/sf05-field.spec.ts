@@ -392,8 +392,9 @@ test.describe("Decision Surface in the field language (doc 26 §31, §46)", () =
     await expect(page.getByTestId("burst-human-only-indicator")).toBeVisible();
     await expect(page.getByTestId("burst-frozen-indicator")).toBeVisible();
     await expect(page.getByTestId("decision-none")).toBeVisible();
-    // no raw fallback: the decision section sits inside a chamber with the organ's surface
-    const styled = await page.getByTestId("decision-section").evaluate((el) => !!el.closest(".plane.chamber") && getComputedStyle(el.closest(".organ")!).borderTopWidth === "1px");
+    // no raw fallback: the decision section sits inside a glass chamber carrying its own membrane (SF-06: the organ
+    // container itself has no border any more; each chamber does)
+    const styled = await page.getByTestId("decision-section").evaluate((el) => { const chamber = el.closest(".plane.chamber"); return !!chamber && getComputedStyle(chamber).borderTopWidth === "1px"; });
     expect(styled).toBe(true);
     expect(await page.locator("main button, main input, main form").count()).toBe(0);
     const trace = page.getByRole("navigation", { name: "Inquiry position" });
