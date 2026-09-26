@@ -171,6 +171,15 @@ the F02 state. F03 adds a fourth typed source, extending, not rewriting, it:
 |---|---|---|
 | PARTICIPATION | The source-explicit question-submission right of a current SessionParticipation (04 AUTH-DEP-Q-001), re-read at commit. It is not a role and not a binding | the SessionParticipation id (scope `SESSION:<id>`) |
 
+**Successor note (F04 HD-17, 16 §41 REC-019 / NQ-DEC-045). DECIDED, NOT YET
+MATERIALIZED.** F04 adds a fifth typed source, extending, not rewriting, the
+tables above. Until F04 materializes it, the effect gate still admits only
+the four sources above.
+
+| Source | Meaning | Reference recorded |
+|---|---|---|
+| SYSTEM_OPERATION | A SYSTEM_SERVICE operation executed under a committed human command that authorized it (F04: the BEGIN_ANALYSIS authorization of one AIOP-001 run, HD-16; the clustering run authorized once an AIOP-001 artifact is accepted, HD-23; and acceptance of validated AI output). Re-checked at commit: the referenced command committed, same Workspace and Session, and the operation-specific predicates (Session ANALYSIS; proof VALIDATED for acceptance). The actor must be SYSTEM_SERVICE. It is **not** SYSTEM_DERIVED method authority (D8 / BND-011 / BND-012 are untouched) and grants nothing reusable | the authorizing human command id (scope `SESSION:<id>`). Operation authorizations are operation-scoped: OA = (authorizing command, AI operation), and consumption and uniqueness are keyed on OA. The root chain to BEGIN_ANALYSIS is provenance, not identity (F04 reconstruction §0.1, revision 4) |
+
 ## 8. THE RECURSION CONDITION (THREE CASES)
 
 For every unresolved next relation: *can it be legitimately derived from the
@@ -421,6 +430,37 @@ Supplied by the human operator on 2026-09-24 for Field F03. Reconciled into
 - **HD-14 (NQ-DEC-042)**: controller self-admission is lawful.
 - **HD-15 (NQ-DEC-043)**: PARTICIPATION is the fourth typed effect-gate
   authority source (§7 successor note).
+
+## 15B. HUMAN DECISIONS RECORDED UNDER THIS ARCHITECTURE (F04)
+
+Supplied by the human operator on 2026-09-24 for Field F04, in answer to
+C3-F04-1..6 (`docs/implementation/field-reports/F04/HUMAN_DECISIONS.md`).
+Reconciled into 16 §41 as NQ-DEC-044..051 (REC-018..REC-027) at F04
+architecture revisions 2 and 3, before implementation.
+
+- **HD-16 (NQ-DEC-044)**: a committed BEGIN_ANALYSIS authorizes exactly one
+  AIOP-001 run, executed by the system right after that commit. Re-runs
+  after a failure need an explicit controller request.
+- **HD-17 (NQ-DEC-045)**: SYSTEM_OPERATION is the fifth typed effect-gate
+  authority source (§7 successor note; decided, not yet materialized).
+- **HD-18 (NQ-DEC-046)**: AIOP-001 content is classification proposals,
+  Question families, unusual-question flags, pattern descriptions and
+  contradiction proposals, with no additional Question suggestions.
+  `normalized_text` is not written in F04.
+- **HD-19 (NQ-DEC-047)**: MockProvider is enabled in the dev runtime. Every AI
+  run and result is marked mock and projected as NON_PROOF / MOCK.
+- **HD-20 (NQ-DEC-048)**: a mock-validated proof must never count toward F05
+  BEGIN_REFLECTION for a non-fixture Session.
+- **HD-21 (NQ-DEC-049)**: F04 AIOP scope is AIOP-001 + AIOP-002 (question
+  clustering). The AIOP-002 trigger, open at first (C3-F04-7), is decided by
+  HD-23.
+- **HD-22 (NQ-DEC-050)**: derived analysis is visible to the HD-13
+  frozen-set audience.
+- **HD-23 (NQ-DEC-051)**: one AIOP-002 clustering run is authorized only
+  after an accepted AIOP-001 artifact exists. It is executed as
+  SYSTEM_OPERATION referencing the same BEGIN_ANALYSIS authority chain. No
+  clustering runs if AIOP-001 fails or is not accepted. A retry after an
+  AIOP-002 failure needs an explicit controller request.
 
 ## 16. FINAL LAW
 

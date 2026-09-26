@@ -1,0 +1,44 @@
+{
+  "begin_kind": "committed",
+  "begin_run": {
+    "artifactId": null,
+    "authorizationId": "5c3d429b-fa12-4599-8808-6c64794d4fd8",
+    "generationId": "b7ba7f26-93f3-46a2-974f-1c5e996ed03b",
+    "next": null,
+    "operation": "AIOP-001",
+    "reasonCode": "PROVIDER_TIMEOUT",
+    "status": "FAILED"
+  },
+  "begin_status": 200,
+  "clustering_status": "NOT_RUN",
+  "established_by": {
+    "actorName": "Facilitator 7957",
+    "authorityScopeRef": "SESSION:c9d24795-b8bd-4070-a4ce-024947afa9d5",
+    "authoritySourceRef": "fc507fe8-3f2c-4513-8c91-bcde6bf0198a",
+    "authoritySourceType": "BINDING",
+    "commandType": "CMD_BEGIN_ANALYSIS",
+    "commitId": "e7a5e631-8c7e-4d60-ae73-9e3db66c3524",
+    "occurredAt": "2026-09-25T10:16:08.261096+00:00"
+  },
+  "fac_request_cap": {
+    "available": true,
+    "case": "RETRY",
+    "reason": null,
+    "reasonCode": null,
+    "relevant": true
+  },
+  "frozen_questions_still_served": "FULL_FROZEN_SET",
+  "participant_begin": {
+    "kind": "denied",
+    "reasonCode": "DENIED_NO_MATCHING_BINDING"
+  },
+  "participant_request_cap": {
+    "available": false,
+    "reason": "Requires SESSION_CONTROL_RIGHT for this Session (scope SESSION:c9d24795-b8bd-4070-a4ce-024947afa9d5). Only the Workspace governance root can grant it.",
+    "reasonCode": "NO_SESSION_CONTROL",
+    "relevant": true
+  },
+  "participant_view_status": "UNAVAILABLE",
+  "phase": "begin-failing",
+  "state_after": "ANALYSIS"
+}

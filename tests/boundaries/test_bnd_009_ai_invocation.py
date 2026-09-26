@@ -13,6 +13,7 @@ from authority.actor import ActorClass, ActorIdentity
 from boundaries.bnd_009_ai_invocation import Bnd009AiInvocationEvaluator, Bnd009Input
 from boundaries.registry import BoundaryRegistry, evaluate_chain
 from boundaries.types import BoundaryContext, BoundaryId, BoundaryResult
+from domain.burst import BurstState
 from semantic_types.ids import CorrelationId, UserId, WorkspaceId
 from semantic_types.versions import ContractVersion
 
@@ -40,6 +41,9 @@ def _base_input(
         "ai_operation_contract_version": ContractVersion("1.0"),
         "aiop_contract_approved": True,
         "context_manifest_workspace_id": workspace_id,
+        # F04 WU-04.2: the protected-set facts BND-009 now requires.
+        "burst_state": BurstState.COMPLETED,
+        "frozen_set_verified": True,
     }
     kwargs.update(overrides)
     return Bnd009Input(**kwargs)  # type: ignore[arg-type]

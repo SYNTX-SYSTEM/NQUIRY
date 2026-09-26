@@ -123,6 +123,20 @@ class SqlAlchemySessionRepository:
         row = self._connection.execute(stmt).mappings().one_or_none()
         return None if row is None else session_from_row(dict(row))
 
+    def get_for_update(self, session_id: SessionId) -> Session | None:
+        """F04 (concurrency binding): read the Session and take its row lock
+        (`FOR NO KEY UPDATE`) until the transaction ends. Every F04 command on
+        one Session (BEGIN_ANALYSIS, the RETRY / RECOVERY requests, the system
+        EXECUTE / ACCEPT commits) takes it first, so their predicates are
+        evaluated serially; DB constraints are the second line."""
+        stmt = (
+            sa.select(sessions_table)
+            .where(sessions_table.c.id == session_id.value)
+            .with_for_update(key_share=True)
+        )
+        row = self._connection.execute(stmt).mappings().one_or_none()
+        return None if row is None else session_from_row(dict(row))
+
     def create(self, session: Session) -> None:
         self._connection.execute(
             sa.insert(sessions_table).values(

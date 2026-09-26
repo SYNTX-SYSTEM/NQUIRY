@@ -175,23 +175,23 @@ def evaluate_burst_contamination_guard(
             BurstContaminationVerdict.DENY, ContaminationDenyReason.CAPTURE_REQUIRES_HUMAN_ACTOR
         )
 
-    if actor_class is ActorClass.AI_PROCESSOR:
-        if operation in _AI_ONLY_OPERATIONS and burst_state in PROTECTED_BURST_STATES:
-            # Mandatory adversarial attack: AI invocation ACTIVE (and,
-            # per 03 section 19.4, PAUSED -- protection does not lapse
-            # merely because input is suspended).
-            return result(
-                BurstContaminationVerdict.DENY,
-                ContaminationDenyReason.AI_OPERATION_DURING_PROTECTED_BURST,
-            )
-        if operation in _LIFECYCLE_OPERATIONS:
-            # 04 section 35-39: "AI PROHIBITED ROLE: May not
-            # start/pause/resume/complete Burst" -- unconditional, not
-            # state-dependent.
-            return result(
-                BurstContaminationVerdict.DENY,
-                ContaminationDenyReason.AI_ACTOR_CANNOT_CONTROL_BURST_LIFECYCLE,
-            )
+    if operation in _AI_ONLY_OPERATIONS and burst_state in PROTECTED_BURST_STATES:
+        # Mandatory adversarial attack: AI invocation ACTIVE (and, per 03
+        # section 19.4, PAUSED -- protection does not lapse merely because
+        # input is suspended). F04 WU-04.2 (FBR-F04-3): denied for ANY
+        # requester; 06 §14 denies the operation, not only an AI actor.
+        return result(
+            BurstContaminationVerdict.DENY,
+            ContaminationDenyReason.AI_OPERATION_DURING_PROTECTED_BURST,
+        )
+    if actor_class is ActorClass.AI_PROCESSOR and operation in _LIFECYCLE_OPERATIONS:
+        # 04 section 35-39: "AI PROHIBITED ROLE: May not
+        # start/pause/resume/complete Burst" -- unconditional, not
+        # state-dependent.
+        return result(
+            BurstContaminationVerdict.DENY,
+            ContaminationDenyReason.AI_ACTOR_CANNOT_CONTROL_BURST_LIFECYCLE,
+        )
 
     return result(BurstContaminationVerdict.ALLOW, None)
 

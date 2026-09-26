@@ -968,6 +968,12 @@ ai_generations_table = sa.Table(
     sa.Column("failure_code", sa.Text(), nullable=True),
     sa.Column("failure_detail_ref", sa.Text(), nullable=True),
     sa.Column("record_version", sa.BigInteger(), nullable=False),
+    # F04 WU-04.3 (migration a8d3f1c6e902): the persisted operation
+    # authorization OA (§0.1 rules 3/8), identity-immutable.
+    sa.Column("session_id", sa.Uuid(), nullable=True),
+    sa.Column("operation_authorization_id", sa.Uuid(), nullable=True),
+    sa.Column("authorizing_command_id", sa.Uuid(), nullable=True),
+    sa.Column("precondition_artifact_ref", sa.Uuid(), nullable=True),
     sa.ForeignKeyConstraint(
         ["command_id", "workspace_id"],
         ["commands.id", "commands.workspace_id"],
@@ -1018,6 +1024,10 @@ ai_derived_artifacts_table = sa.Table(
     sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
     sa.Column("record_version", sa.BigInteger(), nullable=False),
     sa.Column("provenance_ref", sa.Text(), nullable=True),
+    # F04 WU-04.3: acceptance facts (append-only; NULL on pre-F04 rows).
+    sa.Column("session_id", sa.Uuid(), nullable=True),
+    sa.Column("accepted_by_command_id", sa.Uuid(), nullable=True),
+    sa.Column("proof_class", sa.Text(), nullable=True),
     sa.ForeignKeyConstraint(
         ["ai_generation_id", "workspace_id"],
         ["ai_generations.id", "ai_generations.workspace_id"],
@@ -1053,6 +1063,10 @@ ai_context_manifests_table = sa.Table(
     sa.Column("excluded_context_classes", sa.ARRAY(sa.Text()), nullable=False, server_default="{}"),
     sa.Column("assembled_at", sa.DateTime(timezone=True), nullable=False),
     sa.Column("context_fingerprint", sa.Text(), nullable=False),
+    # F04 WU-04.3/04.4 (FBR-F04-6): the frozen-set binding. Immutable table.
+    sa.Column("session_id", sa.Uuid(), nullable=True),
+    sa.Column("frozen_set_ref", sa.Text(), nullable=True),
+    sa.Column("frozen_set_fingerprint", sa.Text(), nullable=True),
     sa.CheckConstraint(
         "ai_operation_id IN ("
         "'AIOP-001','AIOP-002','AIOP-003','AIOP-004','AIOP-005','AIOP-006','AIOP-007','AIOP-008',"
@@ -1065,6 +1079,71 @@ ai_context_manifests_table = sa.Table(
         name="ck_ai_context_manifests_coach_mode",
     ),
     sa.UniqueConstraint("id", "workspace_id", name="uq_ai_context_manifests_id_workspace"),
+)
+
+ai_operation_authorizations_table = sa.Table(
+    "ai_operation_authorizations",
+    metadata,
+    # F04 WU-04.3 (PI-4, §0.1): one immutable row per operation authorization
+    # OA = (authorizing_command_id, ai_operation_id). Migration a8d3f1c6e902.
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column("workspace_id", sa.Uuid(), nullable=False),
+    sa.Column("session_id", sa.Uuid(), nullable=False),
+    sa.Column("ai_operation_id", sa.Text(), nullable=False),
+    sa.Column("shape", sa.Text(), nullable=False),
+    sa.Column("authorizing_command_id", sa.Uuid(), nullable=False),
+    sa.Column("sequence_no", sa.Integer(), nullable=False),
+    sa.Column("chain_root_command_id", sa.Uuid(), nullable=False),
+    sa.Column("request_case", sa.Text(), nullable=True),
+    sa.Column("supersedes_authorization_id", sa.Uuid(), nullable=True),
+    sa.Column("retry_of_generation_id", sa.Uuid(), nullable=True),
+    sa.Column("precondition_artifact_ref", sa.Uuid(), nullable=True),
+    sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+)
+
+ai_validation_proofs_table = sa.Table(
+    "ai_validation_proofs",
+    metadata,
+    # F04 WU-04.3 (09 §56, FBR-F04-4): one immutable proof per generation.
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column("workspace_id", sa.Uuid(), nullable=False),
+    sa.Column("ai_generation_id", sa.Uuid(), nullable=False, unique=True),
+    sa.Column("ai_operation_id", sa.Text(), nullable=False),
+    sa.Column("contract_version", sa.Text(), nullable=False),
+    sa.Column("validator_version", sa.Text(), nullable=False),
+    sa.Column("validation_result", sa.Text(), nullable=False),
+    sa.Column("validated_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("output_fingerprint", sa.Text(), nullable=False),
+    sa.Column("validation_details_ref", sa.Text(), nullable=True),
+)
+
+question_clusters_table = sa.Table(
+    "question_clusters",
+    metadata,
+    # F04 WU-04.9 (09 §34; migration c2e7b9a4f513). Append-only.
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column("workspace_id", sa.Uuid(), nullable=False),
+    sa.Column("session_id", sa.Uuid(), nullable=False),
+    sa.Column("challenge_id", sa.Uuid(), nullable=False),
+    sa.Column("analysis_generation_id", sa.Uuid(), nullable=False),
+    sa.Column("cluster_run_id", sa.Uuid(), nullable=False),
+    sa.Column("label", sa.Text(), nullable=True),
+    sa.Column("description", sa.Text(), nullable=True),
+    sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("record_version", sa.BigInteger(), nullable=False),
+)
+
+question_cluster_memberships_table = sa.Table(
+    "question_cluster_memberships",
+    metadata,
+    # F04 WU-04.9 (09 §35). Append-only; frozen-set members only (trigger).
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column("workspace_id", sa.Uuid(), nullable=False),
+    sa.Column("session_id", sa.Uuid(), nullable=False),
+    sa.Column("question_cluster_id", sa.Uuid(), nullable=False),
+    sa.Column("question_id", sa.Uuid(), nullable=False),
+    sa.Column("cluster_run_id", sa.Uuid(), nullable=False),
+    sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
 )
 
 projection_checkpoints_table = sa.Table(
@@ -1311,4 +1390,8 @@ __all__ = [
     "session_participations_table",
     "local_auth_credentials_table",
     "local_auth_sessions_table",
+    "ai_operation_authorizations_table",
+    "ai_validation_proofs_table",
+    "question_clusters_table",
+    "question_cluster_memberships_table",
 ]

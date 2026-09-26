@@ -68,6 +68,8 @@ from __future__ import annotations
 
 import uuid
 
+from application.analysis_runtime import runtime_from_environment
+from application.http_f04 import configure_runtime
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -103,6 +105,11 @@ async def _malformed_request_body(_request: Request, _exc: RequestValidationErro
         status_code=400, content={"kind": "rejected", "reasonCode": "MALFORMED_REQUEST_BODY"}
     )
 
+
+# F04 WU-04.6 (HD-19, PI-5; falsifier F1): the AI runtime is validated at
+# startup. `NQUIRY_AI_PROVIDER=mock` outside DEVELOPMENT / TEST raises here and
+# the API refuses to start; nothing is substituted silently (19 §40).
+configure_runtime(runtime_from_environment())
 
 app.include_router(auth_router.router)
 app.include_router(queries_router.router)

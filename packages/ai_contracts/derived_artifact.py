@@ -64,11 +64,21 @@ from __future__ import annotations
 import uuid
 from dataclasses import dataclass
 from datetime import datetime
+from enum import Enum
 
-from semantic_types.ids import GenerationId, WorkspaceId
+from semantic_types.ids import CommandId, GenerationId, SessionId, WorkspaceId
 from semantic_types.versions import RecordVersion
 
 from ai_contracts.aiop import AIOperationId
+
+
+class ProofClass(Enum):
+    """F04 HD-19: what an accepted artifact may be taken for. A MockProvider
+    result is MOCK_NON_PROOF: it is never analysis of the real Questions and
+    never counts toward BEGIN_REFLECTION for a non-fixture Session (HD-20)."""
+
+    MOCK_NON_PROOF = "MOCK_NON_PROOF"
+    PROVIDER_OUTPUT = "PROVIDER_OUTPUT"
 
 
 @dataclass(frozen=True, slots=True)
@@ -82,8 +92,19 @@ class AIDerivedArtifact:
     created_at: datetime
     record_version: RecordVersion
     provenance_ref: str | None = None
+    # F04 WU-04.3: the acceptance facts. Set together by the acceptance commit
+    # (09 §68); None on pre-F04 rows. The table is append-only (DB trigger).
+    session_id: SessionId | None = None
+    accepted_by_command_id: CommandId | None = None
+    proof_class: ProofClass | None = None
 
     def __post_init__(self) -> None:
+        accepted = (self.session_id, self.accepted_by_command_id, self.proof_class)
+        if any(v is not None for v in accepted) and any(v is None for v in accepted):
+            raise ValueError(
+                "AIDerivedArtifact: session_id, accepted_by_command_id and proof_class "
+                "are set together or not at all"
+            )
         if not isinstance(self.ai_derived_artifact_id, uuid.UUID):
             raise TypeError(
                 "ai_derived_artifact_id must be a uuid.UUID, got "
@@ -109,4 +130,4 @@ class AIDerivedArtifact:
             )
 
 
-__all__ = ["AIDerivedArtifact"]
+__all__ = ["AIDerivedArtifact", "ProofClass"]

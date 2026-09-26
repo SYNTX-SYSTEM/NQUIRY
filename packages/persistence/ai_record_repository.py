@@ -42,16 +42,29 @@ from typing import Protocol, runtime_checkable
 
 import sqlalchemy as sa
 from ai_contracts.aiop import AIOperationId
-from ai_contracts.derived_artifact import AIDerivedArtifact
-from ai_contracts.generation import AIGeneration, AIGenerationStatus
+from ai_contracts.derived_artifact import AIDerivedArtifact, ProofClass
+from ai_contracts.generation import (
+    AIGeneration,
+    AIGenerationStatus,
+    AIValidationProof,
+    AIValidationResult,
+)
 from ai_gateway.context import AIContextManifest, CoachMode, InputArtifactRef
-from semantic_types.ids import CommandId, CorrelationId, GenerationId, UserId, WorkspaceId
+from semantic_types.ids import (
+    CommandId,
+    CorrelationId,
+    GenerationId,
+    SessionId,
+    UserId,
+    WorkspaceId,
+)
 from semantic_types.versions import ContractVersion, PromptVersion, RecordVersion
 
 from persistence.tables import (
     ai_context_manifests_table,
     ai_derived_artifacts_table,
     ai_generations_table,
+    ai_validation_proofs_table,
 )
 
 
@@ -200,6 +213,110 @@ class SqlAlchemyAIRecordRepository:
         row = self._connection.execute(stmt).mappings().one_or_none()
         return None if row is None else _context_manifest_from_row(row)
 
+    # --- F04 WU-04.3 ------------------------------------------------------------
+
+    def create_validation_proof(
+        self, proof: AIValidationProof, *, workspace_id: WorkspaceId
+    ) -> None:
+        """09 §56 (FBR-F04-4): one immutable proof per generation (DB-enforced)."""
+        self._connection.execute(
+            sa.insert(ai_validation_proofs_table).values(
+                id=proof.ai_validation_proof_id,
+                workspace_id=workspace_id.value,
+                ai_generation_id=proof.ai_generation_id.value,
+                ai_operation_id=proof.ai_operation_id.value,
+                contract_version=str(proof.contract_version),
+                validator_version=str(proof.validator_version),
+                validation_result=proof.validation_result.value,
+                validated_at=proof.validated_at,
+                output_fingerprint=proof.output_fingerprint,
+                validation_details_ref=proof.validation_details_ref,
+            )
+        )
+
+    def get_validation_proof(self, ai_generation_id: GenerationId) -> AIValidationProof | None:
+        row = (
+            self._connection.execute(
+                sa.select(ai_validation_proofs_table).where(
+                    ai_validation_proofs_table.c.ai_generation_id == ai_generation_id.value
+                )
+            )
+            .mappings()
+            .one_or_none()
+        )
+        if row is None:
+            return None
+        return AIValidationProof(
+            ai_validation_proof_id=_as_uuid(row["id"]),
+            ai_generation_id=GenerationId(row["ai_generation_id"]),
+            ai_operation_id=AIOperationId(row["ai_operation_id"]),
+            contract_version=ContractVersion(row["contract_version"]),
+            validator_version=ContractVersion(row["validator_version"]),
+            validation_result=AIValidationResult(row["validation_result"]),
+            validated_at=row["validated_at"],
+            output_fingerprint=row["output_fingerprint"],
+            validation_details_ref=row["validation_details_ref"],
+        )
+
+    def get_generation_for_authorization(
+        self, operation_authorization_id: uuid.UUID
+    ) -> AIGeneration | None:
+        row = (
+            self._connection.execute(
+                sa.select(ai_generations_table).where(
+                    ai_generations_table.c.operation_authorization_id == operation_authorization_id
+                )
+            )
+            .mappings()
+            .one_or_none()
+        )
+        return None if row is None else _generation_from_row(row)
+
+    def list_session_generations(
+        self, session_id: SessionId, ai_operation_id: AIOperationId | None = None
+    ) -> tuple[AIGeneration, ...]:
+        stmt = sa.select(ai_generations_table).where(
+            ai_generations_table.c.session_id == session_id.value
+        )
+        if ai_operation_id is not None:
+            stmt = stmt.where(ai_generations_table.c.ai_operation_id == ai_operation_id.value)
+        rows = self._connection.execute(
+            stmt.order_by(ai_generations_table.c.requested_at, ai_generations_table.c.id)
+        ).mappings()
+        return tuple(_generation_from_row(r) for r in rows)
+
+    def get_accepted_artifact(
+        self, session_id: SessionId, ai_operation_id: AIOperationId
+    ) -> AIDerivedArtifact | None:
+        """The accepted artifact of this Session and operation (at most one for
+        AIOP-001, R2; DB-enforced by a partial unique index)."""
+        row = (
+            self._connection.execute(
+                sa.select(ai_derived_artifacts_table).where(
+                    ai_derived_artifacts_table.c.session_id == session_id.value,
+                    ai_derived_artifacts_table.c.ai_operation_id == ai_operation_id.value,
+                    ai_derived_artifacts_table.c.accepted_by_command_id.is_not(None),
+                )
+            )
+            .mappings()
+            .first()
+        )
+        return None if row is None else _derived_artifact_from_row(row)
+
+    def get_artifact_for_generation(
+        self, ai_generation_id: GenerationId
+    ) -> AIDerivedArtifact | None:
+        row = (
+            self._connection.execute(
+                sa.select(ai_derived_artifacts_table).where(
+                    ai_derived_artifacts_table.c.ai_generation_id == ai_generation_id.value
+                )
+            )
+            .mappings()
+            .one_or_none()
+        )
+        return None if row is None else _derived_artifact_from_row(row)
+
 
 def _generation_to_row(generation: AIGeneration) -> dict[str, object]:
     return {
@@ -232,6 +349,14 @@ def _generation_to_row(generation: AIGeneration) -> dict[str, object]:
         "failure_code": generation.failure_code,
         "failure_detail_ref": generation.failure_detail_ref,
         "record_version": generation.record_version.value,
+        "session_id": None if generation.session_id is None else generation.session_id.value,
+        "operation_authorization_id": generation.operation_authorization_id,
+        "authorizing_command_id": (
+            None
+            if generation.authorizing_command_id is None
+            else generation.authorizing_command_id.value
+        ),
+        "precondition_artifact_ref": generation.precondition_artifact_ref,
     }
 
 
@@ -266,6 +391,14 @@ def _generation_from_row(row: sa.RowMapping) -> AIGeneration:
         failure_code=row["failure_code"],
         failure_detail_ref=row["failure_detail_ref"],
         record_version=RecordVersion(row["record_version"]),
+        session_id=None if row["session_id"] is None else SessionId(row["session_id"]),
+        operation_authorization_id=row["operation_authorization_id"],
+        authorizing_command_id=(
+            None
+            if row["authorizing_command_id"] is None
+            else CommandId(row["authorizing_command_id"])
+        ),
+        precondition_artifact_ref=row["precondition_artifact_ref"],
     )
 
 
@@ -280,6 +413,13 @@ def _derived_artifact_to_row(artifact: AIDerivedArtifact) -> dict[str, object]:
         "created_at": artifact.created_at,
         "record_version": artifact.record_version.value,
         "provenance_ref": artifact.provenance_ref,
+        "session_id": None if artifact.session_id is None else artifact.session_id.value,
+        "accepted_by_command_id": (
+            None
+            if artifact.accepted_by_command_id is None
+            else artifact.accepted_by_command_id.value
+        ),
+        "proof_class": None if artifact.proof_class is None else artifact.proof_class.value,
     }
 
 
@@ -294,6 +434,13 @@ def _derived_artifact_from_row(row: sa.RowMapping) -> AIDerivedArtifact:
         created_at=row["created_at"],
         record_version=RecordVersion(row["record_version"]),
         provenance_ref=row["provenance_ref"],
+        session_id=None if row["session_id"] is None else SessionId(row["session_id"]),
+        accepted_by_command_id=(
+            None
+            if row["accepted_by_command_id"] is None
+            else CommandId(row["accepted_by_command_id"])
+        ),
+        proof_class=None if row["proof_class"] is None else ProofClass(row["proof_class"]),
     )
 
 
@@ -309,8 +456,7 @@ def _context_manifest_to_row(manifest: AIContextManifest) -> dict[str, object]:
         "ai_operation_contract_version": str(manifest.ai_operation_contract_version),
         "requesting_actor_ref": manifest.requesting_actor_ref,
         "input_artifact_refs_with_versions": [
-            {"artifact_ref": ref.artifact_ref, "version": ref.version.value}
-            for ref in manifest.input_artifact_refs_with_versions
+            _input_ref_to_json(ref) for ref in manifest.input_artifact_refs_with_versions
         ],
         "source_classifications": list(manifest.source_classifications),
         "method_ref": manifest.method_ref,
@@ -319,7 +465,19 @@ def _context_manifest_to_row(manifest: AIContextManifest) -> dict[str, object]:
         "excluded_context_classes": list(manifest.excluded_context_classes),
         "assembled_at": manifest.assembled_at,
         "context_fingerprint": manifest.context_fingerprint,
+        "session_id": None if manifest.session_id is None else manifest.session_id.value,
+        "frozen_set_ref": manifest.frozen_set_ref,
+        "frozen_set_fingerprint": manifest.frozen_set_fingerprint,
     }
+
+
+def _input_ref_to_json(ref: InputArtifactRef) -> dict[str, object]:
+    item: dict[str, object] = {"artifact_ref": ref.artifact_ref}
+    if ref.version is not None:
+        item["version"] = ref.version.value
+    if ref.content_digest is not None:
+        item["content_digest"] = ref.content_digest
+    return item
 
 
 def _context_manifest_from_row(row: sa.RowMapping) -> AIContextManifest:
@@ -331,7 +489,9 @@ def _context_manifest_from_row(row: sa.RowMapping) -> AIContextManifest:
         requesting_actor_ref=row["requesting_actor_ref"],
         input_artifact_refs_with_versions=tuple(
             InputArtifactRef(
-                artifact_ref=item["artifact_ref"], version=RecordVersion(item["version"])
+                artifact_ref=item["artifact_ref"],
+                version=None if item.get("version") is None else RecordVersion(item["version"]),
+                content_digest=item.get("content_digest"),
             )
             for item in row["input_artifact_refs_with_versions"]
         ),
@@ -342,6 +502,9 @@ def _context_manifest_from_row(row: sa.RowMapping) -> AIContextManifest:
         excluded_context_classes=tuple(row["excluded_context_classes"] or ()),
         assembled_at=row["assembled_at"],
         context_fingerprint=row["context_fingerprint"],
+        session_id=None if row["session_id"] is None else SessionId(row["session_id"]),
+        frozen_set_ref=row["frozen_set_ref"],
+        frozen_set_fingerprint=row["frozen_set_fingerprint"],
     )
 
 

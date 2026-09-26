@@ -55,7 +55,7 @@ from datetime import datetime
 from enum import Enum
 
 from ai_contracts.aiop import AIOperationId
-from semantic_types.ids import WorkspaceId
+from semantic_types.ids import SessionId, WorkspaceId
 from semantic_types.versions import ContractVersion, RecordVersion
 
 
@@ -80,13 +80,27 @@ class InputArtifactRef:
     identical (ref, version) shape."""
 
     artifact_ref: str
-    version: RecordVersion
+    version: RecordVersion | None = None
+    content_digest: str | None = None
+    """F04 WU-04.4 (FBR-F04-6): the version identity of an IMMUTABLE input by
+    content (for a Question: the sha256 of its immutable `original_text`).
+    A Question's `record_version` is not its content version: it moves when
+    unrelated mutable fields change, and it is not what the model reads."""
 
     def __post_init__(self) -> None:
         if not self.artifact_ref:
             raise ValueError("InputArtifactRef.artifact_ref must be non-empty")
-        if not isinstance(self.version, RecordVersion):
+        if self.version is None and not self.content_digest:
+            raise ValueError("InputArtifactRef needs a version or a content_digest")
+        if self.version is not None and not isinstance(self.version, RecordVersion):
             raise TypeError(f"version must be a RecordVersion, got {type(self.version)!r}")
+
+    @property
+    def version_identity(self) -> str:
+        if self.content_digest:
+            return f"sha256:{self.content_digest}"
+        assert self.version is not None  # noqa: S101 -- __post_init__
+        return str(self.version.value)
 
 
 @dataclass(frozen=True, slots=True)
@@ -106,8 +120,18 @@ class AIContextManifest:
     coach_mode: CoachMode | None = None
     burst_mode: str | None = None
     excluded_context_classes: tuple[str, ...] = ()
+    # F04 WU-04.4 (FBR-F04-6): the frozen human set this manifest is bound to.
+    session_id: SessionId | None = None
+    frozen_set_ref: str | None = None
+    frozen_set_fingerprint: str | None = None
 
     def __post_init__(self) -> None:
+        bound = (self.session_id, self.frozen_set_ref, self.frozen_set_fingerprint)
+        if any(v is not None for v in bound) and any(v is None for v in bound):
+            raise ValueError(
+                "AIContextManifest: session_id, frozen_set_ref and frozen_set_fingerprint "
+                "are set together or not at all"
+            )
         if not isinstance(self.ai_context_manifest_id, uuid.UUID):
             raise TypeError(
                 "ai_context_manifest_id must be a uuid.UUID, got "
@@ -139,6 +163,8 @@ def compute_context_fingerprint(
     ai_operation_id: AIOperationId,
     ai_operation_contract_version: ContractVersion,
     input_artifact_refs_with_versions: tuple[InputArtifactRef, ...],
+    frozen_set_ref: str | None = None,
+    frozen_set_fingerprint: str | None = None,
 ) -> str:
     """Deterministic, order-independent -- mirrors
     `evidence.evidence_set.compute_evidence_set_fingerprint`'s own
@@ -148,10 +174,13 @@ def compute_context_fingerprint(
     """
     canonical = "|".join(
         sorted(
-            f"{ref.artifact_ref}:{ref.version.value}" for ref in input_artifact_refs_with_versions
+            f"{ref.artifact_ref}:{ref.version_identity}"
+            for ref in input_artifact_refs_with_versions
         )
     )
     payload = f"{ai_operation_id.value}:{ai_operation_contract_version}:{canonical}"
+    if frozen_set_fingerprint is not None:
+        payload = f"{payload}:{frozen_set_ref}:{frozen_set_fingerprint}"
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
@@ -169,6 +198,9 @@ def build_context_manifest(
     coach_mode: CoachMode | None = None,
     burst_mode: str | None = None,
     excluded_context_classes: tuple[str, ...] = (),
+    session_id: SessionId | None = None,
+    frozen_set_ref: str | None = None,
+    frozen_set_fingerprint: str | None = None,
 ) -> AIContextManifest:
     """The allowlist builder: assembles a manifest ONLY from the exact
     refs/versions the caller already resolved -- see module docstring
@@ -177,6 +209,8 @@ def build_context_manifest(
         ai_operation_id=ai_operation_id,
         ai_operation_contract_version=ai_operation_contract_version,
         input_artifact_refs_with_versions=input_artifact_refs_with_versions,
+        frozen_set_ref=frozen_set_ref,
+        frozen_set_fingerprint=frozen_set_fingerprint,
     )
     return AIContextManifest(
         ai_context_manifest_id=ai_context_manifest_id,
@@ -192,6 +226,9 @@ def build_context_manifest(
         coach_mode=coach_mode,
         burst_mode=burst_mode,
         excluded_context_classes=excluded_context_classes,
+        session_id=session_id,
+        frozen_set_ref=frozen_set_ref,
+        frozen_set_fingerprint=frozen_set_fingerprint,
     )
 
 

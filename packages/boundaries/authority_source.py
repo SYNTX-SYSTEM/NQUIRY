@@ -44,6 +44,8 @@ class AuthoritySourceType(str, Enum):
     FOUNDING = "FOUNDING"
     PARTICIPATION = "PARTICIPATION"
     """F03 HD-15 (16 §41 REC-016 / NQ-DEC-043)."""
+    SYSTEM_OPERATION = "SYSTEM_OPERATION"
+    """F04 HD-17 (16 §41 REC-019 / NQ-DEC-045)."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -102,7 +104,50 @@ class ParticipationAuthority:
             raise ValueError("ParticipationAuthority.operation_authority_ref must be non-empty")
 
 
-AuthorityRequirement = BindingAuthority | RoleAuthority | FoundingAuthority | ParticipationAuthority
+class SystemOperationPurpose(str, Enum):
+    """What the SYSTEM_SERVICE commits under one operation authorization."""
+
+    EXECUTE = "EXECUTE"
+    """Consume the OA: manifest + REQUESTED generation (CMD_AI_QUESTION_*)."""
+    ACCEPT = "ACCEPT"
+    """Accept the validated output of the generation carrying the OA (09 §68)."""
+
+
+@dataclass(frozen=True, slots=True)
+class SystemOperationAuthority:
+    """F04 HD-17: a SYSTEM_SERVICE operation executed under the committed human
+    Command that authorized exactly this operation (F04 reconstruction §0.1).
+    It is NOT SYSTEM_DERIVED method authority (D8 / BND-011 / BND-012 untouched)
+    and grants nothing reusable: every evaluation re-reads the persisted
+    authorization, the authorizing Command's COMMITTED outcome, the Session and
+    the operation-specific predicates. Provenance: the authorizing Command id,
+    scope `SESSION:<id>`, detail naming the full OA."""
+
+    session_id: uuid.UUID
+    operation_authorization_id: uuid.UUID
+    purpose: SystemOperationPurpose
+    ai_generation_id: uuid.UUID | None = None
+    """ACCEPT only: the generation whose validated output is accepted."""
+    operation_authority_ref: str = "HD-17"
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.session_id, uuid.UUID) or not isinstance(
+            self.operation_authorization_id, uuid.UUID
+        ):
+            raise TypeError("SystemOperationAuthority ids must be uuid.UUID")
+        if not isinstance(self.purpose, SystemOperationPurpose):
+            raise TypeError("purpose must be a SystemOperationPurpose")
+        if (self.purpose is SystemOperationPurpose.ACCEPT) != (self.ai_generation_id is not None):
+            raise ValueError("ai_generation_id is required for ACCEPT and only for ACCEPT")
+
+
+AuthorityRequirement = (
+    BindingAuthority
+    | RoleAuthority
+    | FoundingAuthority
+    | ParticipationAuthority
+    | SystemOperationAuthority
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -110,7 +155,8 @@ class AuthoritySourceProof:
     source_type: AuthoritySourceType
     source_ref: uuid.UUID
     """BINDING: human_authority_bindings.id. ROLE: role_assignments.id. FOUNDING: commands.id.
-    PARTICIPATION: session_participations.id."""
+    PARTICIPATION: session_participations.id. SYSTEM_OPERATION: commands.id of the
+    human Command that authorized the operation (F04 §0.1 rule 4)."""
     scope_ref: str
     """e.g. "SESSION:<uuid>", "WORKSPACE:<uuid>"."""
     detail: str
@@ -133,4 +179,6 @@ __all__ = [
     "FoundingAuthority",
     "ParticipationAuthority",
     "RoleAuthority",
+    "SystemOperationAuthority",
+    "SystemOperationPurpose",
 ]

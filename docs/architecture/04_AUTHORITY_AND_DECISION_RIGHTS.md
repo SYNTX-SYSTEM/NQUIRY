@@ -1453,6 +1453,17 @@ Record whether authority source was Facilitator or timer System authority.
 
 # 27. AUTH-DEP-SESS-006: Begin Analysis
 
+> **Post-baseline materialization note (2026-09-25, F04 WU-04.0):** the
+> human path is materialized as `CMD_BEGIN_ANALYSIS`, held by
+> `SESSION_CONTROL_RIGHT` at exactly `SESSION:<id>` (BINDING; HD-1 / HD-9
+> narrowing). By **HD-16** (16 §41 REC-018 / NQ-DEC-044) the committed Command
+> creates exactly one operation authorization (BEGIN_ANALYSIS, AIOP-001),
+> executed right after the commit by a SYSTEM_SERVICE under the typed effect-gate
+> source **SYSTEM_OPERATION** of **HD-17** (REC-019 / NQ-DEC-045), which is
+> *not* SYSTEM_DERIVED. The System path above (SYSTEM_DERIVED, method-derived)
+> is not materialized and stays REQUIRE/DENY under D8 (BND-011/012). Nothing
+> above is rewritten. Field report: `docs/implementation/field-reports/F04/`.
+
 ```text
 OPERATION:
 BEGIN_ANALYSIS

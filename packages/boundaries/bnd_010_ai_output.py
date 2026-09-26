@@ -62,6 +62,13 @@ class Bnd010Input:
     validation_result: AIValidationResult
     source_workspace_id: WorkspaceId
     ai_validation_proof_ref: str
+    output_fields: frozenset[str] = frozenset()
+    """F04 WU-04.5 (06 BND-010 DENY list; E14): the top-level fields of the
+    output the caller asks to accept. Empty for pre-F04 callers."""
+    permitted_output_fields: frozenset[str] | None = None
+    """The registered contract's closed field set (HD-18 / 09 §34-35). When
+    given, any other field (a Decision, selection, Evidence, Assumption, Session
+    or new-Question claim) is DENIED."""
 
     def __post_init__(self) -> None:
         if self.boundary_id is not BoundaryId.BND_010:
@@ -116,6 +123,11 @@ class Bnd010AiOutputEvaluator:
 
         if boundary_input.source_workspace_id != context.workspace_id:
             return proof(BoundaryResult.DENY, "CROSS_WORKSPACE_DERIVED_ARTIFACT")
+
+        if boundary_input.permitted_output_fields is not None:
+            outside = boundary_input.output_fields - boundary_input.permitted_output_fields
+            if outside:
+                return proof(BoundaryResult.DENY, f"OUTPUT_OUTSIDE_CONTRACT:{sorted(outside)[0]}")
 
         return proof(
             BoundaryResult.ALLOW,
