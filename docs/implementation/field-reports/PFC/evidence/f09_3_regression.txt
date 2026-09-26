@@ -1,0 +1,11 @@
+WU-PFC-F09-3 regression evidence (2026-09-26/27), worktree pfc-integration, DB nquiry_pfc_int_test @ c3b8e5a1f7d2
+BASELINE (checkpoint-PFC-F09-2): live 1849 passed / 2 skipped; no-DB 906 passed.
+RED: tests/e2e/test_pfc_f09_3_telemetry.py 7 failed: RuntimeError "telemetry exporter unavailable" escaped the sink,
+     /healthz and the worker pass (x3); application.http_f02 had no attribute '_observation_sink' (x4)
+AFTER (exact committed tree):
+  live:  1856 passed, 2 skipped in 1295.90s (0:21:35)   = 1849 + 7
+  no-DB: 908 passed, 950 skipped in 37.95s
+ruff check .: clean; ruff format --check: 379 files formatted; mypy (CI scope): no issues in 202 source files
+ARCHITECTURE_DEPENDENCY_CHECK / PROVIDER_SDK_IMPORT_CHECK / TEST_ONLY_IMPORT_CHECK: PASS
+verify_migrations: STATIC PASS (30 revisions, single head c3b8e5a1f7d2), LIVE PASS (no schema change)
+mutation proof: 5/5 KILLED, sources restored

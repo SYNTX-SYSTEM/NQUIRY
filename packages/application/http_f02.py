@@ -44,6 +44,7 @@ from commit.idempotency import (
     IdempotencyPayloadCollision,
 )
 from governance.authority_binding import AuthorityClass
+from observability.context import LocalOtelObservationSink, ObservationContext
 from persistence.command_repository import (
     CommandPayloadConflict,
     CommandTypeMismatch,
@@ -124,8 +125,34 @@ def _with_actor(
         return _rejected(exc.reason_code)
 
 
-def _command_outcome(run: Callable[[], Response]) -> Response:
-    """Maps every governed-Command exception to its distinct envelope kind."""
+_observation_sink = LocalOtelObservationSink(tracer_name="nquiry.api.command")
+
+
+def _command_outcome(run: Callable[[], Response], ident: control.CommandIdentity) -> Response:
+    """Maps every governed-Command exception to its distinct envelope kind, and
+    records one operational observation per governed Command (WU-PFC-F09-3)."""
+    response = _command_envelope(run)
+    _observe(ident, response)
+    return response
+
+
+def _observe(ident: control.CommandIdentity, response: Response) -> None:
+    """WU-PFC-F09-3 (11 §37, 12 §25): correlation -> command -> attempt ->
+    commit, plus the outcome. Identities only, never content, actor or
+    authority (11 §38). The sink swallows its own failures (AC-11-013)."""
+    kind = str(response[1].get("kind", "unknown"))
+    _observation_sink.emit(
+        ObservationContext(
+            correlation_id=ident.correlation_id,
+            operation=f"http.command.{kind}",
+            command_id=ident.command_id,
+            attempt_id=ident.attempt_id,
+            commit_id=ident.commit_id if kind == "committed" else None,
+        )
+    )
+
+
+def _command_envelope(run: Callable[[], Response]) -> Response:
     try:
         return run()
     except _Rejected as exc:
@@ -299,7 +326,7 @@ def dispatch_create_challenge(
             )
             return 200, {"kind": "committed", "challengeId": str(result.challenge_id.value)}
 
-        return _command_outcome(run)
+        return _command_outcome(run, ident)
 
     return _with_actor(session_token, work)
 
@@ -350,7 +377,7 @@ def dispatch_create_session(
                 )
             return 200, {"kind": "committed", "sessionId": str(session_id.value)}
 
-        return _command_outcome(run)
+        return _command_outcome(run, ident)
 
     return _with_actor(session_token, work)
 
@@ -410,7 +437,7 @@ def dispatch_grant_authority(
                 return 200, {"kind": "committed", "replayed": True}
             return 200, {"kind": "committed", "commitId": str(unit.commit_id.value)}
 
-        return _command_outcome(run)
+        return _command_outcome(run, ident)
 
     return _with_actor(session_token, work)
 
@@ -473,7 +500,7 @@ def dispatch_session_command(
             position = queries.session_position(ports, principal, ws, sid)
             return 200, {"kind": "committed", "replayed": replayed, "position": position}
 
-        return _command_outcome(run)
+        return _command_outcome(run, ident)
 
     return _with_actor(session_token, work)
 
@@ -535,7 +562,7 @@ def dispatch_capture_question(
                 "position": position,
             }
 
-        return _command_outcome(run)
+        return _command_outcome(run, ident)
 
     return _with_actor(session_token, work)
 
@@ -576,7 +603,7 @@ def dispatch_complete_burst(
             position = queries.session_position(ports, principal, ws, sid)
             return 200, {"kind": "committed", "replayed": replayed, "position": position}
 
-        return _command_outcome(run)
+        return _command_outcome(run, ident)
 
     return _with_actor(session_token, work)
 

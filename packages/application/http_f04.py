@@ -155,7 +155,7 @@ def dispatch_begin_analysis(
                 "authorizationId": str(result.authorization_id),
             }
 
-        return _command_outcome(run)
+        return _command_outcome(run, ident)
 
     return _finish(
         _with_actor(session_token, work),
@@ -217,7 +217,7 @@ def dispatch_request_operation(
                 "authorizationId": str(result.authorization_id),
             }
 
-        return _command_outcome(run)
+        return _command_outcome(run, ident)
 
     return _finish(
         _with_actor(session_token, work),

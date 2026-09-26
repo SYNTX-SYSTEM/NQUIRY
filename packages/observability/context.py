@@ -89,6 +89,7 @@ provider.
 
 from __future__ import annotations
 
+import sys
 from dataclasses import dataclass
 from typing import Protocol, runtime_checkable
 
@@ -232,6 +233,22 @@ class LocalOtelObservationSink:
         self._tracer = trace.get_tracer(tracer_name)
 
     def emit(self, context: ObservationContext) -> None:
+        """WU-PFC-F09-3 (11 AC-11-013; 12 §20 "Operational log unavailable ->
+        Audit record remains separately reconstructable"): telemetry never
+        interferes with the operation it observes. A tracer or exporter
+        failure is reported once on stderr and swallowed. Nothing the system
+        decides depends on an observation being recorded."""
+        try:
+            self._emit(context)
+        except Exception as exc:  # noqa: BLE001 -- telemetry must never change behaviour (AC-11-013)
+            print(
+                f"nquiry observability: emit failed ({type(exc).__name__}); "
+                "telemetry is not authoritative and the operation continues",
+                file=sys.stderr,
+                flush=True,
+            )
+
+    def _emit(self, context: ObservationContext) -> None:
         with self._tracer.start_as_current_span(context.operation) as span:
             span.set_attribute("correlation_id", str(context.correlation_id.value))
             if context.command_id is not None:

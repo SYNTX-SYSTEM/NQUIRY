@@ -1,0 +1,6 @@
+M01 a tracer failure escapes the sink: KILLED
+M02 governed Commands are not observed: KILLED
+M03 a commit identity is claimed for a non-committed outcome: KILLED
+M04 the command identity is not correlated: KILLED
+M05 the outcome is not recorded: KILLED
+5/5 killed; sources restored: True

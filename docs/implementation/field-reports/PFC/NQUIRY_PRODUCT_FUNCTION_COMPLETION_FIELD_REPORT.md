@@ -20,7 +20,8 @@ Product functions use PF numbering (PF01–PF27). F00–F12 are repository Field
 | 4 | WU-PFC-F08-2 delivery → projection → replay/rebuild; the running worker | `pfc-integration` | `461ade4` | `checkpoint-PFC-F08-2` | TECHNICALLY_CLOSED, CHECKPOINTED |
 | 5 | WU-PFC-F08-3 delivery diagnostics and projection freshness | `pfc-integration` | `aea783e` | `checkpoint-PFC-F08-3` | TECHNICALLY_CLOSED, CHECKPOINTED |
 | 6 | WU-PFC-F09-1 technical failure envelope (engine facts, API edge, worker survival) | `pfc-integration` | `3dbb6c6` | `checkpoint-PFC-F09-1` | TECHNICALLY_CLOSED, CHECKPOINTED |
-| 7 | WU-PFC-F09-2 Workspace isolation and session sweep over every route; fix of a Session-state disclosure to non-members | `pfc-integration` | see `CHECKPOINT_WU-PFC-F09-2.md` | `checkpoint-PFC-F09-2` | TECHNICALLY_CLOSED, CHECKPOINTED |
+| 7 | WU-PFC-F09-2 Workspace isolation and session sweep over every route; fix of a Session-state disclosure to non-members | `pfc-integration` | `0a05e7c` | `checkpoint-PFC-F09-2` | TECHNICALLY_CLOSED, CHECKPOINTED |
+| 8 | WU-PFC-F09-3 telemetry non-interference and governed-Command correlation | `pfc-integration` | see `CHECKPOINT_WU-PFC-F09-3.md` | `checkpoint-PFC-F09-3` | TECHNICALLY_CLOSED, CHECKPOINTED |
 | — | **F08 Field (backend)** | `pfc-integration` | — | F08-1..3 | **READY_FOR_HUMAN_REVIEW** (14 Phase 8 gate; `F08_FIELD_REVIEW_BUNDLE.md`) |
 
 ## 2. Field derivation after WU-PFC-I1
@@ -79,4 +80,4 @@ This derivation is based on three read-only reconstructions of 2026-09-26: F08 e
 
 ## 5. Resulting Field status
 
-**IN_PROGRESS (autonomous).** Seven Work Units are technically closed and checkpointed (A1, I1, F08-1, F08-2, F08-3, F09-1, F09-2). F08 is READY_FOR_HUMAN_REVIEW. F09 is IN_PROGRESS. Test totals on `pfc-integration`: live 1849 passed / 2 skipped; no-DB 906 passed. None is REVIEWED_FIELD. Nothing is PUBLISHED_FIELD. BLUE/master is unchanged.
+**IN_PROGRESS (autonomous).** Eight Work Units are technically closed and checkpointed (A1, I1, F08-1, F08-2, F08-3, F09-1, F09-2, F09-3). F08 is READY_FOR_HUMAN_REVIEW. F09 is IN_PROGRESS. Test totals on `pfc-integration`: live 1856 passed / 2 skipped; no-DB 908 passed. None is REVIEWED_FIELD. Nothing is PUBLISHED_FIELD. BLUE/master is unchanged.
