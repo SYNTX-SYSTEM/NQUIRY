@@ -81,3 +81,62 @@ This derivation is based on three read-only reconstructions of 2026-09-26: F08 e
 ## 5. Resulting Field status
 
 **IN_PROGRESS (autonomous).** Eight Work Units are technically closed and checkpointed (A1, I1, F08-1, F08-2, F08-3, F09-1, F09-2, F09-3). F08 is READY_FOR_HUMAN_REVIEW. F09 is IN_PROGRESS. Test totals on `pfc-integration`: live 1856 passed / 2 skipped; no-DB 908 passed. None is REVIEWED_FIELD. Nothing is PUBLISHED_FIELD. BLUE/master is unchanged.
+
+---
+
+## 6. Field reconstruction at the end of the autonomous run (2026-09-27)
+
+**Global stop condition reached: B, all remaining paths blocked.** Every remaining relation of NQUIRY_PRODUCT_FUNCTION_COMPLETION is one of the following:
+- blocked on Human Authority (HA-01, 03–09, 11–16, 18–20)
+- blocked on an external dependency (HA-02, HA-10)
+- intentionally deferred (HA-17)
+- a cross-Field contract the autonomous authority excludes (HA-19)
+
+### 6.1 Derivation after WU-PFC-F09-3
+
+| Candidate | Verdict |
+|---|---|
+| F09 INDETERMINATE → RecoveryRecord + dependent blocking + LPVS (12 §19.2) | Blocked: dependency scope undefined in 06 §24; PKG-24 human-confirmed recovery design (HA-15) |
+| F09 reconciliation / recovery Commands / backup restore | Blocked: HA-15, GAP-09-015, GAP-10-004/005/008/009, HA-10 |
+| F09 direct-write prevention at runtime (principals, RLS) | Blocked: HA-09 (Architecture 24 WU-AUTH-17), HA-10 |
+| F09 TH-04 SecurityEvent on cross-Workspace reference | Blocked: HA-20 (runtime environment identity) |
+| F09 privacy / retention / deletion | Blocked: GAP-11-007, 19 §29 STOP |
+| F09 decide-route outcome parity | Cross-Field contract (HA-19) |
+| F08 frontend freshness / history, CYAN frame, CYAN analysis | Blocked: HA-03 (SF ↔ PFC backend integration order, H-8) |
+| Session history API (09 §81) | Beyond projection state, a history entry is audit data (actor, authority): HA-11 |
+| Main product chain (F05 → F06 → F07 → graph, export) | Blocked: HA-01 (REFLECTION gate), HA-04, HA-05, HA-08, HA-14 |
+| AI expansion, cost model, coach modes | Blocked: HA-02, HA-07 |
+
+### 6.2 Work Units completed in the run
+
+A1, I1, F08-1, F08-2, F08-3, F09-1, F09-2 and F09-3: eight technically closed and checkpointed Work Units, plus WU-PFC-00 before the run.
+
+### 6.3 First Broken Relations: closed in the run
+
+| FBR | Closed by |
+|---|---|
+| FBR-PFC-01 F04 had no recoverable predecessor | WU-PFC-00 |
+| FBR-PFC-06 Challenge frame dropped on the wire | WU-PFC-A1 |
+| FBR-PFC-08 outbox never delivered (backend) | WU-PFC-F08-1/2/3 |
+| (new) Technical failures escaped as a bare 500; the worker died on DB errors | WU-PFC-F09-1 |
+| (new) Session version/state disclosed to non-members on 9 routes | WU-PFC-F09-2 |
+| (new) A telemetry failure could stop delivery or liveness; Commands untraced | WU-PFC-F09-3 |
+
+### 6.4 Observations (recorded, not changed)
+- **Legacy master web** (`apps/web` on master / `pfc-integration`): it creates a new intent key after `indeterminate` (challenge page, workspace page, BurstCapturePanel), so a blind retry bypasses the idempotency block. **CYAN** (`frontend-symbiotic`) already retains the key per relation (`field.retained[relation]`) and blocks consequences while re-reading. The live frontend is therefore correct; the legacy web is superseded by CYAN.
+- **Existence signals on unguessable identifiers.** "Unknown id" and "not yours" answers differ, but no protected data is disclosed (WU-PFC-F09-2 §4).
+- **Stale docstrings in accepted PKG-era code:**
+  - `session_creation_handler` says WorkspaceRole has no Observer/Viewer, but it has since PKG-02.
+  - `domain/decision.py` says `evidence/provenance.py` is "not yet built", but it now exists.
+  - `membership_operations_handler` raises `OwnerRoleNotAssignable` also for Observer/Viewer; changing that would be a wire reason change.
+- **Pre-existing `ruff format` finding** on the hash-bound F04 review bundle; not touched.
+
+### 6.5 Resulting Field status
+
+**NQUIRY_PRODUCT_FUNCTION_COMPLETION: IN_PROGRESS, autonomous run STOPPED at global condition B.**
+- The derivable surface is closed and checkpointed on `pfc-integration`.
+- The F08 backend is READY_FOR_HUMAN_REVIEW (14 Phase 8 gate).
+- F09 is technically closed for its derivable part; the rest is blocked as listed.
+- No Work Unit is REVIEWED_FIELD. Nothing is PUBLISHED_FIELD. master (BLUE) and `frontend-symbiotic` (CYAN) are unchanged.
+
+**Test totals on the final predecessor line** (`checkpoint-PFC-F09-3`): live **1856 passed / 2 skipped**; no-DB **908 passed**. Mutation proofs across the run: A1 18/18, F08-1 15/15, F08-2 10/10, F08-3 5/5, F09-1 9/9, F09-2 6/6, F09-3 5/5, plus the inherited F04 PASS.
