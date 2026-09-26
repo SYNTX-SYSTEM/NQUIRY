@@ -20,9 +20,9 @@ human authority. The history below is kept unchanged.
 - **What is reviewed:** the F04 **backend** before WU-04.8. It is a reviewed field
   for that scope only.
 - **Checkpoint:** the backend and this evidence are committed on branch
-  `f04-implementation` and tagged `checkpoint-F04-backend-review-pass`. The
-  commit identity is recorded in `CHECKPOINT_WU-PFC-00.md` by the follow-up
-  identity commit (F02/F03 precedent).
+  `f04-implementation` as `b31264ec88efd647d0db9143e76a1aeaf93e8a47`, pushed,
+  and tagged `checkpoint-F04-backend-review-pass` (signed; target `b31264e`).
+  Identity details: `CHECKPOINT_WU-PFC-00.md` §5.
 - **Reconstruction:** the committed tree is byte-identical to the tree the
   re-review covered (`CHECKPOINT_WU-PFC-00.md` §3).
 - **Not claimed:** FIELD_GREEN for all of F04, PUBLISHED_FIELD, COMPLETE. The

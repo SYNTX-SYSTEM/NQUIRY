@@ -82,10 +82,12 @@ commit, then an identity-record commit):
 
 | Identity | Value |
 |---|---|
-| F04 commit | recorded below after the commit exists |
+| F04 commit | `b31264ec88efd647d0db9143e76a1aeaf93e8a47` (signed, good signature) |
+| Predecessor of that commit | `d9410b3a697fb465e1d766f758d9959f44219f62` (fast-forward, no history rewrite) |
 | Remote branch | `origin/f04-implementation` |
-| Checkpoint tag | `checkpoint-F04-backend-review-pass` (annotated, signed) |
-| Tag target | the F04 commit |
+| Checkpoint tag | `checkpoint-F04-backend-review-pass`, tag object `3f206fd7d67b27bb5b06f8292f9454a78dd690db` (annotated, signed, good signature) |
+| Tag target | `b31264ec88efd647d0db9143e76a1aeaf93e8a47` |
+| This identity record | the follow-up commit on `f04-implementation` that adds this table (the tag stays on the materialization commit, F02/F03 precedent) |
 
 ## 6. Architecture 25
 
