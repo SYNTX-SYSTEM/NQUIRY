@@ -1,0 +1,19 @@
+WU-PFC-A1 regression evidence (2026-09-26), worktree worktrees/pfc-a1, isolated DB nquiry_pfc_a1_test @ f6b2c4d9a318
+
+BASELINE (unmodified production code, before the Delta)
+  live suite, without the falsifier file: 1535 passed, 2 skipped (7:53)
+  no-DB suite, falsifier file present:     808 passed, 752 skipped
+    (752 = 729 pre-existing DB skips + 23 falsifier skips; the no-DB baseline
+     was taken after the falsifier file was written; derived and re-verified below)
+
+AFTER THE DELTA
+  live suite:                              1558 passed, 2 skipped (8:32)   = 1535 + 23 new
+  no-DB suite:                              808 passed, 752 skipped (0:18)
+  no-DB suite without falsifier file:       808 passed, 729 skipped
+  falsifier file without DB:                 23 skipped
+  falsifier file live (final tree):          23 passed (see falsifiers_green.txt)
+
+RED (before the Delta): falsifier file 16 failed, 7 passed (preservation set green).
+Mutation proof: 18/18 KILLED (mutation_proof.txt); sources restored, sha256 verified.
+Static: ruff check, ruff format --check, mypy (changed files) PASS;
+        ARCHITECTURE_DEPENDENCY_CHECK / PROVIDER_SDK_IMPORT_CHECK / TEST_ONLY_IMPORT_CHECK PASS.

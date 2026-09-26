@@ -286,6 +286,10 @@ def challenge_detail(
             "title": challenge.title,
             "description": challenge.description,
             "createdAt": challenge.created_at.isoformat(),
+            "context": challenge.context,
+            "desiredOutcome": challenge.desired_outcome,
+            "constraints": challenge.constraints,
+            "stakeholders": challenge.stakeholders,
         },
         "sessions": [
             {

@@ -247,6 +247,12 @@ def _actor(principal: Any) -> Any:
     return ActorIdentity(ActorClass.HUMAN_USER, principal.user_id)
 
 
+def _frame_text(value: str | None) -> str | None:
+    """A Challenge frame field (09 §25) is stored exactly as sent; a missing,
+    empty or whitespace-only value means "not provided" (WU-PFC-A1 Case 2)."""
+    return value if value is not None and value.strip() else None
+
+
 def dispatch_create_challenge(
     *,
     session_token: str | None,
@@ -254,6 +260,10 @@ def dispatch_create_challenge(
     workspace_id: str,
     title: str,
     description: str | None,
+    context: str | None = None,
+    desired_outcome: str | None = None,
+    constraints: str | None = None,
+    stakeholders: str | None = None,
 ) -> Response:
     def work(ports: GovernedPorts, principal: Any) -> Response:
         ws = WorkspaceId(_uuid(workspace_id, "workspace_id"))
@@ -268,10 +278,10 @@ def dispatch_create_challenge(
                 workspace_id=ws,
                 title=title.strip(),
                 description=(description or "").strip() or None,
-                context=None,
-                desired_outcome=None,
-                constraints=None,
-                stakeholders=None,
+                context=_frame_text(context),
+                desired_outcome=_frame_text(desired_outcome),
+                constraints=_frame_text(constraints),
+                stakeholders=_frame_text(stakeholders),
                 command_id=ident.command_id,
                 attempt_id=ident.attempt_id,
                 correlation_id=ident.correlation_id,

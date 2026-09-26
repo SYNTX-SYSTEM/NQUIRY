@@ -49,6 +49,10 @@ def _idem(request: Request) -> str | None:
 class CreateChallengeBody(BaseModel):
     title: str
     description: str | None = None
+    context: str | None = None
+    desiredOutcome: str | None = None  # noqa: N815 -- camelCase wire contract
+    constraints: str | None = None
+    stakeholders: str | None = None
 
 
 class GrantBody(BaseModel):
@@ -95,6 +99,10 @@ def create_challenge(
             workspace_id=workspace_id,
             title=body.title,
             description=body.description,
+            context=body.context,
+            desired_outcome=body.desiredOutcome,
+            constraints=body.constraints,
+            stakeholders=body.stakeholders,
         )
     )
 
