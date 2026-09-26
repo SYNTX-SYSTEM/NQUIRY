@@ -1,0 +1,10 @@
+WU-PFC-I1 regression on the merged tree 81f208b (DB nquiry_pfc_int_test @ e7c1d4a9b206)
+live:  1735 passed, 2 skipped in 779.74s (0:12:59)   = F04 1712 + PFC-A1 23
+no-DB: 888 passed, 849 skipped in 22.67s          = F04 888 passed; 826 + 23 skipped
+ruff check .: all checks passed
+ruff format --check .: 1 file (docs/implementation/field-reports/F04/review/BACKEND_REVIEW_BUNDLE.md) -- identical finding on the F04 checkpoint itself (hash-bound reviewed input, not modified)
+mypy packages apps/api/src apps/worker/src scripts: no issues in 190 source files
+ARCHITECTURE_DEPENDENCY_CHECK / PROVIDER_SDK_IMPORT_CHECK / TEST_ONLY_IMPORT_CHECK: PASS
+verify_migrations: STATIC PASS (28 revisions, single head e7c1d4a9b206), LIVE PASS
+F04 mutation proof: F04_MUTATION_PROOF::PASS (24 killed)
+PFC-A1 mutation proof: 18/18 killed

@@ -1,0 +1,27 @@
+# HUMAN_AUTHORITY_QUEUE — NQUIRY_PRODUCT_FUNCTION_COMPLETION
+
+The rolling queue for the autonomous PFC run (authorization of 2026-09-26). Each entry is a Case 3 boundary that the Field cannot resolve on its own. The relations behind these entries are marked BLOCKED_ON_HUMAN_AUTHORITY or BLOCKED_ON_EXTERNAL_DEPENDENCY. The autonomous program keeps working on independent relations. No question is repeated; an entry is updated in place.
+
+Status values: OPEN (waiting), RESOLVED (with the decision reference).
+
+| # | Boundary | Exact home | What it blocks | Status |
+|---|---|---|---|---|
+| HA-01 | **REFLECTION gate / legal exit from ANALYSIS.** TRN-SESS-007 requires AI_VALIDATION_PROOF. A mock proof never counts for a non-fixture Session (F04 HD-20). The real provider is external (HARD-DEP-002). The no-AI exit is open (NQ-GAP-024 / GAP-03-006). The options were (a) wait for the real provider lane, (b) a human-authorized exit from ANALYSIS without an AI proof, or (c) fixture-only Sessions, with F05 deciding whether a mock proof may count for them. | 03 TRN-SESS-007, 04 AUTH-DEP-SESS-007, 16 NQ-GAP-024 / NQ-DEC-024 / NQ-DEC-031, F04 HD-20 | TRN-SESS-007..013. F05 (Reflection, Selection, ImpactChain, Investigation), F06, F07 by ordering, PF15, PF16, Tobi MVP #11–#14 | OPEN |
+| HA-02 | **Real provider eligibility** | HARD-DEP-002, NQ-GAP-060 (EXTERNAL_DEPENDENCY), NQ-DEC-024, NQ-DEC-031 | Real AI value, realistic `estimated_cost`, AI expansion | OPEN (external) |
+| HA-03 | **H-8: F04 UI integration order (WU-04.8).** Standing instruction: "Do not proceed into WU-04.8 unless explicit Human Authority is later provided." | F04 H-8; `field-reports/F04/WU-04.8.md` | The CYAN projection of `position.analysis` (FBR-PFC-11) | OPEN |
+| HA-04 | **Export Authority** | NQ-GAP-038, NQ-GAP-047, NQ-DEC-023 (09 §66/§95/§167) | PF21 Export (Tobi MVP #15) | OPEN |
+| HA-05 | **Reflection answer persistence** | NQ-GAP-016 | The F05 Reflection prompts (after HA-01) | OPEN |
+| HA-06 | **Emotional Temperature scale and scope** | 09 §26 ("exact scale remains source/method configuration"), 02 §10.5; absent from 12 | PF17 | OPEN |
+| HA-07 | **AI scope beyond F04 HD-21** (assumption detection, reframing, generation, Mode C, coach modes) and **AI autonomy** | NQ-GAP-070 / NQ-DEC-026; NQ-GAP-065; HD-18/HD-21 | PF02, PF03, PF08 AI part, PF13, AIOP-003/004/014/015 | OPEN |
+| HA-08 | **F06 prerequisites:** Assumption classification beyond UNKNOWN (GAP-07-001), Insight validation authority (NQ-GAP-055), Experiment status vocabulary (NQ-GAP-020), Evidence ownership (NQ-GAP-011) and Evidence capture authority (none defined, 07 AC-07-002, 09 §63) | 07, 16 | F06 | OPEN |
+| HA-09 | **Architecture 24 Identity scope** and its 18 §36 decisions. It also gates **runtime DB-principal isolation**: WU-AUTH-17 / FBR-AUTH-006 is owned by the Identity Field and ordered after WU-AUTH-05..13. | Architecture 24 §36, WU-AUTH-17 | OIDC, linking, recovery; runtime isolation of live HTTP persistence (RLS actually active) | OPEN |
+| HA-10 | **Deployment effect of runtime isolation.** Production role credentials, `db_roles.sql` on the server, and `.env` changes on nquiry.condyn.eu. | `docs/deployment/FELD_NQUIRY_DEPLOYMENT_f5.md` §4/§10; GAP-11-013 | Applying any isolation change to the live deployment | OPEN (external effect) |
+| HA-11 | **Audit Read Authority Policy.** 11 §73: audit access is controlled separately from domain reads, and "must not infer universal audit access from Owner, Admin or Viewer". | GAP-11-001 | 12 §23 `GET /sessions/{s}/provenance` (where it exposes audit), `GET /commands/{c}/reconstruction`, and 12 §24 item 15 (the provenance/audit reconstruction view) | OPEN |
+| HA-12 | **Session cancellation / abandonment** | 03 §18 GAP-03-001 ("A later human decision is required") | An early exit from any Session state; CLOSED is reachable only through REFLECTION | OPEN |
+| HA-13 | **Collaboration** (Observer/Viewer assignment, leaving or removal, real-time and async contribution) | NQ-GAP-073 / NQ-DEC-028 (DECISION_REQUIRED); NQ-GAP-079 (leave/removal OPEN); 12 §5 excludes "Full collaboration" | PF19 beyond the current F02/F03 participation | OPEN |
+| HA-14 | **Decision lifecycle outside the F07 order.** TRN-DEC-001 names no Session-state gate, but NQ-GAP-012 (Decision lifecycle semantics) is OPEN. Architecture 19 orders F07 after F05/F06, and 12's happy path places Decision after INVESTIGATION. Opening Decisions early would decide Decision semantics ahead of their predecessor Fields. | 03 TRN-DEC-001/002, 16 NQ-GAP-012, 19 DAG | FBR-PFC-05 (Decision exists only by seed) | OPEN (ordering + gap) |
+| HA-15 | **Recovery policy.** Legal reversal catalogue (NQ-GAP-067), discretionary recovery authority (NQ-GAP-054 / GAP-06-007), and the 19 §29 STOP on legal/privacy/retention | 16, 19 §29 | F09 recovery wiring (also ordered after F08) | OPEN |
+| HA-16 | **Challenge status vocabulary** | NQ-GAP-018 / GAP-03-013 | Challenge lifecycle; no status is invented | OPEN |
+| HA-17 | **Inquiry Metrics, Method Library, Journey, Question Audit, Listening, Research, Mode B/C** (INTENTIONALLY_DEFERRED) | NQ-DEC-029/030, NQ-GAP-013/014/064/066/074, 12 §5 | PF05, PF06, PF07, PF11, PF14, PF18, PF27 | DEFERRED (no action unless reopened) |
+
+**Priority for Human Authority:** HA-01 unblocks the main product chain. HA-03 unblocks the only built-but-invisible capability. HA-11 unblocks the provenance view. HA-09 unblocks runtime isolation.

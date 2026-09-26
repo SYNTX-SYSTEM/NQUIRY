@@ -1,0 +1,26 @@
+KILLED         M01 BND-008 requester-keyed again (FBR-F04-3)
+KILLED         M02 BND-009 ignores Burst state
+KILLED         M03 SYSTEM_OPERATION accepts any actor class
+KILLED         M04 SYSTEM_OPERATION executes a superseded OA
+KILLED         M05 SYSTEM_OPERATION ignores consumption
+KILLED         M06 SYSTEM_OPERATION skips the OA-3 authorizer check (K15)
+KILLED         M07 SYSTEM_OPERATION ignores Session state
+KILLED         M08 BND-014 never denies SYSTEM_OPERATION
+KILLED         M09 BEGIN_ANALYSIS skips frozen-set verification
+KILLED         M10 BEGIN_ANALYSIS creates no OA-1 (HD-16)
+KILLED         M11 validator allows unknown fields (HD-18)
+KILLED         M12 validator allows out-of-manifest refs
+KILLED         M13 manifest binding ignores extra inputs (D2)
+KILLED         M14 acceptance creates no OA-3 (HD-23)
+KILLED         M15 request accepts a mismatched case (E18)
+KILLED         M16 request allowed while a generation is non-terminal (E10)
+KILLED         M17 BND-010 ignores fields outside the contract (E14)
+KILLED         M18 mock allowed in production (F1)
+KILLED         M19 mock projected without its marker (HD-19)
+KILLED         M20 derived field served before the frozen set (HD-22)
+KILLED         M21 accepted content re-serialized again (R1)
+KILLED         M22 resolver accepts a non-VALIDATED proof (R1)
+KILLED         M22b resolver skips the byte binding (R1)
+KILLED         M23 VALIDATED proof persisted on a denied acceptance (R2)
+F04_MUTATION_PROOF::PASS
+f04 exit 0

@@ -1,0 +1,20 @@
+M01 body->command drops context: KILLED
+M02 body->command drops desiredOutcome: KILLED
+M03 body->command drops constraints: KILLED
+M04 body->command drops stakeholders: KILLED
+M05 body accepts non-text context: KILLED
+M06 command drops context: KILLED
+M07 command drops desired_outcome: KILLED
+M08 command drops constraints: KILLED
+M09 command drops stakeholders: KILLED
+M10 command silently cross-maps constraints<-stakeholders: KILLED
+M11 Case-2 rule trims stored text: KILLED
+M12 Case-2 rule stores blank text: KILLED
+M13 projection drops context: KILLED
+M14 projection drops desiredOutcome: KILLED
+M15 projection drops constraints: KILLED
+M16 projection drops stakeholders: KILLED
+M17 projection cross-maps constraints<-stakeholders: KILLED
+M18 projection invents a status: KILLED
+18/18 killed
+a1 exit 0
