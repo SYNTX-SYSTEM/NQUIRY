@@ -95,6 +95,8 @@ class ProjectionConsumer:
         current = self._repository.get_session_read_model(session_id, envelope.workspace_scope_ref)
         if current is not None and current.last_event_id.value == envelope.event_id.value:
             return  # already applied -- idempotent redelivery, 09 section 15.2
+        if _is_stale(envelope, current.last_aggregate_version if current else None):
+            return  # WU-PFC-F08-2: a late (retried) older event never regresses the row
         payload_state = _extract_state(envelope.payload)
         model = SessionReadModel(
             session_id=session_id,
@@ -103,6 +105,7 @@ class ProjectionConsumer:
             projection_version=1 if current is None else current.projection_version + 1,
             last_event_id=envelope.event_id,
             updated_at=envelope.occurred_at,
+            last_aggregate_version=envelope.aggregate_version_after_commit.value,
         )
         self._repository.upsert_session_read_model(model)
 
@@ -112,6 +115,8 @@ class ProjectionConsumer:
         )
         if current is not None and current.last_event_id.value == envelope.event_id.value:
             return  # already applied -- idempotent redelivery, 09 section 15.2
+        if _is_stale(envelope, current.last_aggregate_version if current else None):
+            return  # WU-PFC-F08-2: a late (retried) older event never regresses the row
         model = InquiryReadModel(
             id=current.id if current is not None else uuid.uuid4(),
             aggregate_ref=envelope.aggregate_ref,
@@ -120,8 +125,20 @@ class ProjectionConsumer:
             snapshot=_extract_snapshot(envelope.payload),
             last_event_id=envelope.event_id,
             updated_at=envelope.occurred_at,
+            last_aggregate_version=envelope.aggregate_version_after_commit.value,
         )
         self._repository.upsert_inquiry_read_model(model)
+
+
+def _is_stale(envelope: EventEnvelope, projected_version: int | None) -> bool:
+    """WU-PFC-F08-2 (09 section 74): at-least-once delivery plus later retries
+    (10 section 17) can deliver an aggregate's older event after a newer one.
+    It is skipped, never applied over the newer projected state. Equal
+    versions are applied (distinct events of one commit version)."""
+    return (
+        projected_version is not None
+        and envelope.aggregate_version_after_commit.value < projected_version
+    )
 
 
 def _extract_state(payload: object) -> str | None:

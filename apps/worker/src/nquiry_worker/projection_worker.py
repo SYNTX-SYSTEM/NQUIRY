@@ -34,6 +34,11 @@ reproduces identical state, replay never re-enters a Command/CommitUnit
 path) against real, caller-supplied envelopes -- the same disclosed
 `SUCCESSOR_NOT_BUILT` boundary `OutboxWorker`'s own `EventEnvelopeSource`
 already names, not a new gap this package introduces.
+
+SUCCESSOR TRUTH (WU-PFC-F08-2): envelopes now come from the committed Event
+basis. This worker is driven per delivered event by
+`nquiry_worker.delivery.ProjectionEventPublisher`, and for replay by
+`nquiry_worker.delivery.rebuild_projections`.
 """
 
 from __future__ import annotations

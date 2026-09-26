@@ -67,6 +67,7 @@ class SqlAlchemyProjectionRepository:
                     projection_version=model.projection_version,
                     last_event_id=model.last_event_id.value,
                     updated_at=model.updated_at,
+                    last_aggregate_version=model.last_aggregate_version,
                 )
             )
         else:
@@ -78,6 +79,7 @@ class SqlAlchemyProjectionRepository:
                     projection_version=model.projection_version,
                     last_event_id=model.last_event_id.value,
                     updated_at=model.updated_at,
+                    last_aggregate_version=model.last_aggregate_version,
                 )
             )
 
@@ -105,6 +107,7 @@ class SqlAlchemyProjectionRepository:
                     snapshot=dict(model.snapshot),
                     last_event_id=model.last_event_id.value,
                     updated_at=model.updated_at,
+                    last_aggregate_version=model.last_aggregate_version,
                 )
             )
         else:
@@ -116,6 +119,7 @@ class SqlAlchemyProjectionRepository:
                     snapshot=dict(model.snapshot),
                     last_event_id=model.last_event_id.value,
                     updated_at=model.updated_at,
+                    last_aggregate_version=model.last_aggregate_version,
                 )
             )
 
@@ -192,6 +196,7 @@ def _session_read_model_from_row(row: sa.RowMapping) -> SessionReadModel:
         projection_version=row["projection_version"],
         last_event_id=EventId(row["last_event_id"]),
         updated_at=row["updated_at"],
+        last_aggregate_version=row["last_aggregate_version"],
     )
 
 
@@ -204,6 +209,7 @@ def _inquiry_read_model_from_row(row: sa.RowMapping) -> InquiryReadModel:
         snapshot=dict(row["snapshot"]),
         last_event_id=EventId(row["last_event_id"]),
         updated_at=row["updated_at"],
+        last_aggregate_version=row["last_aggregate_version"],
     )
 
 

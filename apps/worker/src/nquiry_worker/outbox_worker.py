@@ -26,7 +26,7 @@ mean every file under `apps/worker/src/nquiry_worker/` may use all of
 it: 14 section 41's own dedicated rule ("event consumer cannot import
 direct consequential handler") is a FILE-level constraint the generic
 `check_architecture_dependencies.py` package-level checker cannot see.
-`tests/security/test_outbox_worker.py` proves, by scanning this file's
+`tests/security/test_outbox_worker_exclusivity.py` proves, by scanning this file's
 own real AST, that it imports none of `command`, `commit`,
 `persistence` -- the same P-23-style dynamic proof PKG-19 already
 established for `MockProviderAdapter` exclusivity.
@@ -44,6 +44,13 @@ publish, mark-delivered/failed, retry-is-not-domain-retry,
 idempotent-redelivery-safety) against a real `OutboxRepository`, using
 a caller-supplied resolver for the one part of the pipeline
 (`OutboxRecord -> EventEnvelope`) that remains `SUCCESSOR_NOT_BUILT`.
+
+SUCCESSOR TRUTH (WU-PFC-F08-1/F08-2): the resolver now exists as
+`persistence.committed_event_repository.CommittedEventEnvelopeSource`,
+backed by the immutable `committed_events` basis written in every
+CommitUnit. It is wired into the running worker by
+`nquiry_worker.delivery.run_delivery_pass`. This file's own mechanics and
+import exclusivity are unchanged.
 """
 
 from __future__ import annotations
@@ -93,7 +100,7 @@ class OutboxWorker:
     already-delivered facts. Creates no new domain choice, invents no
     authority, and never re-enters the governed Command/CommitUnit
     write path -- see this module's own docstring and
-    `tests/security/test_outbox_worker.py` for the structural proof.
+    `tests/security/test_outbox_worker_exclusivity.py` for the structural proof.
     """
 
     def __init__(

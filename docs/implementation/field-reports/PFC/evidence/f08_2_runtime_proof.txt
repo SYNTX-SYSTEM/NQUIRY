@@ -1,0 +1,31 @@
+WU-PFC-F08-2 runtime proof (2026-09-26): real API process + real worker process, isolated DB nquiry_pfc_int_runtime @ c3b8e5a1f7d2
+API: NQUIRY_ENVIRONMENT=DEVELOPMENT NQUIRY_AI_PROVIDER=mock uvicorn nquiry_api.main:app --port 18431
+seed: tests/e2e/f04_runtime_proof.py seed (real F02/F03 handlers, COMMITTED): 19 outbox rows, 19 committed_events
+HTTP: tests/e2e/f04_runtime_proof.py drive ... (login cookies, Idempotency-Key, POST transitions/begin-analysis):
+   {'begin_status': 200, 'begin_kind': 'committed', 'state_after': 'ANALYSIS', 'clustering_status': 'ACCEPTED'}
+  after HTTP: 24 PENDING outbox rows, 24 committed_events (event types: 16 families incl. SESSION_ANALYSIS_BEGUN, AI_GENERATION_REQUESTED x2, AI_OUTPUT_ACCEPTED, QUESTION_CLUSTERS_ACCEPTED)
+
+== worker pass 1 (python -m nquiry_worker --once)
+nquiry_worker: delivery pass: delivered=24 failed=0
+exit=0
+DELIVERED|1|24
+== session_read_model for the HTTP-driven Session
+ANALYSIS|6|6
+ANALYSIS|6
+== inquiry_read_model rows / checkpoints
+18
+inquiry_read_model|18
+session_read_model|6
+== worker pass 2 (restart)
+nquiry_worker: delivery pass: delivered=0 failed=0
+exit=0
+== continuous mode, SIGTERM after 3s
+nquiry_worker: delivery pass: delivered=0 failed=0
+nquiry_worker: delivery pass: delivered=0 failed=0
+nquiry_worker: stopped.
+exit=0
+== no DATABASE_URL
+nquiry_worker: DATABASE_URL is not set; refusing to start.
+exit=2
+== canonical unchanged by delivery: commands/commit_units/audit
+25|24|24|24

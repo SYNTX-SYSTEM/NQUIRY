@@ -1214,6 +1214,7 @@ session_read_model_table = sa.Table(
     sa.Column("projection_version", sa.BigInteger(), nullable=False),
     sa.Column("last_event_id", sa.Uuid(), nullable=False),
     sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("last_aggregate_version", sa.BigInteger(), nullable=True),
     sa.ForeignKeyConstraint(
         ["session_id", "workspace_id"],
         ["sessions.id", "sessions.workspace_id"],
@@ -1237,6 +1238,7 @@ inquiry_read_model_table = sa.Table(
     sa.Column("snapshot", postgresql.JSONB(), nullable=False),
     sa.Column("last_event_id", sa.Uuid(), nullable=False),
     sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("last_aggregate_version", sa.BigInteger(), nullable=True),
     sa.UniqueConstraint(
         "aggregate_ref", "workspace_id", name="uq_inquiry_read_model_aggregate_workspace"
     ),

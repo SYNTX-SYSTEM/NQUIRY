@@ -23,16 +23,18 @@ Three pieces:
 from __future__ import annotations
 
 import uuid
+from datetime import datetime
 from typing import Any
 
 import sqlalchemy as sa
 from events.contracts import EventBasisMissing, EventContract, aggregate_kind_and_id
 from events.envelope import EventEnvelope
-from events.outbox import OutboxRecord
+from events.outbox import DeliveryStatus, OutboxRecord
 from semantic_types.ids import CausationId, CommandId, CommitId, CorrelationId, EventId, WorkspaceId
 from semantic_types.versions import ContractVersion, RecordVersion
 
-from persistence.tables import committed_events_table
+from persistence.outbox_repository import SqlAlchemyOutboxRepository
+from persistence.tables import committed_events_table, outbox_events_table
 
 # Aggregate kind -> the canonical table whose `record_version` it names, and
 # the column holding the owning Workspace (the Workspace row is its own owner).
@@ -113,6 +115,76 @@ class SqlAlchemyCommittedEventRepository:
         )
         return None if row is None else _envelope_from_row(row)
 
+    def list_for_workspace(self, workspace_id: WorkspaceId) -> tuple[EventEnvelope, ...]:
+        """WU-PFC-F08-2: the complete committed history of one Workspace, in
+        per-aggregate commit order (aggregate, then version). Replay and rebuild
+        read only this (09 section 18), never current canonical state."""
+        t = committed_events_table
+        rows = (
+            self._connection.execute(
+                sa.select(t)
+                .where(t.c.workspace_id == workspace_id.value)
+                .order_by(t.c.aggregate_ref, t.c.aggregate_version_after_commit, t.c.occurred_at)
+            )
+            .mappings()
+            .all()
+        )
+        return tuple(_envelope_from_row(row) for row in rows)
+
+
+class SqlAlchemyAggregateOrderedOutbox:
+    """WU-PFC-F08-2: the `OutboxRepository` the delivery pass uses. It is the
+    real `SqlAlchemyOutboxRepository` except for due-selection order: records
+    are selected by commit time, then aggregate, then the committed aggregate
+    version. Two commits of one aggregate at the same timestamp are therefore
+    delivered in version order. Records without a basis sort last (they fail
+    closed in the envelope source)."""
+
+    def __init__(self, connection: sa.Connection) -> None:
+        self._connection = connection
+        self._outbox = SqlAlchemyOutboxRepository(connection)
+
+    def append(self, record: OutboxRecord) -> None:
+        self._outbox.append(record)
+
+    def get(self, outbox_id: uuid.UUID) -> OutboxRecord | None:
+        return self._outbox.get(outbox_id)
+
+    def mark_delivered(self, outbox_id: uuid.UUID, *, delivered_at: datetime) -> None:
+        self._outbox.mark_delivered(outbox_id, delivered_at=delivered_at)
+
+    def mark_failed_delivery(self, outbox_id: uuid.UUID, *, next_attempt_at: datetime) -> None:
+        self._outbox.mark_failed_delivery(outbox_id, next_attempt_at=next_attempt_at)
+
+    def list_due_for_delivery(self, *, now: datetime, limit: int = 100) -> tuple[OutboxRecord, ...]:
+        o, e = outbox_events_table, committed_events_table
+        stmt = (
+            sa.select(o.c.id)
+            .select_from(o.outerjoin(e, e.c.event_id == o.c.event_id))
+            .where(
+                sa.or_(
+                    o.c.delivery_status == DeliveryStatus.PENDING.value,
+                    sa.and_(
+                        o.c.delivery_status == DeliveryStatus.FAILED_DELIVERY.value,
+                        o.c.next_attempt_at <= now,
+                    ),
+                )
+            )
+            .order_by(
+                o.c.created_at,
+                e.c.aggregate_ref.nulls_last(),
+                e.c.aggregate_version_after_commit.nulls_last(),
+                o.c.id,
+            )
+            .limit(limit)
+        )
+        records = []
+        for outbox_id in self._connection.execute(stmt).scalars():
+            record = self._outbox.get(outbox_id)
+            assert record is not None  # noqa: S101 -- selected in this transaction
+            records.append(record)
+        return tuple(records)
+
 
 class CommittedEventEnvelopeSource:
     """`nquiry_worker.outbox_worker.EventEnvelopeSource`, structurally."""
@@ -157,6 +229,7 @@ def _envelope_from_row(row: Any) -> EventEnvelope:
 __all__ = [
     "AggregateNotCommitted",
     "CommittedEventEnvelopeSource",
+    "SqlAlchemyAggregateOrderedOutbox",
     "SqlAlchemyCommittedEventRepository",
     "committed_aggregate_version",
 ]

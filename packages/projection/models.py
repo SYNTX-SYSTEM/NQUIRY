@@ -109,6 +109,9 @@ class SessionReadModel:
     projection_version: int
     last_event_id: EventId
     updated_at: datetime
+    last_aggregate_version: int | None = None
+    """WU-PFC-F08-2: the `aggregate_version_after_commit` of the event this
+    row reflects. A lower-version event is never applied over it."""
 
     def __post_init__(self) -> None:
         if not isinstance(self.session_id, SessionId):
@@ -137,6 +140,8 @@ class InquiryReadModel:
     snapshot: Mapping[str, object]
     last_event_id: EventId
     updated_at: datetime
+    last_aggregate_version: int | None = None
+    """WU-PFC-F08-2: see `SessionReadModel.last_aggregate_version`."""
 
     def __post_init__(self) -> None:
         if not isinstance(self.id, uuid.UUID):

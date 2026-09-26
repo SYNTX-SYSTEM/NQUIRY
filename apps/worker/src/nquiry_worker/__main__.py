@@ -1,43 +1,92 @@
-"""No-op worker entrypoint for the Phase 0 skeleton.
+"""Worker entrypoint: the transactional-outbox delivery loop (WU-PFC-F08-2).
 
-Intentionally does nothing but report its own status and exit
-successfully. Replaced by real outbox/projection/recovery worker
-wiring starting Phase 4 (14 §44). This is not a placeholder pretending
-success on a real task — it performs no consequential work and claims
-none.
+Until WU-PFC-F08-2 this was the Phase-0 no-op ("no workers implemented yet").
+It now runs the F08 delivery pipeline (`nquiry_worker.delivery`): each pass
+selects the due outbox records, resolves each to its exact committed
+EventEnvelope, applies it to the projection read models, and marks it
+DELIVERED or FAILED_DELIVERY, all in one transaction per pass
+(`projection.delivery.open_delivery`).
 
-PKG-27 ADDITION: emits one real `ObservationContext` through
-`LocalOtelObservationSink` per invocation -- the "...worker
-instrumentation integration" 14's own PKG-27 OBJECTIVE names.
-Deliberately the ONLY instrumented call site in this process:
-`outbox_worker.py`/`projection_worker.py` are proven only through
-their own tests, never wired into this entrypoint at all yet (this
-file still calls neither) -- a real `command_id`/`event_id`/
-`recovery_id`-bearing `ObservationContext` for an actual processed
-batch remains that future wiring's own scope, `SUCCESSOR_NOT_BUILT`,
-disclosed rather than fabricated here.
+- `python -m nquiry_worker`: loop until SIGTERM/SIGINT, one pass every
+  `--interval` seconds. Shutdown is graceful: the current pass completes or
+  rolls back as a whole.
+- `python -m nquiry_worker --once`: exactly one pass, then exit.
+- Without `DATABASE_URL` the worker refuses to start (exit 2). It has no
+  default connection string, matching `persistence.engine`.
+
+PKG-27: one `ObservationContext` per startup and one per pass, through
+`LocalOtelObservationSink`. Operational telemetry only, never authoritative
+audit (12 section 25).
 """
 
 from __future__ import annotations
 
+import argparse
+import os
+import signal
 import sys
+import time
 import uuid
+from types import FrameType
 
 from observability.context import LocalOtelObservationSink, ObservationContext
+from projection.delivery import open_delivery
+from semantic_types.clock import SystemClock
 from semantic_types.ids import CorrelationId
+
+from nquiry_worker.delivery import DEFAULT_RETRY_BACKOFF_SECONDS, run_delivery_pass
 
 _observation_sink = LocalOtelObservationSink(tracer_name="nquiry.worker")
 
 
-def main() -> int:
+class _Stop:
+    requested = False
+
+
+def _request_stop(_signum: int, _frame: FrameType | None) -> None:
+    _Stop.requested = True
+
+
+def _one_pass(backoff: int) -> None:
     _observation_sink.emit(
-        ObservationContext(
-            correlation_id=CorrelationId(uuid.uuid4()),
-            operation="worker_startup",
-        )
+        ObservationContext(correlation_id=CorrelationId(uuid.uuid4()), operation="delivery_pass")
     )
-    print("nquiry_worker: Phase 0 skeleton — no workers implemented yet.", file=sys.stderr)
-    return 0
+    with open_delivery() as ports:
+        result = run_delivery_pass(ports, clock=SystemClock(), retry_backoff_seconds=backoff)
+    print(
+        f"nquiry_worker: delivery pass: delivered={len(result.delivered)} "
+        f"failed={len(result.failed)}",
+        file=sys.stderr,
+        flush=True,
+    )
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(prog="nquiry_worker")
+    parser.add_argument("--once", action="store_true", help="run exactly one delivery pass")
+    parser.add_argument("--interval", type=float, default=5.0, help="seconds between passes")
+    parser.add_argument("--retry-backoff", type=int, default=DEFAULT_RETRY_BACKOFF_SECONDS)
+    args = parser.parse_args(argv)
+
+    if not os.environ.get("DATABASE_URL"):
+        print("nquiry_worker: DATABASE_URL is not set; refusing to start.", file=sys.stderr)
+        return 2
+
+    _observation_sink.emit(
+        ObservationContext(correlation_id=CorrelationId(uuid.uuid4()), operation="worker_startup")
+    )
+    signal.signal(signal.SIGTERM, _request_stop)
+    signal.signal(signal.SIGINT, _request_stop)
+    while True:
+        _one_pass(args.retry_backoff)
+        if args.once:
+            return 0
+        deadline = time.monotonic() + args.interval
+        while time.monotonic() < deadline:
+            if _Stop.requested:
+                print("nquiry_worker: stopped.", file=sys.stderr, flush=True)
+                return 0
+            time.sleep(0.1)
 
 
 if __name__ == "__main__":

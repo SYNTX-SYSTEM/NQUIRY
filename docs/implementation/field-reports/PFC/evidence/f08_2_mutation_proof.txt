@@ -1,0 +1,11 @@
+M01 session read model applies a stale (older) event: KILLED
+M02 inquiry read model applies a stale (older) event: KILLED
+M03 equal-version events treated as stale: KILLED
+M04 poison record crashes the pass instead of failing closed: KILLED
+M05 projection write not isolated per event: KILLED
+M06 projection failure swallowed and marked delivered: KILLED
+M07 due selection ignores per-aggregate order: KILLED
+M08 rebuild keeps the (possibly corrupted) projection: KILLED
+M09 worker starts without a database: KILLED
+M10 consumer records no aggregate version: KILLED
+10/10 killed; sources restored: True

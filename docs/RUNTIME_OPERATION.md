@@ -284,17 +284,24 @@ container publishes.
 
 `worker` is a real service in the `app` profile (`docker-compose.yml`),
 started by the same `docker compose --profile app up` call as `api`
-and `web` (section 3) — no separate command. It
-runs `python -m nquiry_worker`, prints `"nquiry_worker: Phase 0
-skeleton — no workers implemented yet."` to stderr, and **exits 0
-immediately by design** — this is correct, not a crash. No `restart:`
-policy is configured (defaults to `no`), so it does not loop. The real,
-tested `OutboxWorker`/`ProjectionWorker` classes exist
-(`apps/worker/src/nquiry_worker/outbox_worker.py`, `projection_worker.py`)
-but are not wired into this entrypoint — `BLOCKED_BY_UPSTREAM_GAP`, not
-implemented, because no durable `OutboxRecord.commit_id` ->
-`EventEnvelope` reconstruction mechanism exists in this codebase yet
-(disclosed in those files' own docstrings since PKG-20/21).
+and `web` (section 3) — no separate command.
+
+**Since WU-PFC-F08-2 (branch `pfc-integration`)** it runs the F08
+delivery loop.
+- It runs `python -m nquiry_worker`. Every 5 seconds it makes one
+  delivery pass: due outbox records → exact committed EventEnvelope
+  (`committed_events`, WU-PFC-F08-1) → projection read models
+  (`session_read_model`, `inquiry_read_model`) → DELIVERED or
+  FAILED_DELIVERY.
+- Each pass is one transaction and prints `nquiry_worker: delivery pass:
+  delivered=N failed=M` to stderr.
+- It stops gracefully on SIGTERM or SIGINT. `--once` runs a single pass.
+- Without `DATABASE_URL` it refuses to start (exit 2).
+- Outbox records committed before migration `a9f3c2e81d57` have no exact
+  Event basis. They fail closed as FAILED_DELIVERY and are retried with
+  backoff; no Event is invented.
+- The published line (master) still carries the Phase-0 no-op worker
+  described in earlier revisions of this section.
 
 ## 8. Exact local URLs
 

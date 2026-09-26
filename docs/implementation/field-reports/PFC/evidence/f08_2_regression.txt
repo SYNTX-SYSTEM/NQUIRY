@@ -1,0 +1,23 @@
+WU-PFC-F08-2 regression evidence (2026-09-26), worktree pfc-integration, DB nquiry_pfc_int_test @ c3b8e5a1f7d2
+
+BASELINE (checkpoint-PFC-F08-1): live 1759 passed / 2 skipped; no-DB 892 passed, 869 skipped.
+
+RED (before the repair): tests/e2e/test_pfc_f08_2_delivery.py 12 failed / 0 passed:
+  No module named 'nquiry_worker.delivery' (x6); No module named 'projection.delivery' (x3);
+  delivery.py missing (x1); worker printed "Phase 0 skeleton - no workers implemented yet." (x1);
+  worker exited 0 without DATABASE_URL (x1)
+
+AFTER THE REPAIR:
+  live full suite:  1773 passed, 2 skipped in 794.85s (0:13:14)   = 1759 + 14 F08-2 falsifiers
+  no-DB full suite: 894 passed, 881 skipped in 26.82s
+  Only change after the live full run: tests/e2e/test_pfc_f08_2_delivery.py
+    (the real-process test now skips without DATABASE_URL, per the repository's DB-skip idiom,
+     and the `pytest` import an auto-fix had dropped is restored). That file re-run live on the
+     final tree: 14 passed; the no-DB full suite above ran on the final tree.
+  The first no-DB run on the pre-fix tree: 1 failed (that test asserted DATABASE_URL instead of skipping).
+ruff check . : all checks passed; ruff format --check (apps packages tests scripts migrations): 369 files formatted
+mypy packages apps/api/src apps/worker/src scripts: no issues in 196 source files
+ARCHITECTURE_DEPENDENCY_CHECK / PROVIDER_SDK_IMPORT_CHECK / TEST_ONLY_IMPORT_CHECK: PASS
+verify_migrations: STATIC PASS (30 revisions, single head c3b8e5a1f7d2), LIVE PASS
+mutation proof: 10/10 KILLED, sources restored (evidence/f08_2_mutation_proof.txt)
+runtime proof: evidence/f08_2_runtime_proof.txt (real API + real worker process)

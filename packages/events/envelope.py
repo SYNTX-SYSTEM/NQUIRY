@@ -63,6 +63,13 @@ a future package would supply this join. This package proves the
 serialization) and the delivery/idempotency mechanics around it, using
 explicit, caller-supplied field values -- never reconstructing from a
 real production commit.
+
+SUCCESSOR TRUTH (WU-PFC-F08-1): the historically faithful basis now exists.
+Every CommitUnit writes one immutable `committed_events` row whose fields are
+exactly this envelope (contracts in `events.contracts`), and
+`persistence.committed_event_repository.CommittedEventEnvelopeSource`
+reconstructs the envelope from that row alone. This package itself is
+unchanged.
 """
 
 from __future__ import annotations
