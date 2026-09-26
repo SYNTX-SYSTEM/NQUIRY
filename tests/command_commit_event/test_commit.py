@@ -44,6 +44,7 @@ from commit.idempotency import (
     SqlAlchemyIdempotencyRepository,
 )
 from domain.burst import BurstMode, BurstState, QuestionBurst
+from events.contracts import EventContract, EventFacts
 from evidence.evidence_set import (
     EvidenceSetMember,
     EvidenceSetReference,
@@ -267,7 +268,15 @@ class _BurstStartMutation:
             )
         except BurstConflict as exc:
             raise StaleVersionConflict(str(exc)) from exc
-        return MutationOutcome(state_before_ref="PREPARED", state_after_ref="ACTIVE")
+        return MutationOutcome(
+            state_before_ref="PREPARED",
+            state_after_ref="ACTIVE",
+            # WU-PFC-F08-1: every commit states its Event facts (19 §28).
+            event=EventFacts(
+                aggregate_ref=f"burst:{self._burst_id.value}",
+                payload={"burst_id": str(self._burst_id.value), "state": "ACTIVE"},
+            ),
+        )
 
 
 class _BurstVersionReader:
@@ -321,7 +330,17 @@ def _build_coordinator(
         commit_repository=SqlAlchemyCommitRepository(db_connection),
         idempotency_port=SqlAlchemyIdempotencyRepository(db_connection),
         failure_injector=failure_injector,  # type: ignore[arg-type]
+        event_contracts=_TEST_EVENT_CONTRACTS,
     )
+
+
+# WU-PFC-F08-1: this PKG-13 test drives a bare Burst start that no production
+# handler commits on its own, so it declares that event's contract here.
+_TEST_EVENT_CONTRACTS = {
+    "CMD_START_QUESTION_BURST_COMMITTED": EventContract(
+        "CMD_START_QUESTION_BURST_COMMITTED", "burst", frozenset({"burst_id", "state"})
+    )
+}
 
 
 def _commit_burst_start(

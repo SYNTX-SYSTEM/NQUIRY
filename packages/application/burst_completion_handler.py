@@ -48,6 +48,7 @@ from domain.burst_transitions import BurstTransitionId, resolve_burst_transition
 from domain.question_selection import session_target_ref
 from domain.session import SessionState
 from domain.session_transitions import SessionTransitionId, resolve_session_transition
+from events.contracts import EventFacts
 from persistence.burst_repository import SqlAlchemyBurstVersionReader, burst_target_ref
 from persistence.session_repository import SqlAlchemySessionVersionReader
 from semantic_types.ids import SessionId, WorkspaceId
@@ -227,6 +228,18 @@ def complete_burst(
             state_after_ref="session:QUESTION_CAPTURE|burst:COMPLETED",
             event_type="QUESTION_GENERATION_CLOSED",
             result_ref=str(locked.burst_id.value),  # type: ignore[attr-defined]
+            event=EventFacts(
+                aggregate_ref=session_target_ref(session_id),
+                payload={
+                    "session_id": str(session_id.value),
+                    "previous_state": SessionState.QUESTION_GENERATION.value,
+                    "state": SessionState.QUESTION_CAPTURE.value,
+                    "burst_id": str(locked.burst_id.value),  # type: ignore[attr-defined]
+                    "burst_state": "COMPLETED",
+                    "frozen_membership_fingerprint": str(frozen["fingerprint"]),
+                    "frozen_member_count": int(frozen["count"]),  # type: ignore[call-overload]
+                },
+            ),
         )
 
     unit = _run(

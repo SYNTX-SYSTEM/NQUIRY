@@ -109,6 +109,7 @@ from commit.coordinator import (
     StaleVersionConflict,
 )
 from commit.idempotency import IdempotencyPort
+from events.contracts import EventFacts
 from events.outbox import OutboxRepository
 from governance.authority_binding import AuthorityBindingState, AuthorityClass
 from governance.membership import WorkspaceRole
@@ -240,6 +241,14 @@ class _RevokeAuthorityBindingMutation:
         return MutationOutcome(
             state_before_ref=AuthorityBindingState.ACTIVE.value,
             state_after_ref=AuthorityBindingState.REVOKED.value,
+            event=EventFacts(
+                aggregate_ref=f"authority_binding:{self._binding_id.value}",
+                payload={
+                    "binding_id": str(self._binding_id.value),
+                    "previous_state": AuthorityBindingState.ACTIVE.value,
+                    "state": AuthorityBindingState.REVOKED.value,
+                },
+            ),
         )
 
 
@@ -528,6 +537,17 @@ class _GrantAuthorityBindingMutation:
         return MutationOutcome(
             state_before_ref=None,
             state_after_ref=AuthorityBindingState.ACTIVE.value,
+            event=EventFacts(
+                aggregate_ref=f"authority_binding:{self._binding_id.value}",
+                payload={
+                    "binding_id": str(self._binding_id.value),
+                    "human_user_id": str(self._human_user_id.value),
+                    "authority_class": self._authority_class.value,
+                    "scope_type": self._scope_type,
+                    "scope_id": str(self._scope_id),
+                    "state": AuthorityBindingState.ACTIVE.value,
+                },
+            ),
         )
 
 

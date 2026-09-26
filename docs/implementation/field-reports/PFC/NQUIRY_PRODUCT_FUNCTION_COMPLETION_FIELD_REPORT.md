@@ -16,6 +16,7 @@ Product functions use PF numbering (PF01–PF27). F00–F12 are repository Field
 | — | Architecture 25 (option b) | `pfc-architecture` | `1eb3799` | — | pushed, not merged |
 | 1 | WU-PFC-A1 Challenge frame completion | `pfc-a1-challenge-frame` | `71b3bab` | `checkpoint-PFC-A1` | TECHNICALLY_ACCEPTED, CHECKPOINTED |
 | 2 | WU-PFC-I1 predecessor integration (F04 + A1) | `pfc-integration` | `81f208b` | `checkpoint-PFC-I1` | TECHNICALLY_CLOSED, CHECKPOINTED |
+| 3 | WU-PFC-F08-1 durable immutable committed Event basis | `pfc-integration` | see `CHECKPOINT_WU-PFC-F08-1.md` | `checkpoint-PFC-F08-1` | TECHNICALLY_CLOSED, CHECKPOINTED |
 
 ## 2. Field derivation after WU-PFC-I1
 
@@ -62,7 +63,7 @@ This derivation is based on three read-only reconstructions of 2026-09-26: F08 e
 |---|---|
 | FBR-PFC-01 F04 had no recoverable predecessor | **CLOSED** (WU-PFC-00) |
 | FBR-PFC-06 Challenge wire contract dropped the frame | **CLOSED** (WU-PFC-A1) |
-| FBR-PFC-08 outbox written, never delivered | **ACTIVE**: F08 Work Units |
+| FBR-PFC-08 outbox written, never delivered | **ACTIVE**. Sub-relation CommitUnit → durable Event basis **CLOSED** (WU-PFC-F08-1). Next: envelope → delivery → projection → replay (WU-PFC-F08-2). |
 | FBR-PFC-02 REFLECTION gate | BLOCKED (HA-01) |
 | FBR-PFC-03/04 Selection, ImpactChain | BLOCKED behind FBR-PFC-02 |
 | FBR-PFC-05 Decision only by seed | BLOCKED (HA-14) |
@@ -73,4 +74,4 @@ This derivation is based on three read-only reconstructions of 2026-09-26: F08 e
 
 ## 5. Resulting Field status
 
-**IN_PROGRESS (autonomous).** Two Work Units are technically closed and checkpointed. None is REVIEWED_FIELD. Nothing is PUBLISHED_FIELD. BLUE/master is unchanged.
+**IN_PROGRESS (autonomous).** Three Work Units are technically closed and checkpointed (A1, I1, F08-1). Test totals on `pfc-integration`: live 1759 passed / 2 skipped. None is REVIEWED_FIELD. Nothing is PUBLISHED_FIELD. BLUE/master is unchanged.

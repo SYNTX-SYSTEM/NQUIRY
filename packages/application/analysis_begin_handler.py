@@ -35,6 +35,7 @@ from domain.burst import BurstState
 from domain.question_selection import session_target_ref
 from domain.session import Session, SessionState
 from domain.session_transitions import SessionTransitionId, resolve_session_transition
+from events.contracts import EventFacts
 from persistence.burst_repository import SqlAlchemyBurstVersionReader, burst_target_ref
 from persistence.session_repository import SqlAlchemySessionVersionReader
 from semantic_types.ids import SessionId, WorkspaceId
@@ -197,6 +198,17 @@ def begin_analysis(
             relation_refs=(f"ai_operation_authorization:{authorization_id}",),
             event_type="SESSION_ANALYSIS_BEGUN",
             result_ref=str(authorization_id),
+            event=EventFacts(
+                aggregate_ref=session_target_ref(session_id),
+                payload={
+                    "session_id": str(session_id.value),
+                    "previous_state": SessionState.QUESTION_CAPTURE.value,
+                    "state": SessionState.ANALYSIS.value,
+                    "operation_authorization_id": str(authorization_id),
+                    "ai_operation_id": AIOperationId.AIOP_001.value,
+                    "authorization_shape": AuthorizationShape.OA_1.value,
+                },
+            ),
         )
 
     unit = _run(

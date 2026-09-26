@@ -1,0 +1,16 @@
+M01 commit writes no Event basis: KILLED
+M02 missing Event facts accepted: KILLED
+M03 payload keys not checked: KILLED
+M04 aggregate kind not checked: KILLED
+M05 unregistered event type accepted: KILLED
+M06 non-scalar payload value accepted: KILLED
+M07 version asserted instead of read from the committed row: KILLED
+M08 aggregate of another Workspace accepted: KILLED
+M09 missing basis reconstructed instead of refused: KILLED
+M10 outbox/Event disagreement not detected: KILLED
+M11 actor reference not the committed actor: KILLED
+M12 authority source not the commit-time source: KILLED
+M13 session transition records the previous state as the new one: KILLED
+M14 user-authored Question text copied into the Event: KILLED
+M15 envelope time not the commit time: KILLED
+15/15 killed; sources restored: True

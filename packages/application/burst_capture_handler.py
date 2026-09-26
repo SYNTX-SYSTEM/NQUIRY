@@ -76,6 +76,7 @@ from domain.burst_input import check_burst_input
 from domain.burst_membership import QuestionBurstMembership
 from domain.question import Question, QuestionOrigin
 from domain.session import Session, SessionState
+from events.contracts import EventFacts
 from persistence.burst_repository import SqlAlchemyBurstVersionReader, burst_target_ref
 from semantic_types.ids import (
     BurstId,
@@ -353,6 +354,17 @@ def capture_burst_question(
             relation_refs=(f"burst_question_membership:{membership_id.value}",),
             event_type="BURST_QUESTION_CAPTURED",
             result_ref=str(question_id.value),
+            event=EventFacts(
+                aggregate_ref=f"question:{question_id.value}",
+                payload={
+                    "question_id": str(question_id.value),
+                    "burst_id": str(burst_id.value),
+                    "session_id": str(session.session_id.value),
+                    "burst_question_membership_id": str(membership_id.value),
+                    "captured_order": captured_order,
+                    "origin": QuestionOrigin.HUMAN.value,
+                },
+            ),
         )
 
     if ident.idempotency_key is not None:

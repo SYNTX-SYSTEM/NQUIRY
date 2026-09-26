@@ -96,6 +96,13 @@ from boundaries.authority_source import AuthorityRequirement, FoundingAuthority
 from boundaries.bnd_014_commit import Bnd014CommitEvaluator, Bnd014Input
 from boundaries.types import BoundaryContext, BoundaryId, BoundaryProof, BoundaryResult
 from command.envelope import CommandEnvelope, CommandOutcome
+from events.contracts import (
+    PRODUCTION_EVENT_CONTRACTS,
+    EventContractRegistry,
+    EventFacts,
+    validate_event_facts,
+)
+from events.envelope import EventEnvelope
 from events.outbox import DeliveryStatus, OutboxRecord, OutboxRepository
 from evidence.freshness import (
     EvidenceFreshnessPort,
@@ -104,6 +111,10 @@ from evidence.freshness import (
 )
 from governance.authority_binding import AuthorityClass
 from persistence.command_repository import CommandRepository
+from persistence.committed_event_repository import (
+    SqlAlchemyCommittedEventRepository,
+    committed_aggregate_version,
+)
 from semantic_types.ids import (
     AttemptId,
     AuditEventId,
@@ -204,6 +215,11 @@ class MutationOutcome:
     result_ref: str | None = None
     """F02: the idempotency `result_ref` (e.g. the created record's id).
     Default: the commit id."""
+    event: EventFacts | None = None
+    """WU-PFC-F08-1 (19 §28): the aggregate and contract payload of the Event
+    this commit records. Required: a commit without it is refused
+    (EVENT_BASIS_MISSING). The version, identities, actor and authority of the
+    envelope come from the committed facts, never from the mutation."""
 
 
 class StaleVersionConflict(Exception):
@@ -348,8 +364,13 @@ class CommitCoordinator:
         commit_repository: CommitRepository,
         idempotency_port: IdempotencyPort,
         failure_injector: FailureInjectionPort | None = None,
+        event_contracts: EventContractRegistry = PRODUCTION_EVENT_CONTRACTS,
     ) -> None:
         self._connection = connection
+        # WU-PFC-F08-1: the durable Event basis is written on the same
+        # connection, so it commits or rolls back with the CommitUnit.
+        self._committed_events = SqlAlchemyCommittedEventRepository(connection)
+        self._event_contracts = event_contracts
         self._bnd014_evaluator = bnd014_evaluator
         self._command_repository = command_repository
         self._audit_repository = audit_repository
@@ -571,6 +592,13 @@ class CommitCoordinator:
                 delivery_attempt_count=0,
             )
             self._outbox_repository.append(outbox_record)
+            self._append_committed_event(
+                envelope,
+                outbox_record,
+                mutation_outcome.event,
+                commit_id=commit_id,
+                authority_source_ref=source.source_ref,
+            )
             self._failure_injector.before(CommitInjectionPoint.AFTER_OUTBOX)
 
             self._command_repository.record_outcome(
@@ -593,6 +621,45 @@ class CommitCoordinator:
             self._failure_injector.before(CommitInjectionPoint.BEFORE_DB_COMMIT)
 
         return commit_unit
+
+    def _append_committed_event(
+        self,
+        envelope: CommandEnvelope,
+        outbox_record: OutboxRecord,
+        facts: EventFacts | None,
+        *,
+        commit_id: CommitId,
+        authority_source_ref: uuid.UUID,
+    ) -> None:
+        """WU-PFC-F08-1: the durable immutable Event basis (19 §28), the exact
+        09 §16 envelope of `outbox_record`. Any contract violation raises
+        inside the SAVEPOINT, so the whole CommitUnit rolls back."""
+        contract = validate_event_facts(outbox_record.event_type, facts, self._event_contracts)
+        assert facts is not None  # noqa: S101 -- guaranteed by validate_event_facts
+        version = committed_aggregate_version(
+            self._connection,
+            aggregate_ref=facts.aggregate_ref,
+            workspace_id=envelope.workspace_scope_ref,
+            contract=contract,
+        )
+        self._committed_events.append(
+            EventEnvelope(
+                event_id=outbox_record.event_id,
+                event_type=outbox_record.event_type,
+                event_schema_version=contract.schema_version,
+                occurred_at=outbox_record.created_at,
+                workspace_scope_ref=envelope.workspace_scope_ref,
+                aggregate_ref=facts.aggregate_ref,
+                aggregate_version_after_commit=version,
+                command_id=envelope.command_id,
+                commit_id=commit_id,
+                correlation_id=envelope.correlation_id,
+                actor_ref=f"{envelope.requesting_actor_type}:{envelope.requesting_actor_id}",
+                authority_source_ref=authority_source_ref,
+                payload=dict(facts.payload),
+                causation_id=envelope.causation_id,
+            )
+        )
 
     def _mark_denied_at_gate(
         self, envelope: CommandEnvelope, *, occurred_at: datetime, reason_code: str

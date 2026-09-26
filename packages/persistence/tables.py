@@ -606,6 +606,45 @@ outbox_events_table = sa.Table(
     ),
 )
 
+committed_events_table = sa.Table(
+    "committed_events",
+    metadata,
+    sa.Column("event_id", sa.Uuid(), primary_key=True),
+    sa.Column("event_type", sa.Text(), nullable=False),
+    sa.Column("event_schema_version", sa.Text(), nullable=False),
+    sa.Column("occurred_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column(
+        "workspace_id",
+        sa.Uuid(),
+        sa.ForeignKey("workspaces.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    sa.Column("aggregate_ref", sa.Text(), nullable=False),
+    sa.Column("aggregate_version_after_commit", sa.BigInteger(), nullable=False),
+    sa.Column("command_id", sa.Uuid(), nullable=False),
+    sa.Column("commit_id", sa.Uuid(), nullable=False),
+    sa.Column("correlation_id", sa.Uuid(), nullable=False),
+    sa.Column("causation_id", sa.Uuid(), nullable=True),
+    sa.Column("actor_ref", sa.Text(), nullable=False),
+    sa.Column("authority_source_ref", sa.Uuid(), nullable=False),
+    sa.Column("payload", postgresql.JSONB(), nullable=False),
+    sa.ForeignKeyConstraint(
+        ["event_id"],
+        ["outbox_events.event_id"],
+        name="fk_committed_events_outbox_event",
+        ondelete="RESTRICT",
+    ),
+    sa.ForeignKeyConstraint(
+        ["commit_id", "workspace_id"],
+        ["commit_units.id", "commit_units.workspace_id"],
+        name="fk_committed_events_commit_workspace",
+        ondelete="RESTRICT",
+    ),
+)
+"""WU-PFC-F08-1 (F08): one immutable row per outbox record, the exact 09 §16
+EventEnvelope. See migration `a9f3c2e81d57` for the outbox binding and the
+UPDATE/DELETE rejection triggers."""
+
 commit_units_table = sa.Table(
     "commit_units",
     metadata,

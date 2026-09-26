@@ -91,6 +91,7 @@ from boundaries.types import BoundaryContext, BoundaryId, BoundaryResult
 from command.envelope import CommandEnvelope
 from commit.coordinator import CommitCoordinator, CommitRepository, MutationOutcome
 from commit.idempotency import IdempotencyRecord
+from events.contracts import EventFacts
 from events.outbox import OutboxRepository
 from governance.authority_binding import AuthorityClass
 from governance.membership import WorkspaceRole
@@ -238,6 +239,14 @@ class _FoundWorkspaceMutation:
             governance_refs=(f"authority_binding:{self._binding_id.value}",),
             event_type="WORKSPACE_CREATED",
             result_ref=str(self._workspace_id.value),
+            event=EventFacts(
+                aggregate_ref=f"workspace:{self._workspace_id.value}",
+                payload={
+                    "workspace_id": str(self._workspace_id.value),
+                    "owner_user_id": str(self._owner.value),
+                    "governance_binding_id": str(self._binding_id.value),
+                },
+            ),
         )
 
 

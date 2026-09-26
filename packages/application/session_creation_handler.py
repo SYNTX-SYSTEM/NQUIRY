@@ -111,6 +111,7 @@ from commit.idempotency import IdempotencyPort
 from domain.decision import challenge_target_ref
 from domain.question_selection import session_target_ref
 from domain.session import INITIAL_SESSION_STATE, Session
+from events.contracts import EventFacts
 from events.outbox import OutboxRepository
 from governance.authority_binding import AuthorityClass
 from governance.membership import WorkspaceRole
@@ -195,6 +196,16 @@ class _CreateSessionMutation:
             relation_refs=(session_target_ref(self._session.session_id),),
             event_type="SESSION_CREATED",
             result_ref=str(self._session.session_id.value),
+            event=EventFacts(
+                aggregate_ref=session_target_ref(self._session.session_id),
+                payload={
+                    "session_id": str(self._session.session_id.value),
+                    "challenge_id": str(self._session.challenge_id.value),
+                    "state": self._session.state.value,
+                    "applied_method_key": self._session.applied_method_key,
+                    "applied_method_version": str(self._session.applied_method_version.value),
+                },
+            ),
         )
 
 

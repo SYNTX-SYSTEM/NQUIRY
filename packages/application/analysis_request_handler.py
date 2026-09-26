@@ -39,6 +39,7 @@ from authority.actor import ActorIdentity
 from commit.coordinator import CommitUnit, FailureInjectionPort, MutationOutcome
 from domain.question_selection import session_target_ref
 from domain.session import SessionState
+from events.contracts import EventFacts
 from persistence.session_repository import SqlAlchemySessionVersionReader
 from semantic_types.ids import SessionId, WorkspaceId
 from semantic_types.versions import RecordVersion
@@ -202,6 +203,27 @@ def request_operation(
             relation_refs=(f"ai_operation_authorization:{new.authorization_id}",),
             event_type="AI_OPERATION_REQUESTED",
             result_ref=str(new.authorization_id),
+            event=EventFacts(
+                aggregate_ref=f"ai_operation_authorization:{new.authorization_id}",
+                payload={
+                    "authorization_id": str(new.authorization_id),
+                    "session_id": str(new.session_id.value),
+                    "ai_operation_id": new.ai_operation_id.value,
+                    "authorization_shape": new.shape.value,
+                    "request_case": None if new.request_case is None else new.request_case.value,
+                    "sequence_no": new.sequence_no,
+                    "supersedes_authorization_id": (
+                        None
+                        if new.supersedes_authorization_id is None
+                        else str(new.supersedes_authorization_id)
+                    ),
+                    "retry_of_generation_id": (
+                        None
+                        if new.retry_of_generation_id is None
+                        else str(new.retry_of_generation_id.value)
+                    ),
+                },
+            ),
         )
 
     ref = session_target_ref(session_id)

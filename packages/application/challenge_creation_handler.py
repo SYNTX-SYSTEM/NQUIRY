@@ -95,6 +95,7 @@ from commit.coordinator import (
     MutationOutcome,
 )
 from commit.idempotency import IdempotencyAlreadyCommitted, IdempotencyPort
+from events.contracts import EventFacts
 from events.outbox import OutboxRepository
 from governance.membership import WorkspaceRole
 from persistence.challenge_repository import ChallengeRepository
@@ -192,6 +193,10 @@ class _CreateChallengeMutation:
             state_after_ref=f"challenge:{challenge_id.value}",
             event_type="CHALLENGE_CREATED",
             result_ref=str(challenge_id.value),
+            event=EventFacts(
+                aggregate_ref=f"challenge:{challenge_id.value}",
+                payload={"challenge_id": str(challenge_id.value)},
+            ),
         )
 
 

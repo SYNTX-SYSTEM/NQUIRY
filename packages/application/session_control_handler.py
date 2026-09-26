@@ -86,6 +86,7 @@ from domain.burst_transitions import BurstTransitionId, resolve_burst_transition
 from domain.question_selection import session_target_ref
 from domain.session import Session, SessionState
 from domain.session_transitions import SessionTransitionId, resolve_session_transition
+from events.contracts import EventFacts
 from governance.authority_binding import AuthorityClass
 from persistence.burst_repository import (
     BurstConflict,
@@ -503,6 +504,14 @@ def _session_transition(
             state_before_ref=f"session:{session.state.value}",
             state_after_ref=f"session:{to_state.value}",
             event_type=f"SESSION_{to_state.value}",
+            event=EventFacts(
+                aggregate_ref=ref,
+                payload={
+                    "session_id": str(session_id.value),
+                    "previous_state": session.state.value,
+                    "state": to_state.value,
+                },
+            ),
         )
 
     return _run(
@@ -621,6 +630,15 @@ def prepare_burst(
             state_after_ref=f"burst:{BurstState.PREPARED.value}",
             event_type="QUESTION_BURST_PREPARED",
             result_ref=str(burst_id.value),
+            event=EventFacts(
+                aggregate_ref=burst_target_ref(burst_id),
+                payload={
+                    "burst_id": str(burst_id.value),
+                    "session_id": str(session_id.value),
+                    "state": BurstState.PREPARED.value,
+                    "mode": BurstMode.HUMAN_ONLY.value,
+                },
+            ),
         )
 
     commit_unit = _run(
@@ -691,6 +709,14 @@ def admit_participant(
             relation_refs=(f"session_participation:{participation_id}",),
             event_type="SESSION_PARTICIPANT_ADMITTED",
             result_ref=str(participation_id),
+            event=EventFacts(
+                aggregate_ref=f"session_participation:{participation_id}",
+                payload={
+                    "participation_id": str(participation_id),
+                    "session_id": str(session_id.value),
+                    "participant_user_id": str(participant_user_id.value),
+                },
+            ),
         )
 
     return _run(
@@ -776,6 +802,16 @@ def open_question_generation(
             state_before_ref="session:CHALLENGE_CAPTURE|burst:PREPARED",
             state_after_ref="session:QUESTION_GENERATION|burst:ACTIVE",
             event_type="QUESTION_GENERATION_OPENED",
+            event=EventFacts(
+                aggregate_ref=session_ref,
+                payload={
+                    "session_id": str(session_id.value),
+                    "previous_state": SessionState.CHALLENGE_CAPTURE.value,
+                    "state": SessionState.QUESTION_GENERATION.value,
+                    "burst_id": str(burst.burst_id.value),
+                    "burst_state": BurstState.ACTIVE.value,
+                },
+            ),
         )
 
     return _run(

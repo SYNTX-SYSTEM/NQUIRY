@@ -1,0 +1,19 @@
+WU-PFC-F08-1 regression evidence (2026-09-26), worktree pfc-integration, DB nquiry_pfc_int_test @ a9f3c2e81d57
+
+BASELINE (checkpoint-PFC-I1): live 1735 passed / 2 skipped; no-DB 888 passed, 849 skipped.
+
+RED (before the repair): tests/e2e/test_pfc_f08_1_event_basis.py 22 failed / 0 passed:
+  relation "committed_events" does not exist (x14); No module named 'events.contracts' (x6);
+  No module named 'persistence.committed_event_repository' (x2)
+
+AFTER THE REPAIR (exact committed tree):
+  live:  1759 passed, 2 skipped in 937.74s (0:15:37)   = 1735 + 24 F08-1 falsifiers
+  no-DB: 892 passed, 869 skipped in 29.34s             = 888 + 4 non-DB contract falsifiers; 849 + 20 skips
+  intermediate full run before the last 2 falsifiers were added: 1757 passed, 2 skipped (916.82s)
+ruff check .: all checks passed
+mypy packages apps/api/src apps/worker/src scripts: no issues in 193 source files
+ARCHITECTURE_DEPENDENCY_CHECK / PROVIDER_SDK_IMPORT_CHECK / TEST_ONLY_IMPORT_CHECK: PASS
+verify_migrations: STATIC PASS (29 revisions, single head a9f3c2e81d57), LIVE PASS
+migration round-trip: downgrade -1 -> e7c1d4a9b206 (committed_events absent); upgrade head -> a9f3c2e81d57 (present)
+grants on committed_events: governed_commit_writer INSERT,SELECT; api_reader/projection_writer/audit_reader SELECT; test_principal CRUD
+mutation proof: 15/15 KILLED, sources restored (first run 14/15: M05 survived -> falsifiers strengthened to assert the exact refusal reason)

@@ -103,6 +103,7 @@ from domain.decision import (
     decision_target_ref,
     resolve_decision_transition_to_state,
 )
+from events.contracts import EventFacts
 from events.outbox import OutboxRepository
 from governance.authority_binding import AuthorityClass
 from governance.membership import WorkspaceRole
@@ -275,6 +276,14 @@ class _CreateDecisionMutation:
             state_before_ref=None,
             state_after_ref=DecisionState.UNDER_CONSIDERATION.value,
             relation_refs=(relation_ref,),
+            event=EventFacts(
+                aggregate_ref=relation_ref,
+                payload={
+                    "decision_id": str(self._decision.decision_id.value),
+                    "challenge_id": str(self._decision.challenge_id.value),
+                    "state": DecisionState.UNDER_CONSIDERATION.value,
+                },
+            ),
         )
 
 
@@ -328,6 +337,15 @@ class _RecordDecisionMutation:
         return MutationOutcome(
             state_before_ref=DecisionState.UNDER_CONSIDERATION.value,
             state_after_ref=DecisionState.DECIDED.value,
+            event=EventFacts(
+                aggregate_ref=f"decision:{self._decision_id.value}",
+                payload={
+                    "decision_id": str(self._decision_id.value),
+                    "previous_state": DecisionState.UNDER_CONSIDERATION.value,
+                    "state": DecisionState.DECIDED.value,
+                    "decided_by_user_id": str(self._decided_by_user_id.value),
+                },
+            ),
         )
 
 

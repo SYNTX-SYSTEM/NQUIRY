@@ -98,6 +98,7 @@ from commit.coordinator import (
 )
 from domain.question_selection import session_target_ref
 from domain.session import Session
+from events.contracts import EventFacts
 from persistence.question_cluster_repository import QuestionCluster
 from persistence.session_repository import SqlAlchemySessionVersionReader
 from semantic_types.ids import (
@@ -476,6 +477,17 @@ def _execute(
             ),
             event_type="AI_GENERATION_REQUESTED",
             result_ref=str(generation_id.value),
+            event=EventFacts(
+                aggregate_ref=f"ai_generation:{generation_id.value}",
+                payload={
+                    "ai_generation_id": str(generation_id.value),
+                    "session_id": str(session_id.value),
+                    "operation_authorization_id": str(oa.authorization_id),
+                    "ai_context_manifest_id": str(manifest.ai_context_manifest_id),
+                    "ai_operation_id": oa.ai_operation_id.value,
+                    "status": AIGenerationStatus.RUNNING.value,
+                },
+            ),
         )
 
     result = _system_commit(
@@ -657,6 +669,16 @@ def _accept(
             relation_refs=tuple(relation_refs),
             event_type=event,
             result_ref=str(artifact_id),
+            event=EventFacts(
+                aggregate_ref=f"ai_derived_artifact:{artifact_id}",
+                payload={
+                    "ai_derived_artifact_id": str(artifact_id),
+                    "ai_generation_id": str(generation.ai_generation_id.value),
+                    "session_id": str(session_id.value),
+                    "ai_operation_id": op.value,
+                    "generation_status": AIGenerationStatus.VALIDATED.value,
+                },
+            ),
         )
 
     return _system_commit(

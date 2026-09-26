@@ -125,6 +125,7 @@ from domain.question_selection import (
     resolve_selection_transition,
     session_target_ref,
 )
+from events.contracts import EventFacts
 from events.outbox import OutboxRepository
 from governance.authority_binding import AuthorityClass
 from governance.membership import WorkspaceRole
@@ -262,6 +263,15 @@ class _CreateSelectionMutation:
             state_before_ref=None,
             state_after_ref=self._selection.selection_type.value,
             relation_refs=(relation_ref,),
+            event=EventFacts(
+                aggregate_ref=relation_ref,
+                payload={
+                    "question_selection_id": str(self._selection.question_selection_id.value),
+                    "session_id": str(self._selection.session_id.value),
+                    "question_id": str(self._selection.question_id.value),
+                    "selection_type": self._selection.selection_type.value,
+                },
+            ),
         )
 
 

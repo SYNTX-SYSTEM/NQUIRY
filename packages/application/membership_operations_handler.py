@@ -109,6 +109,7 @@ from commit.coordinator import (
     MutationOutcome,
 )
 from commit.idempotency import IdempotencyPort
+from events.contracts import EventFacts
 from events.outbox import OutboxRepository
 from governance.authority_binding import AuthorityClass
 from governance.membership import WorkspaceRole
@@ -242,6 +243,15 @@ class _AddMemberMutation:
             relation_refs=(
                 f"membership:{self._membership_id}",
                 f"role_assignment:{self._role_assignment_id}",
+            ),
+            event=EventFacts(
+                aggregate_ref=f"workspace_membership:{self._membership_id}",
+                payload={
+                    "membership_id": str(self._membership_id),
+                    "member_user_id": str(self._new_member_user_id.value),
+                    "role_assignment_id": str(self._role_assignment_id),
+                    "role": self._role.value,
+                },
             ),
         )
 
