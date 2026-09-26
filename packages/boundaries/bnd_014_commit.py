@@ -80,8 +80,10 @@ from boundaries.authority_source import (
     FoundingAuthority,
     ParticipationAuthority,
     RoleAuthority,
+    SystemOperationAuthority,
 )
 from boundaries.participation_right import resolve_participation_right
+from boundaries.system_operation import SystemOperationReader, resolve_system_operation
 from boundaries.types import BoundaryContext, BoundaryId, BoundaryProof, BoundaryResult
 
 # F02 WU-02.6 (HD-6, 16 §41 REC-004): BND-014 evaluates a TYPED authority
@@ -134,7 +136,13 @@ class Bnd014Input:
             raise ValueError("Bnd014Input: pass `authority` OR the legacy triple, not both")
         if not isinstance(
             self.authority,
-            (BindingAuthority, RoleAuthority, FoundingAuthority, ParticipationAuthority),
+            (
+                BindingAuthority,
+                RoleAuthority,
+                FoundingAuthority,
+                ParticipationAuthority,
+                SystemOperationAuthority,
+            ),
         ):
             raise TypeError(
                 f"authority must be a typed AuthorityRequirement, got {type(self.authority)!r}"
@@ -163,7 +171,7 @@ class Bnd014CommitEvaluator:
     """
 
     boundary_id = BoundaryId.BND_014
-    boundary_version = ContractVersion("1.1")
+    boundary_version = ContractVersion("1.2")
 
     def __init__(
         self,
@@ -171,10 +179,12 @@ class Bnd014CommitEvaluator:
         *,
         membership_repository: MembershipRepository | None = None,
         participation_repository: SessionParticipationRepository | None = None,
+        system_operation_reader: SystemOperationReader | None = None,
     ) -> None:
         self._resolver = resolver
         self._membership_repository = membership_repository
         self._participation_repository = participation_repository
+        self._system_operation_reader = system_operation_reader
 
     def evaluate(self, boundary_input: Bnd014Input, context: BoundaryContext) -> BoundaryProof:
         input_refs = tuple(sorted(boundary_input.expected_versions.keys()))
@@ -303,6 +313,19 @@ class Bnd014CommitEvaluator:
                 scope_ref=f"SESSION:{authority.session_id}",
                 detail=authority.operation_authority_ref,
             )
+        elif isinstance(authority, SystemOperationAuthority):
+            # F04 HD-17: SYSTEM_SERVICE under the committed human Command that
+            # authorized exactly this operation (§0.1). Re-read live at commit;
+            # the same resolver the system handlers use before commit.
+            system_operation = resolve_system_operation(
+                reader=self._system_operation_reader,
+                actor=context.actor,
+                workspace_id=context.workspace_id,
+                authority=authority,
+            )
+            if not system_operation.granted or system_operation.source is None:
+                return deny(system_operation.reason_code)
+            source = system_operation.source
         else:  # pragma: no cover -- __post_init__ rejects any other type
             return deny("AUTHORITY_REQUIREMENT_UNTYPED")
 

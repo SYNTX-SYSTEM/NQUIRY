@@ -2537,6 +2537,14 @@ They do not authorize later human/canonical consequence beyond each AIOP maximum
 
 # 68. Canonicalization Commands for AI Outputs
 
+> **Post-baseline materialization note (2026-09-25, F04 WU-04.0):** F04
+> materializes `CMD_ACCEPT_QUESTION_ANALYSIS_OUTPUT` and
+> `CMD_ACCEPT_CLUSTERING_OUTPUT`. The accepting SYSTEM_SERVICE commits under the
+> typed effect-gate source **SYSTEM_OPERATION** (**HD-17**, 16 §41 REC-019 /
+> NQ-DEC-045): the reference is the committed human Command that authorized the
+> generation, scope `SESSION:<id>`, re-checked at commit. Acceptance creates no
+> human authority. Nothing below is rewritten.
+
 An AI output that may become a permitted derived/canonical artifact requires a System-controlled canonicalization operation.
 
 Examples:

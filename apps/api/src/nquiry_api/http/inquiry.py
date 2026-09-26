@@ -26,6 +26,11 @@ from application.http_f02 import (
     dispatch_session_position,
     dispatch_workspace_overview,
 )
+from application.http_f04 import (
+    dispatch_begin_analysis,
+    dispatch_request_analysis,
+    dispatch_request_clustering,
+)
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict
@@ -226,6 +231,65 @@ def complete_burst(
             session_id=session_id,
             expected_session_version=body.expectedVersion,
             expected_burst_version=body.expectedBurstVersion,
+        )
+    )
+
+
+# ------------------------------------------------------------------ F04
+
+
+class BeginAnalysisBody(BaseModel):
+    expectedVersion: int | None = None  # noqa: N815
+
+
+class OperationRequestBody(BaseModel):
+    expectedVersion: int | None = None  # noqa: N815
+    case: str | None = None
+
+
+@router.post("/workspaces/{workspace_id}/sessions/{session_id}/transitions/begin-analysis")
+def begin_analysis(
+    workspace_id: str, session_id: str, body: BeginAnalysisBody, request: Request
+) -> JSONResponse:
+    return _json(
+        dispatch_begin_analysis(
+            session_token=_token(request),
+            idempotency_key=_idem(request),
+            workspace_id=workspace_id,
+            session_id=session_id,
+            expected_version=body.expectedVersion,
+        )
+    )
+
+
+@router.post("/workspaces/{workspace_id}/sessions/{session_id}/analysis/request")
+def request_analysis(
+    workspace_id: str, session_id: str, body: OperationRequestBody, request: Request
+) -> JSONResponse:
+    return _json(
+        dispatch_request_analysis(
+            session_token=_token(request),
+            idempotency_key=_idem(request),
+            workspace_id=workspace_id,
+            session_id=session_id,
+            expected_version=body.expectedVersion,
+            case=body.case,
+        )
+    )
+
+
+@router.post("/workspaces/{workspace_id}/sessions/{session_id}/analysis/clustering/request")
+def request_clustering(
+    workspace_id: str, session_id: str, body: OperationRequestBody, request: Request
+) -> JSONResponse:
+    return _json(
+        dispatch_request_clustering(
+            session_token=_token(request),
+            idempotency_key=_idem(request),
+            workspace_id=workspace_id,
+            session_id=session_id,
+            expected_version=body.expectedVersion,
+            case=body.case,
         )
     )
 

@@ -354,6 +354,11 @@ def test_rls_is_enabled_on_every_workspace_scoped_table(db_connection: sa.Connec
         "recovery_records",
         # F02 WU-02.8 (migration b3d8e5f0a2c7): same workspace_isolation policy.
         "session_participations",
+        # F04 WU-04.3 / WU-04.9 (migrations a8d3f1c6e902, c2e7b9a4f513).
+        "ai_operation_authorizations",
+        "ai_validation_proofs",
+        "question_clusters",
+        "question_cluster_memberships",
     }
 
 

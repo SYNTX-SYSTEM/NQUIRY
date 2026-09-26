@@ -979,6 +979,22 @@ and all other applicable boundaries.
 
 # 23. AI Operation Contract AIOP-001 QUESTION_ANALYSIS
 
+> **Post-baseline materialization note (2026-09-25, F04 WU-04.0):**
+> - Invocation authority: **HD-16** (16 §41 REC-018 / NQ-DEC-044), one run per
+>   committed human authorization (BEGIN_ANALYSIS, or a controller
+>   RETRY/RECOVERY request), executed as **SYSTEM_OPERATION** (**HD-17**). The
+>   BND-011 path is not used (D8).
+> - Output: **HD-18** (REC-020 / NQ-DEC-046) narrows the OUTPUT CONTRACT to
+>   classification proposals, Question families, unusual-question flags,
+>   pattern descriptions and contradiction proposals. "Additional Question
+>   suggestions" are **not** produced, and `normalized_text` is not written.
+> - Runtime: **HD-19** (REC-021 / NQ-DEC-047) MockProvider in the dev runtime
+>   only, every result marked MOCK / NON_PROOF; **HD-20** (REC-022 /
+>   NQ-DEC-048) a mock proof never counts toward BEGIN_REFLECTION for a
+>   non-fixture Session (enforced by F05).
+> - Visibility: **HD-22** (REC-024 / NQ-DEC-050), the HD-13 frozen-set audience.
+> Nothing below is rewritten.
+
 ## PURPOSE
 
 Post-Burst analysis of captured Questions.
@@ -1150,6 +1166,17 @@ invalid schema cannot satisfy AI_VALIDATION_PROOF
 ---
 
 # 24. AIOP-002 QUESTION_CLUSTERING
+
+> **Post-baseline materialization note (2026-09-25, F04 WU-04.0):** in scope by
+> **HD-21** (16 §41 REC-023 / NQ-DEC-049). By **HD-23** (REC-026 /
+> NQ-DEC-051) one AIOP-002 run is authorized only once an accepted AIOP-001
+> artifact exists, executed as SYSTEM_OPERATION on the same BEGIN_ANALYSIS
+> authority chain; no clustering when AIOP-001 fails or is not accepted; a
+> retry after an AIOP-002 failure needs an explicit controller request. The
+> model input stays the verified frozen human set (the AIOP-001 artifact is
+> not model input). At most one accepted cluster run per Session; "current
+> run" (GAP-02-004 / NQ-GAP-010) does not arise in the prototype. Nothing below
+> is rewritten.
 
 ## PURPOSE
 

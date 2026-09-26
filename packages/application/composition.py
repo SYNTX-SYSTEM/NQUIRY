@@ -16,6 +16,8 @@ from typing import Any
 from authority.resolver import AuthorityResolver
 from boundaries.bnd_014_commit import Bnd014CommitEvaluator
 from commit.idempotency import SqlAlchemyIdempotencyRepository
+from persistence.ai_authorization_repository import SqlAlchemyOperationAuthorizationRepository
+from persistence.ai_record_repository import SqlAlchemyAIRecordRepository
 from persistence.audit_repository import SqlAlchemyAuditRepository
 from persistence.authority_binding_repository import SqlAlchemyAuthorityBindingRepository
 from persistence.burst_repository import SqlAlchemyBurstRepository
@@ -25,9 +27,11 @@ from persistence.commit_repository import SqlAlchemyCommitRepository
 from persistence.decision_repository import SqlAlchemyDecisionRepository
 from persistence.membership_repository import SqlAlchemyMembershipRepository
 from persistence.outbox_repository import SqlAlchemyOutboxRepository
+from persistence.question_cluster_repository import SqlAlchemyQuestionClusterRepository
 from persistence.question_repository import SqlAlchemyQuestionRepository
 from persistence.session_participation_repository import SqlAlchemySessionParticipationRepository
 from persistence.session_repository import SqlAlchemySessionRepository
+from persistence.system_operation_reader import SqlAlchemySystemOperationReader
 from persistence.workspace_repository import SqlAlchemyWorkspaceRepository
 from semantic_types.clock import Clock
 
@@ -62,12 +66,18 @@ class GovernedPorts:
         self.commits = SqlAlchemyCommitRepository(c)
         self.idempotency = SqlAlchemyIdempotencyRepository(c)
         self.resolver = AuthorityResolver(self.memberships, self.bindings, self.clock)
+        # F04 WU-04.3: operational AI records and operation authorizations.
+        self.ai_records = SqlAlchemyAIRecordRepository(c)
+        self.ai_authorizations = SqlAlchemyOperationAuthorizationRepository(c)
+        self.system_operations = SqlAlchemySystemOperationReader(c)
+        self.question_clusters = SqlAlchemyQuestionClusterRepository(c)
 
     def bnd014(self) -> Bnd014CommitEvaluator:
         return Bnd014CommitEvaluator(
             self.resolver,
             membership_repository=self.memberships,
             participation_repository=self.participations,
+            system_operation_reader=self.system_operations,
         )
 
 

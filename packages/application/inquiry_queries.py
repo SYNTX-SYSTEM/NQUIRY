@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import uuid
 
+from ai_contracts.aiop import AIOperationId
 from authority.actor import ActorClass, ActorIdentity
 from authority.resolver import AuthorityRequest, AuthorityVerdict
 from boundaries.participation_right import resolve_participation_right
@@ -36,6 +37,9 @@ from persistence.session_participation_repository import SqlAlchemySessionPartic
 from security.identity import AuthenticatedPrincipal
 from semantic_types.ids import ChallengeId, SessionId, WorkspaceId
 
+from application.analysis_begin_handler import begin_analysis_blocker
+from application.analysis_projection import analysis_view
+from application.analysis_request_handler import request_availability
 from application.burst_capture_handler import capture_blocker
 from application.burst_completion_handler import complete_burst_blocker
 from application.composition import GovernedPorts
@@ -100,6 +104,20 @@ _REASONS = {
     "UNRESOLVED_CAPTURE": (
         "A capture write is still unresolved. The Burst cannot close until it is resolved."
     ),
+    # F04
+    "SESSION_NOT_QUESTION_CAPTURE": "Analysis can begin only in QUESTION_CAPTURE (now: {scope}).",
+    "BURST_NOT_COMPLETED": "The protected Burst is not COMPLETED (now: {scope}).",
+    "FROZEN_SET_UNVERIFIED": (
+        "The frozen question set does not re-verify against its fingerprint. Analysis cannot begin."
+    ),
+    "SESSION_NOT_ANALYSIS": "Only available while the Session is in ANALYSIS (now: {scope}).",
+    "RESULT_ALREADY_ACCEPTED": "A result is already accepted for this Session; it is not re-run.",
+    "NO_ACCEPTED_ANALYSIS": (
+        "Clustering runs only after an analysis result has been accepted (HD-23)."
+    ),
+    "GENERATION_IN_PROGRESS": "A run is still in progress; nothing can be requested now.",
+    "NO_AUTHORIZATION_TO_SUPERSEDE": "Nothing to retry or recover.",
+    "LATEST_GENERATION_VALIDATED": "The latest run was validated; nothing to retry.",
 }
 
 # 12 §5 / 01: the Burst is "approximately four minutes". PRESENTATION guidance
@@ -450,6 +468,25 @@ def session_position(
         member_count=captured_count if is_controller else None,
     )
 
+    # ---- F04: begin analysis, RETRY / RECOVERY capabilities (one definition
+    # shared with the Commands: begin_analysis_blocker, request_availability).
+    frozen_verified: bool | None = None
+    if burst is not None and burst.state is BurstState.COMPLETED:
+        frozen_verified = verify_frozen_set(ports, burst).matches
+    begin_code = begin_analysis_blocker(
+        session.state,
+        None if burst is None else burst.state,
+        frozen_verified=frozen_verified,
+    )
+
+    def request_cap(op: AIOperationId) -> dict[str, object]:
+        if not is_controller:
+            return _cap(False, "NO_SESSION_CONTROL", scope)
+        availability = request_availability(ports, session_id, op, session.state)
+        cap = _cap(availability.case is not None, availability.blocker)
+        cap["case"] = None if availability.case is None else availability.case.value
+        return cap
+
     actions = {
         "BEGIN_SETUP": _transition_cap(
             is_controller, session.state, SessionTransitionId.TRN_SESS_002, scope
@@ -473,6 +510,9 @@ def session_position(
         "GRANT_SESSION_CONTROL": _cap(governance_root, "NOT_GOVERNANCE_ROOT"),
         "CAPTURE_QUESTION": capture_cap,
         "COMPLETE_BURST": blocked_or(complete_code),
+        "BEGIN_ANALYSIS": blocked_or(begin_code),
+        "REQUEST_QUESTION_ANALYSIS": request_cap(AIOperationId.AIOP_001),
+        "REQUEST_QUESTION_CLUSTERING": request_cap(AIOperationId.AIOP_002),
     }
     # `relevant`: does the action belong to the Session's CURRENT phase in
     # the 03 topology (independent of who is looking)? Computed here so the
@@ -486,6 +526,9 @@ def session_position(
         "GRANT_SESSION_CONTROL": True,
         "CAPTURE_QUESTION": session.state is SessionState.QUESTION_GENERATION,
         "COMPLETE_BURST": session.state is SessionState.QUESTION_GENERATION,
+        "BEGIN_ANALYSIS": session.state is SessionState.QUESTION_CAPTURE,
+        "REQUEST_QUESTION_ANALYSIS": session.state is SessionState.ANALYSIS,
+        "REQUEST_QUESTION_CLUSTERING": session.state is SessionState.ANALYSIS,
     }
     for name, cap in actions.items():
         cap["relevant"] = relevant[name]
@@ -531,6 +574,12 @@ def session_position(
             "guidanceIsAuthoritative": False,
         },
         "questionSet": question_set,
+        # F04 HD-22: served exactly when the full frozen set is served (HD-13).
+        "analysis": analysis_view(
+            ports,
+            session,
+            visible=question_set.get("visibility") == "FULL_FROZEN_SET",
+        ),
         "participants": [
             {
                 "userId": str(p.user_id.value),

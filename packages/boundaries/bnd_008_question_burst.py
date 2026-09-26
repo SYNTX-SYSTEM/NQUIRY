@@ -145,13 +145,14 @@ class Bnd008QuestionBurstEvaluator:
                 return result_proof(BoundaryResult.DENY, f"BURST_INPUT_INVALID:{check.reason_code}")
             return result_proof(BoundaryResult.ALLOW, "BURST_INPUT_VALID")
 
-        if actor_class is ActorClass.AI_PROCESSOR:
-            if operation in _AI_ONLY_OPERATIONS and burst_state in PROTECTED_BURST_STATES:
-                # Mandatory adversarial attack: ACTIVE Burst AI
-                # contamination (and PAUSED, 03 section 19.4).
-                return result_proof(BoundaryResult.DENY, "AI_OPERATION_DURING_PROTECTED_BURST")
-            if operation in _LIFECYCLE_OPERATIONS:
-                return result_proof(BoundaryResult.DENY, "AI_ACTOR_CANNOT_CONTROL_BURST_LIFECYCLE")
+        if operation in _AI_ONLY_OPERATIONS and burst_state in PROTECTED_BURST_STATES:
+            # Mandatory adversarial attack: ACTIVE Burst AI contamination (and
+            # PAUSED, 03 section 19.4). F04 WU-04.2 (FBR-F04-3): 06 §14 denies
+            # the AI OPERATION during the protected Burst, whoever requests it;
+            # a human or system requester does not make it legal.
+            return result_proof(BoundaryResult.DENY, "AI_OPERATION_DURING_PROTECTED_BURST")
+        if actor_class is ActorClass.AI_PROCESSOR and operation in _LIFECYCLE_OPERATIONS:
+            return result_proof(BoundaryResult.DENY, "AI_ACTOR_CANNOT_CONTROL_BURST_LIFECYCLE")
 
         return result_proof(BoundaryResult.ALLOW, "NO_CONTAMINATION_DETECTED")
 

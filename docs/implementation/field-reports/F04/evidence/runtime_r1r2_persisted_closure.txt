@@ -1,0 +1,32 @@
+== R1: every accepted artifact is the validated bytes (PostgreSQL over persisted rows)
+ ai_operation_id |    content_fp    |  sha256_content  | content_matches_fp | fp_eq_proof | validation_result 
+-----------------+------------------+------------------+--------------------+-------------+-------------------
+ AIOP-001        | 61790263674e29c9 | 61790263674e29c9 | t                  | t           | VALIDATED
+ AIOP-002        | 999191777d7c2513 | 999191777d7c2513 | t                  | t           | VALIDATED
+(2 rows)
+
+== R2: VALIDATED proofs without VALIDATED generation + accepted artifact (must be 0)
+0
+== R2: VALIDATED F04 generations without VALIDATED proof + artifact (must be 0)
+0
+== generations / proofs
+ ai_operation_id |  status   |   failure_code   | validation_result 
+-----------------+-----------+------------------+-------------------
+ AIOP-001        | FAILED    | PROVIDER_TIMEOUT | 
+ AIOP-001        | VALIDATED |                  | VALIDATED
+ AIOP-002        | VALIDATED |                  | VALIDATED
+(3 rows)
+
+== PI-1 triggers present
+trg_ai_derived_artifacts_validated_binding|f|f
+trg_ai_generations_pi1_bundle|t|t
+trg_ai_validation_proofs_pi1_bundle|t|t
+== inverse (persisted-only resolver, now through the VALIDATED proof)
+-- AIOP-001 artifact 8d28244d-1473-4c95-8dde-1159c0b7d726
+    AIOP-001 artifact 8d28244d-1473-4c95-8dde-1159c0b7d726 ← proof 7d40c37a-1768-4929-aa81-7d6bf8f977b2 VALIDATED (sha256 61790263674e29c9…) ← generation 09998482-73ae-437c-9087-3600e23b6c8a (mock) ← OA-2 RETRY ← CMD_REQUEST_QUESTION_ANALYSIS (BINDING)
+    root CMD_BEGIN_ANALYSIS (BINDING SESSION:c9d24795-b8bd-4070-a4ce-024947afa9d5)
+-- AIOP-002 artifact ea51340b-b49d-4565-a5f7-dd8730782678
+    AIOP-002 artifact ea51340b-b49d-4565-a5f7-dd8730782678 ← proof 4098b4f7-8e15-439d-9f60-5bc29b3f7021 VALIDATED (sha256 999191777d7c2513…) ← generation 5c49f5b4-8d6b-4b82-9b33-94e73b2c2e50 (mock) ← OA-3 ORIGINAL ← CMD_REQUEST_QUESTION_ANALYSIS (BINDING)
+    AIOP-001 artifact 8d28244d-1473-4c95-8dde-1159c0b7d726 ← proof 7d40c37a-1768-4929-aa81-7d6bf8f977b2 VALIDATED (sha256 61790263674e29c9…) ← generation 09998482-73ae-437c-9087-3600e23b6c8a (mock) ← OA-2 RETRY ← CMD_REQUEST_QUESTION_ANALYSIS (BINDING)
+    root CMD_BEGIN_ANALYSIS (BINDING SESSION:c9d24795-b8bd-4070-a4ce-024947afa9d5)
+normalized_text written: 0

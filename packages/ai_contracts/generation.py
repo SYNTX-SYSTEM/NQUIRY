@@ -66,7 +66,14 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 
-from semantic_types.ids import CommandId, CorrelationId, GenerationId, UserId, WorkspaceId
+from semantic_types.ids import (
+    CommandId,
+    CorrelationId,
+    GenerationId,
+    SessionId,
+    UserId,
+    WorkspaceId,
+)
 from semantic_types.versions import ContractVersion, PromptVersion, RecordVersion
 
 from ai_contracts.aiop import AIOperationId
@@ -136,6 +143,13 @@ class AIGeneration:
     output_artifact_ref: uuid.UUID | None = None
     failure_code: str | None = None
     failure_detail_ref: str | None = None
+    # F04 WU-04.3 (§0.1 rules 3/8): the persisted operation authorization this
+    # generation consumes. Identity-immutable (DB trigger). All four are None
+    # for a generation that no F04 authorization governs (pre-F04 rows).
+    session_id: SessionId | None = None
+    operation_authorization_id: uuid.UUID | None = None
+    authorizing_command_id: CommandId | None = None
+    precondition_artifact_ref: uuid.UUID | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.ai_generation_id, GenerationId):
@@ -184,6 +198,16 @@ class AIGeneration:
         if self.command_id is not None and not isinstance(self.command_id, CommandId):
             raise TypeError(
                 f"command_id must be a CommandId or None, got {type(self.command_id)!r}"
+            )
+        governed = (self.operation_authorization_id, self.session_id, self.authorizing_command_id)
+        if any(v is not None for v in governed) and any(v is None for v in governed):
+            raise ValueError(
+                "AIGeneration: operation_authorization_id, session_id and "
+                "authorizing_command_id are set together or not at all"
+            )
+        if self.precondition_artifact_ref is not None and self.operation_authorization_id is None:
+            raise ValueError(
+                "AIGeneration: a precondition artifact needs an operation authorization"
             )
         if self.retry_of_generation_id is not None and not isinstance(
             self.retry_of_generation_id, GenerationId

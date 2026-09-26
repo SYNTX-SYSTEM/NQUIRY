@@ -1904,6 +1904,16 @@ All require BND-009.
 
 # 16. BND-010 AI OUTPUT / CANONICAL STATE BOUNDARY
 
+> **Post-baseline materialization note (2026-09-25, F04 WU-04.0):** in F04 the
+> accepted derived output is written only by a separate acceptance Command
+> (`CMD_ACCEPT_QUESTION_ANALYSIS_OUTPUT`, `CMD_ACCEPT_CLUSTERING_OUTPUT`; 09 §68),
+> actor SYSTEM_SERVICE, effect-gate source **SYSTEM_OPERATION** (**HD-17**,
+> 16 §41 REC-019 / NQ-DEC-045). BND-010 runs before BND-014 on the validated
+> candidate; the generation's VALIDATED status, the persisted
+> AI_VALIDATION_PROOF (09 §56) and the accepted artifact are committed in one
+> atomic bundle (F04 pre-implementation binding PI-1). The AI Gateway never
+> persists an artifact itself (FBR-F04-1/2). Nothing below is rewritten.
+
 ## BOUNDARY ID
 
 ```text

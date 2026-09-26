@@ -112,7 +112,8 @@ class AuditEvent:
     failure_code: str | None = None
     metadata_ref: str | None = None
     authority_source_type: str | None = None
-    """F02 HD-6: BINDING / ROLE / FOUNDING; F03 HD-15: PARTICIPATION.
+    """F02 HD-6: BINDING / ROLE / FOUNDING; F03 HD-15: PARTICIPATION; F04 HD-17:
+    SYSTEM_OPERATION.
     `None` only on pre-F02 rows."""
     authority_scope_ref: str | None = None
     """F02 HD-6: exact scope of the authority source, e.g. "SESSION:<uuid>"."""
@@ -157,7 +158,14 @@ class AuditEvent:
             raise ValueError(
                 "authority_source_type and authority_scope_ref must be set together (HD-6)"
             )
-        if self.authority_source_type not in (None, "BINDING", "ROLE", "FOUNDING", "PARTICIPATION"):
+        if self.authority_source_type not in (
+            None,
+            "BINDING",
+            "ROLE",
+            "FOUNDING",
+            "PARTICIPATION",
+            "SYSTEM_OPERATION",
+        ):
             raise ValueError(f"unknown authority_source_type {self.authority_source_type!r}")
         if self.human_decision_ref is not None and not isinstance(
             self.human_decision_ref, DecisionId

@@ -1,0 +1,6 @@
+baseline (unmodified RED tree d9410b3, isolated DB nquiry_f04_red_test): 1535 passed, 2 skipped (live). The baseline no-DB count was not captured (that step printed nothing) and is not claimed.
+after F04 backend (live, same DB): 1699 passed, 2 skipped in 409.24s (0:06:49)
+after F04 backend (pure, no DATABASE_URL): 888 passed, 813 skipped in 33.79s
+F04-attributable tests: 180 passed (15 files)
+after the independent-review repair R1 / R2 (live, same DB, head e7c1d4a9b206): 1712 passed, 2 skipped in 747.70s (0:12:27) (= 1699 + 13 new R1/R2 tests; 0 failed)
+after the independent-review repair R1 / R2 (pure, no DATABASE_URL): 888 passed, 826 skipped

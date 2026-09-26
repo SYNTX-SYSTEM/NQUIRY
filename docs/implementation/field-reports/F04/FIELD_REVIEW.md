@@ -115,3 +115,26 @@ reviewed bundle.
 ## Commit status
 **NOT COMMITTED.** Nothing is staged, committed, tagged or pushed. This
 record grants no implementation or publication authority.
+
+---
+
+## Successor record: backend review (2026-09-26, WU-PFC-00)
+
+The sections above record the **architecture** review (revision 6) and its
+state at that time; they are kept unchanged.
+
+- **Backend implementation review:** independent, read-only.
+  - Review 1: `F04_BACKEND_REPAIR_REQUIRED` (FBR-F04-R1, FBR-F04-R2), over
+    `review/BACKEND_REVIEW_BUNDLE.md` (sha256 `c27af32dd48d9e915…`).
+  - Repair: `REPAIR_R1_R2.md`.
+  - Re-review: **`F04_BACKEND_REVIEW_PASS_PRE_WU04_8`** (2026-09-25).
+  - Evidence: `review/INDEPENDENT_BACKEND_REVIEW_1_REPAIR_REQUIRED.md`,
+    `review/INDEPENDENT_BACKEND_REVIEW_2_PASS.md` (verbatim, with provenance).
+- **Commit status (successor truth):** the reviewed backend is committed on
+  `f04-implementation`, pushed, and tagged `checkpoint-F04-backend-review-pass`
+  (`CHECKPOINT_WU-PFC-00.md`). This is a recoverable predecessor, **not** a
+  publication: no FIELD_GREEN for all of F04, no PUBLISHED_FIELD.
+- **H-8 (updated fact, still open):** `frontend-symbiotic` is now `d3d9bd6`,
+  pushed, tagged `field-SF-06` (SF-01..SF-06). The integration order before
+  WU-04.8 is still a human decision.
+- **External:** HARD-DEP-002 unchanged.

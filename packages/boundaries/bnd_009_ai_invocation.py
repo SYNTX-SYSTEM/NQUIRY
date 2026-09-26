@@ -45,6 +45,7 @@ from dataclasses import dataclass
 
 from ai_contracts.aiop import AIOperationId
 from authority.actor import ActorClass
+from domain.burst import BurstState
 from semantic_types.ids import WorkspaceId
 from semantic_types.versions import ContractVersion
 
@@ -59,6 +60,10 @@ class Bnd009Input:
     ai_operation_contract_version: ContractVersion
     aiop_contract_approved: bool
     context_manifest_workspace_id: WorkspaceId
+    burst_state: BurstState
+    """F04 WU-04.2 (FBR-F04-3): the source Burst's state, read fresh by the caller."""
+    frozen_set_verified: bool
+    """F04 WU-04.2: `application.frozen_set.verify_frozen_set(...).matches`."""
 
     def __post_init__(self) -> None:
         if self.boundary_id is not BoundaryId.BND_009:
@@ -67,6 +72,8 @@ class Bnd009Input:
             raise TypeError(
                 f"ai_operation_id must be an AIOperationId, got {type(self.ai_operation_id)!r}"
             )
+        if not isinstance(self.burst_state, BurstState):
+            raise TypeError(f"burst_state must be a BurstState, got {type(self.burst_state)!r}")
 
 
 class Bnd009AiInvocationEvaluator:
@@ -75,7 +82,7 @@ class Bnd009AiInvocationEvaluator:
     time, unapproved/mismatched AIOP contract."""
 
     boundary_id = BoundaryId.BND_009
-    boundary_version = ContractVersion("1.0")
+    boundary_version = ContractVersion("1.1")
 
     def evaluate(self, boundary_input: Bnd009Input, context: BoundaryContext) -> BoundaryProof:
         def proof(result: BoundaryResult, reason_code: str) -> BoundaryProof:
@@ -99,6 +106,18 @@ class Bnd009AiInvocationEvaluator:
         # BND-008's own narrower Burst-state-dependent AI exclusion.
         if context.actor.actor_class is ActorClass.AI_PROCESSOR:
             return proof(BoundaryResult.DENY, "AI_SELF_INVOCATION_NOT_PERMITTED")
+        # 06 section 15 REQUESTING ACTOR: "HUMAN_USER or SYSTEM_SERVICE".
+        if context.actor.actor_class not in (ActorClass.HUMAN_USER, ActorClass.SYSTEM_SERVICE):
+            return proof(BoundaryResult.DENY, "AI_INVOCATION_REQUESTER_NOT_PERMITTED")
+
+        # F04 WU-04.2 (FBR-F04-3): 06 BND-009 / 08 §23 "raw set must be frozen":
+        # the input is a COMPLETED Burst whose frozen fingerprint re-verifies.
+        if boundary_input.burst_state is not BurstState.COMPLETED:
+            return proof(
+                BoundaryResult.DENY, f"BURST_NOT_COMPLETED:{boundary_input.burst_state.value}"
+            )
+        if not boundary_input.frozen_set_verified:
+            return proof(BoundaryResult.DENY, "FROZEN_SET_UNVERIFIED")
 
         # DENY: cross-Workspace context.
         if boundary_input.context_manifest_workspace_id != context.workspace_id:
