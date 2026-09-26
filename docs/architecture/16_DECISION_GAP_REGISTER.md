@@ -207,6 +207,7 @@ For unresolved items, absent source detail remains explicit. No placeholder valu
 | NQ-DEC-049 | F04 AIOP scope is AIOP-001 + AIOP-002 | ESTABLISHED (post-baseline, §41 REC-023) | F04 HD-21; 12 §12; 08 §24 | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-24 |
 | NQ-DEC-050 | Derived analysis is visible to the HD-13 frozen-set audience | ESTABLISHED (post-baseline, §41 REC-024) | F04 HD-22; NQ-DEC-041 | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-24 |
 | NQ-DEC-051 | One AIOP-002 clustering run is authorized only after an accepted AIOP-001 artifact exists | ESTABLISHED (post-baseline, §41 REC-026) | F04 HD-23; 08 §24; NQ-DEC-044, NQ-DEC-045 | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-24 |
+| NQ-DEC-052 | TRN-SESS-007 for Fixture Sessions: a MockProvider proof may satisfy BEGIN_REFLECTION only for an immutable, creation-time Fixture (NON_PROOF) Session; real Sessions stay on the real provider lane | ESTABLISHED (post-baseline, §41 REC-028) | PFC HD-24; 03 TRN-SESS-007; NQ-DEC-048 (HD-20) | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-27 |
 
 No recommendation, mock, default or implementation convenience is ESTABLISHED outside its authorized scope.
 
@@ -1912,6 +1913,13 @@ BASELINE_READINESS: BASELINE_READY_FOR_PROTOTYPE_IMPLEMENTATION pending HUMAN_RE
       "status": "ESTABLISHED",
       "post_baseline_record": "REC-026",
       "source": "F04 HD-23"
+    },
+    {
+      "id": "NQ-DEC-052",
+      "title": "TRN-SESS-007 for Fixture Sessions: MockProvider proof counts only for an immutable creation-time Fixture (NON_PROOF) Session",
+      "status": "ESTABLISHED",
+      "post_baseline_record": "REC-028",
+      "source": "PFC HD-24"
     }
   ],
   "packages": [
@@ -2671,3 +2679,22 @@ Successor record. Nothing earlier is deleted.
 - C3-F04-7 is closed by REC-026. No F04 Case-3 relation remains open.
 
 **Provenance.** The human operator's F04 decision of 2026-09-24 ("C3-F04-7 = (c)"). `docs/implementation/field-reports/F04/HUMAN_DECISIONS.md`, `F04_ARCHITECTURE_RECONSTRUCTION.md` revision 3. Per `20_SYSTEM_FIELD_ENGINEERING.md` §14.
+
+### REC-028 / NQ-DEC-052: BEGIN_REFLECTION for Fixture Sessions (PFC HD-24; resolves HA-01 for Fixture Sessions)
+
+- DECISION (human operator, 2026-09-27; verbatim in `docs/implementation/field-reports/PFC/HUMAN_DECISIONS.md` HD-24): Option 03 is the current working path for Fixture Sessions. Option 01 (real provider lane) stays the target path for real Sessions. Option 02 (NQ-GAP-024 bypass) is not selected.
+- FIXTURE SESSION (defined by the decision):
+  - declared only at Session creation;
+  - the marker is immutable;
+  - no conversion in either direction;
+  - Fixture / NON_PROOF is preserved on every state, read model, API representation and projection that exposes Session proof semantics.
+- PROOF: for a Fixture Session, a MockProvider result may satisfy the controlled development proof path of TRN-SESS-007. It remains NON_PROOF and is never represented as real provider proof. For a non-Fixture Session, NQ-DEC-048 (HD-20) stays fully binding.
+- UNCHANGED:
+  - BEGIN_REFLECTION is a human controller Command requiring SESSION_CONTROL_RIGHT;
+  - SYSTEM_DERIVED stays REQUIRE / DENY (REC-018);
+  - NQ-GAP-024 stays OPEN;
+  - HARD-DEP-002 / NQ-GAP-060 stays EXTERNAL_DEPENDENCY.
+- IMPLEMENTATION CONSTRAINT: moving to Option 01 must require only a change of the eligible proof source, never a redesign of the REFLECTION state path.
+- COUNTS (superseding REC-027 for current use): Decisions 52 (ESTABLISHED 43: NQ-DEC-022, 032..052; REQUIRED 9). Canonical gaps stay 80. No gap status changes.
+
+**Provenance.** The human operator's PFC decision of 2026-09-27. Per `20_SYSTEM_FIELD_ENGINEERING.md` §14.

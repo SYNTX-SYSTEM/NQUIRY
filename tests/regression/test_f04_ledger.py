@@ -41,6 +41,9 @@ def test_l1_register_counts() -> None:
     register = _register()
     decisions = register["decisions"]
     assert isinstance(decisions, list)
+    # The F04 ledger state (REC-027). Decisions recorded later by the PFC Field
+    # (source "PFC HD-…", REC-028 onward) are asserted by test_pfc_ledger.py.
+    decisions = [d for d in decisions if not str(d.get("source", "")).startswith("PFC ")]
     assert len(decisions) == 51
     assert len({d["id"] for d in decisions}) == 51
     established = [d for d in decisions if d["status"] == "ESTABLISHED"]
