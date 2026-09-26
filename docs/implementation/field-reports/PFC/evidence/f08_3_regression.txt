@@ -1,0 +1,12 @@
+WU-PFC-F08-3 regression evidence (2026-09-26), worktree pfc-integration, DB nquiry_pfc_int_test @ c3b8e5a1f7d2
+BASELINE (checkpoint-PFC-F08-2): live 1773 passed / 2 skipped; no-DB 894 passed, 881 skipped.
+RED: tests/e2e/test_pfc_f08_3_diagnostics.py 6 failed: DeliveryPorts has no attribute 'freshness' (x2) / 'diagnostics' (x2);
+     worker: unrecognized arguments: --diagnose (x2)
+AFTER (exact committed tree):
+  live:  1779 passed, 2 skipped in 953.95s (0:15:53)   = 1773 + 6
+  no-DB: 895 passed, 886 skipped in 27.62s
+ruff check .: clean; ruff format --check: 372 files formatted; mypy (CI scope): no issues in 198 source files
+ARCHITECTURE_DEPENDENCY_CHECK / PROVIDER_SDK_IMPORT_CHECK / TEST_ONLY_IMPORT_CHECK: PASS
+verify_migrations: STATIC PASS (30 revisions, single head c3b8e5a1f7d2), LIVE PASS (no schema change in F08-3)
+mutation proof: 5/5 KILLED, sources restored
+runtime: python -m nquiry_worker --diagnose against nquiry_pfc_int_runtime -> delivered 24, failed 0, pending 0, without_basis 0

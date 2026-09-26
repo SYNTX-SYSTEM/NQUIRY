@@ -17,7 +17,9 @@ Product functions use PF numbering (PF01–PF27). F00–F12 are repository Field
 | 1 | WU-PFC-A1 Challenge frame completion | `pfc-a1-challenge-frame` | `71b3bab` | `checkpoint-PFC-A1` | TECHNICALLY_ACCEPTED, CHECKPOINTED |
 | 2 | WU-PFC-I1 predecessor integration (F04 + A1) | `pfc-integration` | `81f208b` | `checkpoint-PFC-I1` | TECHNICALLY_CLOSED, CHECKPOINTED |
 | 3 | WU-PFC-F08-1 durable immutable committed Event basis | `pfc-integration` | `298a5d8` | `checkpoint-PFC-F08-1` | TECHNICALLY_CLOSED, CHECKPOINTED |
-| 4 | WU-PFC-F08-2 delivery → projection → replay/rebuild; the running worker | `pfc-integration` | see `CHECKPOINT_WU-PFC-F08-2.md` | `checkpoint-PFC-F08-2` | TECHNICALLY_CLOSED, CHECKPOINTED |
+| 4 | WU-PFC-F08-2 delivery → projection → replay/rebuild; the running worker | `pfc-integration` | `461ade4` | `checkpoint-PFC-F08-2` | TECHNICALLY_CLOSED, CHECKPOINTED |
+| 5 | WU-PFC-F08-3 delivery diagnostics and projection freshness | `pfc-integration` | see `CHECKPOINT_WU-PFC-F08-3.md` | `checkpoint-PFC-F08-3` | TECHNICALLY_CLOSED, CHECKPOINTED |
+| — | **F08 Field (backend)** | `pfc-integration` | — | F08-1..3 | **READY_FOR_HUMAN_REVIEW** (14 Phase 8 gate; `F08_FIELD_REVIEW_BUNDLE.md`) |
 
 ## 2. Field derivation after WU-PFC-I1
 
@@ -64,7 +66,7 @@ This derivation is based on three read-only reconstructions of 2026-09-26: F08 e
 |---|---|
 | FBR-PFC-01 F04 had no recoverable predecessor | **CLOSED** (WU-PFC-00) |
 | FBR-PFC-06 Challenge wire contract dropped the frame | **CLOSED** (WU-PFC-A1) |
-| FBR-PFC-08 outbox written, never delivered | **CLOSED** for the backend: the durable basis (F08-1), plus delivery, projection, replay and rebuild with the running worker (F08-2), proven on the real stack. Remaining F08 items: diagnostics and freshness (F08-3); frontend freshness and history (needs an API read and CYAN); HA-18 dead-letter status. |
+| FBR-PFC-08 outbox written, never delivered | **CLOSED** for the backend: the durable basis (F08-1), plus delivery, projection, replay and rebuild with the running worker (F08-2), proven on the real stack. Diagnostics and freshness were closed in F08-3. Remaining: frontend freshness and history (needs an API read and CYAN); HA-18 dead-letter status. |
 | FBR-PFC-02 REFLECTION gate | BLOCKED (HA-01) |
 | FBR-PFC-03/04 Selection, ImpactChain | BLOCKED behind FBR-PFC-02 |
 | FBR-PFC-05 Decision only by seed | BLOCKED (HA-14) |
@@ -75,4 +77,4 @@ This derivation is based on three read-only reconstructions of 2026-09-26: F08 e
 
 ## 5. Resulting Field status
 
-**IN_PROGRESS (autonomous).** Four Work Units are technically closed and checkpointed (A1, I1, F08-1, F08-2). Test totals on `pfc-integration`: live 1773 passed / 2 skipped; no-DB 894 passed. None is REVIEWED_FIELD. Nothing is PUBLISHED_FIELD. BLUE/master is unchanged.
+**IN_PROGRESS (autonomous).** Five Work Units are technically closed and checkpointed (A1, I1, F08-1, F08-2, F08-3). F08 is READY_FOR_HUMAN_REVIEW. Test totals on `pfc-integration`: live 1779 passed / 2 skipped; no-DB 895 passed. None is REVIEWED_FIELD. Nothing is PUBLISHED_FIELD. BLUE/master is unchanged.

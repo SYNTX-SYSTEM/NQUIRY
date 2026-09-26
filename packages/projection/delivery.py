@@ -33,8 +33,15 @@ from persistence.committed_event_repository import (
     SqlAlchemyAggregateOrderedOutbox,
     SqlAlchemyCommittedEventRepository,
 )
+from persistence.delivery_diagnostics import (
+    DeliveryDiagnostics,
+    ProjectionFreshness,
+    delivery_diagnostics,
+    projection_freshness,
+)
 from persistence.engine import connect
 from persistence.projection_repository import SqlAlchemyProjectionRepository
+from semantic_types.ids import WorkspaceId
 
 from projection.consumer import ProjectionConsumer
 
@@ -58,6 +65,16 @@ class DeliveryPorts:
         self.projection = SqlAlchemyProjectionRepository(connection)
         self.consumer = ProjectionConsumer(repository=self.projection)
 
+    def freshness(self, workspace_id: WorkspaceId) -> ProjectionFreshness:
+        """WU-PFC-F08-3: whether the Workspace's projections reflect all of its
+        committed history (read-only)."""
+        return projection_freshness(self.connection, workspace_id)
+
+    def diagnostics(self, workspace_id: WorkspaceId | None) -> DeliveryDiagnostics:
+        """WU-PFC-F08-3: delivery state counts for one Workspace, or for all
+        with `None` (read-only)."""
+        return delivery_diagnostics(self.connection, workspace_id)
+
     @contextmanager
     def isolated(self) -> Iterator[None]:
         try:
@@ -77,4 +94,10 @@ def open_delivery() -> Iterator[DeliveryPorts]:
         yield DeliveryPorts(connection)
 
 
-__all__ = ["DeliveryPorts", "ProjectionStoreFailure", "open_delivery"]
+__all__ = [
+    "DeliveryDiagnostics",
+    "DeliveryPorts",
+    "ProjectionFreshness",
+    "ProjectionStoreFailure",
+    "open_delivery",
+]

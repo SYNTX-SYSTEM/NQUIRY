@@ -1,0 +1,6 @@
+M01 freshness counts delivered records as undelivered: KILLED
+M02 freshness/diagnostics not Workspace-scoped: KILLED
+M03 every record reported without basis: KILLED
+M04 oldest undelivered includes delivered records: KILLED
+M05 operator diagnose prints nothing: KILLED
+5/5 killed; sources restored: True

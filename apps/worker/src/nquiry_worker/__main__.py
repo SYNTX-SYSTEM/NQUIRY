@@ -11,6 +11,9 @@ DELIVERED or FAILED_DELIVERY, all in one transaction per pass
   `--interval` seconds. Shutdown is graceful: the current pass completes or
   rolls back as a whole.
 - `python -m nquiry_worker --once`: exactly one pass, then exit.
+- `python -m nquiry_worker --diagnose`: print the delivery diagnostics of
+  the whole database as JSON on stdout (read-only), then exit
+  (WU-PFC-F08-3).
 - Without `DATABASE_URL` the worker refuses to start (exit 2). It has no
   default connection string, matching `persistence.engine`.
 
@@ -22,6 +25,8 @@ audit (12 section 25).
 from __future__ import annotations
 
 import argparse
+import dataclasses
+import json
 import os
 import signal
 import sys
@@ -61,16 +66,28 @@ def _one_pass(backoff: int) -> None:
     )
 
 
+def _diagnose() -> None:
+    with open_delivery() as ports:
+        report = dataclasses.asdict(ports.diagnostics(None))
+    print(json.dumps(report, default=str, sort_keys=True))
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="nquiry_worker")
     parser.add_argument("--once", action="store_true", help="run exactly one delivery pass")
     parser.add_argument("--interval", type=float, default=5.0, help="seconds between passes")
     parser.add_argument("--retry-backoff", type=int, default=DEFAULT_RETRY_BACKOFF_SECONDS)
+    parser.add_argument(
+        "--diagnose", action="store_true", help="print delivery diagnostics as JSON and exit"
+    )
     args = parser.parse_args(argv)
 
     if not os.environ.get("DATABASE_URL"):
         print("nquiry_worker: DATABASE_URL is not set; refusing to start.", file=sys.stderr)
         return 2
+    if args.diagnose:
+        _diagnose()
+        return 0
 
     _observation_sink.emit(
         ObservationContext(correlation_id=CorrelationId(uuid.uuid4()), operation="worker_startup")

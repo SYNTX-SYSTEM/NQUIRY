@@ -1,0 +1,4 @@
+WU-PFC-F08-3 runtime evidence: real worker process against nquiry_pfc_int_runtime (the F08-2 runtime DB, all 24 events delivered)
+$ python -m nquiry_worker --diagnose
+{"delivered": 24, "failed": 0, "max_failed_attempts": 0, "oldest_undelivered_at": null, "pending": 0, "without_basis": 0}
+exit=0
