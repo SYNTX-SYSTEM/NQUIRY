@@ -50,6 +50,7 @@ from application.session_control_handler import (
     SessionVersionStale,
     _FirstReader,
     _run,
+    deny_unless_member,
     replay_guard,
 )
 
@@ -106,6 +107,14 @@ def begin_analysis(
     replay_guard(ports, workspace_id, COMMAND_TYPE, ident, payload)
 
     session = ports.sessions.get(session_id)
+    deny_unless_member(
+        ports,
+        actor=actor,
+        workspace_id=workspace_id,
+        session=session,
+        operation=COMMAND_TYPE,
+        ident=ident,
+    )
     if session is None:
         raise SessionNotFound(str(session_id.value))
     if session.record_version.value != expected_session_version:

@@ -1,0 +1,13 @@
+WU-PFC-F09-2 regression evidence (2026-09-26), worktree pfc-integration, DB nquiry_pfc_int_test @ c3b8e5a1f7d2
+BASELINE (checkpoint-PFC-F09-1): live 1792 passed / 2 skipped; no-DB 905 passed, 889 skipped.
+RED (corrected sweep on the pre-repair handlers, files restored byte-exact afterwards): 9 failed / 38 passed,
+  all 9: non-member receives 409 {"kind":"stale",...,"currentVersion":4,"currentState":"QUESTION_GENERATION"}
+  (evidence/f09_2_red.txt)
+AFTER (exact committed tree):
+  live:  1849 passed, 2 skipped in 916.08s (0:15:16)   = 1792 + 57 sweep cases
+  no-DB: 906 passed, 945 skipped in 30.00s
+  sweep + HTTP F02/F03/F04 suites on the repaired tree (before the cross-URL cases were added): 71 passed
+ruff check .: clean; ruff format --check: 377 files formatted; mypy (CI scope): no issues in 201 source files
+ARCHITECTURE_DEPENDENCY_CHECK / PROVIDER_SDK_IMPORT_CHECK / TEST_ONLY_IMPORT_CHECK: PASS
+verify_migrations: STATIC PASS (30 revisions, single head c3b8e5a1f7d2), LIVE PASS (no schema change)
+mutation proof: 6/6 KILLED, sources restored

@@ -310,8 +310,75 @@ def _raise_if(blocker: str | None) -> None:
         raise SessionPreconditionUnmet(blocker)
 
 
-def _load_fresh(ports: GovernedPorts, session_id: SessionId, expected: int) -> Session:
+def deny_unless_member(
+    ports: GovernedPorts,
+    *,
+    actor: ActorIdentity,
+    workspace_id: WorkspaceId,
+    session: Session | None,
+    operation: str,
+    ident: CommandIdentity,
+) -> None:
+    """WU-PFC-F09-2 (13 P-22, 12 AC-12-024): identity (BND-001), Workspace
+    (BND-002, when the Session exists) and membership (BND-003) are proven
+    BEFORE any Session fact (its version, state or existence) can reach the
+    caller through a `stale` or `not_found` outcome. A non-member, or a member
+    addressing another Workspace's Session, is denied here without an attempt
+    being recorded (the same precedent as `_run`'s foreign-Workspace
+    precheck). A member naming an unknown Session keeps the accepted 404."""
+    context = BoundaryContext(
+        workspace_id=workspace_id,
+        operation=operation,
+        actor=actor,
+        correlation_id=ident.correlation_id,
+        evaluated_at=ident.occurred_at,
+    )
+    registry = BoundaryRegistry()
+    registry.register(Bnd001IdentityEvaluator())  # type: ignore[arg-type]
+    registry.register(Bnd002WorkspaceEvaluator(ports.workspaces))  # type: ignore[arg-type]
+    registry.register(Bnd003MembershipEvaluator(ports.memberships))  # type: ignore[arg-type]
+    inputs: dict[BoundaryId, object] = {
+        BoundaryId.BND_001: Bnd001Input(
+            boundary_id=BoundaryId.BND_001,
+            context=context,
+            required_actor_classes=frozenset({ActorClass.HUMAN_USER}),
+        ),
+        BoundaryId.BND_002: Bnd002Input(
+            boundary_id=BoundaryId.BND_002,
+            context=context,
+            resolved_object_workspace_ids=(session.workspace_id,) if session is not None else (),
+        ),
+        BoundaryId.BND_003: Bnd003Input(boundary_id=BoundaryId.BND_003, context=context),
+    }
+    chain = (
+        (BoundaryId.BND_001, BoundaryId.BND_002, BoundaryId.BND_003)
+        if session is not None
+        else (BoundaryId.BND_001, BoundaryId.BND_003)
+    )
+    result = evaluate_chain(registry, chain, inputs, context)  # type: ignore[arg-type]
+    if result.result is not BoundaryResult.ALLOW:
+        raise SessionCommandDenied(result)
+
+
+def _load_fresh(
+    ports: GovernedPorts,
+    session_id: SessionId,
+    expected: int,
+    *,
+    actor: ActorIdentity,
+    workspace_id: WorkspaceId,
+    operation: str,
+    ident: CommandIdentity,
+) -> Session:
     session = ports.sessions.get(session_id)
+    deny_unless_member(
+        ports,
+        actor=actor,
+        workspace_id=workspace_id,
+        session=session,
+        operation=operation,
+        ident=ident,
+    )
     if session is None:
         raise SessionNotFound(str(session_id.value))
     if session.record_version.value != expected:
@@ -485,7 +552,15 @@ def _session_transition(
         session_id=str(session_id.value), expected_session_version=expected_session_version
     )
     _replay_guard(ports, workspace_id, command_type, ident, payload)
-    session = _load_fresh(ports, session_id, expected_session_version)
+    session = _load_fresh(
+        ports,
+        session_id,
+        expected_session_version,
+        actor=actor,
+        workspace_id=workspace_id,
+        operation=command_type,
+        ident=ident,
+    )
     resolution = resolve_session_transition(
         current_state=session.state, transition_id=transition_id
     )
@@ -597,7 +672,15 @@ def prepare_burst(
         session_id=str(session_id.value), expected_session_version=expected_session_version
     )
     _replay_guard(ports, workspace_id, "CMD_PREPARE_BURST", ident, payload)
-    session = _load_fresh(ports, session_id, expected_session_version)
+    session = _load_fresh(
+        ports,
+        session_id,
+        expected_session_version,
+        actor=actor,
+        workspace_id=workspace_id,
+        operation="CMD_PREPARE_BURST",
+        ident=ident,
+    )
     burst_id = BurstId(uuid.uuid4())
     ref = session_target_ref(session_id)
     existing = ports.bursts.get_by_session(session_id)
@@ -680,7 +763,15 @@ def admit_participant(
         expected_session_version=expected_session_version,
     )
     _replay_guard(ports, workspace_id, "CMD_ADMIT_SESSION_PARTICIPANT", ident, payload)
-    session = _load_fresh(ports, session_id, expected_session_version)
+    session = _load_fresh(
+        ports,
+        session_id,
+        expected_session_version,
+        actor=actor,
+        workspace_id=workspace_id,
+        operation="CMD_ADMIT_SESSION_PARTICIPANT",
+        ident=ident,
+    )
     participations = SqlAlchemySessionParticipationRepository(ports.connection)
     participation_id = uuid.uuid4()
     ref = session_target_ref(session_id)
@@ -753,7 +844,15 @@ def open_question_generation(
         session_id=str(session_id.value), expected_session_version=expected_session_version
     )
     _replay_guard(ports, workspace_id, "CMD_OPEN_QUESTION_GENERATION", ident, payload)
-    session = _load_fresh(ports, session_id, expected_session_version)
+    session = _load_fresh(
+        ports,
+        session_id,
+        expected_session_version,
+        actor=actor,
+        workspace_id=workspace_id,
+        operation="CMD_OPEN_QUESTION_GENERATION",
+        ident=ident,
+    )
     burst = ports.bursts.get_by_session(session_id)
     participations = SqlAlchemySessionParticipationRepository(ports.connection)
     resolution = resolve_session_transition(

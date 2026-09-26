@@ -1,0 +1,19 @@
+E       AssertionError: ('/workspaces/{ws}/sessions/{session}/transitions/begin-setup', 409, '{"kind":"stale","reasonCode":"STALE_VERSION","expectedVersion":1,"currentVersion":4,"currentState":"QUESTION_GENERATION"}')
+E       AssertionError: ('/workspaces/{ws}/sessions/{session}/transitions/begin-challenge-capture', 409, '{"kind":"stale","reasonCode":"STALE_VERSION","expectedVersion":1,"currentVersion":4,"currentState":"QUESTION_GENERATION"}')
+E       AssertionError: ('/workspaces/{ws}/sessions/{session}/transitions/open-question-generation', 409, '{"kind":"stale","reasonCode":"STALE_VERSION","expectedVersion":1,"currentVersion":4,"currentState":"QUESTION_GENERATION"}')
+E       AssertionError: ('/workspaces/{ws}/sessions/{session}/burst', 409, '{"kind":"stale","reasonCode":"STALE_VERSION","expectedVersion":1,"currentVersion":4,"currentState":"QUESTION_GENERATION"}')
+E       AssertionError: ('/workspaces/{ws}/sessions/{session}/participants', 409, '{"kind":"stale","reasonCode":"STALE_VERSION","expectedVersion":1,"currentVersion":4,"currentState":"QUESTION_GENERATION"}')
+E       AssertionError: ('/workspaces/{ws}/sessions/{session}/transitions/complete-burst', 409, '{"kind":"stale","reasonCode":"STALE_VERSION","expectedVersion":1,"currentVersion":4,"currentState":"QUESTION_GENERATION"}')
+E       AssertionError: ('/workspaces/{ws}/sessions/{session}/transitions/begin-analysis', 409, '{"kind":"stale","reasonCode":"STALE_VERSION","expectedVersion":1,"currentVersion":4,"currentState":"QUESTION_GENERATION"}')
+E       AssertionError: ('/workspaces/{ws}/sessions/{session}/analysis/request', 409, '{"kind":"stale","reasonCode":"STALE_VERSION","expectedVersion":1,"currentVersion":4,"currentState":"QUESTION_GENERATION"}')
+E       AssertionError: ('/workspaces/{ws}/sessions/{session}/analysis/clustering/request', 409, '{"kind":"stale","reasonCode":"STALE_VERSION","expectedVersion":1,"currentVersion":4,"currentState":"QUESTION_GENERATION"}')
+FAILED test_an_outsider_is_denied_on_every_route_without_disclosure_or_mutation[POST-/workspaces/{ws}/sessions/{session}/transitions/begin-setup-body10]
+FAILED test_an_outsider_is_denied_on_every_route_without_disclosure_or_mutation[POST-/workspaces/{ws}/sessions/{session}/transitions/begin-challenge-capture-body11]
+FAILED test_an_outsider_is_denied_on_every_route_without_disclosure_or_mutation[POST-/workspaces/{ws}/sessions/{session}/transitions/open-question-generation-body12]
+FAILED test_an_outsider_is_denied_on_every_route_without_disclosure_or_mutation[POST-/workspaces/{ws}/sessions/{session}/burst-body13]
+FAILED test_an_outsider_is_denied_on_every_route_without_disclosure_or_mutation[POST-/workspaces/{ws}/sessions/{session}/participants-body14]
+FAILED test_an_outsider_is_denied_on_every_route_without_disclosure_or_mutation[POST-/workspaces/{ws}/sessions/{session}/transitions/complete-burst-body16]
+FAILED test_an_outsider_is_denied_on_every_route_without_disclosure_or_mutation[POST-/workspaces/{ws}/sessions/{session}/transitions/begin-analysis-body17]
+FAILED test_an_outsider_is_denied_on_every_route_without_disclosure_or_mutation[POST-/workspaces/{ws}/sessions/{session}/analysis/request-body18]
+FAILED test_an_outsider_is_denied_on_every_route_without_disclosure_or_mutation[POST-/workspaces/{ws}/sessions/{session}/analysis/clustering/request-body19]
+9 failed, 38 passed in 117.74s (0:01:57)

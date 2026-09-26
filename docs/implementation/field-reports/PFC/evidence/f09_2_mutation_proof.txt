@@ -1,0 +1,7 @@
+M01 session-control routes disclose before membership: KILLED
+M02 begin-analysis discloses before membership: KILLED
+M03 analysis/clustering request discloses before membership: KILLED
+M04 complete-burst discloses before membership: KILLED
+M05 precheck ignores which Workspace owns the Session (BND-002 dropped): KILLED
+M06 precheck result not enforced: KILLED
+6/6 killed; sources restored: True
