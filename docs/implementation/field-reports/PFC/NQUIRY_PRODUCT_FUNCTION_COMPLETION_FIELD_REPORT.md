@@ -18,7 +18,8 @@ Product functions use PF numbering (PF01–PF27). F00–F12 are repository Field
 | 2 | WU-PFC-I1 predecessor integration (F04 + A1) | `pfc-integration` | `81f208b` | `checkpoint-PFC-I1` | TECHNICALLY_CLOSED, CHECKPOINTED |
 | 3 | WU-PFC-F08-1 durable immutable committed Event basis | `pfc-integration` | `298a5d8` | `checkpoint-PFC-F08-1` | TECHNICALLY_CLOSED, CHECKPOINTED |
 | 4 | WU-PFC-F08-2 delivery → projection → replay/rebuild; the running worker | `pfc-integration` | `461ade4` | `checkpoint-PFC-F08-2` | TECHNICALLY_CLOSED, CHECKPOINTED |
-| 5 | WU-PFC-F08-3 delivery diagnostics and projection freshness | `pfc-integration` | see `CHECKPOINT_WU-PFC-F08-3.md` | `checkpoint-PFC-F08-3` | TECHNICALLY_CLOSED, CHECKPOINTED |
+| 5 | WU-PFC-F08-3 delivery diagnostics and projection freshness | `pfc-integration` | `aea783e` | `checkpoint-PFC-F08-3` | TECHNICALLY_CLOSED, CHECKPOINTED |
+| 6 | WU-PFC-F09-1 technical failure envelope (engine facts, API edge, worker survival) | `pfc-integration` | see `CHECKPOINT_WU-PFC-F09-1.md` | `checkpoint-PFC-F09-1` | TECHNICALLY_CLOSED, CHECKPOINTED |
 | — | **F08 Field (backend)** | `pfc-integration` | — | F08-1..3 | **READY_FOR_HUMAN_REVIEW** (14 Phase 8 gate; `F08_FIELD_REVIEW_BUNDLE.md`) |
 
 ## 2. Field derivation after WU-PFC-I1
@@ -77,4 +78,4 @@ This derivation is based on three read-only reconstructions of 2026-09-26: F08 e
 
 ## 5. Resulting Field status
 
-**IN_PROGRESS (autonomous).** Five Work Units are technically closed and checkpointed (A1, I1, F08-1, F08-2, F08-3). F08 is READY_FOR_HUMAN_REVIEW. Test totals on `pfc-integration`: live 1779 passed / 2 skipped; no-DB 895 passed. None is REVIEWED_FIELD. Nothing is PUBLISHED_FIELD. BLUE/master is unchanged.
+**IN_PROGRESS (autonomous).** Six Work Units are technically closed and checkpointed (A1, I1, F08-1, F08-2, F08-3, F09-1). F08 is READY_FOR_HUMAN_REVIEW. F09 is IN_PROGRESS. Test totals on `pfc-integration`: live 1792 passed / 2 skipped; no-DB 905 passed. None is REVIEWED_FIELD. Nothing is PUBLISHED_FIELD. BLUE/master is unchanged.

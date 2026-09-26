@@ -1,0 +1,15 @@
+WU-PFC-F09-1 regression evidence (2026-09-26), worktree pfc-integration, DB nquiry_pfc_int_test @ c3b8e5a1f7d2
+BASELINE (checkpoint-PFC-F08-3): live 1779 passed / 2 skipped; no-DB 895 passed, 886 skipped.
+RED: tests/e2e/test_pfc_f09_1_technical_failure.py 12 failed / 1 passed (the preservation case):
+  raw OperationalError from the engine; no envelope (bare 500 / TestClient exception);
+  worker died or exited 0 on an unreachable database. (Route-family falsifiers first passed
+  trivially via body validation; strengthened to valid bodies + strict 503 before the repair.)
+AFTER:
+  live:  1792 passed, 2 skipped in 949.07s (0:15:49)   = 1779 + 13
+  no-DB: 905 passed, 889 skipped in 29.61s  (run with --ignore of the uncommitted WU-PFC-F09-2
+         sweep file, which was written during the live run and is not part of this Work Unit)
+ruff check .: clean; ruff format --check: 376 files formatted; mypy (CI scope): no issues in 200 source files
+ARCHITECTURE_DEPENDENCY_CHECK / PROVIDER_SDK_IMPORT_CHECK / TEST_ONLY_IMPORT_CHECK: PASS
+verify_migrations: STATIC PASS (30 revisions, single head c3b8e5a1f7d2), LIVE PASS (no schema change)
+mutation proof: 9/9 KILLED, sources restored
+runtime: real API process with an unreachable database (evidence/f09_1_runtime.txt)

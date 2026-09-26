@@ -1,0 +1,9 @@
+WU-PFC-F09-1 runtime evidence: real API process (uvicorn :18432) with DATABASE_URL -> 127.0.0.1:1 (unreachable)
+$ POST /workspaces/<w>/challenges (Idempotency-Key da93bd3a-20ad-48b7-8944-0a88ca7d7ccd)
+{"kind":"failed_precommit","reasonCode":"DATABASE_UNAVAILABLE","commandId":"da93bd3a-20ad-48b7-8944-0a88ca7d7ccd"}  HTTP 503
+$ GET /workspaces/<w>/overview
+{"kind":"failed_precommit","reasonCode":"DATABASE_UNAVAILABLE"}  HTTP 503
+$ POST /auth/login
+{"kind":"failed_precommit","reasonCode":"DATABASE_UNAVAILABLE"}  HTTP 503
+$ GET /healthz (no DB needed)
+{"status":"ok","phase":"0"}  HTTP 200

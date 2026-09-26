@@ -70,6 +70,7 @@ import uuid
 
 from application.analysis_runtime import runtime_from_environment
 from application.http_f04 import configure_runtime
+from application.technical_failure import technical_failure_response
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -104,6 +105,17 @@ async def _malformed_request_body(_request: Request, _exc: RequestValidationErro
     return JSONResponse(
         status_code=400, content={"kind": "rejected", "reasonCode": "MALFORMED_REQUEST_BODY"}
     )
+
+
+@app.exception_handler(Exception)
+async def _technical_failure(request: Request, exc: Exception) -> JSONResponse:
+    """WU-PFC-F09-1 (19 §29, 10 §14, 09 §77/§78): no route answers a technical
+    failure with a bare 500 or a guessed outcome. See
+    `application.technical_failure` for the mapping."""
+    status, body = technical_failure_response(
+        exc, method=request.method, idempotency_key=request.headers.get("Idempotency-Key")
+    )
+    return JSONResponse(status_code=status, content=body)
 
 
 # F04 WU-04.6 (HD-19, PI-5; falsifier F1): the AI runtime is validated at

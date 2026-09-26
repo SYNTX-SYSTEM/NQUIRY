@@ -39,7 +39,12 @@ from persistence.delivery_diagnostics import (
     delivery_diagnostics,
     projection_freshness,
 )
-from persistence.engine import connect
+from persistence.engine import (
+    CommitOutcomeUnknown,
+    CommitRejected,
+    DatabaseUnavailable,
+    connect,
+)
 from persistence.projection_repository import SqlAlchemyProjectionRepository
 from semantic_types.ids import WorkspaceId
 
@@ -94,7 +99,14 @@ def open_delivery() -> Iterator[DeliveryPorts]:
         yield DeliveryPorts(connection)
 
 
+TECHNICAL_FAILURES = (DatabaseUnavailable, CommitRejected, CommitOutcomeUnknown)
+"""WU-PFC-F09-1: the typed technical failures of one delivery pass. The pass
+is rolled back (or its commit is unproven), so its records stay due and are
+redelivered by a later pass (at-least-once, 09 section 15.2)."""
+
+
 __all__ = [
+    "TECHNICAL_FAILURES",
     "DeliveryDiagnostics",
     "DeliveryPorts",
     "ProjectionFreshness",

@@ -20,6 +20,7 @@ per request, which would defeat pooling entirely.
 
 from __future__ import annotations
 
+import contextlib
 import os
 from collections.abc import Iterator
 from contextlib import contextmanager
@@ -45,6 +46,24 @@ def _get_engine() -> sa.Engine:
     return _engine
 
 
+class DatabaseUnavailable(RuntimeError):
+    """WU-PFC-F09-1 (10 section 14: "failure before any CommitUnit mutation"):
+    no connection could be obtained, so nothing was executed. Canonical
+    consequence is proven absent."""
+
+
+class CommitRejected(RuntimeError):
+    """WU-PFC-F09-1 (10 section 14: "proven abort"): the server answered the
+    COMMIT with an error (for example a deferred constraint), so the
+    transaction was aborted and nothing persisted."""
+
+
+class CommitOutcomeUnknown(RuntimeError):
+    """WU-PFC-F09-1 (10 section 14: "uncertain commit"): the connection failed
+    while COMMIT was in flight. Whether the transaction committed cannot be
+    proven (10 section 4.4 INDETERMINATE)."""
+
+
 @contextmanager
 def connect() -> Iterator[sa.Connection]:
     """One request-scoped connection, inside its own transaction,
@@ -52,10 +71,45 @@ def connect() -> Iterator[sa.Connection]:
     mirrors every existing test's own `db_connection` fixture
     transaction-per-call discipline, applied to a real runtime request
     instead of a test.
+
+    WU-PFC-F09-1: the three technical failure points are reported as typed
+    facts, because "a database exception by itself does not establish which
+    result occurred" (10 section 14):
+    - connecting fails: `DatabaseUnavailable`
+    - the COMMIT is answered with an error: `CommitRejected` (proven abort)
+    - the connection fails during COMMIT: `CommitOutcomeUnknown`
+    An exception raised by the caller inside the block still propagates
+    unchanged after rollback, as before.
     """
     engine = _get_engine()
-    with engine.connect() as connection, connection.begin():
-        yield connection
+    try:
+        connection = engine.connect()
+    except sa.exc.SQLAlchemyError as exc:
+        raise DatabaseUnavailable(f"{type(exc).__name__}: {exc}") from exc
+    with connection:
+        transaction = connection.begin()
+        try:
+            yield connection
+        except BaseException:
+            if transaction.is_active:
+                # A lost connection cannot roll back explicitly; the server
+                # discards an uncommitted transaction anyway. The caller's
+                # own exception is what propagates, never this one.
+                with contextlib.suppress(sa.exc.SQLAlchemyError):
+                    transaction.rollback()
+            raise
+        try:
+            transaction.commit()
+        except (sa.exc.IntegrityError, sa.exc.ProgrammingError, sa.exc.DataError) as exc:
+            raise CommitRejected(f"{type(exc).__name__}: {exc}") from exc
+        except sa.exc.SQLAlchemyError as exc:
+            raise CommitOutcomeUnknown(f"{type(exc).__name__}: {exc}") from exc
 
 
-__all__ = ["DatabaseUrlNotConfigured", "connect"]
+__all__ = [
+    "CommitOutcomeUnknown",
+    "CommitRejected",
+    "DatabaseUnavailable",
+    "DatabaseUrlNotConfigured",
+    "connect",
+]

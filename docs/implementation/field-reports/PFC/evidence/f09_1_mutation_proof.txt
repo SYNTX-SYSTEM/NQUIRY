@@ -1,0 +1,10 @@
+M01 unreachable database not reported as unavailable: KILLED
+M02 rejected COMMIT treated as unproven: KILLED
+M03 lost COMMIT claimed as proven abort: KILLED
+M04 caller exception swallowed by the transaction scope: KILLED
+M05 uncertain Command commit reported as failed_precommit: KILLED
+M06 unknown Command failure guessed as failed_precommit: KILLED
+M07 command identity not echoed: KILLED
+M08 API edge mapping not installed: KILLED
+M09 worker loop dies on a database outage: KILLED
+9/9 killed; sources restored: True

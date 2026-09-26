@@ -16,6 +16,10 @@ DELIVERED or FAILED_DELIVERY, all in one transaction per pass
   (WU-PFC-F08-3).
 - Without `DATABASE_URL` the worker refuses to start (exit 2). It has no
   default connection string, matching `persistence.engine`.
+- WU-PFC-F09-1: a technical failure of one pass (database unavailable, commit
+  rejected or unproven) is reported as `delivery pass failed: <REASON>`. The
+  loop continues with the next pass, since the pass rolled back and its
+  records stay due. `--once` exits 3.
 
 PKG-27: one `ObservationContext` per startup and one per pass, through
 `LocalOtelObservationSink`. Operational telemetry only, never authoritative
@@ -35,7 +39,7 @@ import uuid
 from types import FrameType
 
 from observability.context import LocalOtelObservationSink, ObservationContext
-from projection.delivery import open_delivery
+from projection.delivery import TECHNICAL_FAILURES, open_delivery
 from semantic_types.clock import SystemClock
 from semantic_types.ids import CorrelationId
 
@@ -50,6 +54,13 @@ class _Stop:
 
 def _request_stop(_signum: int, _frame: FrameType | None) -> None:
     _Stop.requested = True
+
+
+_FAILURE_REASON = {
+    "DatabaseUnavailable": "DATABASE_UNAVAILABLE",
+    "CommitRejected": "COMMIT_REJECTED",
+    "CommitOutcomeUnknown": "COMMIT_OUTCOME_UNPROVEN",
+}
 
 
 def _one_pass(backoff: int) -> None:
@@ -86,7 +97,12 @@ def main(argv: list[str] | None = None) -> int:
         print("nquiry_worker: DATABASE_URL is not set; refusing to start.", file=sys.stderr)
         return 2
     if args.diagnose:
-        _diagnose()
+        try:
+            _diagnose()
+        except TECHNICAL_FAILURES as exc:
+            reason = _FAILURE_REASON[type(exc).__name__]
+            print(f"nquiry_worker: diagnose failed: {reason}", file=sys.stderr, flush=True)
+            return 3
         return 0
 
     _observation_sink.emit(
@@ -95,7 +111,13 @@ def main(argv: list[str] | None = None) -> int:
     signal.signal(signal.SIGTERM, _request_stop)
     signal.signal(signal.SIGINT, _request_stop)
     while True:
-        _one_pass(args.retry_backoff)
+        try:
+            _one_pass(args.retry_backoff)
+        except TECHNICAL_FAILURES as exc:
+            reason = _FAILURE_REASON[type(exc).__name__]
+            print(f"nquiry_worker: delivery pass failed: {reason}", file=sys.stderr, flush=True)
+            if args.once:
+                return 3
         if args.once:
             return 0
         deadline = time.monotonic() + args.interval
