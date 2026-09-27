@@ -359,6 +359,9 @@ def test_rls_is_enabled_on_every_workspace_scoped_table(db_connection: sa.Connec
         "ai_validation_proofs",
         "question_clusters",
         "question_cluster_memberships",
+        # WU-PFC-B4 (migration e8c2a5f1b7d4): same workspace_isolation policy.
+        "impact_chains",
+        "impact_chain_nodes",
     }
 
 

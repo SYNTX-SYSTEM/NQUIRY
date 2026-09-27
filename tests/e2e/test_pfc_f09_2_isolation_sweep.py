@@ -136,6 +136,13 @@ ROUTES: list[tuple[str, str, dict[str, Any] | None]] = [
         {"expectedVersion": 1, "questionId": "00000000-0000-4000-8000-000000000001"},
     ),
     ("GET", "/workspaces/{ws}/sessions/{session}/question-selections", None),
+    ("POST", "/workspaces/{ws}/sessions/{session}/impact-chain", {"expectedVersion": 1}),
+    (
+        "POST",
+        "/workspaces/{ws}/sessions/{session}/impact-chain/nodes",
+        {"expectedChainVersion": 1, "level": 1, "answer": "Because it matters."},
+    ),
+    ("GET", "/workspaces/{ws}/sessions/{session}/impact-chain", None),
     (
         "POST",
         "/workspaces/{ws}/sessions/{session}/analysis/request",

@@ -204,6 +204,17 @@ class SessionPreconditionUnmet(Exception):
         super().__init__(reason_code)
 
 
+class ContentAuthorityDenied(Exception):
+    """The actor holds the operation's authority class but is not the one human
+    a Human Decision names for this content act (WU-PFC-B4, HD-26: only the
+    selector of the current primary Question authors its ImpactChain). The
+    attempt is recorded as DENIED; nothing is written."""
+
+    def __init__(self, reason_code: str) -> None:
+        self.reason_code = reason_code
+        super().__init__(reason_code)
+
+
 @dataclass(frozen=True, slots=True)
 class SessionTransitionPayload:
     session_id: str
@@ -408,7 +419,11 @@ def _run(
     precondition: Callable[[], None] | None,
     mutation: Callable[[], MutationOutcome],
     failure_injector: FailureInjectionPort | None = None,
+    authority_class: AuthorityClass = AuthorityClass.SESSION_CONTROL_RIGHT,
 ) -> CommitUnit:
+    """`authority_class` is the BINDING right required at `SESSION:<id>`, at
+    BND-005 and again fresh at BND-014 (SESSION_CONTROL_RIGHT for Session
+    transitions; QUESTION_SELECTION_RIGHT for ImpactChain authoring, HD-26)."""
     context = BoundaryContext(
         workspace_id=workspace_id,
         operation=command_type,
@@ -438,7 +453,7 @@ def _run(
         BoundaryId.BND_005: Bnd005Input(
             boundary_id=BoundaryId.BND_005,
             context=context,
-            required_authority_class=AuthorityClass.SESSION_CONTROL_RIGHT,
+            required_authority_class=authority_class,
             scope_type="SESSION",
             scope_id=session_id.value,
         ),
@@ -506,6 +521,15 @@ def _run(
                 failure_code="PRECONDITION_UNMET",
             )
             raise
+        except ContentAuthorityDenied:
+            ports.commands.record_outcome(
+                attempt_id=ident.attempt_id,
+                workspace_id=workspace_id,
+                outcome=CommandOutcome.DENIED,
+                completed_at=ident.occurred_at,
+                failure_code="CONTENT_AUTHORITY_DENIED",
+            )
+            raise
 
     if ident.idempotency_key is not None:
         ports.idempotency.begin(envelope, seen_at=ident.occurred_at)
@@ -524,7 +548,7 @@ def _run(
         envelope=envelope,
         actor=actor,
         authority=BindingAuthority(
-            authority_class=AuthorityClass.SESSION_CONTROL_RIGHT,
+            authority_class=authority_class,
             scope_type="SESSION",
             scope_id=session_id.value,
         ),

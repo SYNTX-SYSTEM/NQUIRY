@@ -33,7 +33,13 @@ from application.http_f04 import (
     dispatch_request_analysis,
     dispatch_request_clustering,
 )
-from application.http_f05 import dispatch_question_selections, dispatch_select_question
+from application.http_f05 import (
+    dispatch_append_impact_chain_node,
+    dispatch_create_impact_chain,
+    dispatch_impact_chain,
+    dispatch_question_selections,
+    dispatch_select_question,
+)
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, StrictBool
@@ -276,6 +282,12 @@ class SelectQuestionBody(BaseModel):
     expectedVersion: int | None = None  # noqa: N815
 
 
+class AppendImpactNodeBody(BaseModel):
+    expectedChainVersion: object = None  # noqa: N815 -- validated by the dispatcher
+    level: object = None
+    answer: object = None
+
+
 class OperationRequestBody(BaseModel):
     expectedVersion: int | None = None  # noqa: N815
     case: str | None = None
@@ -367,6 +379,47 @@ def select_primary_question(
 def question_selections(workspace_id: str, session_id: str, request: Request) -> JSONResponse:
     return _json(
         dispatch_question_selections(
+            session_token=_token(request), workspace_id=workspace_id, session_id=session_id
+        )
+    )
+
+
+@router.post("/workspaces/{workspace_id}/sessions/{session_id}/impact-chain")
+def create_impact_chain(
+    workspace_id: str, session_id: str, body: BeginAnalysisBody, request: Request
+) -> JSONResponse:
+    return _json(
+        dispatch_create_impact_chain(
+            session_token=_token(request),
+            idempotency_key=_idem(request),
+            workspace_id=workspace_id,
+            session_id=session_id,
+            expected_version=body.expectedVersion,
+        )
+    )
+
+
+@router.post("/workspaces/{workspace_id}/sessions/{session_id}/impact-chain/nodes")
+def append_impact_chain_node(
+    workspace_id: str, session_id: str, body: AppendImpactNodeBody, request: Request
+) -> JSONResponse:
+    return _json(
+        dispatch_append_impact_chain_node(
+            session_token=_token(request),
+            idempotency_key=_idem(request),
+            workspace_id=workspace_id,
+            session_id=session_id,
+            expected_chain_version=body.expectedChainVersion,
+            level=body.level,
+            answer=body.answer,
+        )
+    )
+
+
+@router.get("/workspaces/{workspace_id}/sessions/{session_id}/impact-chain")
+def impact_chain(workspace_id: str, session_id: str, request: Request) -> JSONResponse:
+    return _json(
+        dispatch_impact_chain(
             session_token=_token(request), workspace_id=workspace_id, session_id=session_id
         )
     )

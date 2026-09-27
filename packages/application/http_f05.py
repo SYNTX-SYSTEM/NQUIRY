@@ -89,4 +89,137 @@ def dispatch_question_selections(
     return _with_actor(session_token, work)
 
 
-__all__ = ["dispatch_question_selections", "dispatch_select_question"]
+def dispatch_create_impact_chain(
+    *,
+    session_token: str | None,
+    idempotency_key: str | None,
+    workspace_id: str,
+    session_id: str,
+    expected_version: object,
+) -> Response:
+    """CMD_CREATE_IMPACT_CHAIN (WU-PFC-B4, HD-26)."""
+    from application.impact_chain_handler import create_impact_chain
+
+    def work(ports: GovernedPorts, principal: Any) -> Response:
+        ws = WorkspaceId(_uuid(workspace_id, "workspace_id"))
+        sid = SessionId(_uuid(session_id, "session_id"))
+        version = _version(expected_version)
+        ident = _ident(idempotency_key)
+
+        def run() -> Response:
+            try:
+                result = create_impact_chain(
+                    ports,
+                    actor=_actor(principal),
+                    workspace_id=ws,
+                    session_id=sid,
+                    expected_session_version=version,
+                    ident=ident,
+                )
+            except control.IdempotentReplay:
+                return 200, {"kind": "committed", "replayed": True}
+            return 200, {
+                "kind": "committed",
+                "replayed": False,
+                "commandType": "CMD_CREATE_IMPACT_CHAIN",
+                "commitId": str(result.commit_unit.commit_id.value),
+                "impactChainId": str(result.impact_chain_id),
+            }
+
+        return _command_outcome(run, ident)
+
+    return _with_actor(session_token, work)
+
+
+def _level(value: object) -> int:
+    from application.impact_chain_handler import LEVELS
+
+    if not isinstance(value, int) or isinstance(value, bool) or value not in LEVELS:
+        raise _Rejected("LEVEL_OUT_OF_RANGE")
+    return value
+
+
+def _answer(value: object) -> str:
+    from application.impact_chain_handler import ANSWER_MAX_CHARS
+
+    if not isinstance(value, str) or not value.strip():
+        raise _Rejected("ANSWER_REQUIRED")
+    if len(value) > ANSWER_MAX_CHARS:
+        raise _Rejected("ANSWER_TOO_LONG")
+    return value
+
+
+def dispatch_append_impact_chain_node(
+    *,
+    session_token: str | None,
+    idempotency_key: str | None,
+    workspace_id: str,
+    session_id: str,
+    expected_chain_version: object,
+    level: object,
+    answer: object,
+) -> Response:
+    """CMD_APPEND_IMPACT_CHAIN_NODE (WU-PFC-B4, HD-26). The answer is stored
+    verbatim; only a blank or oversized answer is refused as input."""
+    from application.impact_chain_handler import append_impact_chain_node
+
+    def work(ports: GovernedPorts, principal: Any) -> Response:
+        ws = WorkspaceId(_uuid(workspace_id, "workspace_id"))
+        sid = SessionId(_uuid(session_id, "session_id"))
+        version = _version(expected_chain_version)
+        lvl = _level(level)
+        text = _answer(answer)
+        ident = _ident(idempotency_key)
+
+        def run() -> Response:
+            try:
+                result = append_impact_chain_node(
+                    ports,
+                    actor=_actor(principal),
+                    workspace_id=ws,
+                    session_id=sid,
+                    expected_chain_version=version,
+                    level=lvl,
+                    answer_content=text,
+                    ident=ident,
+                )
+            except control.IdempotentReplay:
+                return 200, {"kind": "committed", "replayed": True}
+            return 200, {
+                "kind": "committed",
+                "replayed": False,
+                "commandType": "CMD_APPEND_IMPACT_CHAIN_NODE",
+                "commitId": str(result.commit_unit.commit_id.value),
+                "impactChainId": str(result.impact_chain_id),
+                "level": result.level,
+                "complete": result.complete,
+            }
+
+        return _command_outcome(run, ident)
+
+    return _with_actor(session_token, work)
+
+
+def dispatch_impact_chain(
+    *, session_token: str | None, workspace_id: str, session_id: str
+) -> Response:
+    def work(ports: GovernedPorts, principal: Any) -> Response:
+        ws = WorkspaceId(_uuid(workspace_id, "workspace_id"))
+        sid = SessionId(_uuid(session_id, "session_id"))
+        return _query(
+            lambda: {
+                "kind": "ok",
+                **queries.session_position(ports, principal, ws, sid)["impactChain"],  # type: ignore[dict-item]
+            }
+        )
+
+    return _with_actor(session_token, work)
+
+
+__all__ = [
+    "dispatch_append_impact_chain_node",
+    "dispatch_create_impact_chain",
+    "dispatch_impact_chain",
+    "dispatch_question_selections",
+    "dispatch_select_question",
+]

@@ -220,6 +220,50 @@ def _selection_cap(
     return _cap(blocker is None, blocker)
 
 
+def impact_chain_view(
+    ports: GovernedPorts, session: Session, *, visible: bool
+) -> dict[str, object]:
+    """WU-PFC-B4 (HD-26): the Five-Why ImpactChain of the current primary
+    Question. Answer text is served to the same audience as the frozen
+    Question set (the HD-13 / HD-22 audience); structure is always served.
+    A Fixture Session's chain stays FIXTURE_NON_PROOF (HD-24 rule 7)."""
+    from application.impact_chain_handler import current_chain, is_complete, primary_selection
+
+    primary = primary_selection(ports, session.session_id)
+    chain = current_chain(ports, session.session_id)
+    return {
+        "proofMode": proof_mode(session.fixture),
+        "primaryQuestionId": str(primary.question_id.value) if primary else None,
+        "impactChainId": str(chain.impact_chain_id) if chain else None,
+        "version": chain.record_version.value if chain else None,
+        "authorUserId": str(chain.created_by_user_id.value) if chain else None,
+        "nextLevel": (None if is_complete(chain) else chain.next_level) if chain else None,
+        "complete": is_complete(chain),
+        "answersVisible": visible,
+        "levels": [
+            {
+                "level": n.level,
+                "answer": n.answer_content if visible else None,
+                "authorUserId": str(n.author_user_id.value),
+                "capturedAt": n.captured_at.isoformat(),
+            }
+            for n in (chain.nodes if chain else ())
+        ],
+    }
+
+
+def _impact_cap(
+    ports: GovernedPorts, context: WorkspaceContext, session: Session, *, append: bool
+) -> dict[str, object]:
+    from application.impact_chain_handler import impact_chain_blocker
+    from application.selection_command import holds_selection_right
+
+    if not holds_selection_right(ports, session, context.principal.user_id):
+        return _cap(False, "NO_QUESTION_SELECTION_RIGHT")
+    code, _ = impact_chain_blocker(ports, session, context.principal.user_id, append=append)
+    return _cap(code is None, code)
+
+
 def proof_mode(fixture: bool) -> str:
     """HD-24 rule 5: the Session's proof semantics, carried on every Session
     surface. A Fixture Session is NON_PROOF for its whole life."""
@@ -631,6 +675,8 @@ def session_position(
         },
         "SELECT_COMPELLING_QUESTION": _selection_cap(ports, context, session, "COMPELLING"),
         "SELECT_PRIMARY_QUESTION": _selection_cap(ports, context, session, "PRIMARY"),
+        "CREATE_IMPACT_CHAIN": _impact_cap(ports, context, session, append=False),
+        "APPEND_IMPACT_CHAIN_NODE": _impact_cap(ports, context, session, append=True),
     }
     # `relevant`: does the action belong to the Session's CURRENT phase in
     # the 03 topology (independent of who is looking)? Computed here so the
@@ -651,6 +697,8 @@ def session_position(
         "BEGIN_QUESTION_SELECTION": session.state is SessionState.REFLECTION,
         "SELECT_COMPELLING_QUESTION": session.state is SessionState.QUESTION_SELECTION,
         "SELECT_PRIMARY_QUESTION": session.state is SessionState.QUESTION_SELECTION,
+        "CREATE_IMPACT_CHAIN": session.state is SessionState.QUESTION_SELECTION,
+        "APPEND_IMPACT_CHAIN_NODE": session.state is SessionState.QUESTION_SELECTION,
     }
     for name, cap in actions.items():
         cap["relevant"] = relevant[name]
@@ -707,6 +755,11 @@ def session_position(
         "reflection": reflection_view(ports, session),
         "reflectionCompletion": reflection_completion_view(ports, session),
         "selection": selection_view(ports, session),
+        "impactChain": impact_chain_view(
+            ports,
+            session,
+            visible=question_set.get("visibility") == "FULL_FROZEN_SET",
+        ),
         "participants": [
             {
                 "userId": str(p.user_id.value),

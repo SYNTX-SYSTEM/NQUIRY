@@ -1,0 +1,24 @@
+WU-PFC-B4 regression evidence (2026-09-27), worktree pfc-integration, DB nquiry_pfc_int_test @ e8c2a5f1b7d4
+BASELINE (checkpoint-PFC-B3 + records 5a91248, HD-26 0e18e63): live 1934 passed / 2 skipped; no-DB 915 passed
+  (the HD-26 ledger case replaced the HA-22-open pin: net zero).
+RED (proven on the unchanged predecessor tree 0e18e63 in a temporary detached worktree containing only the new
+  falsifier file, test DB at the predecessor head d4f7b2c9e6a1; the implementation had been written first):
+        1 20 failed in 140.83s (0:02:20)
+        1 E       assert (404 == 403)
+        1 E       AssertionError: {"detail":"Not Found"}
+        5 E       KeyError: 'CREATE_IMPACT_CHAIN'
+        3 E       KeyError: 'impactChainId'
+       10 E       KeyError: 'kind'
+        1 E       ModuleNotFoundError: No module named 'application.impact_chain_handler'
+MIGRATION: e8c2a5f1b7d4 upgrade -> downgrade -1 -> upgrade on nquiry_pfc_int_test: clean.
+AFTER (exact committed tree):
+  live:  1962 passed, 2 skipped in 1379.36s (0:22:59)   = 1934 + 20 B4 + 8 isolation-sweep cases for the three new routes
+  no-DB: 915 passed, 1049 skipped in 27.77s
+  falsifier correction before the full run: two DB-level cases nested the savepoint outside pytest.raises (RELEASE on an
+  aborted transaction); reordered to pytest.raises(...), begin_nested().
+ruff check .: clean; ruff format --check: all .py files formatted; mypy (CI scope): no issues in 213 source files
+ARCHITECTURE_DEPENDENCY_CHECK::PASS
+PROVIDER_SDK_IMPORT_CHECK::PASS
+TEST_ONLY_IMPORT_CHECK::PASS
+MIGRATION_STATIC_CHECK::PASS (32 revision(s), single head ['e8c2a5f1b7d4'])
+MIGRATION_LIVE_CHECK::PASS (db head matches {'e8c2a5f1b7d4'})

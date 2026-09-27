@@ -52,6 +52,7 @@ _AGGREGATE_TABLES: dict[str, tuple[str, str]] = {
     "ai_derived_artifact": ("ai_derived_artifacts", "workspace_id"),
     "decision": ("decisions", "workspace_id"),
     "question_selection": ("question_selections", "workspace_id"),
+    "impact_chain": ("impact_chains", "workspace_id"),
 }
 
 

@@ -1,0 +1,16 @@
+M01 any selection-right holder may author (no selector check): KILLED
+M02 ImpactChain Commands run under SESSION_CONTROL_RIGHT: KILLED
+M03 _run ignores the requested authority class (BND-005 and BND-014): KILLED
+M04 a second chain for the same primary is not blocked: KILLED
+M05 levels need not be successive: KILLED
+M06 a complete chain still accepts appends: KILLED
+M07 completion predicate weakened: KILLED
+M08 state gate removed: KILLED
+M09 a blank answer is accepted: KILLED
+M10 level range not validated: KILLED
+M11 read model hides the Fixture proof mode: KILLED
+M12 content-authority denial not answered as denied: KILLED
+M13 the append event drops the Fixture status: KILLED
+M14 capability ignores the selection right: KILLED
+14/14 killed; sources restored: True
+exit=0

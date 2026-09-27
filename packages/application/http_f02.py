@@ -171,6 +171,8 @@ def _command_envelope(run: Callable[[], Response]) -> Response:
         }
     except control.SessionPreconditionUnmet as exc:
         return 422, {"kind": "blocked", "reasonCode": exc.reason_code}
+    except control.ContentAuthorityDenied as exc:
+        return _denied(exc.reason_code)
     except (
         control.SessionCommandDenied,
         ChallengeCreationDenied,

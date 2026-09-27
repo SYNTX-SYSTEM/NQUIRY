@@ -1,0 +1,172 @@
+WU-PFC-B4 runtime proof (2026-09-27): real API process (uvicorn :18433, NQUIRY_ENVIRONMENT=DEVELOPMENT, NQUIRY_AI_PROVIDER=mock) + real worker process, isolated DB nquiry_pfc_int_runtime migrated to e8c2a5f1b7d4
+seed: tests/e2e/pfc_b4_runtime_proof.py seed (real F02/F03 handlers, COMMITTED): one Fixture Session at QUESTION_CAPTURE
+drive: HTTP only: analysis, reflection, question selection, owner grant, compelling + primary, ImpactChain create, level 2 first (blocked), levels 1..5, level 6 (rejected), GET
+note: begin_investigation_without_chain = 404 because TRN-SESS-009 has no route before WU-PFC-B5 (expected)
+
+{
+  "begin_analysis": 200,
+  "begin_reflection": 200,
+  "begin_question_selection": 200,
+  "grant_question_selection_right": 200,
+  "select_compelling": 200,
+  "select_primary": 200,
+  "begin_investigation_without_chain": {
+    "status": 404,
+    "body": {
+      "detail": "Not Found"
+    }
+  },
+  "create_impact_chain": {
+    "status": 200,
+    "body": {
+      "kind": "committed",
+      "replayed": false,
+      "commandType": "CMD_CREATE_IMPACT_CHAIN",
+      "commitId": "969607eb-78c2-446d-9495-0e976b13893c",
+      "impactChainId": "a84c191b-1a2d-4e1d-a745-34fcdd1f890b"
+    }
+  },
+  "append_level_2_first": {
+    "status": 422,
+    "body": {
+      "kind": "blocked",
+      "reasonCode": "LEVEL_NOT_SUCCESSIVE"
+    }
+  },
+  "append_levels": [
+    {
+      "status": 200,
+      "body": {
+        "kind": "committed",
+        "replayed": false,
+        "commandType": "CMD_APPEND_IMPACT_CHAIN_NODE",
+        "commitId": "68bf8725-9557-4212-87f8-6c90c95993cd",
+        "impactChainId": "a84c191b-1a2d-4e1d-a745-34fcdd1f890b",
+        "level": 1,
+        "complete": false
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "kind": "committed",
+        "replayed": false,
+        "commandType": "CMD_APPEND_IMPACT_CHAIN_NODE",
+        "commitId": "99714f1f-5704-4b9a-9679-606c064a441e",
+        "impactChainId": "a84c191b-1a2d-4e1d-a745-34fcdd1f890b",
+        "level": 2,
+        "complete": false
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "kind": "committed",
+        "replayed": false,
+        "commandType": "CMD_APPEND_IMPACT_CHAIN_NODE",
+        "commitId": "41d8483b-c984-40a2-8185-de71c3e01104",
+        "impactChainId": "a84c191b-1a2d-4e1d-a745-34fcdd1f890b",
+        "level": 3,
+        "complete": false
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "kind": "committed",
+        "replayed": false,
+        "commandType": "CMD_APPEND_IMPACT_CHAIN_NODE",
+        "commitId": "6bde9168-e9c2-484b-b736-a27c77290fa0",
+        "impactChainId": "a84c191b-1a2d-4e1d-a745-34fcdd1f890b",
+        "level": 4,
+        "complete": false
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "kind": "committed",
+        "replayed": false,
+        "commandType": "CMD_APPEND_IMPACT_CHAIN_NODE",
+        "commitId": "a0547b4d-b8a1-4df5-adf3-3df09cf9b003",
+        "impactChainId": "a84c191b-1a2d-4e1d-a745-34fcdd1f890b",
+        "level": 5,
+        "complete": true
+      }
+    }
+  ],
+  "append_level_6": {
+    "status": 400,
+    "body": {
+      "kind": "rejected",
+      "reasonCode": "LEVEL_OUT_OF_RANGE"
+    }
+  },
+  "get_impact_chain": {
+    "kind": "ok",
+    "proofMode": "FIXTURE_NON_PROOF",
+    "primaryQuestionId": "e8656851-3038-5762-ad0a-212246632570",
+    "impactChainId": "a84c191b-1a2d-4e1d-a745-34fcdd1f890b",
+    "version": 6,
+    "authorUserId": "8ecc0619-8822-4ead-b49f-37d752a0a076",
+    "nextLevel": null,
+    "complete": true,
+    "answersVisible": true,
+    "levels": [
+      {
+        "level": 1,
+        "answer": "Customers who leave early never see the value.",
+        "authorUserId": "8ecc0619-8822-4ead-b49f-37d752a0a076",
+        "capturedAt": "2026-09-27T15:33:48.757149+00:00"
+      },
+      {
+        "level": 2,
+        "answer": "Without the value they do not renew.",
+        "authorUserId": "8ecc0619-8822-4ead-b49f-37d752a0a076",
+        "capturedAt": "2026-09-27T15:33:48.940438+00:00"
+      },
+      {
+        "level": 3,
+        "answer": "Renewals fund the product.",
+        "authorUserId": "8ecc0619-8822-4ead-b49f-37d752a0a076",
+        "capturedAt": "2026-09-27T15:33:49.131697+00:00"
+      },
+      {
+        "level": 4,
+        "answer": "Without funding the team cannot improve onboarding.",
+        "authorUserId": "8ecc0619-8822-4ead-b49f-37d752a0a076",
+        "capturedAt": "2026-09-27T15:33:49.310421+00:00"
+      },
+      {
+        "level": 5,
+        "answer": "So the first month decides whether we survive.",
+        "authorUserId": "8ecc0619-8822-4ead-b49f-37d752a0a076",
+        "capturedAt": "2026-09-27T15:33:49.526687+00:00"
+      }
+    ]
+  },
+  "state_after": "QUESTION_SELECTION",
+  "proofMode": "FIXTURE_NON_PROOF",
+  "investigation": null
+}
+
+== real worker: python -m nquiry_worker --once
+nquiry_worker: delivery pass: delivered=35 failed=0
+== impact_chain_nodes (canonical)
+1|8ecc0619-8822-4ead-b49f-37d752a0a076|07432fad-3386-4840-b064-46f3ff668145|e8656851-3038-5762-ad0a-212246632570|Customers who leave early neve
+2|8ecc0619-8822-4ead-b49f-37d752a0a076|07432fad-3386-4840-b064-46f3ff668145|e8656851-3038-5762-ad0a-212246632570|Without the value they do not 
+3|8ecc0619-8822-4ead-b49f-37d752a0a076|07432fad-3386-4840-b064-46f3ff668145|e8656851-3038-5762-ad0a-212246632570|Renewals fund the product.
+4|8ecc0619-8822-4ead-b49f-37d752a0a076|07432fad-3386-4840-b064-46f3ff668145|e8656851-3038-5762-ad0a-212246632570|Without funding the team canno
+5|8ecc0619-8822-4ead-b49f-37d752a0a076|07432fad-3386-4840-b064-46f3ff668145|e8656851-3038-5762-ad0a-212246632570|So the first month decides whe
+== committed impact events
+IMPACT_CHAIN_CREATED|1|||true
+IMPACT_CHAIN_NODE_APPENDED|2|1|false|true
+IMPACT_CHAIN_NODE_APPENDED|3|2|false|true
+IMPACT_CHAIN_NODE_APPENDED|4|3|false|true
+IMPACT_CHAIN_NODE_APPENDED|5|4|false|true
+IMPACT_CHAIN_NODE_APPENDED|6|5|true|true
+== audit
+CMD_APPEND_IMPACT_CHAIN_NODE|COMMITTED|BINDING|5
+CMD_CREATE_IMPACT_CHAIN|COMMITTED|BINDING|1
+== diagnose
+{"delivered": 236, "failed": 0, "max_failed_attempts": 0, "oldest_undelivered_at": null, "pending": 0, "without_basis": 0}

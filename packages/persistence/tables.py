@@ -1396,6 +1396,37 @@ local_auth_sessions_table = sa.Table(
     sa.Column("revoked_at", sa.DateTime(timezone=True), nullable=True),
 )
 
+impact_chains_table = sa.Table(
+    "impact_chains",
+    metadata,
+    # WU-PFC-B4 (09 §48; HD-26; migration e8c2a5f1b7d4). One chain per
+    # (Session, primary Question); only record_version advances (+1 per append).
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column("workspace_id", sa.Uuid(), nullable=False),
+    sa.Column("session_id", sa.Uuid(), nullable=False),
+    sa.Column("selected_question_id", sa.Uuid(), nullable=False),
+    sa.Column("created_by_user_id", sa.Uuid(), nullable=False),
+    sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("record_version", sa.BigInteger(), nullable=False),
+)
+
+impact_chain_nodes_table = sa.Table(
+    "impact_chain_nodes",
+    metadata,
+    # WU-PFC-B4 (09 §48 owned nodes; HD-26 S1). Append-only; strictly
+    # successive levels 1..5; the full provenance anchor on every node.
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column("workspace_id", sa.Uuid(), nullable=False),
+    sa.Column("impact_chain_id", sa.Uuid(), nullable=False),
+    sa.Column("session_id", sa.Uuid(), nullable=False),
+    sa.Column("selected_question_id", sa.Uuid(), nullable=False),
+    sa.Column("level", sa.SmallInteger(), nullable=False),
+    sa.Column("answer_content", sa.Text(), nullable=False),
+    sa.Column("author_user_id", sa.Uuid(), nullable=False),
+    sa.Column("captured_at", sa.DateTime(timezone=True), nullable=False),
+)
+
+
 __all__ = [
     "metadata",
     "users_table",
@@ -1437,4 +1468,6 @@ __all__ = [
     "ai_validation_proofs_table",
     "question_clusters_table",
     "question_cluster_memberships_table",
+    "impact_chains_table",
+    "impact_chain_nodes_table",
 ]

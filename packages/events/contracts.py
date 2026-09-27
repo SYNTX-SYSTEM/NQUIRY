@@ -218,6 +218,29 @@ PRODUCTION_EVENT_CONTRACTS: EventContractRegistry = {
             "fixture",
             "reflection_completion_basis",
         ),
+        # F05 (WU-PFC-B4, HD-26): the chain anchor and each appended level.
+        # The answer text stays in its canonical node row (never in an Event).
+        _c(
+            "IMPACT_CHAIN_CREATED",
+            "impact_chain",
+            "impact_chain_id",
+            "session_id",
+            "selected_question_id",
+            "created_by_user_id",
+            "fixture",
+        ),
+        _c(
+            "IMPACT_CHAIN_NODE_APPENDED",
+            "impact_chain",
+            "impact_chain_id",
+            "impact_chain_node_id",
+            "session_id",
+            "selected_question_id",
+            "level",
+            "author_user_id",
+            "complete",
+            "fixture",
+        ),
         _c(
             "AI_OPERATION_REQUESTED",
             "ai_operation_authorization",
