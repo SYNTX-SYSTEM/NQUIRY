@@ -1,0 +1,15 @@
+WU-PFC-B2 regression evidence (2026-09-27), worktree pfc-integration, DB nquiry_pfc_int_test @ d4f7b2c9e6a1
+BASELINE (checkpoint-PFC-B1 + HD-25 record 3319b58): live 1891 passed / 2 skipped; no-DB 913 passed.
+RED: tests/e2e/test_pfc_b2_begin_question_selection.py 15 failed / 1 passed (404 no route x13 incl. envelope KeyErrors;
+     KeyError BEGIN_QUESTION_SELECTION; ImportError begin_question_selection). The one pre-passing case
+     (no separate Reflection-complete state/transition) is a preservation pin of HD-25.
+AFTER (exact committed tree):
+  live:  1910 passed, 2 skipped in 1064.36s (0:17:44)   = 1891 + 16 B2 + 3 isolation-sweep cases for the new route
+  no-DB: 914 passed, 998 skipped in 29.76s
+  B2 + isolation sweep + B1: 94 passed
+ruff check .: clean; ruff format --check: all .py files formatted (the only report is a Python block inside the pre-existing, unchanged F04/review/BACKEND_REVIEW_BUNDLE.md); mypy (CI scope): no issues in 206 source files
+check_architecture_dependencies: ARCHITECTURE_DEPENDENCY_CHECK::PASS
+check_provider_sdk_imports: PROVIDER_SDK_IMPORT_CHECK::PASS
+check_test_only_imports: TEST_ONLY_IMPORT_CHECK::PASS
+verify_migrations: MIGRATION_LIVE_CHECK::PASS (db head matches {'d4f7b2c9e6a1'})
+verify_migrations: no schema change in B2

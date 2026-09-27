@@ -122,6 +122,11 @@ ROUTES: list[tuple[str, str, dict[str, Any] | None]] = [
     ),
     (
         "POST",
+        "/workspaces/{ws}/sessions/{session}/transitions/begin-question-selection",
+        {"expectedVersion": 1, "reflectionCompletionConfirmed": True},
+    ),
+    (
+        "POST",
         "/workspaces/{ws}/sessions/{session}/analysis/request",
         {"expectedVersion": 1, "case": "RETRY"},
     ),

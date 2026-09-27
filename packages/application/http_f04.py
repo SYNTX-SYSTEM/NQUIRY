@@ -210,6 +210,51 @@ def dispatch_begin_reflection(
     return _with_actor(session_token, work)
 
 
+def dispatch_begin_question_selection(
+    *,
+    session_token: str | None,
+    idempotency_key: str | None,
+    workspace_id: str,
+    session_id: str,
+    expected_version: object,
+    reflection_completion_confirmed: bool | None,
+) -> Response:
+    """CMD_BEGIN_QUESTION_SELECTION (TRN-SESS-008; WU-PFC-B2, HD-25). An absent
+    confirmation is the same as `false`: the Session remains in REFLECTION."""
+    from application.reflection_handler import begin_question_selection
+
+    def work(ports: GovernedPorts, principal: Any) -> Response:
+        ws = WorkspaceId(_uuid(workspace_id, "workspace_id"))
+        sid = SessionId(_uuid(session_id, "session_id"))
+        version = _version(expected_version)
+        ident = _ident(idempotency_key)
+
+        def run() -> Response:
+            try:
+                result = begin_question_selection(
+                    ports,
+                    actor=_actor(principal),
+                    workspace_id=ws,
+                    session_id=sid,
+                    expected_session_version=version,
+                    reflection_completion_confirmed=reflection_completion_confirmed is True,
+                    ident=ident,
+                )
+            except control.IdempotentReplay:
+                return 200, {"kind": "committed", "replayed": True}
+            return 200, {
+                "kind": "committed",
+                "replayed": False,
+                "commandType": "CMD_BEGIN_QUESTION_SELECTION",
+                "commitId": str(result.commit_unit.commit_id.value),
+                "reflectionCompletionBasis": result.reflection_completion_basis,
+            }
+
+        return _command_outcome(run, ident)
+
+    return _with_actor(session_token, work)
+
+
 def dispatch_request_operation(
     *,
     session_token: str | None,
@@ -283,6 +328,7 @@ def dispatch_request_clustering(**kwargs: Any) -> Response:
 
 
 __all__ = [
+    "dispatch_begin_question_selection",
     "dispatch_begin_reflection",
     "dispatch_request_analysis",
     "dispatch_request_clustering",

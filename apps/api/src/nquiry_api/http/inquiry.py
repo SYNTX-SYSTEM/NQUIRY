@@ -28,6 +28,7 @@ from application.http_f02 import (
 )
 from application.http_f04 import (
     dispatch_begin_analysis,
+    dispatch_begin_question_selection,
     dispatch_begin_reflection,
     dispatch_request_analysis,
     dispatch_request_clustering,
@@ -264,6 +265,11 @@ class BeginAnalysisBody(BaseModel):
     expectedVersion: int | None = None  # noqa: N815
 
 
+class BeginQuestionSelectionBody(BaseModel):
+    expectedVersion: int | None = None  # noqa: N815
+    reflectionCompletionConfirmed: StrictBool | None = None  # noqa: N815 -- HD-25
+
+
 class OperationRequestBody(BaseModel):
     expectedVersion: int | None = None  # noqa: N815
     case: str | None = None
@@ -295,6 +301,24 @@ def begin_reflection(
             workspace_id=workspace_id,
             session_id=session_id,
             expected_version=body.expectedVersion,
+        )
+    )
+
+
+@router.post(
+    "/workspaces/{workspace_id}/sessions/{session_id}/transitions/begin-question-selection"
+)
+def begin_question_selection(
+    workspace_id: str, session_id: str, body: BeginQuestionSelectionBody, request: Request
+) -> JSONResponse:
+    return _json(
+        dispatch_begin_question_selection(
+            session_token=_token(request),
+            idempotency_key=_idem(request),
+            workspace_id=workspace_id,
+            session_id=session_id,
+            expected_version=body.expectedVersion,
+            reflection_completion_confirmed=body.reflectionCompletionConfirmed,
         )
     )
 

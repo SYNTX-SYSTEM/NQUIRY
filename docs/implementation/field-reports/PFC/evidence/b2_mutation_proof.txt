@@ -1,0 +1,13 @@
+M01 confirmation not required: the precondition ignores it: KILLED
+M02 the fingerprinted payload assumes confirmation: KILLED
+M03 HTTP edge: an absent confirmation counts as given: KILLED
+M04 state gate removed: KILLED
+M05 audit row loses the completion basis: KILLED
+M06 committed event claims SYSTEM_DERIVED completion: KILLED
+M07 committed event drops the Fixture status: KILLED
+M08 projection hides the completion basis: KILLED
+M09 capability available outside REFLECTION: KILLED
+M10 capability no longer states that confirmation is required: KILLED
+M11 transition target is not QUESTION_SELECTION-relevant in the projection: KILLED
+11/11 killed; sources restored: True
+exit=0

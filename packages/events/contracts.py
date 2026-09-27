@@ -209,6 +209,15 @@ PRODUCTION_EVENT_CONTRACTS: EventContractRegistry = {
             "proof_source",
             "is_real_provider_proof",
         ),
+        # F05 (WU-PFC-B2, HD-25): the audited Reflection-completion basis
+        # (HUMAN_PROCEDURAL_CONFIRMATION) and the Fixture status.
+        _c(
+            "SESSION_QUESTION_SELECTION",
+            "session",
+            *_SESSION_TRANSITION,
+            "fixture",
+            "reflection_completion_basis",
+        ),
         _c(
             "AI_OPERATION_REQUESTED",
             "ai_operation_authorization",

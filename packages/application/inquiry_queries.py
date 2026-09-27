@@ -147,6 +147,17 @@ def reflection_view(ports: GovernedPorts, session: Session) -> dict[str, object]
     }
 
 
+def reflection_completion_view(ports: GovernedPorts, session: Session) -> dict[str, object] | None:
+    """WU-PFC-B2 (HD-25): the audited basis on which Reflection was completed,
+    read from the committed SESSION_QUESTION_SELECTION event. None before."""
+    payload = directory.committed_event_payload(
+        ports.connection, f"session:{session.session_id.value}", "SESSION_QUESTION_SELECTION"
+    )
+    if payload is None:
+        return None
+    return {"basis": payload["reflection_completion_basis"]}
+
+
 def proof_mode(fixture: bool) -> str:
     """HD-24 rule 5: the Session's proof semantics, carried on every Session
     surface. A Fixture Session is NON_PROOF for its whole life."""
@@ -548,6 +559,14 @@ def session_position(
         "REQUEST_QUESTION_ANALYSIS": request_cap(AIOperationId.AIOP_001),
         "REQUEST_QUESTION_CLUSTERING": request_cap(AIOperationId.AIOP_002),
         "BEGIN_REFLECTION": blocked_or(reflection_readiness(ports, session).blocker),
+        # HD-25: available means "may be confirmed"; the Command still needs
+        # the explicit confirmation, so it is not evaluated as given here.
+        "BEGIN_QUESTION_SELECTION": {
+            **blocked_or(
+                None if session.state is SessionState.REFLECTION else "SESSION_NOT_IN_REFLECTION"
+            ),
+            "requiresReflectionCompletionConfirmation": True,
+        },
     }
     # `relevant`: does the action belong to the Session's CURRENT phase in
     # the 03 topology (independent of who is looking)? Computed here so the
@@ -565,6 +584,7 @@ def session_position(
         "REQUEST_QUESTION_ANALYSIS": session.state is SessionState.ANALYSIS,
         "REQUEST_QUESTION_CLUSTERING": session.state is SessionState.ANALYSIS,
         "BEGIN_REFLECTION": session.state is SessionState.ANALYSIS,
+        "BEGIN_QUESTION_SELECTION": session.state is SessionState.REFLECTION,
     }
     for name, cap in actions.items():
         cap["relevant"] = relevant[name]
@@ -619,6 +639,7 @@ def session_position(
             visible=question_set.get("visibility") == "FULL_FROZEN_SET",
         ),
         "reflection": reflection_view(ports, session),
+        "reflectionCompletion": reflection_completion_view(ports, session),
         "participants": [
             {
                 "userId": str(p.user_id.value),
