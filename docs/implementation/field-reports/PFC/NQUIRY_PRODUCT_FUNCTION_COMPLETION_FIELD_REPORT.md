@@ -185,3 +185,34 @@ A1, I1, F08-1, F08-2, F08-3, F09-1, F09-2 and F09-3: eight technically closed an
 - **Five-Why ImpactChain:** BLOCKED. There is no authoring or creation authority: 04 has none, 09 §63 blocks, and 09 §86.1 forbids inferring a Decision Right. This is a new Case 3: **HA-22**.
 - **TRN-SESS-009 BEGIN_INVESTIGATION:** BLOCKED transitively through HA-22. 03 requires a complete ImpactChain for the Question Burst method.
 - **AI in selection:** EXCLUDED. The AI recommends only, and no recommendation operation is in HD-21 scope.
+
+## 9. Field reconstruction after WU-PFC-B3 (2026-09-27): global stop condition B
+
+**Work Units closed after HD-25:**
+- **WU-PFC-B2**, TRN-SESS-008: `checkpoint-PFC-B2` → `10d4517`.
+- **WU-PFC-B3**, the QuestionSelection product path (TRN-SEL-001/002): `checkpoint-PFC-B3` → `4cf9498`.
+
+**What the product does now, for a Fixture Session:** F02 → F03 → F04 (mock analysis, NON_PROOF) → REFLECTION → QUESTION_SELECTION, by explicit human confirmation. Then the one QUESTION_SELECTION_RIGHT holder records one to three compelling Questions and one primary Question. Every surface shows FIXTURE_NON_PROOF. This is proven on the real stack with the real worker. Real Sessions stop at ANALYSIS (HD-20, HA-02).
+
+**FBR status change:**
+- REFLECTION → QUESTION_SELECTION: CLOSED (Fixture).
+- Human QuestionSelection: CLOSED (Fixture, single selector).
+- The next first broken relation is the Five-Why ImpactChain. Its authoring and creation authority is undefined (**HA-22**, OPEN).
+
+**Why every remaining path is blocked:**
+
+| Relation | Blocker |
+|---|---|
+| ImpactChain create / append (09 §86) | HA-22 (no authority; 09 §63 "command activation remains blocked") |
+| TRN-SESS-009 BEGIN_INVESTIGATION | HA-22, because 03 requires a complete ImpactChain |
+| INVESTIGATION → EXPERIMENT / F06 | HA-22, then GAP-03-008 and HA-08 |
+| Replacing or withdrawing a selection | GAP-03-018 (`[UNDERDEFINED]`) |
+| Collaborative or multi-selector selection | NQ-GAP-026 (NOT EXERCISED by 12) |
+| AI selection recommendations | HA-07 (outside HD-21 scope) |
+| F07 Decision outside the ordering | HA-14 |
+| Real Sessions past ANALYSIS | HA-02 (HARD-DEP-002, external) |
+| Every other relation | As in §6 (HA-03..HA-20); unchanged |
+
+**Test totals:** live **1934 passed / 2 skipped**; no-DB **915 passed**. Mutation: B2 11/11, B3 12/12.
+
+**Resulting Field status:** IN_PROGRESS. The autonomous run is **STOPPED at global condition B** (every derivable RED path is closed or blocked). Nothing is REVIEWED_FIELD or PUBLISHED_FIELD. BLUE is unchanged and CYAN is untouched. The run end state is tagged `checkpoint-PFC-RUN-2026-09-27-HD25`.
