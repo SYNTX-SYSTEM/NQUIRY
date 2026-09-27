@@ -180,3 +180,43 @@ mutability, S2 cardinality.
 - NQ-GAP-026 (collaborative selection) and HA-13 (collaboration) are not touched.
 - AI scope (HD-21, HA-07) is unchanged: no AI operation for Impact inquiry.
 - GAP-03-008 (Investigation completion) is not touched.
+
+## HD-27 — HA-03 CYAN / RED integration order: Option B (2026-09-27)
+
+**Question (HA-03, F04 H-8):** the integration order of the SF (CYAN) line
+with the backend (RED) lines, which diverge since 2026-09-26
+(`pfc-integration` versus `frontend-symbiotic`).
+
+**Decision (human operator, verbatim):**
+
+> Option B.
+>
+> CYAN and RED remain separate Field lines.
+>
+> CYAN predecessor:
+> field-SF-06 @ d3d9bd6
+>
+> RED producer:
+> checkpoint-PFC-B5 @ 7d3f74e4685b821cc948f45e413c1...
+>
+> The RED producer is pinned.
+> The moving pfc-integration branch is not a producer identity.
+> No merge, rebase, publication or deployment is authorized.
+> CYAN consumption does not upgrade RED status.
+> FIXTURE_NON_PROOF and MOCK / NON_PROOF remain explicit ceilings.
+
+**Identity resolution (verified at persistence, 2026-09-27):**
+- CYAN predecessor `field-SF-06` → `d3d9bd6722bbddabeca56f18d468a8e78bfa294b`.
+- RED producer `checkpoint-PFC-B5` → `7d3f74e4685b821cc948f45e413c1e0c207259d4`
+  (signed annotated tag object `fd3d5600132e4dcb9203702d500daccf4c6d0439`). The
+  decision's abbreviated hash is a prefix of this commit.
+
+**Ledger:** NQ-DEC-055 · 16 §41 REC-031.
+
+**What it does not decide:**
+- No merge, rebase, publication or deployment of either line.
+- No change to the RED producer checkpoint, and no RED status upgrade
+  (TECHNICALLY_CLOSED stays; not REVIEWED_FIELD, not PUBLISHED_FIELD).
+- No CYAN Work Unit, scope or content. CYAN remains out of scope for the RED
+  autonomous run.
+- The FIXTURE_NON_PROOF and MOCK / NON_PROOF ceilings are not lifted.

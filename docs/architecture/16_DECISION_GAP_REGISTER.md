@@ -210,6 +210,7 @@ For unresolved items, absent source detail remains explicit. No placeholder valu
 | NQ-DEC-052 | TRN-SESS-007 for Fixture Sessions: a MockProvider proof may satisfy BEGIN_REFLECTION only for an immutable, creation-time Fixture (NON_PROOF) Session; real Sessions stay on the real provider lane | ESTABLISHED (post-baseline, §41 REC-028) | PFC HD-24; 03 TRN-SESS-007; NQ-DEC-048 (HD-20) | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-27 |
 | NQ-DEC-053 | Reflection completion (GAP-03-007) is explicit human procedural confirmation by the SESSION_CONTROL_RIGHT holder, zero responses allowed, carried by CMD_BEGIN_QUESTION_SELECTION; audited basis HUMAN_PROCEDURAL_CONFIRMATION | ESTABLISHED (post-baseline, §41 REC-029) | PFC HD-25; 03 TRN-SESS-008, §52; 04 AUTH-DEP-SESS-008 | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-27 |
 | NQ-DEC-054 | ImpactChain authoring authority: the QUESTION_SELECTION_RIGHT holder who selected the current primary Question alone creates the chain and appends human answer nodes 1..5; append-only; one chain per current primary; no AI; completion structural | ESTABLISHED (post-baseline, §41 REC-030) | PFC HD-26; 02 §28; 03 §40, TRN-SESS-009; 09 §48, §63, §86 | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-27 |
+| NQ-DEC-055 | CYAN / RED integration order (F04 H-8, HA-03): Option B; separate Field lines; CYAN predecessor field-SF-06 @ d3d9bd6; RED producer pinned at checkpoint-PFC-B5 @ 7d3f74e (the moving pfc-integration branch is no producer identity); no merge, rebase, publication or deployment; CYAN consumption does not upgrade RED status; FIXTURE_NON_PROOF and MOCK / NON_PROOF remain ceilings | ESTABLISHED (post-baseline, §41 REC-031) | PFC HD-27; F04 H-8 | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-27 |
 
 No recommendation, mock, default or implementation convenience is ESTABLISHED outside its authorized scope.
 
@@ -1936,6 +1937,13 @@ BASELINE_READINESS: BASELINE_READY_FOR_PROTOTYPE_IMPLEMENTATION pending HUMAN_RE
       "status": "ESTABLISHED",
       "post_baseline_record": "REC-030",
       "source": "PFC HD-26"
+    },
+    {
+      "id": "NQ-DEC-055",
+      "title": "CYAN / RED integration order (HA-03): Option B, separate Field lines, RED producer pinned at checkpoint-PFC-B5, no merge/rebase/publication/deployment",
+      "status": "ESTABLISHED",
+      "post_baseline_record": "REC-031",
+      "source": "PFC HD-27"
     }
   ],
   "packages": [
@@ -2741,5 +2749,17 @@ Successor record. Nothing earlier is deleted.
 - S2 (i): exactly one ImpactChain per current Primary Question; a change of Primary Question does not reuse or mutate the chain; replacement, invalidation and rebuild stay governed by GAP-03-018.
 - PROVENANCE: every node preserves its human author, level, capture time, chain identity, Session identity and Primary Question anchor. Fixture Sessions keep FIXTURE_NON_PROOF.
 - COUNTS (superseding REC-029 for current use): Decisions 54 (ESTABLISHED 45: NQ-DEC-022, 032..054; REQUIRED 9). Canonical gaps stay 80. No gap status changes.
+
+**Provenance.** The human operator's PFC decision of 2026-09-27. Per `20_SYSTEM_FIELD_ENGINEERING.md` §14.
+
+### REC-031 / NQ-DEC-055: CYAN / RED integration order (PFC HD-27; closes HA-03 / F04 H-8)
+
+- DECISION (human operator, 2026-09-27; verbatim in `docs/implementation/field-reports/PFC/HUMAN_DECISIONS.md` HD-27): Option B. CYAN and RED remain separate Field lines.
+- IDENTITIES:
+  - CYAN predecessor: `field-SF-06` @ `d3d9bd6` (`d3d9bd6722bbddabeca56f18d468a8e78bfa294b`).
+  - RED producer: `checkpoint-PFC-B5` @ `7d3f74e4685b821cc948f45e413c1e0c207259d4`, pinned. The moving `pfc-integration` branch is not a producer identity.
+- NOT AUTHORIZED: merge, rebase, publication or deployment.
+- STATUS: CYAN consumption does not upgrade RED status. FIXTURE_NON_PROOF and MOCK / NON_PROOF remain explicit ceilings.
+- COUNTS (superseding REC-030 for current use): Decisions 55 (ESTABLISHED 46: NQ-DEC-022, 032..055; REQUIRED 9). Canonical gaps stay 80. No gap status changes.
 
 **Provenance.** The human operator's PFC decision of 2026-09-27. Per `20_SYSTEM_FIELD_ENGINEERING.md` §14.

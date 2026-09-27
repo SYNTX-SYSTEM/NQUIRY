@@ -2,10 +2,11 @@
 Field are recorded in 16 §41, the §6 table, the machine-readable register and
 the PFC HUMAN_DECISIONS record, consistently (Architecture 25 §18; 20 §14).
 
-MUST BECOME TRUE (HD-24, HD-25, HD-26): NQ-DEC-052 / REC-028, NQ-DEC-053 /
-REC-029 and NQ-DEC-054 / REC-030 exist, are ESTABLISHED and name their PFC HD;
-the register counts are 54 decisions (45 ESTABLISHED), 80 gaps; HA-01 is
-resolved for Fixture Sessions only; HA-21 and HA-22 are resolved.
+MUST BECOME TRUE (HD-24..HD-27): NQ-DEC-052 / REC-028, NQ-DEC-053 / REC-029,
+NQ-DEC-054 / REC-030 and NQ-DEC-055 / REC-031 exist, are ESTABLISHED and name
+their PFC HD; the register counts are 55 decisions (46 ESTABLISHED), 80 gaps;
+HA-01 is resolved for Fixture Sessions only; HA-03, HA-21 and HA-22 are
+resolved.
 """
 
 from __future__ import annotations
@@ -29,8 +30,8 @@ def _register() -> dict[str, object]:
 def test_register_counts_after_hd_24() -> None:
     decisions = _register()["decisions"]
     assert isinstance(decisions, list)
-    assert len(decisions) == 54 and len({d["id"] for d in decisions}) == 54
-    assert len([d for d in decisions if d["status"] == "ESTABLISHED"]) == 45
+    assert len(decisions) == 55 and len({d["id"] for d in decisions}) == 55
+    assert len([d for d in decisions if d["status"] == "ESTABLISHED"]) == 46
     (dec,) = [d for d in decisions if d["id"] == "NQ-DEC-052"]
     assert dec["source"] == "PFC HD-24" and dec["post_baseline_record"] == "REC-028"
 
@@ -83,3 +84,18 @@ def test_ha_23_investigation_completion_is_queued_open() -> None:
     queue = (PFC / "HUMAN_AUTHORITY_QUEUE.md").read_text(encoding="utf-8")
     (row,) = [line for line in queue.splitlines() if line.startswith("| HA-23 |")]
     assert row.rstrip().endswith("| OPEN |") and "GAP-03-008" in row and "TRN-SESS-010" in row
+
+
+def test_hd_27_is_recorded_everywhere() -> None:
+    register = (ARCH / "16_DECISION_GAP_REGISTER.md").read_text(encoding="utf-8")
+    assert re.search(r"^### REC-031 / NQ-DEC-055", register, re.MULTILINE)
+    assert re.search(r"^\| NQ-DEC-055 \|", register, re.MULTILINE)
+    (dec,) = [d for d in _register()["decisions"] if d["id"] == "NQ-DEC-055"]  # type: ignore[union-attr]
+    assert dec["source"] == "PFC HD-27" and dec["post_baseline_record"] == "REC-031"
+    decisions = (PFC / "HUMAN_DECISIONS.md").read_text(encoding="utf-8")
+    assert "## HD-27" in decisions
+    assert "7d3f74e4685b821cc948f45e413c1e0c207259d4" in decisions
+    assert "d3d9bd6722bbddabeca56f18d468a8e78bfa294b" in decisions
+    queue = (PFC / "HUMAN_AUTHORITY_QUEUE.md").read_text(encoding="utf-8")
+    (row,) = [line for line in queue.splitlines() if line.startswith("| HA-03 |")]
+    assert "RESOLVED" in row and "HD-27" in row
