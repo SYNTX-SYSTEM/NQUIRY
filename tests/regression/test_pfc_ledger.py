@@ -77,3 +77,9 @@ def test_hd_26_is_recorded_everywhere() -> None:
     queue = (PFC / "HUMAN_AUTHORITY_QUEUE.md").read_text(encoding="utf-8")
     (row,) = [line for line in queue.splitlines() if line.startswith("| HA-22 |")]
     assert "RESOLVED" in row and "HD-26" in row
+
+
+def test_ha_23_investigation_completion_is_queued_open() -> None:
+    queue = (PFC / "HUMAN_AUTHORITY_QUEUE.md").read_text(encoding="utf-8")
+    (row,) = [line for line in queue.splitlines() if line.startswith("| HA-23 |")]
+    assert row.rstrip().endswith("| OPEN |") and "GAP-03-008" in row and "TRN-SESS-010" in row

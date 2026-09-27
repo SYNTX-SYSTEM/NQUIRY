@@ -216,3 +216,40 @@ A1, I1, F08-1, F08-2, F08-3, F09-1, F09-2 and F09-3: eight technically closed an
 **Test totals:** live **1934 passed / 2 skipped**; no-DB **915 passed**. Mutation: B2 11/11, B3 12/12.
 
 **Resulting Field status:** IN_PROGRESS. The autonomous run is **STOPPED at global condition B** (every derivable RED path is closed or blocked). Nothing is REVIEWED_FIELD or PUBLISHED_FIELD. BLUE is unchanged and CYAN is untouched. The run end state is tagged `checkpoint-PFC-RUN-2026-09-27-HD25`.
+
+## 10. Field reconstruction after HD-26 (2026-09-27): global stop condition B
+
+**Human Authority:** HD-26 / NQ-DEC-054 (REC-030) resolved HA-22. Option A: the QUESTION_SELECTION_RIGHT holder who selected the current primary Question is the sole ImpactChain author. S1(i): append-only. S2(i): one chain per current primary.
+
+**Work Units derived and closed:**
+- **WU-PFC-B4**, the Five-Why ImpactChain product path: `checkpoint-PFC-B4` → `6726401` (migration `e8c2a5f1b7d4`).
+- **WU-PFC-B5**, TRN-SESS-009 BEGIN_INVESTIGATION: `checkpoint-PFC-B5` → `7d3f74e`.
+
+**What the product does now, for a Fixture Session:**
+1. F02 → F03 → F04 (mock analysis, NON_PROOF) → REFLECTION → QUESTION_SELECTION by explicit human confirmation.
+2. Human selection: one to three compelling Questions and one primary.
+3. The primary selector writes five successive human Why answers, append-only.
+4. The controller moves the Session into **INVESTIGATION**. The audit links that transition to the selection authority evidence and the complete chain.
+
+Every surface shows FIXTURE_NON_PROOF. This is proven on the real stack with the real worker. Real Sessions stop at ANALYSIS (HD-20, HA-02).
+
+**FBR status change:** the ImpactChain and QUESTION_SELECTION → INVESTIGATION are CLOSED (Fixture). The next first broken relation on the Session chain is INVESTIGATION → EXPERIMENT.
+
+**Why every remaining path is blocked:**
+
+| Relation | Blocker |
+|---|---|
+| TRN-SESS-010 BEGIN_EXPERIMENT_PHASE | **HA-23** (new): GAP-03-008 Investigation completion `[UNDERDEFINED]`; SYSTEM-DERIVED "Not enabled while GAP-03-008 … remain[s] open" (04 AUTH-DEP-SESS-010) |
+| Work inside INVESTIGATION (Evidence, research, observation) | HA-08 (Evidence capture authority, Evidence ownership, Assumption classification, Insight validation) |
+| EXPERIMENT → ACTION → REVIEW → CLOSED | HA-23 by ordering, then HA-08 / GAP-04-011 and later |
+| Correcting an ImpactChain answer | Needs a separate decision (HD-26 S1) |
+| Replacing the primary Question and rebuilding its chain | GAP-03-018 |
+| Collaborative selection | NQ-GAP-026 |
+| AI in selection or the chain | HD-26 rule 5; HA-07 |
+| F07 Decision outside the ordering | HA-14 |
+| Real Sessions past ANALYSIS | HA-02 (external) |
+| Every other relation | As in §6 / §9; unchanged |
+
+**Test totals:** live **1979 passed / 2 skipped** (1978 plus the HA-23 ledger pin); no-DB **916**. Mutation: B4 14/14, B5 11/11.
+
+**Resulting Field status:** IN_PROGRESS. The autonomous run is **STOPPED at global condition B**. Nothing is REVIEWED_FIELD or PUBLISHED_FIELD. BLUE is unchanged and CYAN is untouched. The run end state is tagged `checkpoint-PFC-RUN-2026-09-27-HD26`.
