@@ -2,9 +2,10 @@
 Field are recorded in 16 §41, the §6 table, the machine-readable register and
 the PFC HUMAN_DECISIONS record, consistently (Architecture 25 §18; 20 §14).
 
-MUST BECOME TRUE (HD-24): NQ-DEC-052 / REC-028 exist, are ESTABLISHED and name
-PFC HD-24; the register counts are 52 decisions (43 ESTABLISHED), 80 gaps; the
-HA-01 queue entry is resolved for Fixture Sessions only.
+MUST BECOME TRUE (HD-24, HD-25): NQ-DEC-052 / REC-028 and NQ-DEC-053 / REC-029
+exist, are ESTABLISHED and name their PFC HD; the register counts are 53
+decisions (44 ESTABLISHED), 80 gaps; HA-01 is resolved for Fixture Sessions only;
+HA-21 is resolved.
 """
 
 from __future__ import annotations
@@ -28,8 +29,8 @@ def _register() -> dict[str, object]:
 def test_register_counts_after_hd_24() -> None:
     decisions = _register()["decisions"]
     assert isinstance(decisions, list)
-    assert len(decisions) == 52 and len({d["id"] for d in decisions}) == 52
-    assert len([d for d in decisions if d["status"] == "ESTABLISHED"]) == 43
+    assert len(decisions) == 53 and len({d["id"] for d in decisions}) == 53
+    assert len([d for d in decisions if d["status"] == "ESTABLISHED"]) == 44
     (dec,) = [d for d in decisions if d["id"] == "NQ-DEC-052"]
     assert dec["source"] == "PFC HD-24" and dec["post_baseline_record"] == "REC-028"
 
@@ -43,6 +44,19 @@ def test_hd_24_is_recorded_everywhere() -> None:
     queue = (PFC / "HUMAN_AUTHORITY_QUEUE.md").read_text(encoding="utf-8")
     (row,) = [line for line in queue.splitlines() if line.startswith("| HA-01 |")]
     assert "RESOLVED for Fixture Sessions" in row and "HD-24" in row
+
+
+def test_hd_25_is_recorded_everywhere() -> None:
+    register = (ARCH / "16_DECISION_GAP_REGISTER.md").read_text(encoding="utf-8")
+    assert re.search(r"^### REC-029 / NQ-DEC-053", register, re.MULTILINE)
+    assert re.search(r"^\\| NQ-DEC-053 \\|", register, re.MULTILINE)
+    (dec,) = [d for d in _register()["decisions"] if d["id"] == "NQ-DEC-053"]  # type: ignore[union-attr]
+    assert dec["source"] == "PFC HD-25"
+    decisions = (PFC / "HUMAN_DECISIONS.md").read_text(encoding="utf-8")
+    assert "## HD-25" in decisions and "HUMAN_PROCEDURAL_CONFIRMATION" in decisions
+    queue = (PFC / "HUMAN_AUTHORITY_QUEUE.md").read_text(encoding="utf-8")
+    (row,) = [line for line in queue.splitlines() if line.startswith("| HA-21 |")]
+    assert "RESOLVED" in row and "HD-25" in row
 
 
 def test_the_open_boundaries_hd_24_does_not_close_stay_open() -> None:

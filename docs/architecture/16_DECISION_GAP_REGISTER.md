@@ -208,6 +208,7 @@ For unresolved items, absent source detail remains explicit. No placeholder valu
 | NQ-DEC-050 | Derived analysis is visible to the HD-13 frozen-set audience | ESTABLISHED (post-baseline, §41 REC-024) | F04 HD-22; NQ-DEC-041 | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-24 |
 | NQ-DEC-051 | One AIOP-002 clustering run is authorized only after an accepted AIOP-001 artifact exists | ESTABLISHED (post-baseline, §41 REC-026) | F04 HD-23; 08 §24; NQ-DEC-044, NQ-DEC-045 | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-24 |
 | NQ-DEC-052 | TRN-SESS-007 for Fixture Sessions: a MockProvider proof may satisfy BEGIN_REFLECTION only for an immutable, creation-time Fixture (NON_PROOF) Session; real Sessions stay on the real provider lane | ESTABLISHED (post-baseline, §41 REC-028) | PFC HD-24; 03 TRN-SESS-007; NQ-DEC-048 (HD-20) | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-27 |
+| NQ-DEC-053 | Reflection completion (GAP-03-007) is explicit human procedural confirmation by the SESSION_CONTROL_RIGHT holder, zero responses allowed, carried by CMD_BEGIN_QUESTION_SELECTION; audited basis HUMAN_PROCEDURAL_CONFIRMATION | ESTABLISHED (post-baseline, §41 REC-029) | PFC HD-25; 03 TRN-SESS-008, §52; 04 AUTH-DEP-SESS-008 | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-27 |
 
 No recommendation, mock, default or implementation convenience is ESTABLISHED outside its authorized scope.
 
@@ -1920,6 +1921,13 @@ BASELINE_READINESS: BASELINE_READY_FOR_PROTOTYPE_IMPLEMENTATION pending HUMAN_RE
       "status": "ESTABLISHED",
       "post_baseline_record": "REC-028",
       "source": "PFC HD-24"
+    },
+    {
+      "id": "NQ-DEC-053",
+      "title": "Reflection completion is explicit human procedural confirmation (C-a + C-c), carried by CMD_BEGIN_QUESTION_SELECTION",
+      "status": "ESTABLISHED",
+      "post_baseline_record": "REC-029",
+      "source": "PFC HD-25"
     }
   ],
   "packages": [
@@ -2696,5 +2704,21 @@ Successor record. Nothing earlier is deleted.
   - HARD-DEP-002 / NQ-GAP-060 stays EXTERNAL_DEPENDENCY.
 - IMPLEMENTATION CONSTRAINT: moving to Option 01 must require only a change of the eligible proof source, never a redesign of the REFLECTION state path.
 - COUNTS (superseding REC-027 for current use): Decisions 52 (ESTABLISHED 43: NQ-DEC-022, 032..052; REQUIRED 9). Canonical gaps stay 80. No gap status changes.
+
+**Provenance.** The human operator's PFC decision of 2026-09-27. Per `20_SYSTEM_FIELD_ENGINEERING.md` §14.
+
+### REC-029 / NQ-DEC-053: Reflection completion by human procedural confirmation (PFC HD-25; closes HA-21 / GAP-03-007 for TRN-SESS-008)
+
+- DECISION (human operator, 2026-09-27; verbatim in `docs/implementation/field-reports/PFC/HUMAN_DECISIONS.md` HD-25): C-a together with C-c.
+- COMPLETION: Reflection is completed by the explicit human procedural confirmation of the Human Controller holding SESSION_CONTROL_RIGHT. Zero persisted Reflection responses are permitted.
+- NOT COMPLETION: UI navigation; AI output; SYSTEM_DERIVED completion stays unavailable. Without explicit confirmation the Session remains in REFLECTION.
+- MATERIALIZATION:
+  - through the existing TRN-SESS-008 / CMD_BEGIN_QUESTION_SELECTION path;
+  - no separate Reflection-complete state or transition;
+  - a request without the explicit confirmation is refused;
+  - the completion proof basis is audited as HUMAN_PROCEDURAL_CONFIRMATION;
+  - Fixture Sessions keep FIXTURE_NON_PROOF in QUESTION_SELECTION.
+- UNCHANGED: NQ-GAP-016 (reflection answer persistence) stays OPEN and decoupled; AIOP-016 stays outside the accepted AI scope (HD-21).
+- COUNTS (superseding REC-028 for current use): Decisions 53 (ESTABLISHED 44: NQ-DEC-022, 032..053; REQUIRED 9). Canonical gaps stay 80. No gap status changes. GAP-03-007 is a 03-local gap without a canonical row; it is closed for TRN-SESS-008 by this record.
 
 **Provenance.** The human operator's PFC decision of 2026-09-27. Per `20_SYSTEM_FIELD_ENGINEERING.md` §14.

@@ -49,3 +49,58 @@ AI is the MockProvider? The options presented from the sources:
 - HARD-DEP-002 / NQ-GAP-060 stays EXTERNAL_DEPENDENCY (NQ-DEC-024, NQ-DEC-031 REQUIRED).
 - Reflection completion (GAP-03-007) and reflection answer persistence (NQ-GAP-016, HA-05) remain undecided.
 - Who may create a Fixture Session is not narrowed by the decision. It is the existing CMD_CREATE_SESSION authority, with the Fixture declaration as part of that Command.
+
+---
+
+## HD-25 — HA-21 Reflection completion: C-a together with C-c (2026-09-27)
+
+**Question (HA-21, 03 §52 GAP-03-007):** what counts as "Reflection phase has
+been explicitly completed according to later contract", the precondition of
+TRN-SESS-008 BEGIN_QUESTION_SELECTION (required evidence: "SYSTEM_PROOF of
+Reflection phase completion")? The options presented were:
+- C-a: human procedural confirmation (named by 04 AUTH-DEP-SESS-008);
+- C-b: answers required;
+- C-c: zero answers count (together with C-a).
+
+**Decision (human operator, verbatim):**
+
+> Choose C-a together with C-c.
+>
+> Reflection completion is based on explicit human procedural confirmation.
+>
+> Zero persisted Reflection responses are permitted for completion.
+>
+> Reflection response persistence is NOT a precondition for TRN-SESS-008.
+>
+> HA-05 remains OPEN and decoupled from Reflection completion.
+>
+> The Human Controller holding SESSION_CONTROL_RIGHT is the Authority that may confirm Reflection completion.
+>
+> UI navigation does not constitute completion.
+>
+> AI output does not constitute completion.
+>
+> SYSTEM_DERIVED completion remains unavailable.
+>
+> If explicit human procedural confirmation cannot be established, the Session remains in REFLECTION.
+>
+> The completion proof basis must be audited as:
+>
+> HUMAN_PROCEDURAL_CONFIRMATION
+>
+> Do not invent a separate Reflection-complete state or transition if the accepted architecture does not define one.
+>
+> Materialize the confirmation through the existing TRN-SESS-008 / CMD_BEGIN_QUESTION_SELECTION path.
+>
+> A request to begin QUESTION_SELECTION without explicit Reflection completion confirmation must be refused.
+>
+> Fixture Sessions must preserve FIXTURE_NON_PROOF semantics after entering QUESTION_SELECTION.
+>
+> This decision closes HA-21.
+
+**Ledger:** NQ-DEC-053 · 16 §41 REC-029.
+
+**What it does not decide:**
+- NQ-GAP-016 / HA-05 (reflection answer persistence) stays OPEN.
+- AI reflection prompts (AIOP-016) stay outside the accepted AI scope (HD-21, HA-07).
+- Question selection semantics beyond the existing architecture (NQ-GAP-026) are not touched.
