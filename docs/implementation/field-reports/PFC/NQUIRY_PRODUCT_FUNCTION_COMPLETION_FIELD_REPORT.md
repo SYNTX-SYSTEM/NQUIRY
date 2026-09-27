@@ -166,3 +166,22 @@ A1, I1, F08-1, F08-2, F08-3, F09-1, F09-2 and F09-3: eight technically closed an
 **Test totals:** live **1890 passed / 2 skipped**; no-DB **912 passed**. Mutation: B0 9/9, B1 11/11.
 
 **Resulting Field status:** IN_PROGRESS; the autonomous run is STOPPED at global condition B. Nothing is REVIEWED_FIELD or PUBLISHED_FIELD. BLUE is unchanged and CYAN is untouched.
+
+## 8. Field reconstruction after HD-25 (2026-09-27)
+
+**Human Authority:** HD-25 / NQ-DEC-053 (REC-029) resolved HA-21 with C-a + C-c. Reflection completion is the explicit human procedural confirmation by the SESSION_CONTROL_RIGHT holder. Zero responses are allowed, the confirmation is carried by CMD_BEGIN_QUESTION_SELECTION, and it is audited as HUMAN_PROCEDURAL_CONFIRMATION. HA-05 stays OPEN and decoupled.
+
+**Work Unit derived and closed:**
+- **WU-PFC-B2**, TRN-SESS-008 BEGIN_QUESTION_SELECTION: `checkpoint-PFC-B2` → `10d4517`.
+
+**What changed in the product:** a Fixture Session goes F02 → F03 → F04 → REFLECTION → **QUESTION_SELECTION**. It gets there only through the controller's explicit confirmation, and a request without it is refused while the Session stays in REFLECTION. The Session stays FIXTURE_NON_PROOF throughout. This is proven on the real stack with the real worker.
+
+**Derivation after B2** (sources re-read: 02 §18/§28, 03 §39/§40/TRN-SESS-009, 04 AUTH-DEP-SEL-001/002 and SESS-009, 05 GOV-010/§40, 09 §33/§48/§63/§85/§86, 12 §5/§6/§10/AC-12-004):
+- **QuestionSelection (TRN-SEL-001/002): DERIVABLE for one selector.**
+  - The governed handler exists (`question_selection_handler`), but no product path reaches it: no route, no read model, no capability.
+  - 12 fixes one active QUESTION_SELECTION_RIGHT holder (§6, AC-12-004). Collaborative selection (NQ-GAP-026 / GAP-04-001) is NOT EXERCISED.
+  - Next Work Unit: **WU-PFC-B3**.
+- **Replacing or withdrawing a selection:** BLOCKED (GAP-03-018, `[UNDERDEFINED]`). Selections stay append-only.
+- **Five-Why ImpactChain:** BLOCKED. There is no authoring or creation authority: 04 has none, 09 §63 blocks, and 09 §86.1 forbids inferring a Decision Right. This is a new Case 3: **HA-22**.
+- **TRN-SESS-009 BEGIN_INVESTIGATION:** BLOCKED transitively through HA-22. 03 requires a complete ImpactChain for the Question Burst method.
+- **AI in selection:** EXCLUDED. The AI recommends only, and no recommendation operation is in HD-21 scope.

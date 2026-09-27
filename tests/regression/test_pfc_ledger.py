@@ -5,7 +5,8 @@ the PFC HUMAN_DECISIONS record, consistently (Architecture 25 §18; 20 §14).
 MUST BECOME TRUE (HD-24, HD-25): NQ-DEC-052 / REC-028 and NQ-DEC-053 / REC-029
 exist, are ESTABLISHED and name their PFC HD; the register counts are 53
 decisions (44 ESTABLISHED), 80 gaps; HA-01 is resolved for Fixture Sessions only;
-HA-21 is resolved.
+HA-21 is resolved. HA-22 (ImpactChain authoring authority, recorded after
+WU-PFC-B2) is OPEN.
 """
 
 from __future__ import annotations
@@ -49,7 +50,7 @@ def test_hd_24_is_recorded_everywhere() -> None:
 def test_hd_25_is_recorded_everywhere() -> None:
     register = (ARCH / "16_DECISION_GAP_REGISTER.md").read_text(encoding="utf-8")
     assert re.search(r"^### REC-029 / NQ-DEC-053", register, re.MULTILINE)
-    assert re.search(r"^\\| NQ-DEC-053 \\|", register, re.MULTILINE)
+    assert re.search(r"^\| NQ-DEC-053 \|", register, re.MULTILINE)
     (dec,) = [d for d in _register()["decisions"] if d["id"] == "NQ-DEC-053"]  # type: ignore[union-attr]
     assert dec["source"] == "PFC HD-25"
     decisions = (PFC / "HUMAN_DECISIONS.md").read_text(encoding="utf-8")
@@ -64,3 +65,9 @@ def test_the_open_boundaries_hd_24_does_not_close_stay_open() -> None:
     assert gaps["NQ-GAP-024"]["status"] == "OPEN"
     assert gaps["NQ-GAP-060"]["status"] == "EXTERNAL_DEPENDENCY"
     assert gaps["NQ-GAP-016"]["status"] == "OPEN"
+
+
+def test_ha_22_impact_chain_authority_is_queued_open() -> None:
+    queue = (PFC / "HUMAN_AUTHORITY_QUEUE.md").read_text(encoding="utf-8")
+    (row,) = [line for line in queue.splitlines() if line.startswith("| HA-22 |")]
+    assert row.rstrip().endswith("| OPEN |") and "TRN-SESS-009" in row
