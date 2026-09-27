@@ -104,3 +104,79 @@ Reflection phase completion")? The options presented were:
 - NQ-GAP-016 / HA-05 (reflection answer persistence) stays OPEN.
 - AI reflection prompts (AIOP-016) stay outside the accepted AI scope (HD-21, HA-07).
 - Question selection semantics beyond the existing architecture (NQ-GAP-026) are not touched.
+
+## HD-26 — HA-22 ImpactChain authoring authority: Option A, S1(i), S2(i) (2026-09-27)
+
+**Question (HA-22):** who may create an ImpactChain (CMD_CREATE_IMPACT_CHAIN)
+and append its human answer nodes (CMD_APPEND_IMPACT_CHAIN_NODE)? 04 has no
+AUTH-DEP for either; 09 §63 keeps command activation blocked where authority
+is undefined; 09 §86.1: "Exact authority to author Impact answers remains the
+human inquiry actor under product flow and must not be inferred as a new
+Decision Right". Options presented: A selector, B Session controller, C
+participants, D split, E new explicit right, F no decision; secondary S1
+mutability, S2 cardinality.
+
+**Decision (human operator, verbatim):**
+
+> Choose Option A.
+>
+> The holder of QUESTION_SELECTION_RIGHT who selected the current Primary Question is the sole Human Authority for authoring the Five-Why ImpactChain associated with that Primary Question.
+>
+> Authority semantics:
+>
+> 1. The same QUESTION_SELECTION_RIGHT holder may create the ImpactChain for the current Primary Question.
+>
+> 2. The same holder may append the human answer nodes for levels 1 through 5.
+>
+> 3. SESSION_CONTROL_RIGHT does not confer ImpactChain content authority.
+>
+> 4. PARTICIPATION alone does not confer ImpactChain authoring authority.
+>
+> 5. AI has no authority to create, append, generate, suggest, complete or substitute ImpactChain answers.
+>
+> 6. Each answer level is a human-authored content act.
+>
+> 7. No additional human confirmation is required after level 5.
+>
+> 8. ImpactChain completion is the derived structural fact that exactly levels 1 through 5 exist in valid successive order.
+>
+> Secondary decision S1:
+>
+> Choose S1(i).
+>
+> ImpactChain answer nodes are append-only.
+>
+> No stored answer may be silently edited, overwritten or replaced.
+>
+> Any future correction or supersession semantics require a separate authoritative decision and audited relation.
+>
+> Secondary decision S2:
+>
+> Choose S2(i).
+>
+> Exactly one ImpactChain exists per current Primary Question.
+>
+> A change of Primary Question does not silently reuse or mutate the existing chain.
+>
+> Replacement, invalidation or rebuild semantics remain governed by GAP-03-018 until separately resolved.
+>
+> Level ordering:
+>
+> Levels are strictly successive from 1 through 5 as already defined by the authoritative sources.
+>
+> Provenance:
+>
+> Every stored node must preserve its human author, level, capture time, chain identity, Session identity and Primary Question anchor.
+>
+> Fixture Sessions continue to preserve FIXTURE_NON_PROOF semantics.
+>
+> This Human Authority Decision closes HA-22.
+
+**Ledger:** NQ-DEC-054 · 16 §41 REC-030.
+
+**What it does not decide:**
+- Correction or supersession of an answer node (needs a separate decision).
+- GAP-03-018 (Primary Question replacement, ImpactChain invalidation/rebuild) stays `[UNDERDEFINED]`.
+- NQ-GAP-026 (collaborative selection) and HA-13 (collaboration) are not touched.
+- AI scope (HD-21, HA-07) is unchanged: no AI operation for Impact inquiry.
+- GAP-03-008 (Investigation completion) is not touched.

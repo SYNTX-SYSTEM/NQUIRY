@@ -209,6 +209,7 @@ For unresolved items, absent source detail remains explicit. No placeholder valu
 | NQ-DEC-051 | One AIOP-002 clustering run is authorized only after an accepted AIOP-001 artifact exists | ESTABLISHED (post-baseline, §41 REC-026) | F04 HD-23; 08 §24; NQ-DEC-044, NQ-DEC-045 | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-24 |
 | NQ-DEC-052 | TRN-SESS-007 for Fixture Sessions: a MockProvider proof may satisfy BEGIN_REFLECTION only for an immutable, creation-time Fixture (NON_PROOF) Session; real Sessions stay on the real provider lane | ESTABLISHED (post-baseline, §41 REC-028) | PFC HD-24; 03 TRN-SESS-007; NQ-DEC-048 (HD-20) | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-27 |
 | NQ-DEC-053 | Reflection completion (GAP-03-007) is explicit human procedural confirmation by the SESSION_CONTROL_RIGHT holder, zero responses allowed, carried by CMD_BEGIN_QUESTION_SELECTION; audited basis HUMAN_PROCEDURAL_CONFIRMATION | ESTABLISHED (post-baseline, §41 REC-029) | PFC HD-25; 03 TRN-SESS-008, §52; 04 AUTH-DEP-SESS-008 | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-27 |
+| NQ-DEC-054 | ImpactChain authoring authority: the QUESTION_SELECTION_RIGHT holder who selected the current primary Question alone creates the chain and appends human answer nodes 1..5; append-only; one chain per current primary; no AI; completion structural | ESTABLISHED (post-baseline, §41 REC-030) | PFC HD-26; 02 §28; 03 §40, TRN-SESS-009; 09 §48, §63, §86 | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-27 |
 
 No recommendation, mock, default or implementation convenience is ESTABLISHED outside its authorized scope.
 
@@ -1928,6 +1929,13 @@ BASELINE_READINESS: BASELINE_READY_FOR_PROTOTYPE_IMPLEMENTATION pending HUMAN_RE
       "status": "ESTABLISHED",
       "post_baseline_record": "REC-029",
       "source": "PFC HD-25"
+    },
+    {
+      "id": "NQ-DEC-054",
+      "title": "ImpactChain authoring authority is the QUESTION_SELECTION_RIGHT holder who selected the current primary Question (Option A); append-only nodes; one chain per current primary",
+      "status": "ESTABLISHED",
+      "post_baseline_record": "REC-030",
+      "source": "PFC HD-26"
     }
   ],
   "packages": [
@@ -2720,5 +2728,18 @@ Successor record. Nothing earlier is deleted.
   - Fixture Sessions keep FIXTURE_NON_PROOF in QUESTION_SELECTION.
 - UNCHANGED: NQ-GAP-016 (reflection answer persistence) stays OPEN and decoupled; AIOP-016 stays outside the accepted AI scope (HD-21).
 - COUNTS (superseding REC-028 for current use): Decisions 53 (ESTABLISHED 44: NQ-DEC-022, 032..053; REQUIRED 9). Canonical gaps stay 80. No gap status changes. GAP-03-007 is a 03-local gap without a canonical row; it is closed for TRN-SESS-008 by this record.
+
+**Provenance.** The human operator's PFC decision of 2026-09-27. Per `20_SYSTEM_FIELD_ENGINEERING.md` §14.
+
+### REC-030 / NQ-DEC-054: ImpactChain authoring authority (PFC HD-26; closes HA-22)
+
+- DECISION (human operator, 2026-09-27; verbatim in `docs/implementation/field-reports/PFC/HUMAN_DECISIONS.md` HD-26): Option A, S1(i), S2(i).
+- AUTHORITY: the holder of QUESTION_SELECTION_RIGHT who selected the current Primary Question is the sole Human Authority to create the ImpactChain of that Primary Question and to append its human answer nodes for levels 1 through 5. SESSION_CONTROL_RIGHT does not confer ImpactChain content authority; PARTICIPATION alone does not confer authoring authority. AI has no authority to create, append, generate, suggest, complete or substitute answers.
+- CONTENT: each answer level is a human-authored content act. No additional human confirmation after level 5.
+- COMPLETION: the derived structural fact that exactly levels 1 through 5 exist in valid successive order (03 §40, 09 §48.1). Levels are strictly successive.
+- S1 (i): answer nodes are append-only; no silent edit, overwrite or replacement. Correction or supersession requires a separate authoritative decision and audited relation.
+- S2 (i): exactly one ImpactChain per current Primary Question; a change of Primary Question does not reuse or mutate the chain; replacement, invalidation and rebuild stay governed by GAP-03-018.
+- PROVENANCE: every node preserves its human author, level, capture time, chain identity, Session identity and Primary Question anchor. Fixture Sessions keep FIXTURE_NON_PROOF.
+- COUNTS (superseding REC-029 for current use): Decisions 54 (ESTABLISHED 45: NQ-DEC-022, 032..054; REQUIRED 9). Canonical gaps stay 80. No gap status changes.
 
 **Provenance.** The human operator's PFC decision of 2026-09-27. Per `20_SYSTEM_FIELD_ENGINEERING.md` §14.
