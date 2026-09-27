@@ -200,6 +200,49 @@ def dispatch_append_impact_chain_node(
     return _with_actor(session_token, work)
 
 
+def dispatch_begin_investigation(
+    *,
+    session_token: str | None,
+    idempotency_key: str | None,
+    workspace_id: str,
+    session_id: str,
+    expected_version: object,
+) -> Response:
+    """CMD_BEGIN_INVESTIGATION (TRN-SESS-009; WU-PFC-B5)."""
+    from application.investigation_handler import begin_investigation
+
+    def work(ports: GovernedPorts, principal: Any) -> Response:
+        ws = WorkspaceId(_uuid(workspace_id, "workspace_id"))
+        sid = SessionId(_uuid(session_id, "session_id"))
+        version = _version(expected_version)
+        ident = _ident(idempotency_key)
+
+        def run() -> Response:
+            try:
+                result = begin_investigation(
+                    ports,
+                    actor=_actor(principal),
+                    workspace_id=ws,
+                    session_id=sid,
+                    expected_session_version=version,
+                    ident=ident,
+                )
+            except control.IdempotentReplay:
+                return 200, {"kind": "committed", "replayed": True}
+            return 200, {
+                "kind": "committed",
+                "replayed": False,
+                "commandType": "CMD_BEGIN_INVESTIGATION",
+                "commitId": str(result.commit_unit.commit_id.value),
+                "primaryQuestionId": str(result.basis.primary.question_id.value),
+                "impactChainId": str(result.basis.chain.impact_chain_id),
+            }
+
+        return _command_outcome(run, ident)
+
+    return _with_actor(session_token, work)
+
+
 def dispatch_impact_chain(
     *, session_token: str | None, workspace_id: str, session_id: str
 ) -> Response:
@@ -218,6 +261,7 @@ def dispatch_impact_chain(
 
 __all__ = [
     "dispatch_append_impact_chain_node",
+    "dispatch_begin_investigation",
     "dispatch_create_impact_chain",
     "dispatch_impact_chain",
     "dispatch_question_selections",

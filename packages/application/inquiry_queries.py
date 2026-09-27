@@ -44,6 +44,7 @@ from application.burst_capture_handler import capture_blocker
 from application.burst_completion_handler import complete_burst_blocker
 from application.composition import GovernedPorts
 from application.frozen_set import verify_frozen_set
+from application.investigation_handler import investigation_readiness
 from application.reflection_proof import reflection_readiness
 from application.session_control_handler import (
     method_setup_blocker,
@@ -262,6 +263,23 @@ def _impact_cap(
         return _cap(False, "NO_QUESTION_SELECTION_RIGHT")
     code, _ = impact_chain_blocker(ports, session, context.principal.user_id, append=append)
     return _cap(code is None, code)
+
+
+def investigation_view(ports: GovernedPorts, session: Session) -> dict[str, object] | None:
+    """WU-PFC-B5: the basis on which this Session entered INVESTIGATION, read
+    from the committed SESSION_INVESTIGATION event. None before."""
+    payload = directory.committed_event_payload(
+        ports.connection, f"session:{session.session_id.value}", "SESSION_INVESTIGATION"
+    )
+    if payload is None:
+        return None
+    return {
+        "primaryQuestionId": payload["primary_question_id"],
+        "primarySelectionId": payload["primary_selection_id"],
+        "compellingCount": payload["compelling_count"],
+        "impactChainId": payload["impact_chain_id"],
+        "fixture": payload["fixture"],
+    }
 
 
 def proof_mode(fixture: bool) -> str:
@@ -677,6 +695,7 @@ def session_position(
         "SELECT_PRIMARY_QUESTION": _selection_cap(ports, context, session, "PRIMARY"),
         "CREATE_IMPACT_CHAIN": _impact_cap(ports, context, session, append=False),
         "APPEND_IMPACT_CHAIN_NODE": _impact_cap(ports, context, session, append=True),
+        "BEGIN_INVESTIGATION": blocked_or(investigation_readiness(ports, session).blocker),
     }
     # `relevant`: does the action belong to the Session's CURRENT phase in
     # the 03 topology (independent of who is looking)? Computed here so the
@@ -699,6 +718,7 @@ def session_position(
         "SELECT_PRIMARY_QUESTION": session.state is SessionState.QUESTION_SELECTION,
         "CREATE_IMPACT_CHAIN": session.state is SessionState.QUESTION_SELECTION,
         "APPEND_IMPACT_CHAIN_NODE": session.state is SessionState.QUESTION_SELECTION,
+        "BEGIN_INVESTIGATION": session.state is SessionState.QUESTION_SELECTION,
     }
     for name, cap in actions.items():
         cap["relevant"] = relevant[name]
@@ -754,6 +774,7 @@ def session_position(
         ),
         "reflection": reflection_view(ports, session),
         "reflectionCompletion": reflection_completion_view(ports, session),
+        "investigation": investigation_view(ports, session),
         "selection": selection_view(ports, session),
         "impactChain": impact_chain_view(
             ports,

@@ -1,0 +1,13 @@
+M01 state gate removed: KILLED
+M02 no compelling selection required: KILLED
+M03 a missing primary is not refused: KILLED
+M04 selection authority not verified: KILLED
+M05 any binding class counts as selection authority: KILLED
+M06 an incomplete chain suffices: KILLED
+M07 audit loses the selection-authority link: KILLED
+M08 event drops the Fixture status: KILLED
+M09 capability ignores the preconditions: KILLED
+M10 capability relevant outside QUESTION_SELECTION: KILLED
+M11 read model hides the primary Question: KILLED
+11/11 killed; sources restored: True
+exit=0

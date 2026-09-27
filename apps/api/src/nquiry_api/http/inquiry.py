@@ -35,6 +35,7 @@ from application.http_f04 import (
 )
 from application.http_f05 import (
     dispatch_append_impact_chain_node,
+    dispatch_begin_investigation,
     dispatch_create_impact_chain,
     dispatch_impact_chain,
     dispatch_question_selections,
@@ -380,6 +381,21 @@ def question_selections(workspace_id: str, session_id: str, request: Request) ->
     return _json(
         dispatch_question_selections(
             session_token=_token(request), workspace_id=workspace_id, session_id=session_id
+        )
+    )
+
+
+@router.post("/workspaces/{workspace_id}/sessions/{session_id}/transitions/begin-investigation")
+def begin_investigation(
+    workspace_id: str, session_id: str, body: BeginAnalysisBody, request: Request
+) -> JSONResponse:
+    return _json(
+        dispatch_begin_investigation(
+            session_token=_token(request),
+            idempotency_key=_idem(request),
+            workspace_id=workspace_id,
+            session_id=session_id,
+            expected_version=body.expectedVersion,
         )
     )
 

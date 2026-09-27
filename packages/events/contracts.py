@@ -218,6 +218,18 @@ PRODUCTION_EVENT_CONTRACTS: EventContractRegistry = {
             "fixture",
             "reflection_completion_basis",
         ),
+        # F05 (WU-PFC-B5): TRN-SESS-009 with its selection-authority basis.
+        _c(
+            "SESSION_INVESTIGATION",
+            "session",
+            *_SESSION_TRANSITION,
+            "fixture",
+            "primary_question_id",
+            "primary_selection_id",
+            "primary_selection_binding_id",
+            "compelling_count",
+            "impact_chain_id",
+        ),
         # F05 (WU-PFC-B4, HD-26): the chain anchor and each appended level.
         # The answer text stays in its canonical node row (never in an Event).
         _c(

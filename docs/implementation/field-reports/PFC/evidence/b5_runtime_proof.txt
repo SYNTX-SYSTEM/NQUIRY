@@ -1,0 +1,178 @@
+WU-PFC-B5 runtime proof (2026-09-27): real API process (uvicorn :18433, NQUIRY_ENVIRONMENT=DEVELOPMENT, NQUIRY_AI_PROVIDER=mock) + real worker process, isolated DB nquiry_pfc_int_runtime @ e8c2a5f1b7d4
+seed + drive: tests/e2e/pfc_b4_runtime_proof.py seed; drive <url> --investigate (HTTP only): ... selection, begin-investigation without chain (blocked), ImpactChain 1..5, begin-investigation
+
+{
+  "begin_analysis": 200,
+  "begin_reflection": 200,
+  "begin_question_selection": 200,
+  "grant_question_selection_right": 200,
+  "select_compelling": 200,
+  "select_primary": 200,
+  "begin_investigation_without_chain": {
+    "status": 422,
+    "body": {
+      "kind": "blocked",
+      "reasonCode": "IMPACT_CHAIN_INCOMPLETE"
+    }
+  },
+  "create_impact_chain": {
+    "status": 200,
+    "body": {
+      "kind": "committed",
+      "replayed": false,
+      "commandType": "CMD_CREATE_IMPACT_CHAIN",
+      "commitId": "81e2d660-43ad-4f9e-8a74-7eb7f3671aa7",
+      "impactChainId": "3214d849-7892-4dea-a96b-bcd0bfb3c948"
+    }
+  },
+  "append_level_2_first": {
+    "status": 422,
+    "body": {
+      "kind": "blocked",
+      "reasonCode": "LEVEL_NOT_SUCCESSIVE"
+    }
+  },
+  "append_levels": [
+    {
+      "status": 200,
+      "body": {
+        "kind": "committed",
+        "replayed": false,
+        "commandType": "CMD_APPEND_IMPACT_CHAIN_NODE",
+        "commitId": "fd789bc7-eaf1-428b-b859-3cef000c3ba2",
+        "impactChainId": "3214d849-7892-4dea-a96b-bcd0bfb3c948",
+        "level": 1,
+        "complete": false
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "kind": "committed",
+        "replayed": false,
+        "commandType": "CMD_APPEND_IMPACT_CHAIN_NODE",
+        "commitId": "4a1f37b4-61ce-46d0-9d4c-a3b080ff0d05",
+        "impactChainId": "3214d849-7892-4dea-a96b-bcd0bfb3c948",
+        "level": 2,
+        "complete": false
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "kind": "committed",
+        "replayed": false,
+        "commandType": "CMD_APPEND_IMPACT_CHAIN_NODE",
+        "commitId": "fd269ed0-0993-4e75-99de-8811d9330e81",
+        "impactChainId": "3214d849-7892-4dea-a96b-bcd0bfb3c948",
+        "level": 3,
+        "complete": false
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "kind": "committed",
+        "replayed": false,
+        "commandType": "CMD_APPEND_IMPACT_CHAIN_NODE",
+        "commitId": "258811e2-631d-477c-ad7b-7f13ffa5227d",
+        "impactChainId": "3214d849-7892-4dea-a96b-bcd0bfb3c948",
+        "level": 4,
+        "complete": false
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "kind": "committed",
+        "replayed": false,
+        "commandType": "CMD_APPEND_IMPACT_CHAIN_NODE",
+        "commitId": "e61a1fb7-c79f-4bda-8142-844b370dd248",
+        "impactChainId": "3214d849-7892-4dea-a96b-bcd0bfb3c948",
+        "level": 5,
+        "complete": true
+      }
+    }
+  ],
+  "append_level_6": {
+    "status": 400,
+    "body": {
+      "kind": "rejected",
+      "reasonCode": "LEVEL_OUT_OF_RANGE"
+    }
+  },
+  "get_impact_chain": {
+    "kind": "ok",
+    "proofMode": "FIXTURE_NON_PROOF",
+    "primaryQuestionId": "37ff2cd9-fb91-5975-bbe9-183d03ee8e88",
+    "impactChainId": "3214d849-7892-4dea-a96b-bcd0bfb3c948",
+    "version": 6,
+    "authorUserId": "a9a28a37-afef-4c9f-b7ee-af538c2427c0",
+    "nextLevel": null,
+    "complete": true,
+    "answersVisible": true,
+    "levels": [
+      {
+        "level": 1,
+        "answer": "Customers who leave early never see the value.",
+        "authorUserId": "a9a28a37-afef-4c9f-b7ee-af538c2427c0",
+        "capturedAt": "2026-09-27T16:31:17.595286+00:00"
+      },
+      {
+        "level": 2,
+        "answer": "Without the value they do not renew.",
+        "authorUserId": "a9a28a37-afef-4c9f-b7ee-af538c2427c0",
+        "capturedAt": "2026-09-27T16:31:17.775460+00:00"
+      },
+      {
+        "level": 3,
+        "answer": "Renewals fund the product.",
+        "authorUserId": "a9a28a37-afef-4c9f-b7ee-af538c2427c0",
+        "capturedAt": "2026-09-27T16:31:17.959663+00:00"
+      },
+      {
+        "level": 4,
+        "answer": "Without funding the team cannot improve onboarding.",
+        "authorUserId": "a9a28a37-afef-4c9f-b7ee-af538c2427c0",
+        "capturedAt": "2026-09-27T16:31:18.134896+00:00"
+      },
+      {
+        "level": 5,
+        "answer": "So the first month decides whether we survive.",
+        "authorUserId": "a9a28a37-afef-4c9f-b7ee-af538c2427c0",
+        "capturedAt": "2026-09-27T16:31:18.307379+00:00"
+      }
+    ]
+  },
+  "begin_investigation": {
+    "status": 200,
+    "body": {
+      "kind": "committed",
+      "replayed": false,
+      "commandType": "CMD_BEGIN_INVESTIGATION",
+      "commitId": "96e0a626-d785-4ae4-977a-d20bfd75c5ce",
+      "primaryQuestionId": "37ff2cd9-fb91-5975-bbe9-183d03ee8e88",
+      "impactChainId": "3214d849-7892-4dea-a96b-bcd0bfb3c948"
+    }
+  },
+  "state_after": "INVESTIGATION",
+  "proofMode": "FIXTURE_NON_PROOF",
+  "investigation": {
+    "primaryQuestionId": "37ff2cd9-fb91-5975-bbe9-183d03ee8e88",
+    "primarySelectionId": "c0bc22bb-64c3-4b0c-82db-084806c4a560",
+    "compellingCount": 1,
+    "impactChainId": "3214d849-7892-4dea-a96b-bcd0bfb3c948",
+    "fixture": true
+  }
+}
+
+== real worker: python -m nquiry_worker --once
+nquiry_worker: delivery pass: delivered=36 failed=0
+== session_read_model
+INVESTIGATION|t
+== SESSION_INVESTIGATION event
+QUESTION_SELECTION|INVESTIGATION|1|true
+== audit + commit relation refs
+COMMITTED|BINDING|SESSION:e289c096-1ee9-4d0b-8510-c68e1efa031d|question_selection:d67e5a13-5bf3-4c0b-b5ad-059aed96b08f question_selection:c0bc22bb-64c3-4b0c-82db-084806c4a560 authority_binding:f6c6637e-9c40-42a5-8963-e926a8007978 impact_chain:3214d849-7892-4dea-a96b-bcd0bfb3c948
+== diagnose
+{"delivered": 272, "failed": 0, "max_failed_attempts": 0, "oldest_undelivered_at": null, "pending": 0, "without_basis": 0}

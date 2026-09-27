@@ -1,0 +1,22 @@
+WU-PFC-B5 regression evidence (2026-09-27), worktree pfc-integration, DB nquiry_pfc_int_test @ e8c2a5f1b7d4
+BASELINE (checkpoint-PFC-B4 + identity record 7d52549): live 1962 passed / 2 skipped; no-DB 915 passed.
+RED (proven on the committed B4 tree 7d52549 in a temporary detached worktree containing only the new falsifier file;
+  the handler module had been drafted, unwired, beforehand):
+        1 13 failed in 215.93s (0:03:35)
+        3 E       assert (404 == 403)
+        1 E       assert (404 == 409)
+        3 E       assert 404 == 422
+        6 E       AssertionError: {"detail":"Not Found"}
+        3 E       KeyError: 'BEGIN_INVESTIGATION'
+        2 E       KeyError: 'kind'
+        1 E       ModuleNotFoundError: No module named 'application.investigation_handler'
+  tree 7d52549
+AFTER (exact committed tree):
+  live:  1978 passed, 2 skipped in 1852.59s (0:30:52)   = 1962 + 13 B5 + 3 isolation-sweep cases for the new route
+  no-DB: 915 passed, 1065 skipped in 26.60s
+ruff check .: clean; ruff format --check: all .py files formatted; mypy (CI scope): no issues in 215 source files
+ARCHITECTURE_DEPENDENCY_CHECK::PASS
+PROVIDER_SDK_IMPORT_CHECK::PASS
+TEST_ONLY_IMPORT_CHECK::PASS
+MIGRATION_LIVE_CHECK::PASS (db head matches {'e8c2a5f1b7d4'})
+verify_migrations: no schema change in B5
