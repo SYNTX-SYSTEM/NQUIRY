@@ -6283,3 +6283,38 @@ h3.chamber-title {
 .field-stage[data-encounter] .organ::after {
   opacity: 1.3;
 }
+
+/* ===== WU-CY-01 (HD-27): the derived chamber — one new chamber class, placed in the Session organ; no other
+   surface, geometry or law changes. Its tone is the derived type role (italic, dashed contour), never a green token
+   and never the human or proof tone. */
+.plane.chamber[data-semantic="derived"] {
+  --chamber-tone: rgba(214, 190, 255, 0.72);
+  --chamber-tone-glow: rgba(214, 190, 255, 0.2);
+}
+.plane.chamber[data-semantic="derived"] .chamber-contour {
+  box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--chamber-tone) 55%, transparent);
+  outline: 1px dashed color-mix(in srgb, var(--chamber-tone) 45%, transparent);
+  outline-offset: -6px;
+}
+.plane.chamber[data-semantic="derived"][data-tone="boundary"] {
+  --chamber-tone: rgba(255, 196, 160, 0.72);
+  --chamber-tone-glow: rgba(255, 196, 160, 0.18);
+}
+.derived-note {
+  margin: 8px 0 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+@container (min-width: 640px) {
+  /* Session: … · derived across · decision entry across (the derived field sits before the decision entry) */
+  .field-stage[data-surface="session"] .organ-body > .plane[data-semantic="derived"] {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+  .field-stage[data-surface="session"] .organ-body > .plane[data-semantic="decision-entry"] {
+    grid-row: 4;
+  }
+}
+.plane.chamber[data-semantic="derived"] .tag {
+  font-size: 0.8rem;
+}

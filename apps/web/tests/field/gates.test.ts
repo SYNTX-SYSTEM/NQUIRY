@@ -7,7 +7,10 @@
  * MUST REMAIN IMPOSSIBLE (22 §29.4, §43; falsifiers 1, 2, 27, 30, 41):
  * - a timer that drives an effect (HD-11: the only timer is the elapsed-time PRESENTATION);
  * - client authority inference (role / viewer flags gating a control; humanPosition is a label);
- * - F04 vocabulary (BEGIN_ANALYSIS, analysis contact, MockProvider): absent, not mocked;
+ * - WU-CY-01 (HD-27, pinned producer checkpoint-PFC-B5): the ANALYSIS boundary is consumed, so `BEGIN_ANALYSIS`
+ *   and its route may appear ONLY where the position projection is consumed (the Session page and
+ *   lib/field/analysis.ts); a provider, an AI operation id or an analysis contact is still never named in the
+ *   client, and the derived artifact's content is never rendered (no AI text in the human voice);
  * - AI invocation; client persistence of state; the F02 page-local Outcome; green as an identity.
  *
  * Each predicate is proven non-vacuous against a violating sample first.
@@ -47,7 +50,15 @@ function code(source: string): string {
 const COMMAND_FUNCTIONS =
   /\b(captureBurstQuestion|completeBurst|runSessionCommand|grantSessionControl|openSession|createChallenge|addMemberCommand|createWorkspace|login|logout)\s*\(/;
 
-type Gate = { readonly name: string; readonly pattern: RegExp; readonly violation: string; readonly allow?: readonly string[] };
+type Gate = {
+  readonly name: string;
+  readonly pattern: RegExp;
+  readonly violation: string;
+  /** Presentation-only files that may name the vocabulary (never a command or auth call). */
+  readonly allow?: readonly string[];
+  /** Files that CONSUME the producer's projection (they run commands through the effect lifecycle); WU-CY-01. */
+  readonly consumers?: readonly string[];
+};
 
 const GATES: readonly Gate[] = [
   {
@@ -63,9 +74,20 @@ const GATES: readonly Gate[] = [
     allow: ["lib/field/humanPosition.ts"],
   },
   {
-    name: "no F04 vocabulary (analysis contact is absent from this tree, never mocked)",
-    pattern: /BEGIN_ANALYSIS|begin-analysis|TRN_SESS_006|AIOP|MockProvider|ai_gateway|AnalysisContact|analysis-contact/,
-    violation: 'actions.BEGIN_ANALYSIS.available',
+    name: "BEGIN_ANALYSIS is consumed only where the position projection is consumed (WU-CY-01, HD-27)",
+    pattern: /BEGIN_ANALYSIS|begin-analysis|TRN_SESS_006/,
+    violation: "actions.BEGIN_ANALYSIS.available",
+    consumers: ["app/workspaces/[workspaceId]/sessions/[sessionId]/page.tsx", "lib/field/analysis.ts"],
+  },
+  {
+    name: "no provider, AI operation or analysis contact is named in the client (the producer decides; never mocked here)",
+    pattern: /AIOP|MockProvider|ai_gateway|AnalysisContact|analysis-contact|NQUIRY_AI_PROVIDER/,
+    violation: "if (provider === 'MockProvider')",
+  },
+  {
+    name: "no AI-derived text is rendered: the artifact content and the clusters never reach the projection (WU-CY-01 scope)",
+    pattern: /artifact\??\.content|\.clusters\b|clustering\??\.clusters/,
+    violation: "analysis.artifact.content.items.map(render)",
   },
   { name: "no AI invocation", pattern: /openai|anthropic|\/ai\/|generate\(/i, violation: "fetch('/ai/analyse')" },
   { name: "no client persistence of state", pattern: /localStorage|sessionStorage|indexedDB/, violation: "localStorage.setItem('state', s)" },
@@ -107,7 +129,7 @@ describe("gate predicates are non-vacuous", () => {
 describe("MUST REMAIN IMPOSSIBLE in Field sources", () => {
   for (const gate of GATES) {
     it(gate.name, () => {
-      const offenders = FIELD_SOURCES.filter((p) => !(gate.allow ?? []).includes(rel(p)))
+      const offenders = FIELD_SOURCES.filter((p) => !(gate.allow ?? []).includes(rel(p)) && !(gate.consumers ?? []).includes(rel(p)))
         .filter((p) => gate.pattern.test(code(readFileSync(p, "utf8"))))
         .map(rel);
       expect(offenders).toEqual([]);

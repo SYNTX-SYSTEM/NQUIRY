@@ -1,0 +1,5 @@
+  ✓  1 [desktop] › tests/real-stack/f02-inquiry-context.real.spec.ts:66:1 › F02: a governed inquiry context is created and lawfully reaches QUESTION_GENERATION (1.2m)
+  ✓  2 [desktop] › tests/real-stack/f03-protected-question-field.real.spec.ts:72:1 › F03: protected human question capture, manual completion and the frozen set (2.1m)
+  ✓  3 [mobile] › tests/real-stack/f02-inquiry-context.real.spec.ts:66:1 › F02: a governed inquiry context is created and lawfully reaches QUESTION_GENERATION (1.9m)
+  ✓  4 [mobile] › tests/real-stack/f03-protected-question-field.real.spec.ts:72:1 › F03: protected human question capture, manual completion and the frozen set (3.3m)
+  4 passed (8.6m)

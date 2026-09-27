@@ -1,0 +1,198 @@
+
+Running 9 tests using 4 workers
+
+  ✘  3 [desktop] › tests/e2e/cy01-field.spec.ts:205:3 › WU-CY-01: the ANALYSIS boundary as a projected affordance (HD-27, pinned producer B5) › a Fixture Session reads FIXTURE_NON_PROOF at the core, on the path and in the proof chamber; a mock artifact is MOCK / NON_PROOF; no derived text is rendered (10.2s)
+  ✘  1 [desktop] › tests/e2e/cy01-field.spec.ts:217:3 › WU-CY-01: the ANALYSIS boundary as a projected affordance (HD-27, pinned producer B5) › a governed Session shows its proof mode in the proof chamber only (no fixture tag at the core) (10.8s)
+  ✘  2 [desktop] › tests/e2e/cy01-field.spec.ts:193:3 › WU-CY-01: the ANALYSIS boundary as a projected affordance (HD-27, pinned producer B5) › not available: no button; the producer's reason stays verbatim as a classed boundary (MISSING_AUTHORITY), never an alert (12.9s)
+  ✘  4 [desktop] › tests/e2e/cy01-field.spec.ts:141:3 › WU-CY-01: the ANALYSIS boundary as a projected affordance (HD-27, pinned producer B5) › QUESTION_CAPTURE with BEGIN_ANALYSIS available: the lawful next transition sits in the frozen chamber; ANALYSIS is a later phase; the ring waits for the canonical re-read; then ANALYSIS is current and the derived chamber appears AI-derived and NON_PROOF (13.6s)
+  ✓  6 [desktop] › tests/e2e/cy01-field.spec.ts:235:3 › WU-CY-01: the ANALYSIS boundary as a projected affordance (HD-27, pinned producer B5) › outside the frozen-set audience the producer hides the derived field; nothing is shown and nothing is inferred (5.4s)
+  ✘  5 [desktop] › tests/e2e/cy01-field.spec.ts:224:3 › WU-CY-01: the ANALYSIS boundary as a projected affordance (HD-27, pinned producer B5) › UNAVAILABLE / PENDING analysis: honest state words with the producer's reason code; not an error (7.9s)
+  ✓  7 [desktop] › tests/e2e/cy01-field.spec.ts:242:3 › WU-CY-01: the ANALYSIS boundary as a projected affordance (HD-27, pinned producer B5) › REGRESSION: an F03-shaped position (no new keys) renders exactly as before — no analysis chamber, no Begin analysis, no proof mode (6.0s)
+  ✘  9 [desktop] › tests/e2e/cy01-field.spec.ts:276:3 › WU-CY-01: the ANALYSIS boundary as a projected affordance (HD-27, pinned producer B5) › responsive: the derived chamber adds no horizontal overflow and keeps its text ≥ 11.5 px (7.5s)
+  ✘  8 [desktop] › tests/e2e/cy01-field.spec.ts:256:3 › WU-CY-01: the ANALYSIS boundary as a projected affordance (HD-27, pinned producer B5) › Challenge field: opening a Fixture Session is an explicit human choice sent as `fixture: true`; the default body stays `{}` (11.5s)
+
+
+  1) [desktop] › tests/e2e/cy01-field.spec.ts:141:3 › WU-CY-01: the ANALYSIS boundary as a projected affordance (HD-27, pinned producer B5) › QUESTION_CAPTURE with BEGIN_ANALYSIS available: the lawful next transition sits in the frozen chamber; ANALYSIS is a later phase; the ring waits for the canonical re-read; then ANALYSIS is current and the derived chamber appears AI-derived and NON_PROOF 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByTestId('active-phase').getByRole('button', { name: 'Begin analysis' })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByTestId('active-phase').getByRole('button', { name: 'Begin analysis' }) with timeout 5000ms
+      - waiting for getByTestId('active-phase').getByRole('button', { name: 'Begin analysis' })
+
+
+      158 |     await expect(frozen).toHaveAttribute("data-semantic", "frozen");
+      159 |     const begin = frozen.getByRole("button", { name: "Begin analysis" });
+    > 160 |     await expect(begin).toBeVisible();
+          |                         ^
+      161 |     await expect(frozen).toContainText("Begin analysis");
+      162 |     await expect(page.getByTestId("analysis-chamber")).toHaveCount(0);
+      163 |     const analysisNode = page.getByTestId("session-phases").locator('[data-key="ANALYSIS"]');
+        at /home/codi/Entwicklung/nquiry/worktrees/frontend-symbiotic/apps/web/tests/e2e/cy01-field.spec.ts:160:25
+
+    Error Context: ../../../../../../../../tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-frontend-symbiotic/8bd41cde-ed4f-4bcc-bc01-db7088074db3/scratchpad/cy01/red-out/cy01-field-WU-CY-01-the-AN-ba881-rs-AI-derived-and-NON-PROOF-desktop/error-context.md
+
+  2) [desktop] › tests/e2e/cy01-field.spec.ts:193:3 › WU-CY-01: the ANALYSIS boundary as a projected affordance (HD-27, pinned producer B5) › not available: no button; the producer's reason stays verbatim as a classed boundary (MISSING_AUTHORITY), never an alert 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: getByTestId('action-reason-BEGIN_ANALYSIS')
+    Expected substring: "Only the Session controller may begin analysis."
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toContainText" getByTestId('action-reason-BEGIN_ANALYSIS') with timeout 5000ms
+      - waiting for getByTestId('action-reason-BEGIN_ANALYSIS')
+
+
+      197 |     await expect(page.getByRole("button", { name: "Begin analysis" })).toHaveCount(0);
+      198 |     const reason = page.getByTestId("action-reason-BEGIN_ANALYSIS");
+    > 199 |     await expect(reason).toContainText("Only the Session controller may begin analysis.");
+          |                          ^
+      200 |     await expect(reason).toHaveAttribute("data-boundary", "MISSING_AUTHORITY");
+      201 |     await expect(reason.locator('[role="alert"]')).toHaveCount(0);
+      202 |     await expect(page.getByRole("alert")).toHaveCount(0);
+        at /home/codi/Entwicklung/nquiry/worktrees/frontend-symbiotic/apps/web/tests/e2e/cy01-field.spec.ts:199:26
+
+    Error Context: ../../../../../../../../tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-frontend-symbiotic/8bd41cde-ed4f-4bcc-bc01-db7088074db3/scratchpad/cy01/red-out/cy01-field-WU-CY-01-the-AN-5e4f8-NG-AUTHORITY-never-an-alert-desktop/error-context.md
+
+  3) [desktop] › tests/e2e/cy01-field.spec.ts:205:3 › WU-CY-01: the ANALYSIS boundary as a projected affordance (HD-27, pinned producer B5) › a Fixture Session reads FIXTURE_NON_PROOF at the core, on the path and in the proof chamber; a mock artifact is MOCK / NON_PROOF; no derived text is rendered 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: getByTestId('session-proof-mode')
+    Expected: "FIXTURE_NON_PROOF"
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toHaveText" getByTestId('session-proof-mode') with timeout 5000ms
+      - waiting for getByTestId('session-proof-mode')
+
+
+      206 |     await routes(page, redPosition({ state: "ANALYSIS", fixture: true }));
+      207 |     await page.goto(SESSION_URL);
+    > 208 |     await expect(page.getByTestId("session-proof-mode")).toHaveText("FIXTURE_NON_PROOF");
+          |                                                          ^
+      209 |     await expect(page.getByTestId("proof-mode")).toContainText("FIXTURE_NON_PROOF");
+      210 |     await expect(page.getByTestId("analysis-proof")).toHaveText("MOCK / NON_PROOF");
+      211 |     await expect(page.getByTestId("analysis-chamber").locator('[data-origin="ai-derived"]').first()).toContainText("AI-derived");
+        at /home/codi/Entwicklung/nquiry/worktrees/frontend-symbiotic/apps/web/tests/e2e/cy01-field.spec.ts:208:58
+
+    Error Context: ../../../../../../../../tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-frontend-symbiotic/8bd41cde-ed4f-4bcc-bc01-db7088074db3/scratchpad/cy01/red-out/cy01-field-WU-CY-01-the-AN-2c5de-no-derived-text-is-rendered-desktop/error-context.md
+
+  4) [desktop] › tests/e2e/cy01-field.spec.ts:217:3 › WU-CY-01: the ANALYSIS boundary as a projected affordance (HD-27, pinned producer B5) › a governed Session shows its proof mode in the proof chamber only (no fixture tag at the core) 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: getByTestId('proof-mode')
+    Expected substring: "GOVERNED"
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toContainText" getByTestId('proof-mode') with timeout 5000ms
+      - waiting for getByTestId('proof-mode')
+
+
+      219 |     await page.goto(SESSION_URL);
+      220 |     await expect(page.getByTestId("session-proof-mode")).toHaveCount(0);
+    > 221 |     await expect(page.getByTestId("proof-mode")).toContainText("GOVERNED");
+          |                                                  ^
+      222 |   });
+      223 |
+      224 |   test("UNAVAILABLE / PENDING analysis: honest state words with the producer's reason code; not an error", async ({ page }) => {
+        at /home/codi/Entwicklung/nquiry/worktrees/frontend-symbiotic/apps/web/tests/e2e/cy01-field.spec.ts:221:50
+
+    Error Context: ../../../../../../../../tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-frontend-symbiotic/8bd41cde-ed4f-4bcc-bc01-db7088074db3/scratchpad/cy01/red-out/cy01-field-WU-CY-01-the-AN-0d5c7-no-fixture-tag-at-the-core--desktop/error-context.md
+
+  5) [desktop] › tests/e2e/cy01-field.spec.ts:224:3 › WU-CY-01: the ANALYSIS boundary as a projected affordance (HD-27, pinned producer B5) › UNAVAILABLE / PENDING analysis: honest state words with the producer's reason code; not an error 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: getByTestId('analysis-chamber').getByTestId('analysis-status')
+    Expected: "unavailable"
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toHaveText" getByTestId('analysis-chamber').getByTestId('analysis-status') with timeout 5000ms
+      - waiting for getByTestId('analysis-chamber').getByTestId('analysis-status')
+
+
+      226 |     await page.goto(SESSION_URL);
+      227 |     const chamber = page.getByTestId("analysis-chamber");
+    > 228 |     await expect(chamber.getByTestId("analysis-status")).toHaveText("unavailable");
+          |                                                          ^
+      229 |     await expect(chamber.getByTestId("analysis-reason")).toHaveText("PROVIDER_TIMEOUT");
+      230 |     await expect(chamber).toHaveAttribute("data-tone", "boundary");
+      231 |     await expect(page.getByRole("alert")).toHaveCount(0);
+        at /home/codi/Entwicklung/nquiry/worktrees/frontend-symbiotic/apps/web/tests/e2e/cy01-field.spec.ts:228:58
+
+    Error Context: ../../../../../../../../tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-frontend-symbiotic/8bd41cde-ed4f-4bcc-bc01-db7088074db3/scratchpad/cy01/red-out/cy01-field-WU-CY-01-the-AN-f66a4--s-reason-code-not-an-error-desktop/error-context.md
+
+  6) [desktop] › tests/e2e/cy01-field.spec.ts:256:3 › WU-CY-01: the ANALYSIS boundary as a projected affordance (HD-27, pinned producer B5) › Challenge field: opening a Fixture Session is an explicit human choice sent as `fixture: true`; the default body stays `{}` 
+
+    Error: expect(locator).not.toBeChecked() failed
+
+    Locator: getByLabel(/Open as a Fixture Session/)
+    Expected: not checked
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "not toBeChecked" getByLabel(/Open as a Fixture Session/) with timeout 5000ms
+      - waiting for getByLabel(/Open as a Fixture Session/)
+
+
+      264 |     await page.goto(`/workspaces/${WS}/challenges/${CH}`);
+      265 |     const choice = page.getByLabel(/Open as a Fixture Session/);
+    > 266 |     await expect(choice).not.toBeChecked();
+          |                              ^
+      267 |     await page.getByRole("button", { name: "Open Session" }).click();
+      268 |     await expect(page.getByTestId("command-outcome")).toHaveAttribute("data-outcome", "denied");
+      269 |     await choice.check();
+        at /home/codi/Entwicklung/nquiry/worktrees/frontend-symbiotic/apps/web/tests/e2e/cy01-field.spec.ts:266:30
+
+    Error Context: ../../../../../../../../tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-frontend-symbiotic/8bd41cde-ed4f-4bcc-bc01-db7088074db3/scratchpad/cy01/red-out/cy01-field-WU-CY-01-the-AN-b1dbe-rue-the-default-body-stays--desktop/error-context.md
+
+  7) [desktop] › tests/e2e/cy01-field.spec.ts:276:3 › WU-CY-01: the ANALYSIS boundary as a projected affordance (HD-27, pinned producer B5) › responsive: the derived chamber adds no horizontal overflow and keeps its text ≥ 11.5 px 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByTestId('analysis-chamber')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByTestId('analysis-chamber') with timeout 5000ms
+      - waiting for getByTestId('analysis-chamber')
+
+
+      277 |     await routes(page, redPosition({ state: "ANALYSIS", fixture: true }));
+      278 |     await page.goto(SESSION_URL);
+    > 279 |     await expect(page.getByTestId("analysis-chamber")).toBeVisible();
+          |                                                        ^
+      280 |     expect(await hOverflow(page)).toBeLessThanOrEqual(0);
+      281 |     const small = await page.getByTestId("analysis-chamber").evaluate((el) => {
+      282 |       const sizes: number[] = [];
+        at /home/codi/Entwicklung/nquiry/worktrees/frontend-symbiotic/apps/web/tests/e2e/cy01-field.spec.ts:279:56
+
+    Error Context: ../../../../../../../../tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-frontend-symbiotic/8bd41cde-ed4f-4bcc-bc01-db7088074db3/scratchpad/cy01/red-out/cy01-field-WU-CY-01-the-AN-396cb-nd-keeps-its-text-≥-11-5-px-desktop/error-context.md
+
+  7 failed
+    [desktop] › tests/e2e/cy01-field.spec.ts:141:3 › WU-CY-01: the ANALYSIS boundary as a projected affordance (HD-27, pinned producer B5) › QUESTION_CAPTURE with BEGIN_ANALYSIS available: the lawful next transition sits in the frozen chamber; ANALYSIS is a later phase; the ring waits for the canonical re-read; then ANALYSIS is current and the derived chamber appears AI-derived and NON_PROOF 
+    [desktop] › tests/e2e/cy01-field.spec.ts:193:3 › WU-CY-01: the ANALYSIS boundary as a projected affordance (HD-27, pinned producer B5) › not available: no button; the producer's reason stays verbatim as a classed boundary (MISSING_AUTHORITY), never an alert 
+    [desktop] › tests/e2e/cy01-field.spec.ts:205:3 › WU-CY-01: the ANALYSIS boundary as a projected affordance (HD-27, pinned producer B5) › a Fixture Session reads FIXTURE_NON_PROOF at the core, on the path and in the proof chamber; a mock artifact is MOCK / NON_PROOF; no derived text is rendered 
+    [desktop] › tests/e2e/cy01-field.spec.ts:217:3 › WU-CY-01: the ANALYSIS boundary as a projected affordance (HD-27, pinned producer B5) › a governed Session shows its proof mode in the proof chamber only (no fixture tag at the core) 
+    [desktop] › tests/e2e/cy01-field.spec.ts:224:3 › WU-CY-01: the ANALYSIS boundary as a projected affordance (HD-27, pinned producer B5) › UNAVAILABLE / PENDING analysis: honest state words with the producer's reason code; not an error 
+    [desktop] › tests/e2e/cy01-field.spec.ts:256:3 › WU-CY-01: the ANALYSIS boundary as a projected affordance (HD-27, pinned producer B5) › Challenge field: opening a Fixture Session is an explicit human choice sent as `fixture: true`; the default body stays `{}` 
+    [desktop] › tests/e2e/cy01-field.spec.ts:276:3 › WU-CY-01: the ANALYSIS boundary as a projected affordance (HD-27, pinned producer B5) › responsive: the derived chamber adds no horizontal overflow and keeps its text ≥ 11.5 px 
+  2 passed (38.4s)

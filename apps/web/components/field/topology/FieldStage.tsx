@@ -18,7 +18,7 @@
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { DECISION_STAGE, estimateCoreBox, layoutField, requiredHalfHeight, stageMode, viewportClass, type Box, type CoreContent, type FieldLayout, type NodeContent, type StageBox, type ViewportClass } from "../../../lib/field/geometry";
-import { REST_FIELD_STATE, type ProjectedFieldState } from "../../../lib/field/projection";
+import { REST_FIELD_STATE, type ProjectedFieldState, type VisualTone } from "../../../lib/field/projection";
 import type { SemanticChamber } from "../chambers";
 import { FocusLens, LensContext, type LensContent, type LensControl } from "./FocusLens";
 import type { RelationFamily } from "../../../lib/field/reciprocity";
@@ -357,6 +357,7 @@ export function Plane({
   labelledBy,
   label,
   testId,
+  tone,
   children,
 }: {
   readonly kind: PlaneKind;
@@ -365,6 +366,8 @@ export function Plane({
   readonly labelledBy?: string;
   readonly label?: string;
   readonly testId?: string;
+  /** WU-CY-01: the projected tone of a chamber whose state the producer names (e.g. an unavailable derived field). */
+  readonly tone?: VisualTone;
   readonly children: ReactNode;
 }) {
   return (
@@ -374,6 +377,7 @@ export function Plane({
       data-chamber={PLANE_CHAMBER[kind]}
       data-semantic={semantic ?? PLANE_SEMANTIC[kind]}
       data-relation={PLANE_RELATION[kind]}
+      data-tone={tone}
       aria-labelledby={labelledBy}
       aria-label={label}
       data-testid={testId}

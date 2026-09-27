@@ -55,6 +55,7 @@ export default function ChallengePage() {
   const router = useRouter();
   const [detail, setDetail] = useState<QueryResult<ChallengeDetail> | null>(null);
   const [grantee, setGrantee] = useState("");
+  const [fixtureSession, setFixtureSession] = useState(false);
   const effect = useEffectField();
   const pendingEvents = useRef<Record<string, FieldEventDescription>>({});
 
@@ -84,7 +85,8 @@ export default function ChallengePage() {
     void effect.run({
       relation: OPEN_SESSION,
       keyed: true,
-      send: async (intentKey) => settleCommand(await openSession(workspaceId, challengeId, intentKey)),
+      // WU-CY-01 (HD-24 via the pinned producer): a Fixture Session is the human's explicit choice; unchecked sends the F03 body
+      send: async (intentKey) => settleCommand(await openSession(workspaceId, challengeId, intentKey, { fixture: fixtureSession })),
       reconstruct: load,
       onCommitted: (body) => {
         // The new Session is entered: its Field is read canonically there (22 §23.12).
@@ -223,7 +225,19 @@ export default function ChallengePage() {
               </p>
             ) : null}
             {open.available ? (
-              <p className="muted">The Session relation is possible: the “Open Session” node in the field requests it.</p>
+              <>
+                <p className="muted">The Session relation is possible: the “Open Session” node in the field requests it.</p>
+                <div className="field open-session-choice">
+                  <label htmlFor="open-session-fixture">
+                    <input id="open-session-fixture" type="checkbox" checked={fixtureSession} onChange={(e) => setFixtureSession(e.target.checked)} /> Open as a
+                    Fixture Session
+                  </label>
+                  <p className="muted" data-testid="open-session-fixture-note" style={{ margin: "4px 0 0" }}>
+                    Declared at creation and immutable: a Fixture Session is FIXTURE_NON_PROOF everywhere it appears. Leave it unchecked for a governed
+                    Session.
+                  </p>
+                </div>
+              </>
             ) : (
               <Unavailable capability={open} testId="session-create-unavailable" />
             )}

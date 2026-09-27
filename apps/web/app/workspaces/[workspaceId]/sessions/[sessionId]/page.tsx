@@ -22,6 +22,14 @@
  * intent, runs through ONE effect lifecycle and is followed by a canonical
  * re-read of `GET …/sessions/{s}/position` before the topology changes (22 §30).
  * Nothing here computes authority: every affordance is a server capability.
+ *
+ * WU-CY-01 (HD-27, pinned RED producer `checkpoint-PFC-B5` → `7d3f74e4685b821cc948f45e413c1e0c207259d4`): the
+ * ANALYSIS boundary. `BEGIN_ANALYSIS` (TRN-SESS-006) is one more lawful next transition through the SAME effect
+ * lifecycle, shown exactly when the producer projects it (`actions.BEGIN_ANALYSIS`, optional: the F03 producer
+ * sends none and gets none). `session.proofMode` is shown in the producer's words (FIXTURE_NON_PROOF at the core
+ * and in the proof chamber); `position.analysis` becomes ONE derived chamber — status, reason, proof marker and
+ * provider note as AI-derived origin with its lineage — and never renders the artifact content (no AI text, no
+ * clusters: out of WU-CY-01). Absent keys project nothing.
  */
 import Link from "next/link";
 import { type FormEvent, useCallback, useEffect, useRef, useState } from "react";
@@ -42,16 +50,19 @@ import {
   grantSessionControl,
   type QueryResult,
   runSessionCommand,
+  type AnalysisActionName,
   type SessionActionName,
   type SessionPosition,
 } from "../../../../../lib/api/inquiryClient";
 import type { FieldEventDescription } from "../../../../../lib/field/fieldEvent";
+import { OriginMark } from "../../../../../components/field/Origin";
+import { analysisFacts, proofModeOf } from "../../../../../lib/field/analysis";
 import { humanPosition } from "../../../../../lib/field/humanPosition";
 import { accessTrace, sessionTrace } from "../../../../../lib/field/position";
 import { lifecycleEmphasis } from "../../../../../lib/field/topology";
 import { settleCommand, useEffectField } from "../../../../../lib/field/useEffectField";
 
-type StepAction = Exclude<SessionActionName, "GRANT_SESSION_CONTROL" | "ADMIT_PARTICIPANT">;
+type StepAction = Exclude<SessionActionName, "GRANT_SESSION_CONTROL" | "ADMIT_PARTICIPANT"> | AnalysisActionName;
 
 const STEPS: readonly { readonly action: StepAction; readonly label: string; readonly explain: string }[] = [
   { action: "BEGIN_SETUP", label: "Begin setup", explain: "Configure the Session for its method." },
@@ -61,6 +72,11 @@ const STEPS: readonly { readonly action: StepAction; readonly label: string; rea
     action: "OPEN_QUESTION_GENERATION",
     label: "Open question generation",
     explain: "Starts the protected Burst: humans generate questions, AI is absent.",
+  },
+  {
+    action: "BEGIN_ANALYSIS",
+    label: "Begin analysis",
+    explain: "Closes the human question regime: derivation on the frozen set may begin. Whatever is derived is a proposal, marked AI-derived and NON_PROOF; it never becomes a question.",
   },
 ];
 
@@ -92,6 +108,7 @@ const STEP_EVENTS: Readonly<Record<StepAction, FieldEventDescription>> = {
   BEGIN_CHALLENGE_CAPTURE: { title: "CHALLENGE CAPTURE BEGUN", text: "This Session entered CHALLENGE_CAPTURE. The Challenge is framed for it." },
   PREPARE_BURST: { title: "PROTECTED BURST PREPARED", text: "A HUMAN_ONLY question burst is prepared for this Session. Nothing is open yet." },
   OPEN_QUESTION_GENERATION: { title: "QUESTION GENERATION OPENED", text: "The protected Burst is open: humans generate questions; AI is absent." },
+  BEGIN_ANALYSIS: { title: "ANALYSIS BEGUN", text: "This Session entered ANALYSIS. The frozen human question set stays as it is; anything derived is AI-derived and NON_PROOF." },
 };
 
 /** The core's identity follows the canonical lifecycle (22 §12.4–§12.6). */
@@ -139,7 +156,7 @@ export default function SessionPage() {
     void load();
   }, [load]);
 
-  function runStep(action: Exclude<SessionActionName, "GRANT_SESSION_CONTROL">, extra: { participantUserId?: string } = {}) {
+  function runStep(action: Exclude<SessionActionName, "GRANT_SESSION_CONTROL"> | AnalysisActionName, extra: { participantUserId?: string } = {}) {
     if (position?.kind !== "ok") return;
     const expectedVersion = position.data.session.version;
     if (action === "ADMIT_PARTICIPANT") {
@@ -207,7 +224,10 @@ export default function SessionPage() {
   const participantIds = p.participants.map((x) => x.userId);
   const position_ = humanPosition(p.viewer, { scope: "session", participantIds });
   const controllerIds = new Set(p.sessionControllers.map((b) => b.holderUserId));
-  const relevantSteps = STEPS.filter((s) => p.actions[s.action].relevant);
+  // an action the producer does not project (F03: no BEGIN_ANALYSIS) is not a step: nothing is inferred for it
+  const relevantSteps = STEPS.filter((s) => p.actions[s.action]?.relevant === true);
+  const proofMode = proofModeOf(p.session);
+  const derived = analysisFacts(p.analysis);
   const describeEvent = (relation: string): FieldEventDescription | null => {
     if (relation.startsWith(STEP_RELATION)) return STEP_EVENTS[relation.slice(STEP_RELATION.length) as StepAction] ?? null;
     if (relation.startsWith("session:capture:")) return { title: "QUESTION CAPTURED", text: "Your question is stored exactly as you typed it. Only you can see it while the Burst is open." };
@@ -303,6 +323,14 @@ export default function SessionPage() {
             meta={
               <>
                 version {p.session.version} · {position_.sentence}
+                {proofMode.projected && proofMode.nonProof ? (
+                  <>
+                    {" "}
+                    <span className="tag fixture" data-testid="session-proof-mode" title={proofMode.words}>
+                      {proofMode.mode}
+                    </span>
+                  </>
+                ) : null}
                 {!p.workspace.governedFounding ? (
                   <>
                     {" "}
@@ -334,6 +362,7 @@ export default function SessionPage() {
               <ul className="plain-list" aria-label="Lawful next transitions">
                 {relevantSteps.map((s) => {
                   const cap = p.actions[s.action];
+                  if (!cap) return null;
                   return (
                     <li key={s.action}>
                       <p style={{ margin: 0 }}>
@@ -521,6 +550,15 @@ export default function SessionPage() {
                 No governed commit established this state (fixture-seeded).
               </p>
             )}
+            {proofMode.projected ? (
+              <dl className="provenance" data-testid="proof-mode" data-proof-mode={proofMode.mode}>
+                <dt>Proof mode</dt>
+                <dd>
+                  <span className={proofMode.nonProof ? "tag fixture" : "state"}>{proofMode.mode}</span>{" "}
+                  <span className="muted">{proofMode.nonProof ? "A Fixture Session declared at creation: nothing in it is proof of anything." : "A governed Session: its commits are the proof."}</span>
+                </dd>
+              </dl>
+            ) : null}
             <ProofDepth depth="D3" title="Identifiers" testId="session-identifiers">
               <Identifiers
                 items={[
@@ -531,6 +569,76 @@ export default function SessionPage() {
               />
             </ProofDepth>
           </Plane>
+
+          {derived ? (
+            <Plane kind="context" semantic="derived" labelledBy="analysis-title" testId="analysis-chamber" tone={derived.tone}>
+              <ChamberHead
+                id="analysis-title"
+                semantic="derived"
+                title={
+                  <OriginMark origin="ai-derived" lineage="the frozen human question set">
+                    Derived field
+                  </OriginMark>
+                }
+                marker={<span data-testid="analysis-status">{derived.words}</span>}
+              />
+              <p className="chamber-lede">
+                AI-derived from the frozen human question set. A proposal, never a question, never a human decision, never evidence. Its content is not
+                shown here.
+              </p>
+              <dl className="provenance derived-facts">
+                <dt>Status</dt>
+                <dd>
+                  <span className="state">{derived.status}</span>
+                  {derived.reasonCode ? (
+                    <>
+                      {" "}
+                      <span className="mono" data-testid="analysis-reason">
+                        {derived.reasonCode}
+                      </span>
+                    </>
+                  ) : null}
+                </dd>
+                {derived.proof ? (
+                  <>
+                    <dt>Proof</dt>
+                    <dd>
+                      <span className="tag fixture" data-testid="analysis-proof">
+                        {derived.proof}
+                      </span>
+                    </dd>
+                  </>
+                ) : null}
+                {derived.provider ? (
+                  <>
+                    <dt>Provider</dt>
+                    <dd className="mono">{derived.provider}</dd>
+                  </>
+                ) : null}
+                {derived.artifactAcceptedAt ? (
+                  <>
+                    <dt>Accepted</dt>
+                    <dd>{AT.format(new Date(derived.artifactAcceptedAt))}</dd>
+                  </>
+                ) : null}
+                {derived.clusteringStatus ? (
+                  <>
+                    <dt>Clustering</dt>
+                    <dd className="state">{derived.clusteringStatus}</dd>
+                  </>
+                ) : null}
+                <dt>Generations</dt>
+                <dd>{derived.generations}</dd>
+              </dl>
+              {derived.note ? (
+                <p className="derived-note muted">
+                  <OriginMark origin="ai-derived" lineage="the producer's marker">
+                    {derived.note}
+                  </OriginMark>
+                </p>
+              ) : null}
+            </Plane>
+          ) : null}
 
           <Plane kind="context" semantic="decision-entry" labelledBy="decision-entry-title">
             <ChamberHead id="decision-entry-title" semantic="decision-entry" title="Decision surface" marker="NON_PROOF" />

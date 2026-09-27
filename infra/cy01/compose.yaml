@@ -1,0 +1,53 @@
+# WU-CY-01 ISOLATED real-stack environment against the PINNED RED producer (HD-27 / HA-03, Option B).
+#
+# Same isolation as infra/sf01 (own compose project identity `nquiry-cy01`, own database volume, NO published host
+# ports, API + web + browser in one private network namespace). The difference is the producer: the runner's
+# backend layers (pyproject, packages, apps/api, apps/worker, migrations, scripts) are copied from a SEPARATE build
+# context that `scripts/run_cy01_real_stack.sh` exports from the exact commit `checkpoint-PFC-B5` targets
+# (`7d3f74e4685b821cc948f45e413c1e0c207259d4`) with `git archive`. This tree contributes ONLY the web app and infra.
+# The two lines are never merged; the producer is never a branch name.
+#
+# The producer's DEV/TEST runtime (HD-19): NQUIRY_AI_PROVIDER=mock is refused outside DEVELOPMENT / TEST, so
+# NQUIRY_ENVIRONMENT=TEST is set here explicitly. MOCK RESULT ≠ PROOF: every derived item the producer serves is
+# marked MOCK / NON_PROOF, and the CYAN projection shows it as such.
+#
+# Run only through scripts/run_cy01_real_stack.sh (it verifies the tag target, exports the producer and guards the
+# project name and the absence of host ports before starting anything).
+name: nquiry-cy01
+
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: nquiry
+      POSTGRES_PASSWORD: nquiry_local_dev_only
+      POSTGRES_DB: nquiry
+    volumes:
+      - cy01_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nquiry"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  runner:
+    build:
+      context: ../..
+      dockerfile: infra/cy01/runner.Dockerfile
+      additional_contexts:
+        producer: ${CY01_PRODUCER_DIR:?export of the pinned RED producer (scripts/run_cy01_real_stack.sh sets it)}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg://nquiry:nquiry_local_dev_only@postgres:5432/nquiry
+      NQUIRY_AI_PROVIDER: mock
+      NQUIRY_ENVIRONMENT: TEST
+      CY01_PRODUCER_COMMIT: ${CY01_PRODUCER_COMMIT:-unknown}
+    shm_size: "1gb"
+    volumes:
+      # Proof output only (gitignored): logs, screenshots, traces.
+      - ../../apps/web/test-results/cy01-real-stack:/repo/apps/web/test-results
+
+volumes:
+  cy01_postgres_data:

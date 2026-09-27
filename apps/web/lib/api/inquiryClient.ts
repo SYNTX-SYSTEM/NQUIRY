@@ -62,6 +62,15 @@ export type SessionActionName =
   | "OPEN_QUESTION_GENERATION"
   | "GRANT_SESSION_CONTROL";
 
+/**
+ * WU-CY-01 (HD-27): the ANALYSIS boundary as projected by the pinned RED producer `checkpoint-PFC-B5`
+ * (`7d3f74e4685b821cc948f45e413c1e0c207259d4`). Its `actions` is a superset of the F03 contract; only
+ * `BEGIN_ANALYSIS` (TRN-SESS-006, `transitions/begin-analysis`) is consumed here. The key is OPTIONAL in the type:
+ * the published F03 producer does not send it, and its absence means "not projected" (no affordance, no reason),
+ * never a default.
+ */
+export type AnalysisActionName = "BEGIN_ANALYSIS";
+
 /** F03: the burst-scoped actions the server projects (capability, never authority). */
 export type BurstActionName = "CAPTURE_QUESTION" | "COMPLETE_BURST";
 
@@ -92,10 +101,60 @@ export type QuestionSet = {
   readonly frozen: FrozenSet | null;
 };
 
+/** The producer's marker on every derived item (analysis_projection.py `marker`): origin, derivation and proof in words. */
+export type AnalysisMarker = {
+  readonly origin: string;
+  readonly derived: boolean;
+  readonly kind: string;
+  readonly provider: string | null;
+  readonly proof: string;
+  readonly isMock: boolean;
+  readonly note: string;
+};
+
+/**
+ * `position.analysis` (F04 HD-22 via the pinned producer): served exactly when the full frozen set is served;
+ * `{visible: false}` otherwise. The artifact's `content` is typed as opaque and is never rendered (WU-CY-01 scope).
+ */
+export type AnalysisProjection =
+  | { readonly visible: false }
+  | {
+      readonly visible: true;
+      readonly audience: string;
+      readonly marker: AnalysisMarker;
+      readonly analysis: {
+        readonly status: string;
+        readonly reasonCode: string | null;
+        readonly artifact: {
+          readonly artifactId: string;
+          readonly generationId: string;
+          readonly proofClass: string | null;
+          readonly isMockNonProof: boolean;
+          readonly acceptedAt: string;
+          readonly acceptedByCommandId: string | null;
+          readonly marker: AnalysisMarker;
+          readonly content: unknown;
+        } | null;
+      };
+      // the producer sends more (runId, clusters, authorization, …); only these fields are consumed, the rest is tolerated
+      readonly clustering?: { readonly status: string; readonly reasonCode: string | null } & Readonly<Record<string, unknown>>;
+      readonly generations?: readonly ({ readonly generationId: string; readonly status: string; readonly provider: string | null } & Readonly<Record<string, unknown>>)[];
+    };
+
 export type SessionPosition = {
   readonly workspace: WorkspaceRef;
   readonly challenge: { readonly challengeId: string; readonly title: string | null; readonly description: string | null };
-  readonly session: { readonly sessionId: string; readonly state: string; readonly version: number; readonly method: string; readonly createdAt: string };
+  readonly session: {
+    readonly sessionId: string;
+    readonly state: string;
+    readonly version: number;
+    readonly method: string;
+    readonly createdAt: string;
+    /** HD-24 (pinned producer): a Fixture (NON_PROOF) Session, declared at creation. Absent from the F03 producer. */
+    readonly fixture?: boolean;
+    /** "GOVERNED" | "FIXTURE_NON_PROOF" from the pinned producer; absent from the F03 producer. */
+    readonly proofMode?: string;
+  };
   readonly phases: readonly { readonly state: string; readonly status: "done" | "current" | "upcoming" }[];
   readonly serverNow: string;
   readonly burst: {
@@ -121,9 +180,12 @@ export type SessionPosition = {
     readonly authorityScopeRef: string | null;
   } | null;
   readonly viewer: { readonly userId: string; readonly role: string | null; readonly isSessionController: boolean; readonly isGovernanceRoot: boolean };
-  readonly actions: Readonly<Record<SessionActionName | BurstActionName, Capability & { readonly relevant: boolean }>>;
+  readonly actions: Readonly<Record<SessionActionName | BurstActionName, Capability & { readonly relevant: boolean }>> &
+    Readonly<Partial<Record<AnalysisActionName, Capability & { readonly relevant: boolean }>>>;
   readonly admitCandidates: readonly { readonly userId: string; readonly name: string }[];
   readonly grantCandidates: readonly { readonly userId: string; readonly name: string }[];
+  /** WU-CY-01: the derived field, as the pinned producer projects it; absent from the F03 producer. */
+  readonly analysis?: AnalysisProjection;
 };
 
 export type FailureKind =
@@ -251,11 +313,21 @@ export function createChallenge(
   return post<{ readonly challengeId: string }>(`/workspaces/${enc(workspaceId)}/challenges`, intentKey, input, fetchImpl);
 }
 
-export function openSession(workspaceId: string, challengeId: string, intentKey: string, fetchImpl: typeof fetch = fetch) {
+/**
+ * CMD_CREATE_SESSION. `fixture: true` (HD-24, pinned producer) declares a Fixture (NON_PROOF) Session and is sent
+ * only when the human chose it; otherwise the body stays the F03 contract `{}` (the F03 producer takes no body).
+ */
+export function openSession(
+  workspaceId: string,
+  challengeId: string,
+  intentKey: string,
+  options: { readonly fixture?: boolean } = {},
+  fetchImpl: typeof fetch = fetch,
+) {
   return post<{ readonly sessionId: string }>(
     `/workspaces/${enc(workspaceId)}/challenges/${enc(challengeId)}/sessions`,
     intentKey,
-    {},
+    options.fixture === true ? { fixture: true } : {},
     fetchImpl,
   );
 }
@@ -275,18 +347,19 @@ export function grantSessionControl(
   );
 }
 
-const SESSION_COMMAND_PATHS: Readonly<Record<Exclude<SessionActionName, "GRANT_SESSION_CONTROL">, string>> = {
+const SESSION_COMMAND_PATHS: Readonly<Record<Exclude<SessionActionName, "GRANT_SESSION_CONTROL"> | AnalysisActionName, string>> = {
   BEGIN_SETUP: "transitions/begin-setup",
   BEGIN_CHALLENGE_CAPTURE: "transitions/begin-challenge-capture",
   PREPARE_BURST: "burst",
   ADMIT_PARTICIPANT: "participants",
   OPEN_QUESTION_GENERATION: "transitions/open-question-generation",
+  BEGIN_ANALYSIS: "transitions/begin-analysis",
 };
 
 export function runSessionCommand(
   workspaceId: string,
   sessionId: string,
-  action: Exclude<SessionActionName, "GRANT_SESSION_CONTROL">,
+  action: Exclude<SessionActionName, "GRANT_SESSION_CONTROL"> | AnalysisActionName,
   expectedVersion: number,
   intentKey: string,
   extra: { readonly participantUserId?: string } = {},

@@ -22,7 +22,9 @@ export type SemanticChamber =
   | "identity"
   | "identifiers"
   | "confirmation"
-  | "decision-entry";
+  | "decision-entry"
+  /** WU-CY-01: the derived field (AI-derived, NON_PROOF), apart from every human and system chamber. */
+  | "derived";
 
 /** Doc 26 §26: boundary classes — a boundary is not automatically an error. */
 export type BoundaryClass =
@@ -122,6 +124,11 @@ export function ChamberGlyph({ semantic }: { readonly semantic: SemanticChamber 
           <path d="M10 3l7 12H3z" />
           <path d="M10 8v4" />
           <circle cx="10" cy="13.5" r=".6" />
+        </>
+      ) : semantic === "derived" ? (
+        <>
+          <circle cx="10" cy="10" r="6.5" strokeDasharray="2.2 2.2" />
+          <path d="M10 6.5 13 10l-3 3.5L7 10z" />
         </>
       ) : semantic === "decision-entry" ? (
         <>

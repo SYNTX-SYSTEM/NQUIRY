@@ -1,0 +1,20 @@
+CY01_GUARD: project nquiry-cy01, no host ports
+  ✓   1 [desktop] › tests/real-stack/cy01-analysis.real.spec.ts:90:1 › WU-CY-01: BEGIN_ANALYSIS across the boundary, the derived field as AI-derived NON_PROOF, and a Fixture Session (1.4m)
+  ✓   2 [desktop] › tests/real-stack/f02-accessibility.real.spec.ts:43:1 › F02 surfaces: axe (serious/critical), keyboard-only control, responsive layout (51.4s)
+  ✓   3 [desktop] › tests/real-stack/f02-inquiry-context.real.spec.ts:66:1 › F02: a governed inquiry context is created and lawfully reaches QUESTION_GENERATION (1.5m)
+  ✓   4 [desktop] › tests/real-stack/f03-accessibility.real.spec.ts:53:1 › F03 surfaces: axe, keyboard-only capture and completion, responsive layout (1.2m)
+  ✘   5 [desktop] › tests/real-stack/f03-protected-question-field.real.spec.ts:72:1 › F03: protected human question capture, manual completion and the frozen set (1.7m)
+  ✓   6 [desktop] › tests/real-stack/sf01-field.real.spec.ts:82:1 › SF-01: relational position, effect lifecycle and proof depth on the real pre-Session path (1.0m)
+  ✓   7 [desktop] › tests/real-stack/sf01-field.real.spec.ts:186:1 › SF-01: reduced motion keeps every effect meaning (10.2s)
+  ✓   8 [desktop] › tests/real-stack/wu-02-12-closure.real.spec.ts:48:1 › WU-02.12: idempotency identity and outcome vocabulary hold on the real stack (22.3s)
+  ✓   9 [mobile] › tests/real-stack/cy01-analysis.real.spec.ts:90:1 › WU-CY-01: BEGIN_ANALYSIS across the boundary, the derived field as AI-derived NON_PROOF, and a Fixture Session (1.3m)
+  ✓  10 [mobile] › tests/real-stack/f02-accessibility.real.spec.ts:43:1 › F02 surfaces: axe (serious/critical), keyboard-only control, responsive layout (36.3s)
+  ✘  11 [mobile] › tests/real-stack/f02-inquiry-context.real.spec.ts:66:1 › F02: a governed inquiry context is created and lawfully reaches QUESTION_GENERATION (1.6m)
+  ✓  12 [mobile] › tests/real-stack/f03-accessibility.real.spec.ts:53:1 › F03 surfaces: axe, keyboard-only capture and completion, responsive layout (58.8s)
+  ✘  13 [mobile] › tests/real-stack/f03-protected-question-field.real.spec.ts:72:1 › F03: protected human question capture, manual completion and the frozen set (1.6m)
+  ✓  14 [mobile] › tests/real-stack/sf01-field.real.spec.ts:82:1 › SF-01: relational position, effect lifecycle and proof depth on the real pre-Session path (1.2m)
+  ✓  15 [mobile] › tests/real-stack/sf01-field.real.spec.ts:186:1 › SF-01: reduced motion keeps every effect meaning (10.0s)
+  ✓  16 [mobile] › tests/real-stack/wu-02-12-closure.real.spec.ts:48:1 › WU-02.12: idempotency identity and outcome vocabulary hold on the real stack (21.2s)
+    test-results/f03-protected-question-fie-de016-mpletion-and-the-frozen-set-desktop/test-failed-3.png
+  3 failed
+  13 passed (17.2m)

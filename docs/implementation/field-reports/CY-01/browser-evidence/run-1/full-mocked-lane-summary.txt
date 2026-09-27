@@ -1,0 +1,3 @@
+  ✓   55 [desktop] › tests/e2e/sf01-field.spec.ts:380:5 › boundary taxonomy (21 §14, falsifiers 21/22) › grant → failed_precommit is its own boundary (6.5s)
+  ✓  151 [mobile] › tests/e2e/sf01-field.spec.ts:380:5 › boundary taxonomy (21 §14, falsifiers 21/22) › grant → failed_precommit is its own boundary (6.8s)
+  184 passed (4.7m)
