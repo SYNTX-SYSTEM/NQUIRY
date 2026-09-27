@@ -63,6 +63,7 @@ class SqlAlchemyProjectionRepository:
                 sa.insert(session_read_model_table).values(
                     session_id=model.session_id.value,
                     workspace_id=model.workspace_id.value,
+                    fixture=model.fixture,
                     current_state=model.current_state,
                     projection_version=model.projection_version,
                     last_event_id=model.last_event_id.value,
@@ -80,6 +81,7 @@ class SqlAlchemyProjectionRepository:
                     last_event_id=model.last_event_id.value,
                     updated_at=model.updated_at,
                     last_aggregate_version=model.last_aggregate_version,
+                    fixture=model.fixture,
                 )
             )
 
@@ -197,6 +199,7 @@ def _session_read_model_from_row(row: sa.RowMapping) -> SessionReadModel:
         last_event_id=EventId(row["last_event_id"]),
         updated_at=row["updated_at"],
         last_aggregate_version=row["last_aggregate_version"],
+        fixture=row["fixture"],
     )
 
 

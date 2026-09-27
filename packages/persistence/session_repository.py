@@ -150,6 +150,7 @@ class SqlAlchemySessionRepository:
                 updated_at=session.updated_at,
                 closed_at=session.closed_at,
                 record_version=session.record_version.value,
+                fixture=session.fixture,
             )
         )
 

@@ -173,6 +173,9 @@ class CreateSessionPayload:
     challenge_id: str
     applied_method_key: str
     applied_method_version: str
+    fixture: bool = False
+    """HD-24: part of the Command's identity, so one intent cannot be replayed
+    with another Fixture declaration."""
 
 
 class _CreateSessionMutation:
@@ -204,6 +207,7 @@ class _CreateSessionMutation:
                     "state": self._session.state.value,
                     "applied_method_key": self._session.applied_method_key,
                     "applied_method_version": str(self._session.applied_method_version.value),
+                    "fixture": self._session.fixture,
                 },
             ),
         )
@@ -251,8 +255,11 @@ def create_session(
     idempotency_port: IdempotencyPort,
     current_version_reader: CurrentVersionReader,
     failure_injector: FailureInjectionPort | None = None,
+    fixture: bool = False,
 ) -> CommitUnit:
     """TRN-SESS-001: Session absent -> DRAFT, under `challenge_id`.
+    `fixture` (HD-24 / NQ-DEC-052) declares a Fixture (NON_PROOF) Session. This
+    is the only point at which it can be set.
     `actor` must currently hold a real, effective `SESSION_CONTROL_RIGHT`
     `HumanAuthorityBinding` scoped to `challenge_id` (proven fresh by
     BND-005, AUTH-DEP-SESS-001). Raises `CreateSessionDenied` if the
@@ -323,6 +330,7 @@ def create_session(
             challenge_id=str(challenge_id.value),
             applied_method_key=applied_method_key,
             applied_method_version=applied_method_version.value,
+            fixture=fixture,
         ),
         idempotency_key=idempotency_key,
     )
@@ -357,6 +365,7 @@ def create_session(
         updated_at=occurred_at,
         closed_at=None,
         record_version=RecordVersion.initial(),
+        fixture=fixture,
     )
 
     coordinator = CommitCoordinator(

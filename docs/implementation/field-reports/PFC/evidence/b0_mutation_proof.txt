@@ -1,0 +1,10 @@
+M01 the declaration is dropped at the API edge: KILLED
+M02 a non-boolean declaration is coerced: KILLED
+M03 the declaration is not part of the Command fingerprint: KILLED
+M04 the declaration is not persisted: KILLED
+M05 the stored marker is not read back: KILLED
+M06 the committed event omits the real fixture fact: KILLED
+M07 projections present a Fixture Session as governed: KILLED
+M08 the read model drops the Fixture status: KILLED
+M09 the legacy Session view drops the Fixture status: KILLED
+9/9 killed; sources restored: True

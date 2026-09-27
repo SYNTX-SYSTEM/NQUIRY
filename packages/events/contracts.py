@@ -85,8 +85,16 @@ class EventContract:
 EventContractRegistry = Mapping[str, EventContract]
 
 
-def _c(event_type: str, kind: str, *keys: str, versioned: bool = True) -> EventContract:
-    return EventContract(event_type, kind, frozenset(keys), versioned=versioned)
+def _c(
+    event_type: str,
+    kind: str,
+    *keys: str,
+    versioned: bool = True,
+    schema: ContractVersion = SCHEMA_1_0,
+) -> EventContract:
+    return EventContract(
+        event_type, kind, frozenset(keys), schema_version=schema, versioned=versioned
+    )
 
 
 _SESSION_TRANSITION = ("session_id", "previous_state", "state")
@@ -129,6 +137,7 @@ PRODUCTION_EVENT_CONTRACTS: EventContractRegistry = {
         ),
         # F02 inquiry context
         _c("CHALLENGE_CREATED", "challenge", "challenge_id"),
+        # 1.1 (WU-PFC-B0, HD-24): + "fixture". 1.0 events stay as committed.
         _c(
             "SESSION_CREATED",
             "session",
@@ -137,6 +146,8 @@ PRODUCTION_EVENT_CONTRACTS: EventContractRegistry = {
             "state",
             "applied_method_key",
             "applied_method_version",
+            "fixture",
+            schema=ContractVersion("1.1"),
         ),
         _c("SESSION_SETUP", "session", *_SESSION_TRANSITION),
         _c("SESSION_CHALLENGE_CAPTURE", "session", *_SESSION_TRANSITION),

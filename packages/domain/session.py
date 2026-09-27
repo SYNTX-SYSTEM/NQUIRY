@@ -120,8 +120,13 @@ class Session:
     updated_at: datetime
     closed_at: datetime | None
     record_version: RecordVersion
+    fixture: bool = False
+    """HD-24 / NQ-DEC-052: a Fixture (NON_PROOF) Session, declared only at
+    creation and immutable afterwards (enforced by a DB trigger)."""
 
     def __post_init__(self) -> None:
+        if not isinstance(self.fixture, bool):
+            raise TypeError(f"fixture must be a bool, got {type(self.fixture)!r}")
         if not isinstance(self.session_id, SessionId):
             raise TypeError(f"session_id must be a SessionId, got {type(self.session_id)!r}")
         if not isinstance(self.challenge_id, ChallengeId):

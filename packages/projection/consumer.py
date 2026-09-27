@@ -106,6 +106,7 @@ class ProjectionConsumer:
             last_event_id=envelope.event_id,
             updated_at=envelope.occurred_at,
             last_aggregate_version=envelope.aggregate_version_after_commit.value,
+            fixture=_extract_fixture(envelope.payload, current),
         )
         self._repository.upsert_session_read_model(model)
 
@@ -139,6 +140,14 @@ def _is_stale(envelope: EventEnvelope, projected_version: int | None) -> bool:
         projected_version is not None
         and envelope.aggregate_version_after_commit.value < projected_version
     )
+
+
+def _extract_fixture(payload: object, current: SessionReadModel | None) -> bool | None:
+    """WU-PFC-B0 (HD-24 rule 5): the Fixture status comes only from the event
+    that declares it (SESSION_CREATED 1.1) and is kept afterwards."""
+    if isinstance(payload, Mapping) and isinstance(payload.get("fixture"), bool):
+        return bool(payload["fixture"])
+    return current.fixture if current is not None else None
 
 
 def _extract_state(payload: object) -> str | None:

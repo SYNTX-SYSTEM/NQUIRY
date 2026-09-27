@@ -1,0 +1,13 @@
+WU-PFC-B0 regression evidence (2026-09-27), worktree pfc-integration, DB nquiry_pfc_int_test @ d4f7b2c9e6a1
+BASELINE (checkpoint-PFC-F09-3 + HD-24 record c4fded8): live 1856 + 3 (PFC ledger) passed / 2 skipped.
+RED: tests/e2e/test_pfc_b0_fixture_session.py 13 failed / 0 passed: column "fixture" does not exist / Unconsumed
+     column names: fixture / Could not locate column 'fixture' / KeyError 'fixture'; a non-boolean declaration
+     accepted (200 instead of 400, x4); a replay with another declaration committed (not in the fingerprint).
+AFTER (exact committed tree):
+  live:  1872 passed, 2 skipped in 1015.88s (0:16:55)   = 1856 + 3 ledger + 13 B0
+  no-DB: 911 passed, 963 skipped in 26.01s
+  B0 + F08-1 + F08-2 + HTTP F02/F03/F04 + PKG-21 projection suites: 90 passed
+ruff check .: clean; ruff format --check: 382 files formatted; mypy (CI scope): no issues in 203 source files
+ARCHITECTURE_DEPENDENCY_CHECK / PROVIDER_SDK_IMPORT_CHECK / TEST_ONLY_IMPORT_CHECK: PASS
+verify_migrations: STATIC PASS (31 revisions, single head d4f7b2c9e6a1), LIVE PASS
+mutation proof: 9/9 KILLED, sources restored

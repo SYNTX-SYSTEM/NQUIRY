@@ -103,6 +103,7 @@ def session_from_row(row: Mapping[str, Any]) -> Session:
             updated_at=row["updated_at"],
             closed_at=row["closed_at"],
             record_version=RecordVersion(row["record_version"]),
+            fixture=row["fixture"],
         )
     except (KeyError, TypeError, ValueError) as exc:
         raise UnmappableRow(f"sessions row is not a valid Session: {exc}") from exc

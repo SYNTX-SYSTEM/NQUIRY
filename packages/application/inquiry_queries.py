@@ -125,6 +125,12 @@ _REASONS = {
 BURST_GUIDANCE_SECONDS = 240
 
 
+def proof_mode(fixture: bool) -> str:
+    """HD-24 rule 5: the Session's proof semantics, carried on every Session
+    surface. A Fixture Session is NON_PROOF for its whole life."""
+    return "FIXTURE_NON_PROOF" if fixture else "GOVERNED"
+
+
 def _question_json(row: directory.CapturedQuestionRow) -> dict[str, object]:
     return {
         "questionId": str(row.question_id),
@@ -315,6 +321,8 @@ def challenge_detail(
                 "state": s.state,
                 "version": s.record_version,
                 "createdAt": s.created_at.isoformat(),
+                "fixture": s.fixture,
+                "proofMode": proof_mode(s.fixture),
             }
             for s in directory.list_sessions(ports.connection, ws, challenge_id.value)
         ],
@@ -555,6 +563,8 @@ def session_position(
             "version": session.record_version.value,
             "method": f"{session.applied_method_key} {session.applied_method_version.value}",
             "createdAt": session.created_at.isoformat(),
+            "fixture": session.fixture,
+            "proofMode": proof_mode(session.fixture),
         },
         "phases": [
             {

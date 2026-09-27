@@ -102,6 +102,8 @@ def test_every_commit_has_exactly_one_matching_committed_event(
 
 
 def test_envelope_fields_equal_the_committed_audit_facts(db_connection: sa.Connection) -> None:
+    from events.contracts import PRODUCTION_EVENT_CONTRACTS
+
     ctx = _analysed(db_connection)
     audits = {
         a["commit_id"]: a
@@ -118,7 +120,11 @@ def test_envelope_fields_equal_the_committed_audit_facts(db_connection: sa.Conne
         assert event["causation_id"] == audit["causation_id"]
         assert event["actor_ref"] == f"{audit['actor_type']}:{audit['actor_id']}"
         assert event["authority_source_ref"] == audit["authority_source_ref"]
-        assert event["event_schema_version"] == "1.0"
+        # the version of the contract the event was committed under
+        # (SESSION_CREATED moved to 1.1 in WU-PFC-B0, HD-24)
+        assert event["event_schema_version"] == (
+            PRODUCTION_EVENT_CONTRACTS[event["event_type"]].schema_version.value
+        )
 
 
 def test_aggregate_versions_are_the_committed_row_versions(db_connection: sa.Connection) -> None:

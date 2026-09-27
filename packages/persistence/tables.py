@@ -275,6 +275,7 @@ sessions_table = sa.Table(
     sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
     sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
     sa.Column("closed_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("fixture", sa.Boolean(), nullable=False, server_default=sa.false()),
     sa.Column("record_version", sa.BigInteger(), nullable=False),
     # The composite FK, not a plain `challenge_id` reference: 09 §27.1
     # permits the denormalized `workspace_id` only under the constraint
@@ -1215,6 +1216,7 @@ session_read_model_table = sa.Table(
     sa.Column("last_event_id", sa.Uuid(), nullable=False),
     sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
     sa.Column("last_aggregate_version", sa.BigInteger(), nullable=True),
+    sa.Column("fixture", sa.Boolean(), nullable=True),
     sa.ForeignKeyConstraint(
         ["session_id", "workspace_id"],
         ["sessions.id", "sessions.workspace_id"],

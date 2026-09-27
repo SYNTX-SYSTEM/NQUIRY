@@ -33,7 +33,7 @@ from application.http_f04 import (
 )
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, StrictBool
 
 router = APIRouter()
 
@@ -58,6 +58,13 @@ class CreateChallengeBody(BaseModel):
     desiredOutcome: str | None = None  # noqa: N815 -- camelCase wire contract
     constraints: str | None = None
     stakeholders: str | None = None
+
+
+class CreateSessionBody(BaseModel):
+    """HD-24: `fixture` declares a Fixture (NON_PROOF) Session. Strictly boolean;
+    absent means a normal Session."""
+
+    fixture: StrictBool = False
 
 
 class GrantBody(BaseModel):
@@ -122,13 +129,19 @@ def challenge_detail(workspace_id: str, challenge_id: str, request: Request) -> 
 
 
 @router.post("/workspaces/{workspace_id}/challenges/{challenge_id}/sessions")
-def create_session(workspace_id: str, challenge_id: str, request: Request) -> JSONResponse:
+def create_session(
+    workspace_id: str,
+    challenge_id: str,
+    request: Request,
+    body: CreateSessionBody | None = None,
+) -> JSONResponse:
     return _json(
         dispatch_create_session(
             session_token=_token(request),
             idempotency_key=_idem(request),
             workspace_id=workspace_id,
             challenge_id=challenge_id,
+            fixture=body.fixture if body is not None else False,
         )
     )
 

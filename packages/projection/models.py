@@ -112,6 +112,9 @@ class SessionReadModel:
     last_aggregate_version: int | None = None
     """WU-PFC-F08-2: the `aggregate_version_after_commit` of the event this
     row reflects. A lower-version event is never applied over it."""
+    fixture: bool | None = None
+    """WU-PFC-B0 (HD-24 rule 5): the Session's Fixture / NON_PROOF status, from
+    SESSION_CREATED (schema 1.1). None only for Sessions created before it."""
 
     def __post_init__(self) -> None:
         if not isinstance(self.session_id, SessionId):

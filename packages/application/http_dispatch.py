@@ -403,6 +403,7 @@ def dispatch_get_session_view(
                 "challengeId": str(result.session.challenge_id.value),
                 "workspaceId": str(result.session.workspace_id.value),
                 "state": result.session.state.value,
+                "fixture": result.session.fixture,
             },
             "burst": burst_view,
             "decision": decision_view,

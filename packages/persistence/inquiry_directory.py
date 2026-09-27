@@ -56,6 +56,7 @@ class SessionRow:
     state: str
     record_version: int
     created_at: datetime
+    fixture: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -188,7 +189,7 @@ def list_sessions(
 ) -> tuple[SessionRow, ...]:
     s = sessions_table
     rows = connection.execute(
-        sa.select(s.c.id, s.c.state, s.c.record_version, s.c.created_at)
+        sa.select(s.c.id, s.c.state, s.c.record_version, s.c.created_at, s.c.fixture)
         .where(s.c.workspace_id == workspace_id, s.c.challenge_id == challenge_id)
         .order_by(s.c.created_at.asc(), s.c.id.asc())
     ).all()

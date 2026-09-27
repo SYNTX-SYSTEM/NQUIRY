@@ -332,7 +332,12 @@ def dispatch_create_challenge(
 
 
 def dispatch_create_session(
-    *, session_token: str | None, idempotency_key: str | None, workspace_id: str, challenge_id: str
+    *,
+    session_token: str | None,
+    idempotency_key: str | None,
+    workspace_id: str,
+    challenge_id: str,
+    fixture: bool = False,
 ) -> Response:
     def work(ports: GovernedPorts, principal: Any) -> Response:
         from persistence.challenge_repository import SqlAlchemyChallengeVersionReader
@@ -361,6 +366,7 @@ def dispatch_create_session(
                     occurred_at=ident.occurred_at,
                     commit_id=ident.commit_id,
                     idempotency_key=ident.idempotency_key,
+                    fixture=fixture,
                     workspace_repository=ports.workspaces,
                     membership_repository=ports.memberships,
                     challenge_repository=ports.challenges,
