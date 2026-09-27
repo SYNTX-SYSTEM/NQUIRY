@@ -143,3 +143,26 @@ A1, I1, F08-1, F08-2, F08-3, F09-1, F09-2 and F09-3: eight technically closed an
 - No Work Unit is REVIEWED_FIELD. Nothing is PUBLISHED_FIELD. master (BLUE) and `frontend-symbiotic` (CYAN) are unchanged.
 
 **Test totals on the final predecessor line** (`checkpoint-PFC-F09-3`): live **1856 passed / 2 skipped**; no-DB **908 passed**. Mutation proofs across the run: A1 18/18, F08-1 15/15, F08-2 10/10, F08-3 5/5, F09-1 9/9, F09-2 6/6, F09-3 5/5, plus the inherited F04 PASS.
+
+---
+
+## 7. Field reconstruction after HD-24 (2026-09-27)
+
+**Human Authority:** HD-24 / NQ-DEC-052 (REC-028) resolved HA-01 for Fixture Sessions: Option 03 is the working path for Fixture Sessions, Option 01 is the target for real Sessions, and Option 02 is not selected.
+
+**Work Units derived and closed:**
+- **WU-PFC-B0**, Fixture Session identity (rules 1–5): `checkpoint-PFC-B0` → `ea3af40`.
+- **WU-PFC-B1**, TRN-SESS-007 BEGIN_REFLECTION (rules 6–12): `checkpoint-PFC-B1` → `ea4755d`.
+
+**What changed in the product:**
+- A Fixture Session goes F02 → F03 → F04 (mock analysis, NON_PROOF) → **REFLECTION**. Every surface marks it FIXTURE_NON_PROOF / MOCK_NON_PROOF, and it is never real provider proof. This is proven on the real stack.
+- A real Session with a mock proof stays in ANALYSIS (`MOCK_PROOF_NOT_ELIGIBLE_FOR_REAL_SESSION`, HD-20) until HARD-DEP-002 supplies an eligible real provider (HA-02).
+- Supplying that provider changes only the eligible proof source (rule 12).
+
+**Derivation after B1: global stop condition B again.** TRN-SESS-008 requires the Reflection completion contract (03 §52 GAP-03-007 `[UNDERDEFINED]`) and answer persistence (NQ-GAP-016). Both are now queued as **HA-21** (with HA-05). Every relation after REFLECTION (QuestionSelection, ImpactChain, INVESTIGATION, F06, F07, graph, export) depends on it. CYAN remains out of scope.
+
+**FBR status change:** FBR-PFC-02 (REFLECTION gate) is **CLOSED for Fixture Sessions**, and blocked for real Sessions (HA-02). The next first broken relation is REFLECTION → QUESTION_SELECTION (HA-21, HA-05).
+
+**Test totals:** live **1890 passed / 2 skipped**; no-DB **912 passed**. Mutation: B0 9/9, B1 11/11.
+
+**Resulting Field status:** IN_PROGRESS; the autonomous run is STOPPED at global condition B. Nothing is REVIEWED_FIELD or PUBLISHED_FIELD. BLUE is unchanged and CYAN is untouched.
