@@ -176,7 +176,12 @@ def grant(
 
 
 def create_session(
-    db: sa.Connection, *, actor: UserId, workspace_id: WorkspaceId, challenge_id: object
+    db: sa.Connection,
+    *,
+    actor: UserId,
+    workspace_id: WorkspaceId,
+    challenge_id: object,
+    fixture: bool = False,
 ) -> object:
     from application.session_creation_handler import create_session as _create_session
     from persistence.challenge_repository import SqlAlchemyChallengeVersionReader
@@ -206,12 +211,13 @@ def create_session(
         commit_repository=p.commits,
         idempotency_port=p.idempotency,
         current_version_reader=SqlAlchemyChallengeVersionReader(db, challenge_id=cid),
+        fixture=fixture,
         **ids(),  # type: ignore[arg-type]
     )
     return session_id
 
 
-def inquiry_context(db: sa.Connection) -> dict[str, object]:
+def inquiry_context(db: sa.Connection, *, fixture: bool = False) -> dict[str, object]:
     """Owner founds, admits a Facilitator, Facilitator creates a Challenge,
     Owner grants Challenge-scoped session control, Facilitator opens a
     Session. All through real governed Commands."""
@@ -229,5 +235,7 @@ def inquiry_context(db: sa.Connection) -> dict[str, object]:
         scope_type="CHALLENGE",
         scope_id=challenge.challenge_id.value,
     )
-    session_id = create_session(db, actor=fac, workspace_id=ws, challenge_id=challenge.challenge_id)
+    session_id = create_session(
+        db, actor=fac, workspace_id=ws, challenge_id=challenge.challenge_id, fixture=fixture
+    )
     return {"owner": owner, "fac": fac, "ws": ws, "challenge": challenge, "session": session_id}

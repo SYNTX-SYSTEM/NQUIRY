@@ -1,0 +1,14 @@
+WU-PFC-B1 regression evidence (2026-09-27), worktree pfc-integration, DB nquiry_pfc_int_test @ d4f7b2c9e6a1
+BASELINE (checkpoint-PFC-B0): live 1872 passed / 2 skipped; no-DB 911 passed.
+RED: tests/e2e/test_pfc_b1_begin_reflection.py 14 failed / 0 passed (404 no route x5; KeyError BEGIN_REFLECTION x2;
+     KeyError 'kind' x4; No module named application.reflection_handler / application.reflection_proof; one case
+     tampered with ai_generations and hit "pending trigger events" -> replaced by a legitimate scenario before the repair)
+AFTER (exact committed tree):
+  live:  1890 passed, 2 skipped in 1018.51s (0:16:58)   = 1872 + 15 B1 + 3 isolation-sweep cases for the new route
+  no-DB: 912 passed, 980 skipped in 27.30s
+  B1 + isolation sweep + B0 + F08-1 + HTTP F02/F03/F04 + F04 projection/run suites: 145 passed (before the M04 falsifier strengthening)
+ruff check .: clean; ruff format --check: 387 files formatted; mypy (CI scope): no issues in 206 source files
+ARCHITECTURE_DEPENDENCY_CHECK / PROVIDER_SDK_IMPORT_CHECK / TEST_ONLY_IMPORT_CHECK: PASS
+verify_migrations: STATIC PASS (31 revisions, single head d4f7b2c9e6a1), LIVE PASS (no schema change in B1)
+mutation proof: 11/11 KILLED, sources restored (first run 10/11: M04 survived -> HD-20 falsifier strengthened)
+runtime: evidence/b1_runtime_proof.txt (real API + real worker; Fixture -> REFLECTION MOCK_NON_PROOF; real -> blocked HD-20)

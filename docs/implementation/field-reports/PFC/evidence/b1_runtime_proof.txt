@@ -1,0 +1,143 @@
+WU-PFC-B1 runtime proof (2026-09-27): real API process (uvicorn :18433, NQUIRY_ENVIRONMENT=DEVELOPMENT, NQUIRY_AI_PROVIDER=mock) + real worker process, isolated DB nquiry_pfc_int_runtime @ d4f7b2c9e6a1
+seed: tests/e2e/pfc_b1_runtime_proof.py seed (real F02/F03 handlers, COMMITTED): one Fixture Session and one real Session at QUESTION_CAPTURE
+drive: HTTP only (login, Idempotency-Key): begin-analysis (the API runs the mock analysis after the commit), then begin-reflection
+
+--- run 1
+{
+  "fixture": {
+    "begin_analysis": {
+      "status": 200,
+      "kind": "committed"
+    },
+    "begin_reflection": {
+      "status": 200,
+      "body": {
+        "kind": "committed",
+        "replayed": false,
+        "commandType": "CMD_BEGIN_REFLECTION",
+        "commitId": "ff65524b-dcde-49ef-b360-ded603836c67",
+        "proofClass": "MOCK_NON_PROOF",
+        "proofSource": "FIXTURE_MOCK",
+        "isRealProviderProof": false
+      }
+    },
+    "state_after": "REFLECTION",
+    "proofMode": "FIXTURE_NON_PROOF",
+    "fixture": true,
+    "reflection": {
+      "proofClass": "MOCK_NON_PROOF",
+      "proofSource": "FIXTURE_MOCK",
+      "isRealProviderProof": false,
+      "provider": "mock",
+      "analysisArtifactId": "a138425f-e638-4c10-9588-1da4b01b7f7f",
+      "validationProofId": "d2676ebf-062f-4401-91c4-302a2ad8f17d",
+      "fixture": true
+    },
+    "BEGIN_REFLECTION_capability": {
+      "available": false,
+      "reasonCode": "SESSION_NOT_IN_ANALYSIS",
+      "reason": "SESSION_NOT_IN_ANALYSIS",
+      "relevant": false
+    }
+  },
+  "real": {
+    "begin_analysis": {
+      "status": 200,
+      "kind": "committed"
+    },
+    "begin_reflection": {
+      "status": 422,
+      "body": {
+        "kind": "blocked",
+        "reasonCode": "MOCK_PROOF_NOT_ELIGIBLE_FOR_REAL_SESSION"
+      }
+    },
+    "state_after": "ANALYSIS",
+    "proofMode": "GOVERNED",
+    "fixture": false,
+    "reflection": null,
+    "BEGIN_REFLECTION_capability": {
+      "available": false,
+      "reasonCode": "MOCK_PROOF_NOT_ELIGIBLE_FOR_REAL_SESSION",
+      "reason": "MOCK_PROOF_NOT_ELIGIBLE_FOR_REAL_SESSION",
+      "relevant": true
+    }
+  }
+}
+
+== real worker: python -m nquiry_worker --once
+nquiry_worker: delivery pass: delivered=49 failed=0
+== session_read_model (fixture Session)
+REFLECTION|t|7
+== session_read_model (real Session)
+ANALYSIS|f|6
+== canonical sessions
+REFLECTION|t
+ANALYSIS|f
+== SESSION_REFLECTION events
+1|MOCK_NON_PROOF
+== diagnose
+{"delivered": 73, "failed": 0, "max_failed_attempts": 0, "oldest_undelivered_at": null, "pending": 0, "without_basis": 0}
+
+--- run 2 (final driver; fresh seed)
+{
+  "fixture": {
+    "begin_analysis": {
+      "status": 200,
+      "kind": "committed"
+    },
+    "begin_reflection": {
+      "status": 200,
+      "body": {
+        "kind": "committed",
+        "replayed": false,
+        "commandType": "CMD_BEGIN_REFLECTION",
+        "commitId": "2acaac97-f47c-4073-9178-8d9f9922adcc",
+        "proofClass": "MOCK_NON_PROOF",
+        "proofSource": "FIXTURE_MOCK",
+        "isRealProviderProof": false
+      }
+    },
+    "state_after": "REFLECTION",
+    "proofMode": "FIXTURE_NON_PROOF",
+    "fixture": true,
+    "reflection": {
+      "proofClass": "MOCK_NON_PROOF",
+      "proofSource": "FIXTURE_MOCK",
+      "isRealProviderProof": false,
+      "provider": "mock",
+      "analysisArtifactId": "ad5a6a6b-01f6-4596-a7ab-ca671cefcda5",
+      "validationProofId": "9b46d4f1-9d27-413d-9482-6f57c589e423",
+      "fixture": true
+    },
+    "BEGIN_REFLECTION_capability": {
+      "available": false,
+      "reasonCode": "SESSION_NOT_IN_ANALYSIS",
+      "reason": "SESSION_NOT_IN_ANALYSIS",
+      "relevant": false
+    }
+  },
+  "real": {
+    "begin_analysis": {
+      "status": 200,
+      "kind": "committed"
+    },
+    "begin_reflection": {
+      "status": 422,
+      "body": {
+        "kind": "blocked",
+        "reasonCode": "MOCK_PROOF_NOT_ELIGIBLE_FOR_REAL_SESSION"
+      }
+    },
+    "state_after": "ANALYSIS",
+    "proofMode": "GOVERNED",
+    "fixture": false,
+    "reflection": null,
+    "BEGIN_REFLECTION_capability": {
+      "available": false,
+      "reasonCode": "MOCK_PROOF_NOT_ELIGIBLE_FOR_REAL_SESSION",
+      "reason": "MOCK_PROOF_NOT_ELIGIBLE_FOR_REAL_SESSION",
+      "relevant": true
+    }
+  }
+}

@@ -24,6 +24,7 @@ from persistence.tables import (
     audit_events_table,
     burst_question_memberships_table,
     challenges_table,
+    committed_events_table,
     human_authority_bindings_table,
     questions_table,
     role_assignments_table,
@@ -194,6 +195,21 @@ def list_sessions(
         .order_by(s.c.created_at.asc(), s.c.id.asc())
     ).all()
     return tuple(SessionRow(*row) for row in rows)
+
+
+def committed_event_payload(
+    connection: sa.Connection, aggregate_ref: str, event_type: str
+) -> dict[str, object] | None:
+    """WU-PFC-B1: the payload of the latest committed Event of this type for an
+    aggregate (F08 `committed_events`, write-once), or None."""
+    e = committed_events_table
+    row = connection.execute(
+        sa.select(e.c.payload)
+        .where(e.c.aggregate_ref == aggregate_ref, e.c.event_type == event_type)
+        .order_by(e.c.aggregate_version_after_commit.desc())
+        .limit(1)
+    ).scalar_one_or_none()
+    return None if row is None else dict(row)
 
 
 def list_active_bindings_at_scope(

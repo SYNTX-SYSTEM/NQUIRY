@@ -28,7 +28,7 @@ from authority.actor import ActorClass, ActorIdentity
 from authority.resolver import AuthorityRequest, AuthorityVerdict
 from boundaries.participation_right import resolve_participation_right
 from domain.burst import BurstState
-from domain.session import SessionState
+from domain.session import Session, SessionState
 from domain.session_transitions import SessionTransitionId, resolve_session_transition
 from governance.authority_binding import AuthorityClass
 from governance.membership import WorkspaceRole
@@ -44,6 +44,7 @@ from application.burst_capture_handler import capture_blocker
 from application.burst_completion_handler import complete_burst_blocker
 from application.composition import GovernedPorts
 from application.frozen_set import verify_frozen_set
+from application.reflection_proof import reflection_readiness
 from application.session_control_handler import (
     method_setup_blocker,
     open_question_generation_blocker,
@@ -123,6 +124,27 @@ _REASONS = {
 # 12 §5 / 01: the Burst is "approximately four minutes". PRESENTATION guidance
 # only (HD-11): nothing is scheduled and nothing happens when it is exceeded.
 BURST_GUIDANCE_SECONDS = 240
+
+
+def reflection_view(ports: GovernedPorts, session: Session) -> dict[str, object] | None:
+    """WU-PFC-B1 (HD-24 rules 5, 7): how this Session entered REFLECTION, read
+    from the committed SESSION_REFLECTION event. A Fixture Session's REFLECTION
+    is MOCK_NON_PROOF and is never shown as real provider proof. None before
+    REFLECTION."""
+    payload = directory.committed_event_payload(
+        ports.connection, f"session:{session.session_id.value}", "SESSION_REFLECTION"
+    )
+    if payload is None:
+        return None
+    return {
+        "proofClass": payload["proof_class"],
+        "proofSource": payload["proof_source"],
+        "isRealProviderProof": payload["is_real_provider_proof"],
+        "provider": payload["provider"],
+        "analysisArtifactId": payload["analysis_artifact_id"],
+        "validationProofId": payload["validation_proof_id"],
+        "fixture": payload["fixture"],
+    }
 
 
 def proof_mode(fixture: bool) -> str:
@@ -525,6 +547,7 @@ def session_position(
         "BEGIN_ANALYSIS": blocked_or(begin_code),
         "REQUEST_QUESTION_ANALYSIS": request_cap(AIOperationId.AIOP_001),
         "REQUEST_QUESTION_CLUSTERING": request_cap(AIOperationId.AIOP_002),
+        "BEGIN_REFLECTION": blocked_or(reflection_readiness(ports, session).blocker),
     }
     # `relevant`: does the action belong to the Session's CURRENT phase in
     # the 03 topology (independent of who is looking)? Computed here so the
@@ -541,6 +564,7 @@ def session_position(
         "BEGIN_ANALYSIS": session.state is SessionState.QUESTION_CAPTURE,
         "REQUEST_QUESTION_ANALYSIS": session.state is SessionState.ANALYSIS,
         "REQUEST_QUESTION_CLUSTERING": session.state is SessionState.ANALYSIS,
+        "BEGIN_REFLECTION": session.state is SessionState.ANALYSIS,
     }
     for name, cap in actions.items():
         cap["relevant"] = relevant[name]
@@ -594,6 +618,7 @@ def session_position(
             session,
             visible=question_set.get("visibility") == "FULL_FROZEN_SET",
         ),
+        "reflection": reflection_view(ports, session),
         "participants": [
             {
                 "userId": str(p.user_id.value),

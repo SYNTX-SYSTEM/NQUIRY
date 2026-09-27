@@ -28,6 +28,7 @@ from application.http_f02 import (
 )
 from application.http_f04 import (
     dispatch_begin_analysis,
+    dispatch_begin_reflection,
     dispatch_request_analysis,
     dispatch_request_clustering,
 )
@@ -274,6 +275,21 @@ def begin_analysis(
 ) -> JSONResponse:
     return _json(
         dispatch_begin_analysis(
+            session_token=_token(request),
+            idempotency_key=_idem(request),
+            workspace_id=workspace_id,
+            session_id=session_id,
+            expected_version=body.expectedVersion,
+        )
+    )
+
+
+@router.post("/workspaces/{workspace_id}/sessions/{session_id}/transitions/begin-reflection")
+def begin_reflection(
+    workspace_id: str, session_id: str, body: BeginAnalysisBody, request: Request
+) -> JSONResponse:
+    return _json(
+        dispatch_begin_reflection(
             session_token=_token(request),
             idempotency_key=_idem(request),
             workspace_id=workspace_id,

@@ -108,12 +108,16 @@ def prepared_context(db: sa.Connection, *, admit: tuple[UserId, ...] = ()) -> di
 
 
 def generating_context(
-    db: sa.Connection, *, participants: int = 2, controller_participates: bool = False
+    db: sa.Connection,
+    *,
+    participants: int = 2,
+    controller_participates: bool = False,
+    fixture: bool = False,
 ) -> dict[str, Any]:
     """Session at QUESTION_GENERATION with an ACTIVE HUMAN_ONLY Burst.
     `ctx["participants"]` are Workspace members admitted by the controller;
     `ctx["outsider"]` is a Workspace member who is NOT a participant."""
-    ctx: dict[str, Any] = f02.inquiry_context(db)
+    ctx: dict[str, Any] = f02.inquiry_context(db, fixture=fixture)
     grant_session_control(db, ctx, ctx["fac"])
     people = [add_workspace_member(db, ctx, f"p{i}") for i in range(participants)]
     ctx["participants"] = people

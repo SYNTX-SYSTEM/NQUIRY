@@ -195,6 +195,20 @@ PRODUCTION_EVENT_CONTRACTS: EventContractRegistry = {
             "ai_operation_id",
             "authorization_shape",
         ),
+        # F05 (WU-PFC-B1, HD-24): the proof reference, its class and source,
+        # and the Fixture status travel with the transition.
+        _c(
+            "SESSION_REFLECTION",
+            "session",
+            *_SESSION_TRANSITION,
+            "fixture",
+            "analysis_artifact_id",
+            "validation_proof_id",
+            "provider",
+            "proof_class",
+            "proof_source",
+            "is_real_provider_proof",
+        ),
         _c(
             "AI_OPERATION_REQUESTED",
             "ai_operation_authorization",

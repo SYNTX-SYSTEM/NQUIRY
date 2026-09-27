@@ -166,6 +166,50 @@ def dispatch_begin_analysis(
     )
 
 
+def dispatch_begin_reflection(
+    *,
+    session_token: str | None,
+    idempotency_key: str | None,
+    workspace_id: str,
+    session_id: str,
+    expected_version: object,
+) -> Response:
+    """CMD_BEGIN_REFLECTION (TRN-SESS-007; WU-PFC-B1, HD-24)."""
+    from application.reflection_handler import begin_reflection
+
+    def work(ports: GovernedPorts, principal: Any) -> Response:
+        ws = WorkspaceId(_uuid(workspace_id, "workspace_id"))
+        sid = SessionId(_uuid(session_id, "session_id"))
+        version = _version(expected_version)
+        ident = _ident(idempotency_key)
+
+        def run() -> Response:
+            try:
+                result = begin_reflection(
+                    ports,
+                    actor=_actor(principal),
+                    workspace_id=ws,
+                    session_id=sid,
+                    expected_session_version=version,
+                    ident=ident,
+                )
+            except control.IdempotentReplay:
+                return 200, {"kind": "committed", "replayed": True}
+            return 200, {
+                "kind": "committed",
+                "replayed": False,
+                "commandType": "CMD_BEGIN_REFLECTION",
+                "commitId": str(result.commit_unit.commit_id.value),
+                "proofClass": result.proof.proof_class,
+                "proofSource": result.proof.proof_source,
+                "isRealProviderProof": result.proof.is_real_provider_proof,
+            }
+
+        return _command_outcome(run, ident)
+
+    return _with_actor(session_token, work)
+
+
 def dispatch_request_operation(
     *,
     session_token: str | None,
@@ -239,6 +283,7 @@ def dispatch_request_clustering(**kwargs: Any) -> Response:
 
 
 __all__ = [
+    "dispatch_begin_reflection",
     "dispatch_request_analysis",
     "dispatch_request_clustering",
     "configure_runtime",

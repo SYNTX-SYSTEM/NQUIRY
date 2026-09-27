@@ -21,7 +21,10 @@ Product functions use PF numbering (PF01–PF27). F00–F12 are repository Field
 | 5 | WU-PFC-F08-3 delivery diagnostics and projection freshness | `pfc-integration` | `aea783e` | `checkpoint-PFC-F08-3` | TECHNICALLY_CLOSED, CHECKPOINTED |
 | 6 | WU-PFC-F09-1 technical failure envelope (engine facts, API edge, worker survival) | `pfc-integration` | `3dbb6c6` | `checkpoint-PFC-F09-1` | TECHNICALLY_CLOSED, CHECKPOINTED |
 | 7 | WU-PFC-F09-2 Workspace isolation and session sweep over every route; fix of a Session-state disclosure to non-members | `pfc-integration` | `0a05e7c` | `checkpoint-PFC-F09-2` | TECHNICALLY_CLOSED, CHECKPOINTED |
-| 8 | WU-PFC-F09-3 telemetry non-interference and governed-Command correlation | `pfc-integration` | see `CHECKPOINT_WU-PFC-F09-3.md` | `checkpoint-PFC-F09-3` | TECHNICALLY_CLOSED, CHECKPOINTED |
+| 8 | WU-PFC-F09-3 telemetry non-interference and governed-Command correlation | `pfc-integration` | `d71ab5a` | `checkpoint-PFC-F09-3` | TECHNICALLY_CLOSED, CHECKPOINTED |
+| — | **HD-24 (HA-01, Option 03 for Fixture Sessions)** recorded | `pfc-integration` | `c4fded8` | — | Human Authority record (REC-028 / NQ-DEC-052) |
+| 9 | WU-PFC-B0 Fixture Session identity (HD-24 rules 1–5) | `pfc-integration` | `ea3af40` | `checkpoint-PFC-B0` | TECHNICALLY_CLOSED, CHECKPOINTED |
+| 10 | WU-PFC-B1 TRN-SESS-007 BEGIN_REFLECTION under HD-24 (Fixture Sessions: MOCK_NON_PROOF; real Sessions: HD-20 / Option 01) | `pfc-integration` | see `CHECKPOINT_WU-PFC-B1.md` | `checkpoint-PFC-B1` | TECHNICALLY_CLOSED, CHECKPOINTED |
 | — | **F08 Field (backend)** | `pfc-integration` | — | F08-1..3 | **READY_FOR_HUMAN_REVIEW** (14 Phase 8 gate; `F08_FIELD_REVIEW_BUNDLE.md`) |
 
 ## 2. Field derivation after WU-PFC-I1

@@ -1,0 +1,12 @@
+M01 HD-20 broken: a mock proof admits a real Session: KILLED
+M02 a mock result passes under a real proof class: KILLED
+M03 the real-provider source ignores the eligible set (HARD-DEP-002): KILLED
+M04 the real-provider source admits the mock: KILLED
+M05 an unresolved AI operation does not block (BND-017): KILLED
+M06 no accepted analysis is required: KILLED
+M07 the ANALYSIS state gate is dropped: KILLED
+M08 the event claims a real proof class: KILLED
+M09 the event claims real provider proof: KILLED
+M10 the projection hides the NON_PROOF class: KILLED
+M11 the server capability ignores readiness: KILLED
+11/11 killed; sources restored: True

@@ -21,10 +21,12 @@ QUESTIONS = (
 )
 
 
-def capture_context(db: sa.Connection, *, texts: tuple[str, ...] = QUESTIONS) -> dict[str, Any]:
+def capture_context(
+    db: sa.Connection, *, texts: tuple[str, ...] = QUESTIONS, fixture: bool = False
+) -> dict[str, Any]:
     """Session at QUESTION_CAPTURE, Burst COMPLETED with `texts` captured by the
     participants (round-robin); the Facilitator holds SESSION control."""
-    ctx = f03.generating_context(db, participants=2)
+    ctx = f03.generating_context(db, participants=2, fixture=fixture)
     people = ctx["participants"]
     ctx["question_ids"] = []
     for i, text in enumerate(texts):
@@ -50,8 +52,8 @@ def begin(db: sa.Connection, ctx: dict[str, Any], actor: UserId | None = None, *
     return begin_analysis(f02.ports(db), **kwargs)
 
 
-def analysis_context(db: sa.Connection) -> dict[str, Any]:
-    ctx = capture_context(db)
+def analysis_context(db: sa.Connection, *, fixture: bool = False) -> dict[str, Any]:
+    ctx = capture_context(db, fixture=fixture)
     result = begin(db, ctx)
     ctx["oa1"] = result.authorization_id
     ctx["begin_command"] = result.commit_unit.command_id
