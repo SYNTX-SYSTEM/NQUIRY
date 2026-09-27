@@ -127,6 +127,17 @@ ROUTES: list[tuple[str, str, dict[str, Any] | None]] = [
     ),
     (
         "POST",
+        "/workspaces/{ws}/sessions/{session}/question-selections",
+        {"expectedVersion": 1, "questionId": "00000000-0000-4000-8000-000000000001"},
+    ),
+    (
+        "POST",
+        "/workspaces/{ws}/sessions/{session}/primary-question",
+        {"expectedVersion": 1, "questionId": "00000000-0000-4000-8000-000000000001"},
+    ),
+    ("GET", "/workspaces/{ws}/sessions/{session}/question-selections", None),
+    (
+        "POST",
         "/workspaces/{ws}/sessions/{session}/analysis/request",
         {"expectedVersion": 1, "case": "RETRY"},
     ),

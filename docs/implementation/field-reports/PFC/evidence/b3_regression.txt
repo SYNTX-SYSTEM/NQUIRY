@@ -1,0 +1,15 @@
+WU-PFC-B3 regression evidence (2026-09-27), worktree pfc-integration, DB nquiry_pfc_int_test @ d4f7b2c9e6a1
+BASELINE (checkpoint-PFC-B2 + record 4c1eab9): live 1911 passed / 2 skipped (1910 + HA-22 ledger pin); no-DB 915 passed.
+RED: tests/e2e/test_pfc_b3_question_selection.py 15 failed / 0 passed (404 no route; KeyError SELECT_COMPELLING_QUESTION x4;
+     KeyError 'kind'; No module named application.selection_command). Falsifier corrections before the repair: four raw
+     Questions for the cap case; the SYSTEM_SERVICE actor is denied at the F09-2 precheck (SessionCommandDenied).
+AFTER (exact committed tree):
+  live:  1934 passed, 2 skipped in 1165.74s (0:19:25)   = 1911 + 15 B3 + 8 isolation-sweep cases for the three new routes
+  no-DB: 915 passed, 1021 skipped in 28.51s
+  B3 + isolation sweep + B2: 102 passed
+ruff check .: clean; ruff format --check: all .py files formatted; mypy (CI scope): no issues in 209 source files
+ARCHITECTURE_DEPENDENCY_CHECK::PASS
+PROVIDER_SDK_IMPORT_CHECK::PASS
+TEST_ONLY_IMPORT_CHECK::PASS
+MIGRATION_LIVE_CHECK::PASS (db head matches {'d4f7b2c9e6a1'})
+verify_migrations: no schema change in B3

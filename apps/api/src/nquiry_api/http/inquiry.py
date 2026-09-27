@@ -33,6 +33,7 @@ from application.http_f04 import (
     dispatch_request_analysis,
     dispatch_request_clustering,
 )
+from application.http_f05 import dispatch_question_selections, dispatch_select_question
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, StrictBool
@@ -270,6 +271,11 @@ class BeginQuestionSelectionBody(BaseModel):
     reflectionCompletionConfirmed: StrictBool | None = None  # noqa: N815 -- HD-25
 
 
+class SelectQuestionBody(BaseModel):
+    questionId: object = None  # noqa: N815 -- validated as a UUID string by the dispatcher
+    expectedVersion: int | None = None  # noqa: N815
+
+
 class OperationRequestBody(BaseModel):
     expectedVersion: int | None = None  # noqa: N815
     case: str | None = None
@@ -319,6 +325,49 @@ def begin_question_selection(
             session_id=session_id,
             expected_version=body.expectedVersion,
             reflection_completion_confirmed=body.reflectionCompletionConfirmed,
+        )
+    )
+
+
+def _select(
+    workspace_id: str,
+    session_id: str,
+    body: SelectQuestionBody,
+    request: Request,
+    selection_type: str,
+) -> JSONResponse:
+    return _json(
+        dispatch_select_question(
+            session_token=_token(request),
+            idempotency_key=_idem(request),
+            workspace_id=workspace_id,
+            session_id=session_id,
+            question_id=body.questionId,
+            expected_version=body.expectedVersion,
+            selection_type=selection_type,
+        )
+    )
+
+
+@router.post("/workspaces/{workspace_id}/sessions/{session_id}/question-selections")
+def select_compelling_question(
+    workspace_id: str, session_id: str, body: SelectQuestionBody, request: Request
+) -> JSONResponse:
+    return _select(workspace_id, session_id, body, request, "COMPELLING")
+
+
+@router.post("/workspaces/{workspace_id}/sessions/{session_id}/primary-question")
+def select_primary_question(
+    workspace_id: str, session_id: str, body: SelectQuestionBody, request: Request
+) -> JSONResponse:
+    return _select(workspace_id, session_id, body, request, "PRIMARY")
+
+
+@router.get("/workspaces/{workspace_id}/sessions/{session_id}/question-selections")
+def question_selections(workspace_id: str, session_id: str, request: Request) -> JSONResponse:
+    return _json(
+        dispatch_question_selections(
+            session_token=_token(request), workspace_id=workspace_id, session_id=session_id
         )
     )
 

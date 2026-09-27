@@ -158,6 +158,68 @@ def reflection_completion_view(ports: GovernedPorts, session: Session) -> dict[s
     return {"basis": payload["reflection_completion_basis"]}
 
 
+def selection_view(ports: GovernedPorts, session: Session) -> dict[str, object]:
+    """WU-PFC-B3: the human QuestionSelections of this Session (03 §39), with
+    the Session's proof mode (a Fixture Session's selections stay
+    FIXTURE_NON_PROOF, HD-24 rule 7)."""
+    from persistence.question_selection_repository import SqlAlchemyQuestionSelectionRepository
+
+    selections = SqlAlchemyQuestionSelectionRepository(ports.connection).list_for_session(
+        session.session_id
+    )
+    primary = [s for s in selections if s.selection_type.value == "PRIMARY"]
+    return {
+        "proofMode": proof_mode(session.fixture),
+        "primaryQuestionId": str(primary[0].question_id.value) if primary else None,
+        "selections": [
+            {
+                "questionSelectionId": str(s.question_selection_id.value),
+                "questionId": str(s.question_id.value),
+                "selectionType": s.selection_type.value,
+                "selectedByUserId": str(s.selected_by_user_id.value),
+                "selectedAt": s.selected_at.isoformat(),
+            }
+            for s in selections
+        ],
+    }
+
+
+def question_selections(
+    ports: GovernedPorts,
+    principal: AuthenticatedPrincipal,
+    workspace_id: WorkspaceId,
+    session_id: SessionId,
+) -> dict[str, object]:
+    """09 §85 GET question-selections: readable by every Workspace member who
+    may read the Session position (the same access rule)."""
+    context = _context(ports, principal, workspace_id)
+    session = ports.sessions.get(session_id)
+    if session is None or session.workspace_id != context.workspace.id:
+        raise QueryNotFound("SESSION_NOT_FOUND")
+    return {"kind": "ok", **selection_view(ports, session)}
+
+
+def _selection_cap(
+    ports: GovernedPorts, context: WorkspaceContext, session: Session, selection_type: str
+) -> dict[str, object]:
+    from domain.question_selection import SelectionType
+    from persistence.question_selection_repository import SqlAlchemyQuestionSelectionRepository
+
+    from application.selection_command import holds_selection_right, selection_blocker
+
+    if not holds_selection_right(ports, session, context.principal.user_id):
+        return _cap(False, "NO_QUESTION_SELECTION_RIGHT")
+    blocker = selection_blocker(
+        ports,
+        session,
+        SqlAlchemyQuestionSelectionRepository(ports.connection).list_for_session(
+            session.session_id
+        ),
+        SelectionType(selection_type),
+    )
+    return _cap(blocker is None, blocker)
+
+
 def proof_mode(fixture: bool) -> str:
     """HD-24 rule 5: the Session's proof semantics, carried on every Session
     surface. A Fixture Session is NON_PROOF for its whole life."""
@@ -567,6 +629,8 @@ def session_position(
             ),
             "requiresReflectionCompletionConfirmation": True,
         },
+        "SELECT_COMPELLING_QUESTION": _selection_cap(ports, context, session, "COMPELLING"),
+        "SELECT_PRIMARY_QUESTION": _selection_cap(ports, context, session, "PRIMARY"),
     }
     # `relevant`: does the action belong to the Session's CURRENT phase in
     # the 03 topology (independent of who is looking)? Computed here so the
@@ -585,6 +649,8 @@ def session_position(
         "REQUEST_QUESTION_CLUSTERING": session.state is SessionState.ANALYSIS,
         "BEGIN_REFLECTION": session.state is SessionState.ANALYSIS,
         "BEGIN_QUESTION_SELECTION": session.state is SessionState.REFLECTION,
+        "SELECT_COMPELLING_QUESTION": session.state is SessionState.QUESTION_SELECTION,
+        "SELECT_PRIMARY_QUESTION": session.state is SessionState.QUESTION_SELECTION,
     }
     for name, cap in actions.items():
         cap["relevant"] = relevant[name]
@@ -640,6 +706,7 @@ def session_position(
         ),
         "reflection": reflection_view(ports, session),
         "reflectionCompletion": reflection_completion_view(ports, session),
+        "selection": selection_view(ports, session),
         "participants": [
             {
                 "userId": str(p.user_id.value),

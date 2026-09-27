@@ -1,0 +1,14 @@
+M01 state gate removed: KILLED
+M02 several selectors tolerated: KILLED
+M03 a second primary is not blocked: KILLED
+M04 compelling cap raised: KILLED
+M05 duplicate selection not blocked: KILLED
+M06 blockers evaluated for non-holders too (authority after state): KILLED
+M07 no Session row lock: KILLED
+M08 expected Session version ignored: KILLED
+M09 a denied selection is not answered as denied: KILLED
+M10 read model hides the proof mode: KILLED
+M11 capability ignores the selection right: KILLED
+M12 capability ignores the product preconditions: KILLED
+12/12 killed; sources restored: True
+exit=0

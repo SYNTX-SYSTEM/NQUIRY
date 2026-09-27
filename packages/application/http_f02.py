@@ -68,6 +68,7 @@ from application.authority_binding_handler import (
 )
 from application.challenge_creation_handler import ChallengeCreationDenied, create_challenge
 from application.composition import GovernedPorts
+from application.question_selection_handler import SelectQuestionDenied
 from application.session_creation_handler import CreateSessionDenied, create_session
 
 Response = tuple[int, dict[str, object]]
@@ -175,6 +176,7 @@ def _command_envelope(run: Callable[[], Response]) -> Response:
         ChallengeCreationDenied,
         CreateSessionDenied,
         GrantAuthorityBindingDenied,
+        SelectQuestionDenied,
     ) as exc:
         chain = exc.chain_result
         terminal = chain.proofs[-1] if chain.proofs else None

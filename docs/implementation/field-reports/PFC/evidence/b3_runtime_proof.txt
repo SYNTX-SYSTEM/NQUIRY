@@ -1,0 +1,132 @@
+WU-PFC-B3 runtime proof (2026-09-27): real API process (uvicorn :18433, NQUIRY_ENVIRONMENT=DEVELOPMENT, NQUIRY_AI_PROVIDER=mock) + real worker process, isolated DB nquiry_pfc_int_runtime @ d4f7b2c9e6a1
+seed: tests/e2e/pfc_b3_runtime_proof.py seed (real F02/F03 handlers, COMMITTED): one Fixture Session at QUESTION_CAPTURE; credentials for controller and owner
+drive: HTTP only: analysis, reflection, question selection (confirmed); select without right; owner grants QUESTION_SELECTION_RIGHT; compelling, duplicate, primary, second primary; GET + position
+
+{
+  "begin_analysis": 200,
+  "begin_reflection": 200,
+  "begin_question_selection": 200,
+  "select_without_right": {
+    "status": 403,
+    "body": {
+      "kind": "denied",
+      "reasonCode": "DENIED_NO_MATCHING_BINDING"
+    }
+  },
+  "grant_question_selection_right": {
+    "status": 200,
+    "body": {
+      "kind": "committed",
+      "commitId": "d8c7c88a-de9a-473e-8f03-5a01d37239d1"
+    }
+  },
+  "capabilities_after_grant": {
+    "SELECT_COMPELLING_QUESTION": {
+      "available": true,
+      "reasonCode": null,
+      "reason": null,
+      "relevant": true
+    },
+    "SELECT_PRIMARY_QUESTION": {
+      "available": true,
+      "reasonCode": null,
+      "reason": null,
+      "relevant": true
+    }
+  },
+  "select_compelling_q0": {
+    "status": 200,
+    "body": {
+      "kind": "committed",
+      "replayed": false,
+      "commandType": "CMD_SELECT_COMPELLING_QUESTION",
+      "commitId": "8324d473-cc30-465b-ae6b-655f11fb74d0",
+      "questionSelectionId": "f2950c69-7053-4fc1-adf7-40799c1a4c69",
+      "selectionType": "COMPELLING"
+    }
+  },
+  "select_compelling_q0_again": {
+    "status": 422,
+    "body": {
+      "kind": "blocked",
+      "reasonCode": "QUESTION_ALREADY_SELECTED"
+    }
+  },
+  "select_primary_q0": {
+    "status": 200,
+    "body": {
+      "kind": "committed",
+      "replayed": false,
+      "commandType": "CMD_SELECT_PRIMARY_QUESTION",
+      "commitId": "7a712ba8-36f7-4e41-9bf7-f82c1c27ebd2",
+      "questionSelectionId": "da0af2fb-e37f-4971-83f4-c92458d5f3b2",
+      "selectionType": "PRIMARY"
+    }
+  },
+  "select_primary_q1": {
+    "status": 422,
+    "body": {
+      "kind": "blocked",
+      "reasonCode": "PRIMARY_ALREADY_SELECTED"
+    }
+  },
+  "get_question_selections": {
+    "kind": "ok",
+    "proofMode": "FIXTURE_NON_PROOF",
+    "primaryQuestionId": "f657a54b-a51e-5deb-bd38-7259420b9d46",
+    "selections": [
+      {
+        "questionSelectionId": "f2950c69-7053-4fc1-adf7-40799c1a4c69",
+        "questionId": "f657a54b-a51e-5deb-bd38-7259420b9d46",
+        "selectionType": "COMPELLING",
+        "selectedByUserId": "4ed55705-43c3-494e-897b-0e818a088c87",
+        "selectedAt": "2026-09-27T03:03:12.476995+00:00"
+      },
+      {
+        "questionSelectionId": "da0af2fb-e37f-4971-83f4-c92458d5f3b2",
+        "questionId": "f657a54b-a51e-5deb-bd38-7259420b9d46",
+        "selectionType": "PRIMARY",
+        "selectedByUserId": "4ed55705-43c3-494e-897b-0e818a088c87",
+        "selectedAt": "2026-09-27T03:03:12.774013+00:00"
+      }
+    ]
+  },
+  "state_after": "QUESTION_SELECTION",
+  "proofMode": "FIXTURE_NON_PROOF",
+  "position_selection": {
+    "proofMode": "FIXTURE_NON_PROOF",
+    "primaryQuestionId": "f657a54b-a51e-5deb-bd38-7259420b9d46",
+    "selections": [
+      {
+        "questionSelectionId": "f2950c69-7053-4fc1-adf7-40799c1a4c69",
+        "questionId": "f657a54b-a51e-5deb-bd38-7259420b9d46",
+        "selectionType": "COMPELLING",
+        "selectedByUserId": "4ed55705-43c3-494e-897b-0e818a088c87",
+        "selectedAt": "2026-09-27T03:03:12.476995+00:00"
+      },
+      {
+        "questionSelectionId": "da0af2fb-e37f-4971-83f4-c92458d5f3b2",
+        "questionId": "f657a54b-a51e-5deb-bd38-7259420b9d46",
+        "selectionType": "PRIMARY",
+        "selectedByUserId": "4ed55705-43c3-494e-897b-0e818a088c87",
+        "selectedAt": "2026-09-27T03:03:12.774013+00:00"
+      }
+    ]
+  }
+}
+
+== real worker: python -m nquiry_worker --once
+nquiry_worker: delivery pass: delivered=29 failed=0
+== question_selections (canonical)
+COMPELLING|f657a54b-a51e-5deb-bd38-7259420b9d46
+PRIMARY|f657a54b-a51e-5deb-bd38-7259420b9d46
+== committed selection events
+CMD_SELECT_COMPELLING_QUESTION_COMMITTED|COMPELLING
+CMD_SELECT_PRIMARY_QUESTION_COMMITTED|PRIMARY
+== audit
+CMD_SELECT_COMPELLING_QUESTION|COMMITTED|BINDING|SESSION:15293e51-ab00-4d2e-a9b1-8066a5fa6635
+CMD_SELECT_PRIMARY_QUESTION|COMMITTED|BINDING|SESSION:15293e51-ab00-4d2e-a9b1-8066a5fa6635
+== session_read_model
+QUESTION_SELECTION|t
+== diagnose
+{"delivered": 201, "failed": 0, "max_failed_attempts": 0, "oldest_undelivered_at": null, "pending": 0, "without_basis": 0}
