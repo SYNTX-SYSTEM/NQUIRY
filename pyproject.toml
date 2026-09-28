@@ -73,6 +73,7 @@ packages = [
     "nquiry_api.http",
     "nquiry_api.auth",
     "nquiry_api.dispatch",
+    "nquiry_api.operator",
     "nquiry_worker",
 ]
 
