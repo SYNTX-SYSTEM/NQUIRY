@@ -4,7 +4,8 @@ the PFC HUMAN_DECISIONS record, consistently (Architecture 25 §18; 20 §14).
 
 MUST BECOME TRUE (HD-24..HD-27): NQ-DEC-052 / REC-028, NQ-DEC-053 / REC-029,
 NQ-DEC-054 / REC-030 and NQ-DEC-055 / REC-031 exist, are ESTABLISHED and name
-their PFC HD; the register counts are 55 decisions (46 ESTABLISHED), 80 gaps;
+their PFC HD, as do NQ-DEC-056 / REC-032 (HD-28); the register counts are 56
+decisions (47 ESTABLISHED), 80 gaps;
 HA-01 is resolved for Fixture Sessions only; HA-03, HA-21 and HA-22 are
 resolved.
 """
@@ -30,8 +31,8 @@ def _register() -> dict[str, object]:
 def test_register_counts_after_hd_24() -> None:
     decisions = _register()["decisions"]
     assert isinstance(decisions, list)
-    assert len(decisions) == 55 and len({d["id"] for d in decisions}) == 55
-    assert len([d for d in decisions if d["status"] == "ESTABLISHED"]) == 46
+    assert len(decisions) == 56 and len({d["id"] for d in decisions}) == 56
+    assert len([d for d in decisions if d["status"] == "ESTABLISHED"]) == 47
     (dec,) = [d for d in decisions if d["id"] == "NQ-DEC-052"]
     assert dec["source"] == "PFC HD-24" and dec["post_baseline_record"] == "REC-028"
 
@@ -99,3 +100,16 @@ def test_hd_27_is_recorded_everywhere() -> None:
     queue = (PFC / "HUMAN_AUTHORITY_QUEUE.md").read_text(encoding="utf-8")
     (row,) = [line for line in queue.splitlines() if line.startswith("| HA-03 |")]
     assert "RESOLVED" in row and "HD-27" in row
+
+
+def test_hd_28_is_recorded_everywhere() -> None:
+    register = (ARCH / "16_DECISION_GAP_REGISTER.md").read_text(encoding="utf-8")
+    assert re.search(r"^### REC-032 / NQ-DEC-056", register, re.MULTILINE)
+    assert re.search(r"^\| NQ-DEC-056 \|", register, re.MULTILINE)
+    (dec,) = [d for d in _register()["decisions"] if d["id"] == "NQ-DEC-056"]  # type: ignore[union-attr]
+    assert dec["source"] == "PFC HD-28" and dec["post_baseline_record"] == "REC-032"
+    decisions = (PFC / "HUMAN_DECISIONS.md").read_text(encoding="utf-8")
+    assert "## HD-28" in decisions and "otti@condyn.eu" in decisions
+    queue = (PFC / "HUMAN_AUTHORITY_QUEUE.md").read_text(encoding="utf-8")
+    (row,) = [line for line in queue.splitlines() if line.startswith("| HA-24 |")]
+    assert "RESOLVED" in row and "HD-28" in row

@@ -220,3 +220,71 @@ with the backend (RED) lines, which diverge since 2026-09-26
 - No CYAN Work Unit, scope or content. CYAN remains out of scope for the RED
   autonomous run.
 - The FIXTURE_NON_PROOF and MOCK / NON_PROOF ceilings are not lifted.
+
+## HD-28 — Production account creation authority: Option A, host-operator command (2026-09-28)
+
+**Question (HA-24; doc 24 §1 / §11.14 "ACCOUNT CREATION POLICY … The exact
+product policy remains HUMAN_AUTHORITY_REQUIRED"; 04 §17 default deny, no
+fallback to "system administrator"):** which authority may create a production
+NQUIRY identity (user + local credential)? Options presented: A server-operator
+command (host authority, no route); B a new in-app identity-admin right; C
+creation by a Workspace governance root.
+
+**Decision (human operator, verbatim):**
+
+> Choose A.
+>
+> PRODUCTION ACCOUNT CREATION AUTHORITY DECISION
+>
+> 1. Authority model
+>
+> Use the server-operator command.
+>
+> Account creation on PRODUCTION is an explicit host/operator authority.
+>
+> Do not introduce:
+> - a new in-app admin role
+> - Workspace-owner account creation
+> - public registration
+> - self-service registration
+>
+> Identity creation remains separate from Workspace governance,
+> membership, roles and Session authority.
+>
+> Record the host operator as:
+>
+> otti@condyn.eu
+>
+> 2. Credential lifecycle
+>
+> The credential may be set only at account creation for this Work Unit.
+>
+> Do not add operator password reset.
+>
+> Password reset is a separate authority relation and is explicitly
+> out of scope for this Field.
+>
+> The production account-creation command must:
+>
+> - require explicit operator execution
+> - work legitimately under NQUIRY_ENVIRONMENT=PRODUCTION
+> - use the canonical application/domain identity creation path
+> - hash the credential using the existing authentication mechanism
+> - never persist plaintext credentials
+> - never print the password to normal logs
+> - reject duplicate identities
+> - create no Workspace membership automatically
+> - create no role automatically
+> - create no governance authority automatically
+> - create no Session authority automatically
+> - record audit provenance for the creation
+
+**Ledger:** NQ-DEC-056 · 16 §41 REC-032. Queue: HA-24.
+
+**What it does not decide:**
+- Password reset, credential rotation, account recovery or deactivation.
+- Doc 24's account creation policy for external providers (OIDC, GAP-14-001):
+  it stays fail-closed.
+- HARD-DEP-001 (legitimate first Workspace governance root) and every
+  membership, role, binding or participation relation: unchanged, product-only.
+- Runtime DB-principal isolation (HA-09 / WU-AUTH-17): unchanged.

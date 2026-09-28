@@ -211,6 +211,7 @@ For unresolved items, absent source detail remains explicit. No placeholder valu
 | NQ-DEC-053 | Reflection completion (GAP-03-007) is explicit human procedural confirmation by the SESSION_CONTROL_RIGHT holder, zero responses allowed, carried by CMD_BEGIN_QUESTION_SELECTION; audited basis HUMAN_PROCEDURAL_CONFIRMATION | ESTABLISHED (post-baseline, §41 REC-029) | PFC HD-25; 03 TRN-SESS-008, §52; 04 AUTH-DEP-SESS-008 | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-27 |
 | NQ-DEC-054 | ImpactChain authoring authority: the QUESTION_SELECTION_RIGHT holder who selected the current primary Question alone creates the chain and appends human answer nodes 1..5; append-only; one chain per current primary; no AI; completion structural | ESTABLISHED (post-baseline, §41 REC-030) | PFC HD-26; 02 §28; 03 §40, TRN-SESS-009; 09 §48, §63, §86 | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-27 |
 | NQ-DEC-055 | CYAN / RED integration order (F04 H-8, HA-03): Option B; separate Field lines; CYAN predecessor field-SF-06 @ d3d9bd6; RED producer pinned at checkpoint-PFC-B5 @ 7d3f74e (the moving pfc-integration branch is no producer identity); no merge, rebase, publication or deployment; CYAN consumption does not upgrade RED status; FIXTURE_NON_PROOF and MOCK / NON_PROOF remain ceilings | ESTABLISHED (post-baseline, §41 REC-031) | PFC HD-27; F04 H-8 | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-27 |
+| NQ-DEC-056 | Production account creation is an explicit host-operator authority (Option A): a server-operator command through the canonical identity creation path, operator recorded as otti@condyn.eu; credential set only at creation; no password reset; no in-app admin role, Workspace-owner creation, public or self-service registration; no automatic membership, role, governance or Session authority; audited provenance | ESTABLISHED (post-baseline, §41 REC-032) | PFC HD-28; 24 §1, §11.14; 04 §17; 11 §47, TB-17 | ARCHITECTURAL_HUMAN_DECISION | explicit human decision, 2026-09-28 |
 
 No recommendation, mock, default or implementation convenience is ESTABLISHED outside its authorized scope.
 
@@ -1944,6 +1945,13 @@ BASELINE_READINESS: BASELINE_READY_FOR_PROTOTYPE_IMPLEMENTATION pending HUMAN_RE
       "status": "ESTABLISHED",
       "post_baseline_record": "REC-031",
       "source": "PFC HD-27"
+    },
+    {
+      "id": "NQ-DEC-056",
+      "title": "Production account creation is an explicit host-operator authority (Option A); credential set only at creation; no reset; no automatic authority",
+      "status": "ESTABLISHED",
+      "post_baseline_record": "REC-032",
+      "source": "PFC HD-28"
     }
   ],
   "packages": [
@@ -2763,3 +2771,15 @@ Successor record. Nothing earlier is deleted.
 - COUNTS (superseding REC-030 for current use): Decisions 55 (ESTABLISHED 46: NQ-DEC-022, 032..055; REQUIRED 9). Canonical gaps stay 80. No gap status changes.
 
 **Provenance.** The human operator's PFC decision of 2026-09-27. Per `20_SYSTEM_FIELD_ENGINEERING.md` §14.
+
+### REC-032 / NQ-DEC-056: Production account creation by the host operator (PFC HD-28; closes HA-24)
+
+- DECISION (human operator, 2026-09-28; verbatim in `docs/implementation/field-reports/PFC/HUMAN_DECISIONS.md` HD-28): Option A. Account creation on PRODUCTION is an explicit host/operator authority, exercised through a server-operator command. The host operator is recorded as `otti@condyn.eu`.
+- NOT INTRODUCED: an in-app admin role, Workspace-owner account creation, public registration, self-service registration.
+- SEPARATION: identity creation stays separate from Workspace governance, membership, roles and Session authority. A created identity carries no membership, role, governance authority or Session authority.
+- CREDENTIAL: set only at account creation; password reset is a separate authority relation and out of scope.
+- COMMAND OBLIGATIONS: explicit operator execution; legitimate under NQUIRY_ENVIRONMENT=PRODUCTION; the canonical application identity creation path; the existing credential hash; no plaintext persistence; no password in normal logs; duplicate identities rejected; audited provenance of the creation (11 §47 privileged infrastructure operation, TB-17 Administrative Tooling).
+- UNCHANGED: doc 24's external-provider account creation policy stays fail-closed (GAP-14-001); HARD-DEP-001; HA-09 runtime DB-principal isolation.
+- COUNTS (superseding REC-031 for current use): Decisions 56 (ESTABLISHED 47: NQ-DEC-022, 032..056; REQUIRED 9). Canonical gaps stay 80. No gap status changes.
+
+**Provenance.** The human operator's PFC decision of 2026-09-28. Per `20_SYSTEM_FIELD_ENGINEERING.md` §14.
