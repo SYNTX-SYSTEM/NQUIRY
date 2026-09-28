@@ -1,0 +1,15 @@
+M01 dev provisioning allowed on PRODUCTION: KILLED
+M02 environment normalized (spoofable): KILLED
+M03 undeclared environment defaults to PRODUCTION: KILLED
+M04 duplicate identity not refused: KILLED
+M05 email not normalized: KILLED
+M06 plaintext credential persisted: KILLED
+M07 password leaks into the security record: KILLED
+M08 operator not attributed: KILLED
+M09 wrong trust boundary: KILLED
+M10 surrounding whitespace accepted: KILLED
+M11 minimum length not enforced: KILLED
+M12 operator not required: KILLED
+M13 password accepted on the command line: KILLED
+13/13 killed; sources restored: True
+exit=0

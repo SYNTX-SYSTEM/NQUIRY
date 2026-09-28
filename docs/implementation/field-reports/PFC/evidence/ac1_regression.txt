@@ -1,0 +1,20 @@
+WU-PFC-AC1 regression evidence (2026-09-28), worktree pfc-integration, DB nquiry_pfc_int_test @ e8c2a5f1b7d4 (no schema change)
+BASELINE (checkpoint-PFC-B5 + records 3300024, 6921bf5 HD-27, bb1931a HD-28): live 1981 passed / 2 skipped; no-DB 918.
+RED: tests/e2e/test_pfc_ac1_production_account_creation.py 23 failed / 1 passed before the repair:
+  ModuleNotFoundError nquiry_api.operator x20; TypeError check_dev_provisioning_allowed(environment=) x3.
+  The one pre-passing case pins the preservation fact "no HTTP route creates identities" (Option A).
+FIRST FULL RUN: 1 failed -- tests/e2e/test_typed_authority_provenance.py::test_no_application_handler_opens_its_own_write_savepoint
+  (HD-6: the service opened its own begin_nested savepoint). Root repair: the savepoint was removed; the three writes
+  share the command's one transaction (persistence.engine.connect, rolled back on any exception). Allow-list NOT widened.
+AFTER (exact committed tree):
+  live:  2005 passed, 2 skipped in 1628.20s (0:27:08)   = 1981 + 24 AC1
+  no-DB: 921 passed, 1086 skipped in 33.11s   = 918 + 3 dev-guard cases
+ruff check .: clean; ruff format --check: all .py files formatted; mypy (CI scope): no issues in 220 source files
+ARCHITECTURE_DEPENDENCY_CHECK::PASS
+PROVIDER_SDK_IMPORT_CHECK::PASS
+TEST_ONLY_IMPORT_CHECK::PASS
+MIGRATION_LIVE_CHECK::PASS (db head matches {'e8c2a5f1b7d4'})
+Deployed-path diff vs checkpoint-PFC-B5: packages/application/identity_provisioning.py (new),
+  packages/persistence/identity_repository.py (new), apps/api/src/nquiry_api/operator/{__init__,create_identity}.py (new),
+  packages/test_support/dev_identity.py (environment guard), scripts/dev_provision_local_identity.py (passes the environment).
+  No migration, no route, no web change.

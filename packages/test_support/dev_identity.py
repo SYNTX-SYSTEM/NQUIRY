@@ -40,6 +40,11 @@ from semantic_types.ids import UserId
 DEV_IDENTITY_OPT_IN_ENV = "NQUIRY_DEV_IDENTITY_PROVISIONING"
 DEV_IDENTITY_OPT_IN_VALUE = "I_UNDERSTAND_THIS_IS_DEV_ONLY"
 LOCAL_DATABASE_HOSTS = frozenset({"localhost", "127.0.0.1", "::1", "postgres"})
+DEV_ENVIRONMENTS = frozenset({None, "DEVELOPMENT", "TEST"})
+"""WU-PFC-AC1 (HD-28): `postgres` is also the database host name of the live
+compose deployment, so the host check alone cannot tell development from
+production. The declared runtime environment (`NQUIRY_ENVIRONMENT`, AC-11-017)
+must be absent (local development default), DEVELOPMENT or TEST."""
 
 
 class DevIdentityProvisioningRefused(Exception):
@@ -53,7 +58,15 @@ class ProvisionedDevIdentity:
     identity_class: str = "DEV_LOCAL_IDENTITY"
 
 
-def check_dev_provisioning_allowed(*, opt_in_value: str | None, database_host: str | None) -> None:
+def check_dev_provisioning_allowed(
+    *, opt_in_value: str | None, database_host: str | None, environment: str | None = None
+) -> None:
+    if environment not in DEV_ENVIRONMENTS:
+        raise DevIdentityProvisioningRefused(
+            f"NQUIRY_ENVIRONMENT={environment!r}: dev provisioning is refused outside "
+            "DEVELOPMENT / TEST; production identities come only from the host-operator "
+            "command (HD-28)"
+        )
     if opt_in_value != DEV_IDENTITY_OPT_IN_VALUE:
         raise DevIdentityProvisioningRefused(
             f"{DEV_IDENTITY_OPT_IN_ENV} must be set to {DEV_IDENTITY_OPT_IN_VALUE!r}"
@@ -105,6 +118,7 @@ def provision_dev_identity(
 
 __all__ = [
     "DEV_IDENTITY_OPT_IN_ENV",
+    "DEV_ENVIRONMENTS",
     "DEV_IDENTITY_OPT_IN_VALUE",
     "DevIdentityProvisioningRefused",
     "ProvisionedDevIdentity",

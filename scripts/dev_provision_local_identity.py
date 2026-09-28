@@ -8,7 +8,8 @@ through the governed product UI/API by a Workspace's governance root.
 
 Refuses to run unless
     NQUIRY_DEV_IDENTITY_PROVISIONING=I_UNDERSTAND_THIS_IS_DEV_ONLY
-is set and DATABASE_URL points at a local host.
+is set, DATABASE_URL points at a local host, and NQUIRY_ENVIRONMENT is unset,
+DEVELOPMENT or TEST (never PRODUCTION / STAGING: HD-28).
 
 Usage:
     NQUIRY_DEV_IDENTITY_PROVISIONING=I_UNDERSTAND_THIS_IS_DEV_ONLY \
@@ -50,7 +51,9 @@ def main(argv: list[str] | None = None) -> int:
     url = sa.engine.make_url(database_url)
     try:
         check_dev_provisioning_allowed(
-            opt_in_value=os.environ.get(DEV_IDENTITY_OPT_IN_ENV), database_host=url.host
+            opt_in_value=os.environ.get(DEV_IDENTITY_OPT_IN_ENV),
+            database_host=url.host,
+            environment=os.environ.get("NQUIRY_ENVIRONMENT"),
         )
         engine = sa.create_engine(url)
         with engine.begin() as connection:
