@@ -1,0 +1,6 @@
+WU-PFC-AC1.1 regression evidence (2026-09-28), tree af6da710a9c5d81c48f3e84ecadc310e7edabd50 (commit e91961e)
+RED: tests/regression/test_packaging_completeness.py -> 1 failed: ['nquiry_api.operator'] (unlisted in pyproject packages;
+  found by the production candidate: "No module named 'nquiry_api.operator'" in the api image).
+AFTER: live 2007 passed, 2 skipped in 1614.16s (0:26:54) (= 2005 + 2); no-DB 923 passed, 1086 skipped in 26.25s
+Production candidate (nquiry-ac1-candidate, PRODUCTION, restored pre-AC1 dump): all probes passed; see the live
+materialization report §25 (CYAN-side, untracked) and its evidence AC1_CANDIDATE_RESULTS.log.
