@@ -77,7 +77,7 @@ FBR              FBR-PCPG-1 (00_FIELD.md §12), confirmed root by E1 above
 
 **COVERAGE GUARD REPAIR (Human Authority, 2026-09-30).** Worktree reconciliation confirmed `pfc-integration` isolated first (`git status --short`: the same 6 entries as before, nothing else; the unrelated F04 architecture/review files a UI showed belonged to a different worktree entirely — `.claude/worktrees/local-login-auth`, branch `worktree-local-login-auth`, `HEAD c9d86ba` — never touched by this Work Unit; see the worktree-reconciliation table below). With isolation proven and the ONLY remaining preservation failure being the known coverage guard, the minimum legitimate repair was applied: one entry added to `tests/e2e/test_pfc_f09_2_isolation_sweep.py`'s existing `ROUTES` table —
 
-```python
+```text
 ("POST", "/workspaces/{ws}/prompt-observations", {"rawIntent": "Why would an outsider write here?"}),
 ```
 
