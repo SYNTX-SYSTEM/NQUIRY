@@ -1493,6 +1493,7 @@ OIDC_FAILURE_REASONS: tuple[str, ...] = (
     "ACCOUNT_CREATION_POLICY_UNRESOLVED",
     "ACCOUNT_LINK_AUTHORITY_FAILURE",
     "LOCAL_EFFECT_FAILURE",
+    "AUTHENTICATION_METHOD_REVOKED",  # WU-AUTH-08 (migration d5f7b9c1e3a7)
 )
 
 # WU-AUTH-05: each transaction state requires exactly its timestamps (24 §11.4).
@@ -1615,6 +1616,39 @@ impact_chain_nodes_table = sa.Table(
 )
 
 
+external_provider_identities_table = sa.Table(
+    # WU-AUTH-08 (migration d5f7b9c1e3a7): 24 §13.3 provider identity binding.
+    # issuer + subject is the canonical external key; email is an attribute.
+    # Type and immutability rules are a trigger in the migration.
+    "external_provider_identities",
+    metadata,
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column("authentication_method_id", sa.Uuid(), nullable=False, unique=True),
+    sa.Column("user_id", sa.Uuid(), sa.ForeignKey("users.id", ondelete="RESTRICT"), nullable=False),
+    sa.Column("provider_issuer", sa.Text(), nullable=False),
+    sa.Column("provider_subject", sa.Text(), nullable=False),
+    sa.Column("provider_email", sa.Text(), nullable=True),
+    sa.Column("provider_email_verified", sa.Boolean(), nullable=False, server_default=sa.false()),
+    sa.Column("provider_display_name", sa.Text(), nullable=True),
+    sa.Column("linked_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("revoked_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("provenance_ref", sa.Text(), nullable=False),
+    sa.ForeignKeyConstraint(
+        ["authentication_method_id", "user_id"],
+        ["authentication_methods.id", "authentication_methods.user_id"],
+        name="fk_external_provider_identities_method_same_user",
+        ondelete="RESTRICT",
+    ),
+    sa.UniqueConstraint(
+        "provider_issuer", "provider_subject", name="uq_external_provider_identities_subject"
+    ),
+    sa.CheckConstraint(
+        "provider_issuer <> '' AND provider_subject <> ''",
+        name="ck_external_provider_identities_key",
+    ),
+    sa.CheckConstraint("provenance_ref <> ''", name="ck_external_provider_identities_provenance"),
+)
+
 __all__ = [
     "metadata",
     "users_table",
@@ -1654,6 +1688,7 @@ __all__ = [
     "local_auth_sessions_table",
     "authentication_methods_table",
     "oidc_auth_transactions_table",
+    "external_provider_identities_table",
     "ai_operation_authorizations_table",
     "ai_validation_proofs_table",
     "question_clusters_table",

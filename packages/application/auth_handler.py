@@ -41,7 +41,7 @@ from security.local_auth import (
     hash_session_token,
     verify_password,
 )
-from semantic_types.ids import UserId
+from semantic_types.ids import AuthenticationMethodId, UserId
 
 SESSION_LIFETIME = timedelta(hours=12)
 _ISSUER_REF = "nquiry-local-credential-adapter"
@@ -121,16 +121,32 @@ def login(
     if not credential_repository.mark_authenticated(record.method_id, at=now):
         raise InvalidCredentials("unknown email or wrong password")
 
+    return issue_session(
+        session_repository, user_id=record.user_id, method_id=record.method_id, now=now
+    )
+
+
+def issue_session(
+    session_repository: LocalSessionRepository,
+    *,
+    user_id: UserId,
+    method_id: AuthenticationMethodId,
+    now: datetime,
+) -> LoginSuccess:
+    """The one session producer (24 §19.3): a fresh row with a fresh token,
+    attributed to the method whose proof just succeeded. Used by the local
+    password login and by the provider callback (WU-AUTH-08). Never reads
+    or reuses a token the browser presented (24 §15.4, §21.5)."""
     raw_token = generate_session_token()
     expires_at = now + SESSION_LIFETIME
     session_repository.create(
-        user_id=record.user_id,
+        user_id=user_id,
         session_token_hash=hash_session_token(raw_token),
         issued_at=now,
         expires_at=expires_at,
-        method_id=record.method_id,
+        method_id=method_id,
     )
-    return LoginSuccess(user_id=record.user_id, session_token=raw_token, expires_at=expires_at)
+    return LoginSuccess(user_id=user_id, session_token=raw_token, expires_at=expires_at)
 
 
 def _live_session(
@@ -311,6 +327,7 @@ __all__ = [
     "LoginSuccess",
     "SessionRequired",
     "SessionSummary",
+    "issue_session",
     "list_sessions",
     "login",
     "logout",

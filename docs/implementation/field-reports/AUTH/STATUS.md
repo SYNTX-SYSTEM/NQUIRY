@@ -54,22 +54,23 @@ preceded them, so the counts are those of the pin.
 | WU-AUTH-04 Authenticated Session Evolution | PROVEN | `3ffbd1b` |
 | WU-AUTH-05 OIDC Auth Transaction Field | PROVEN (mutation step: guard-necessity falsifiers only, see report) | `4495345` |
 | WU-AUTH-06 Redirect Target Validation | PROVEN (same mutation disclosure) | `69b806a` |
-| WU-AUTH-07 OIDC Provider Adapter, start / callback | PROVEN against the local test issuer; REAL GOOGLE PROOF BLOCKED_EXTERNAL (no client credentials) | this commit |
-| WU-AUTH-08 Provider Identity Binding | next | — |
-| WU-AUTH-09..17 | not started | — |
+| WU-AUTH-07 OIDC Provider Adapter, start / callback | PROVEN against the local test issuer; REAL GOOGLE PROOF BLOCKED_EXTERNAL (no client credentials) | `5aa13ae` |
+| WU-AUTH-08 Provider Identity Binding | PROVEN | this commit |
+| WU-AUTH-09 Account Creation Boundary | next (reaches 24 §36 #3–#5) | — |
+| WU-AUTH-10..17 | not started | — |
 
 ### Current First Broken Relation
 
-Provider identity binding: no relation maps provider issuer + subject to a
-canonical UserId; every provider login fails closed at the identity step
-(owner WU-AUTH-08).
+Account creation boundary: an unknown provider subject evaluates no explicit
+policy relation; the approved-policy branch does not exist (owner WU-AUTH-09;
+FBR-AUTH-007; the policy itself is 24 §36 #3–#5).
 
 ### Migrations
 
-Head `c4e6a8b1d3f5`. Chain from the pin head `e8c2a5f1b7d4`: `f1a7c3d9b2e4`
+Head `d5f7b9c1e3a7`. Chain from the pin head `e8c2a5f1b7d4`: `f1a7c3d9b2e4`
 (WU-AUTH-02 `authentication_methods`) → `a2c4e6f8b1d3` (WU-AUTH-03 credential ↔ method) → `b3d5f7a9c2e6` (WU-AUTH-04
 session attribution and revocation reason) → `c4e6a8b1d3f5` (WU-AUTH-05 OIDC
-transactions).
+transactions) → `d5f7b9c1e3a7` (WU-AUTH-08 provider identities).
 
 ## Upstream dependencies
 

@@ -23,6 +23,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 
 from persistence.engine import connect
+from persistence.local_auth_repository import SqlAlchemyLocalSessionRepository
 from persistence.oidc_transaction_repository import SqlAlchemyOidcTransactionRepository
 from security.oidc_provider import (
     IdTokenInvalid,
@@ -32,6 +33,7 @@ from security.oidc_provider import (
 )
 from security.oidc_transaction import OidcFailureReason, OidcTransactionPurpose
 
+from application.auth_handler import issue_session
 from application.auth_runtime import AuthRuntime, auth_runtime_from_environment
 from application.oidc_identity import ProviderIdentityUnresolved, resolve_provider_identity
 from application.oidc_transactions import (
@@ -206,16 +208,30 @@ def dispatch_oidc_callback(
     with connect() as connection:
         repository = SqlAlchemyOidcTransactionRepository(connection)
         try:
-            resolve_provider_identity(connection, credential, now=now)
+            resolved = resolve_provider_identity(connection, credential, now=now)
         except ProviderIdentityUnresolved as unresolved:
             fail_transaction(
                 repository, claimed.transaction_id, reason=unresolved.reason.value, now=now
             )
-            return _projection("unavailable")
-        # Reached only once WU-AUTH-08/-09 resolve an identity; the session
-        # commit lands there together with the resolution.
+            if unresolved.reason is OidcFailureReason.ACCOUNT_CREATION_POLICY_UNRESOLVED:
+                return _projection("unavailable")
+            return _projection("failed")
+        # 24 §19.1 / §19.3: canonical identity resolved and method active ->
+        # fresh session, then the transaction's terminal state, one commit.
+        session = issue_session(
+            SqlAlchemyLocalSessionRepository(connection),
+            user_id=resolved.user_id,
+            method_id=resolved.method_id,
+            now=now,
+        )
         complete_transaction(repository, claimed.transaction_id, now=now)
-    return OidcDispatchResult(303, location=claimed.redirect_target, clear_binding=True)
+    return OidcDispatchResult(
+        303,
+        location=claimed.redirect_target,
+        clear_binding=True,
+        session_token=session.session_token,
+        session_expires_at=session.expires_at,
+    )
 
 
 __all__ = [

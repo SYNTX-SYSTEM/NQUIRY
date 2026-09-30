@@ -1,0 +1,38 @@
+WU-AUTH-08 final full-repository regression (2026-09-30), worktree auth-identity, DB nquiry_purple_test
+HEAD: 5aa13ae26cddccebb804f5c8ba3f8c459ca2f254 (auth-identity)
+PRE_RUN_GIT_STATUS:
+   M docs/implementation/field-reports/AUTH/STATUS.md
+   M packages/application/auth_handler.py
+   M packages/application/http_oidc.py
+   M packages/application/oidc_identity.py
+   M packages/persistence/tables.py
+   M packages/security/oidc_transaction.py
+  ?? docs/implementation/field-reports/AUTH/WU-AUTH-08.md
+  ?? migrations/versions/d5f7b9c1e3a7_auth_provider_identities.py
+  ?? packages/persistence/provider_identity_repository.py
+  ?? packages/security/provider_identity.py
+  ?? tests/e2e/test_auth_wu08_provider_identity.py
+PRE_RUN_TREE_HASH: 9b8b1decb0f2d03c606ed87afb37f8536106a5c77251b0f7c4717ca10522b311
+LIVE_COMMAND: DATABASE_URL=<isolated test db> /home/codi/Entwicklung/nquiry/.venv/bin/python -m pytest -q -p no:cacheprovider
+LIVE_RESULT: 2200 passed, 2 skipped in 2074.79s (0:34:34)
+LIVE_EXIT_CODE: 0
+NO_DB_COMMAND: env -u DATABASE_URL /home/codi/Entwicklung/nquiry/.venv/bin/python -m pytest -q -p no:cacheprovider
+NO_DB_RESULT: 976 passed, 1226 skipped in 45.84s
+NO_DB_EXIT_CODE: 0
+MIGRATIONS: MIGRATION_STATIC_CHECK::PASS (37 revision(s), single head ['d5f7b9c1e3a7']) MIGRATION_LIVE_CHECK::PASS (db head matches {'d5f7b9c1e3a7'}) 
+POST_RUN_GIT_STATUS:
+   M docs/implementation/field-reports/AUTH/STATUS.md
+   M packages/application/auth_handler.py
+   M packages/application/http_oidc.py
+   M packages/application/oidc_identity.py
+   M packages/persistence/tables.py
+   M packages/security/oidc_transaction.py
+  ?? docs/implementation/field-reports/AUTH/WU-AUTH-08.md
+  ?? migrations/versions/d5f7b9c1e3a7_auth_provider_identities.py
+  ?? packages/persistence/provider_identity_repository.py
+  ?? packages/security/provider_identity.py
+  ?? tests/e2e/test_auth_wu08_provider_identity.py
+POST_RUN_TREE_HASH: 9b8b1decb0f2d03c606ed87afb37f8536106a5c77251b0f7c4717ca10522b311
+TREE_UNCHANGED_DURING_RUN: true
+BEFORE (WU-AUTH-07): live 2187 / 2. AFTER: 2200 / 2 = 2187 + 13 (provider identity binding).
+RED: collection error (persistence.provider_identity_repository absent), 0/13 ran. MUTATION: no source-mutation script (disclosed).
