@@ -16,6 +16,12 @@
  * "Link" action. Linking is a form POST the browser navigates to (the API
  * answers with the provider redirect). The link callback returns here with
  * `?link=<projection>`, shown as a safe message.
+ *
+ * WU-AUTH-11 (24 §16.1): the identity's verified addresses
+ * (`GET /auth/emails`) and a "Send verification email" action for an address
+ * (`POST /auth/email/verification/start`). Sending is not verifying: the page
+ * says a challenge was sent; the address becomes verified only when the
+ * mailed link is completed (`/account/verify-email`).
  */
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -26,12 +32,15 @@ import {
   listMethods,
   listProviders,
   listSessions,
+  listVerifiedEmails,
   logoutAll,
   revokeSession,
+  startEmailVerification,
   type MethodSummary,
   type ProviderSummary,
   type SessionListResult,
   type SessionSummary,
+  type VerifiedEmailSummary,
 } from "../../../lib/api/authClient";
 
 type LoadState =
@@ -77,6 +86,9 @@ export default function AccountSecurityPage() {
   const [methods, setMethods] = useState<readonly MethodSummary[] | null>(null);
   const [providers, setProviders] = useState<readonly ProviderSummary[]>([]);
   const [linkMessage, setLinkMessage] = useState<string | null>(null);
+  const [verifiedEmails, setVerifiedEmails] = useState<readonly VerifiedEmailSummary[] | null>(null);
+  const [verifyAddress, setVerifyAddress] = useState("");
+  const [verifyNotice, setVerifyNotice] = useState<string | null>(null);
 
   const apply = useCallback(
     (result: SessionListResult) => {
@@ -125,6 +137,15 @@ export default function AccountSecurityPage() {
       .catch(() => {
         // No provider list means no link action (24 §24.2).
       });
+    listVerifiedEmails()
+      .then((result) => {
+        if (!cancelled && result.kind === "ok") {
+          setVerifiedEmails(result.emails);
+        }
+      })
+      .catch(() => {
+        // The verified-email list stays unknown; nothing is assumed.
+      });
     return () => {
       cancelled = true;
     };
@@ -154,6 +175,34 @@ export default function AccountSecurityPage() {
         setError("That session could not be ended. It may already have ended.");
       }
       await reload();
+    } catch {
+      setError("Unable to reach the server. Nothing was changed as far as this page knows.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleVerify(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setBusy(true);
+    setVerifyNotice(null);
+    setError(null);
+    try {
+      const result = await startEmailVerification(verifyAddress);
+      if (result.kind === "ok") {
+        setVerifyNotice("A verification email was sent. The address is verified once you open the link.");
+      } else if (result.kind === "denied" && result.reasonCode === "NO_SESSION") {
+        router.replace("/login");
+        return;
+      } else if (result.kind === "denied" && result.reasonCode === "VERIFICATION_RESEND_THROTTLED") {
+        setError("A verification email was sent a moment ago. Please wait before requesting another.");
+      } else if (result.kind === "rejected") {
+        setError("Please enter a valid email address.");
+      } else if (result.kind === "unavailable") {
+        setError("Email verification is not available right now.");
+      } else {
+        setError("That address cannot be verified for this account.");
+      }
     } catch {
       setError("Unable to reach the server. Nothing was changed as far as this page knows.");
     } finally {
@@ -215,6 +264,43 @@ export default function AccountSecurityPage() {
               </li>
             ))}
           </ul>
+        ) : null}
+      </section>
+      <section className="panel" aria-labelledby="emails-heading">
+        <h2 id="emails-heading">Verified email addresses</h2>
+        {verifiedEmails === null ? (
+          <p data-testid="emails-unknown">The list of verified addresses is not available.</p>
+        ) : verifiedEmails.filter((e) => e.active).length === 0 ? (
+          <p data-testid="emails-empty">No address is verified for this account yet.</p>
+        ) : (
+          <ul data-testid="verified-email-list">
+            {verifiedEmails
+              .filter((e) => e.active)
+              .map((e) => (
+                <li key={e.email} data-testid="verified-email">
+                  {e.email}
+                </li>
+              ))}
+          </ul>
+        )}
+        <form onSubmit={(event) => void handleVerify(event)} data-testid="verify-form">
+          <label htmlFor="verify-address">Email address to verify</label>
+          <input
+            id="verify-address"
+            type="email"
+            required
+            data-testid="verify-address"
+            value={verifyAddress}
+            onChange={(event) => setVerifyAddress(event.target.value)}
+          />
+          <button type="submit" className="button secondary" data-testid="verify-send" disabled={busy}>
+            Send verification email
+          </button>
+        </form>
+        {verifyNotice ? (
+          <p role="status" data-testid="verify-notice">
+            {verifyNotice}
+          </p>
         ) : null}
       </section>
       <section className="panel" aria-labelledby="sessions-heading">

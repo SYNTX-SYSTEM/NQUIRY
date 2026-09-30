@@ -69,6 +69,14 @@ ROUTES: list[tuple[str, str, dict[str, Any] | None]] = [
     # AUTH WU-AUTH-10: the caller's own methods and own account link.
     ("GET", "/auth/methods", None),
     ("POST", "/auth/oidc/{provider}/link/start", None),
+    # AUTH WU-AUTH-11: the caller's own email verification.
+    ("POST", "/auth/email/verification/start", {"email": "sweep@example.test"}),
+    (
+        "POST",
+        "/auth/email/verification/complete",
+        {"challengeId": "{auth_session_id}", "token": "x"},
+    ),
+    ("GET", "/auth/emails", None),
     ("GET", "/workspaces", None),
     ("POST", "/workspaces", {"name": "W"}),
     ("GET", "/workspaces/{ws}", None),
@@ -178,6 +186,7 @@ _UNAUTHENTICATED = {
     ("GET", "/auth/oidc/{provider}/start"),
     ("GET", "/auth/oidc/{provider}/callback"),
     ("GET", "/auth/oidc/{provider}/link/callback"),
+    ("GET", "/auth/test-mail/outbox"),
     ("GET", "/auth/test-provider/authorize"),
     ("POST", "/auth/test-provider/authorize"),
 }
@@ -191,6 +200,9 @@ _CROSS_WORKSPACE_EXEMPT = {
     ("POST", "/auth/sessions/{auth_session_id}/revoke"),
     ("GET", "/auth/methods"),
     ("POST", "/auth/oidc/{provider}/link/start"),
+    ("POST", "/auth/email/verification/start"),
+    ("POST", "/auth/email/verification/complete"),
+    ("GET", "/auth/emails"),
     ("GET", "/workspaces"),  # the caller's own Workspace list (checked separately)
     ("POST", "/workspaces"),  # founding one's own Workspace (F01 bootstrap)
 }

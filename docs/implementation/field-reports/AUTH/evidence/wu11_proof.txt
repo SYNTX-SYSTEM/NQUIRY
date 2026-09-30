@@ -1,0 +1,7 @@
+WU-AUTH-11 proof (2026-10-01), worktree auth-identity, DB nquiry_purple_test, PROOF_RADIUS = LOCAL + AFFECTED (HD-AUTH-04)
+RED: collection error (application.email_verification absent), 0/19 ran.
+LOCAL: tests/e2e/test_auth_wu11_email_verification.py 22 passed.
+AFFECTED: tests/security tests/semantic tests/regression + WU-04/-10 suites + test_http_auth + test_pfc_ac1 + route sweep: 556 passed, 1 skipped (0:11:22).
+GATES: ruff clean; mypy 246 files; ARCHITECTURE_DEPENDENCY_CHECK::PASS; TEST_ONLY_IMPORT_CHECK::PASS; migration f7b9d1e3a5c8 downgrade / upgrade PASS.
+FRONTEND: vitest 167 (9 new); tsc, eslint clean; mocked lane 26 specs (4 new).
+MUTATION: no source-mutation script (disclosed). FULL REGRESSION: deferred to the next checkpoint (HD-AUTH-04).

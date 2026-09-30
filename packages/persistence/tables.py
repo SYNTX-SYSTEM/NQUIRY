@@ -1652,6 +1652,52 @@ external_provider_identities_table = sa.Table(
     sa.CheckConstraint("provenance_ref <> ''", name="ck_external_provider_identities_provenance"),
 )
 
+auth_challenges_table = sa.Table(
+    # WU-AUTH-11 (migration f7b9d1e3a5c8): 24 §16.1 verification challenge.
+    # Hash only; consumed at most once; triggers in the migration.
+    "auth_challenges",
+    metadata,
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column("challenge_type", sa.Text(), nullable=False),
+    sa.Column("user_id", sa.Uuid(), sa.ForeignKey("users.id", ondelete="RESTRICT"), nullable=False),
+    sa.Column("email", sa.Text(), nullable=False),
+    sa.Column("token_hash", sa.Text(), nullable=False, unique=True),
+    sa.Column("issued_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("expires_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("consumed_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("revoked_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("failed_attempts", sa.Integer(), nullable=False, server_default="0"),
+    sa.Column("provenance_ref", sa.Text(), nullable=False),
+    sa.CheckConstraint("challenge_type IN ('EMAIL_VERIFICATION')", name="ck_auth_challenges_type"),
+    sa.CheckConstraint("email = lower(email) AND email <> ''", name="ck_auth_challenges_email"),
+    sa.CheckConstraint("expires_at > issued_at", name="ck_auth_challenges_expiry"),
+    sa.CheckConstraint("failed_attempts >= 0", name="ck_auth_challenges_attempts"),
+    sa.CheckConstraint(
+        "consumed_at IS NULL OR revoked_at IS NULL", name="ck_auth_challenges_one_closure"
+    ),
+    sa.CheckConstraint("provenance_ref <> ''", name="ck_auth_challenges_provenance"),
+)
+
+verified_emails_table = sa.Table(
+    # WU-AUTH-11 (migration f7b9d1e3a5c8): 24 §13.9 verified email relation.
+    # One active relation per address (partial unique index in the migration).
+    "verified_emails",
+    metadata,
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column("user_id", sa.Uuid(), sa.ForeignKey("users.id", ondelete="RESTRICT"), nullable=False),
+    sa.Column("email", sa.Text(), nullable=False),
+    sa.Column("verified_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("verification_method", sa.Text(), nullable=False),
+    sa.Column("superseded_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("revoked_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("provenance_ref", sa.Text(), nullable=False),
+    sa.CheckConstraint(
+        "verification_method IN ('EMAIL_CHALLENGE')", name="ck_verified_emails_method"
+    ),
+    sa.CheckConstraint("email = lower(email) AND email <> ''", name="ck_verified_emails_email"),
+    sa.CheckConstraint("provenance_ref <> ''", name="ck_verified_emails_provenance"),
+)
+
 __all__ = [
     "metadata",
     "users_table",
@@ -1692,6 +1738,8 @@ __all__ = [
     "authentication_methods_table",
     "oidc_auth_transactions_table",
     "external_provider_identities_table",
+    "auth_challenges_table",
+    "verified_emails_table",
     "ai_operation_authorizations_table",
     "ai_validation_proofs_table",
     "question_clusters_table",

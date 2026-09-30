@@ -28,7 +28,9 @@ IN_PROGRESS.
 - **Proof cadence (HD-AUTH-04, 2026-10-01):** progressive proof radius from
   WU-AUTH-11 on; the WU-AUTH-10 full run is the current broad checkpoint;
   the next full repository regression at a chosen checkpoint or Field closure.
-- Open Human Authority boundaries: all 18 of 24 §36. Touched and left
+- Open Human Authority boundaries: all 18 of 24 §36.
+  WU-AUTH-11: #16 (production email delivery provider) — no provider exists;
+  delivery is unavailable outside the DEVELOPMENT / TEST capture sink. Touched and left
   undecided so far: #10 session lifetime (12 h kept), #18 multi-account UX
   (an earlier session is not revoked by a new login).
   WU-AUTH-07: #1 / #6 (Google as an official, production-enabled method:
@@ -63,22 +65,24 @@ preceded them, so the counts are those of the pin.
 | WU-AUTH-07 OIDC Provider Adapter, start / callback | PROVEN against the local test issuer; REAL GOOGLE PROOF BLOCKED_EXTERNAL (no client credentials) | `5aa13ae` |
 | WU-AUTH-08 Provider Identity Binding | PROVEN | `e097de1` |
 | WU-AUTH-09 Account Creation Boundary | PROVEN; HA-AUTH-01 OPEN (production policy), DENIED in force | `8d3df59` |
-| WU-AUTH-10 Account Linking | PROVEN | this commit |
-| WU-AUTH-11 Email Verification | next | — |
-| WU-AUTH-12..17 | not started | — |
+| WU-AUTH-10 Account Linking | PROVEN (broad checkpoint: live 2235 / 2) | `4e29c9f` |
+| WU-AUTH-11 Email Verification | PROVEN at the affected radius (HD-AUTH-04) | this commit |
+| WU-AUTH-12 Recovery | next (reaches 24 §36 #11) | — |
+| WU-AUTH-13..17 | not started | — |
 
 ### Current First Broken Relation
 
-Email verification: no verified-email relation, no challenge issuance or
-completion, no local delivery sink (owner WU-AUTH-11; FBR-AUTH-003).
+Recovery: no proof-bearing recovery challenge, credential reset or reset
+session effects (owner WU-AUTH-12; FBR-AUTH-004; policy 24 §36 #11).
 
 ### Migrations
 
-Head `e6a8c1d3f5b9`. Chain from the pin head `e8c2a5f1b7d4`: `f1a7c3d9b2e4`
+Head `f7b9d1e3a5c8`. Chain from the pin head `e8c2a5f1b7d4`: `f1a7c3d9b2e4`
 (WU-AUTH-02 `authentication_methods`) → `a2c4e6f8b1d3` (WU-AUTH-03 credential ↔ method) → `b3d5f7a9c2e6` (WU-AUTH-04
 session attribution and revocation reason) → `c4e6a8b1d3f5` (WU-AUTH-05 OIDC
 transactions) → `d5f7b9c1e3a7` (WU-AUTH-08 provider identities) → `e6a8c1d3f5b9` (WU-AUTH-09
-account creation failure classes).
+account creation failure classes) → `f7b9d1e3a5c8` (WU-AUTH-11 challenges and
+verified emails).
 
 ## Upstream dependencies
 

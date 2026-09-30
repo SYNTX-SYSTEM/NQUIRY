@@ -340,3 +340,95 @@ export function linkProjectionMessage(code: string | null): string | null {
     ? LINK_PROJECTIONS[code as keyof typeof LINK_PROJECTIONS]
     : LINK_PROJECTIONS.failed;
 }
+
+// --- WU-AUTH-11 (24 §16.1, §24.5): email verification ------------------------
+
+export type VerifiedEmailSummary = { readonly email: string; readonly verifiedAt: string; readonly active: boolean };
+
+export type VerifiedEmailListResult =
+  | { readonly kind: "ok"; readonly emails: readonly VerifiedEmailSummary[] }
+  | { readonly kind: "denied"; readonly reasonCode: string };
+
+export type VerificationStartResult =
+  | { readonly kind: "ok"; readonly challengeId: string; readonly expiresAt: string }
+  | { readonly kind: "denied"; readonly reasonCode: string }
+  | { readonly kind: "rejected"; readonly reasonCode: string }
+  | { readonly kind: "unavailable"; readonly reasonCode: string };
+
+export type VerificationCompleteResult =
+  | { readonly kind: "ok"; readonly email: string }
+  | { readonly kind: "denied"; readonly reasonCode: string }
+  | { readonly kind: "rejected"; readonly reasonCode: string }
+  | { readonly kind: "unavailable"; readonly reasonCode: string };
+
+function parseVerifiedEmail(value: unknown): VerifiedEmailSummary {
+  if (!isRecord(value) || typeof value.active !== "boolean") {
+    throw new TypeError("verified email summary is malformed");
+  }
+  return { email: requireString(value, "email"), verifiedAt: requireString(value, "verifiedAt"), active: value.active };
+}
+
+function parseReasonKind(body: Record<string, unknown> & { kind: string }) {
+  if (body.kind === "denied" || body.kind === "rejected" || body.kind === "unavailable") {
+    return { kind: body.kind, reasonCode: requireString(body, "reasonCode") } as const;
+  }
+  return null;
+}
+
+export async function listVerifiedEmails(fetchImpl: typeof fetch = fetch): Promise<VerifiedEmailListResult> {
+  const response = await fetchImpl(`${apiBaseUrl()}/auth/emails`, {
+    headers: { Accept: "application/json" },
+    credentials: "include",
+  });
+  const body = requireKind(await response.json());
+  if (body.kind === "denied") {
+    return { kind: "denied", reasonCode: requireString(body, "reasonCode") };
+  }
+  if (body.kind === "ok" && Array.isArray(body.emails)) {
+    return { kind: "ok", emails: body.emails.map(parseVerifiedEmail) };
+  }
+  throw new TypeError(`unrecognized verified email list response ${JSON.stringify(body.kind)}`);
+}
+
+export async function startEmailVerification(
+  email: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<VerificationStartResult> {
+  const response = await fetchImpl(`${apiBaseUrl()}/auth/email/verification/start`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ email }),
+  });
+  const body = requireKind(await response.json());
+  const other = parseReasonKind(body);
+  if (other) {
+    return other;
+  }
+  if (body.kind === "ok") {
+    return { kind: "ok", challengeId: requireString(body, "challengeId"), expiresAt: requireString(body, "expiresAt") };
+  }
+  throw new TypeError(`unrecognized verification start response ${JSON.stringify(body.kind)}`);
+}
+
+export async function completeEmailVerification(
+  challengeId: string,
+  token: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<VerificationCompleteResult> {
+  const response = await fetchImpl(`${apiBaseUrl()}/auth/email/verification/complete`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ challengeId, token }),
+  });
+  const body = requireKind(await response.json());
+  const other = parseReasonKind(body);
+  if (other) {
+    return other;
+  }
+  if (body.kind === "ok") {
+    return { kind: "ok", email: requireString(body, "email") };
+  }
+  throw new TypeError(`unrecognized verification complete response ${JSON.stringify(body.kind)}`);
+}

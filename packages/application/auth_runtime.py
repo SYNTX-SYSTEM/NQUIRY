@@ -14,6 +14,9 @@ Settings (environment variables, read once at startup, same discipline as
   are refused until their relations exist.
 - `NQUIRY_GOOGLE_LINK_REDIRECT_URI` (optional): the ACCOUNT_LINK callback's
   registered URI; default is the login URI with `/link/callback`.
+- `NQUIRY_EMAIL_DELIVERY_MODE` (24 §25.2 "email provider config"): `capture`
+  enables the in-process local mail sink in DEVELOPMENT / TEST; unset means
+  no delivery (verification / recovery unavailable); anything else is refused.
 - `NQUIRY_PUBLIC_API_BASE_URL`: where a browser reaches this API (the test
   provider's authorize page and callback live under it); default
   `http://localhost:8000`.
@@ -32,6 +35,7 @@ from dataclasses import dataclass, field
 
 from security.account_creation import MATERIALIZED_POLICIES, AccountCreationPolicy
 from security.events import Environment
+from security.mail import LocalMailCapture, MailSink
 from security.oidc_provider import OidcProvider
 from security.oidc_standard import google_provider
 from security.oidc_test_issuer import LocalTestIssuer
@@ -60,6 +64,10 @@ class AccountCreationPolicyNotMaterialized(RuntimeError):
     """A policy whose relation does not exist yet was configured."""
 
 
+class MailDeliveryForbidden(RuntimeError):
+    """The capture sink outside DEVELOPMENT / TEST (24 §25.3)."""
+
+
 @dataclass(frozen=True)
 class AuthRuntime:
     environment: Environment | None
@@ -68,13 +76,19 @@ class AuthRuntime:
     incomplete: tuple[str, ...] = ()
     """Provider ids that were requested but not fully configured."""
     account_creation_policy: AccountCreationPolicy = AccountCreationPolicy.DENIED
+    mail_sink: MailSink | None = None
+    """None: no delivery configured, verification and recovery are unavailable
+    (24 §36 #16 production delivery is a human decision)."""
 
     def provider(self, provider_id: str) -> OidcProvider | None:
         return self.providers.get(provider_id)
 
 
 def auth_runtime_from_environment(
-    env: Mapping[str, str] | None = None, *, test_issuer: LocalTestIssuer | None = None
+    env: Mapping[str, str] | None = None,
+    *,
+    test_issuer: LocalTestIssuer | None = None,
+    mail_sink: MailSink | None = None,
 ) -> AuthRuntime:
     source = os.environ if env is None else env
     raw_environment = source.get("NQUIRY_ENVIRONMENT")
@@ -128,16 +142,32 @@ def auth_runtime_from_environment(
             "SELF_REGISTRATION_ALLOWED is DEVELOPMENT / TEST only (HD-28; 24 section 36 #3); "
             f"refused for NQUIRY_ENVIRONMENT={raw_environment!r}"
         )
+    delivery_mode = source.get("NQUIRY_EMAIL_DELIVERY_MODE", "").strip().lower()
+    sink: MailSink | None = None
+    if delivery_mode == "capture":
+        if environment not in _DEV_ENVIRONMENTS:
+            raise MailDeliveryForbidden(
+                "the capture mail sink is DEVELOPMENT / TEST only; refused for "
+                f"NQUIRY_ENVIRONMENT={raw_environment!r} (24 section 25.3)"
+            )
+        sink = mail_sink or LocalMailCapture()
+    elif delivery_mode:
+        raise ValueError(
+            f"unknown NQUIRY_EMAIL_DELIVERY_MODE {delivery_mode!r}: production delivery is a "
+            "Human Authority decision (24 section 36 #16); nothing is substituted"
+        )
     return AuthRuntime(
         environment=environment,
         providers=providers,
         test_issuer=issuer,
         incomplete=tuple(incomplete),
         account_creation_policy=policy,
+        mail_sink=sink,
     )
 
 
 __all__ = [
+    "MailDeliveryForbidden",
     "AccountCreationPolicyForbidden",
     "AccountCreationPolicyNotMaterialized",
     "AuthRuntime",
