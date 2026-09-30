@@ -257,3 +257,86 @@ export function authProjectionMessage(code: string | null): string | null {
     ? AUTH_PROJECTIONS[code as keyof typeof AUTH_PROJECTIONS]
     : AUTH_PROJECTIONS.failed;
 }
+
+// --- WU-AUTH-10 (24 §14.2, §23.2, §24.5): own authentication methods, linking
+
+export type MethodSummary = {
+  readonly methodId: string;
+  readonly methodType: string;
+  readonly status: string;
+  readonly createdAt: string;
+  readonly lastAuthenticatedAt: string | null;
+  /** The provider attribute of a provider method; null for a local password. */
+  readonly provider: { readonly providerId: string; readonly email: string | null } | null;
+};
+
+export type MethodListResult =
+  | { readonly kind: "ok"; readonly methods: readonly MethodSummary[] }
+  | { readonly kind: "denied"; readonly reasonCode: string };
+
+function parseMethodSummary(value: unknown): MethodSummary {
+  if (!isRecord(value)) {
+    throw new TypeError("method summary is malformed");
+  }
+  if (value.lastAuthenticatedAt !== null && typeof value.lastAuthenticatedAt !== "string") {
+    throw new TypeError("method summary has a malformed 'lastAuthenticatedAt'");
+  }
+  let provider: MethodSummary["provider"] = null;
+  if (value.provider !== null) {
+    if (!isRecord(value.provider) || (value.provider.email !== null && typeof value.provider.email !== "string")) {
+      throw new TypeError("method summary has a malformed 'provider'");
+    }
+    provider = { providerId: requireString(value.provider, "providerId"), email: value.provider.email };
+  }
+  return {
+    methodId: requireString(value, "methodId"),
+    methodType: requireString(value, "methodType"),
+    status: requireString(value, "status"),
+    createdAt: requireString(value, "createdAt"),
+    lastAuthenticatedAt: value.lastAuthenticatedAt,
+    provider,
+  };
+}
+
+export async function listMethods(fetchImpl: typeof fetch = fetch): Promise<MethodListResult> {
+  const response = await fetchImpl(`${apiBaseUrl()}/auth/methods`, {
+    headers: { Accept: "application/json" },
+    credentials: "include",
+  });
+  const body = requireKind(await response.json());
+  if (body.kind === "denied") {
+    return { kind: "denied", reasonCode: requireString(body, "reasonCode") };
+  }
+  if (body.kind === "ok" && Array.isArray(body.methods)) {
+    return { kind: "ok", methods: body.methods.map(parseMethodSummary) };
+  }
+  throw new TypeError(`unrecognized method list response ${JSON.stringify(body.kind)}`);
+}
+
+/**
+ * The API contact that starts linking a provider to the current identity. It
+ * is a POST the browser navigates to (a form submit), because the API answers
+ * with a redirect to the provider; a `fetch` could not follow it.
+ */
+export function linkStartUrl(providerId: string, next: string): string {
+  const query = new URLSearchParams({ next });
+  return `${apiBaseUrl()}/auth/oidc/${encodeURIComponent(providerId)}/link/start?${query.toString()}`;
+}
+
+/** 24 §24.6: the safe projections the link callback may send the browser back with. */
+export const LINK_PROJECTIONS = {
+  ok: "The provider was linked to your account.",
+  already_linked: "That provider identity was already linked to your account.",
+  collision: "That provider identity is linked to another account. Nothing was changed.",
+  cancelled: "You cancelled the provider link.",
+  failed: "The provider could not be linked.",
+} as const;
+
+export function linkProjectionMessage(code: string | null): string | null {
+  if (code === null) {
+    return null;
+  }
+  return Object.prototype.hasOwnProperty.call(LINK_PROJECTIONS, code)
+    ? LINK_PROJECTIONS[code as keyof typeof LINK_PROJECTIONS]
+    : LINK_PROJECTIONS.failed;
+}

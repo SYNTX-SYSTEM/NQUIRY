@@ -135,6 +135,18 @@ class SqlAlchemyProviderIdentityRepository:
         )
         return None if row is None else _to_binding(row)
 
+    def list_for_user(self, user_id: UserId) -> tuple[ProviderIdentityBinding, ...]:
+        rows = (
+            self._connection.execute(
+                sa.select(external_provider_identities_table)
+                .where(external_provider_identities_table.c.user_id == user_id.value)
+                .order_by(external_provider_identities_table.c.linked_at)
+            )
+            .mappings()
+            .all()
+        )
+        return tuple(_to_binding(row) for row in rows)
+
     def authenticate(
         self,
         provider_issuer: str,

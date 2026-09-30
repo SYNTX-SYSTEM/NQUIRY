@@ -54,6 +54,7 @@ class StandardOidcProvider:
         client_id: str,
         client_secret: str,
         redirect_uri: str,
+        link_redirect_uri: str,
         authorization_endpoint: str,
         token_endpoint: str,
         jwks_uri: str,
@@ -67,6 +68,7 @@ class StandardOidcProvider:
         self._client_id = client_id
         self._client_secret = client_secret
         self._redirect_uri = redirect_uri
+        self._link_redirect_uri = link_redirect_uri
         self._authorization_endpoint = authorization_endpoint
         self._token_endpoint = token_endpoint
         self._jwks_uri = jwks_uri
@@ -98,15 +100,21 @@ class StandardOidcProvider:
         return self._redirect_uri
 
     @property
+    def link_redirect_uri(self) -> str:
+        return self._link_redirect_uri
+
+    @property
     def authorization_endpoint(self) -> str:
         return self._authorization_endpoint
 
-    def authorization_url(self, *, state: str, nonce: str, code_challenge: str) -> str:
+    def authorization_url(
+        self, *, state: str, nonce: str, code_challenge: str, redirect_uri: str
+    ) -> str:
         query = urlencode(
             {
                 "response_type": "code",
                 "client_id": self._client_id,
-                "redirect_uri": self._redirect_uri,
+                "redirect_uri": redirect_uri,
                 "scope": _SCOPE,
                 "state": state,
                 "nonce": nonce,
@@ -116,14 +124,14 @@ class StandardOidcProvider:
         )
         return f"{self._authorization_endpoint}?{query}"
 
-    def exchange_code(self, *, code: str, code_verifier: str) -> str:
+    def exchange_code(self, *, code: str, code_verifier: str, redirect_uri: str) -> str:
         try:
             response = self._http.post(
                 self._token_endpoint,
                 data={
                     "grant_type": "authorization_code",
                     "code": code,
-                    "redirect_uri": self._redirect_uri,
+                    "redirect_uri": redirect_uri,
                     "code_verifier": code_verifier,
                     "client_id": self._client_id,
                     "client_secret": self._client_secret,
@@ -216,8 +224,21 @@ class StandardOidcProvider:
         return OidcFailureReason.PROVIDER_FAILURE
 
 
+def link_redirect_uri_for(redirect_uri: str) -> str:
+    """The ACCOUNT_LINK callback registered next to the LOGIN callback:
+    `.../callback` → `.../link/callback` (both must be registered at the provider)."""
+    if redirect_uri.endswith("/callback"):
+        return redirect_uri[: -len("/callback")] + "/link/callback"
+    return redirect_uri.rstrip("/") + "/link/callback"
+
+
 def google_provider(
-    *, client_id: str, client_secret: str, redirect_uri: str, http: httpx.Client | None = None
+    *,
+    client_id: str,
+    client_secret: str,
+    redirect_uri: str,
+    link_redirect_uri: str | None = None,
+    http: httpx.Client | None = None,
 ) -> StandardOidcProvider:
     """Google with its static OIDC metadata (24 §26.2 "discovery/static
     metadata"): the endpoints are Google's published, stable ones."""
@@ -230,6 +251,7 @@ def google_provider(
         client_id=client_id,
         client_secret=client_secret,
         redirect_uri=redirect_uri,
+        link_redirect_uri=link_redirect_uri or link_redirect_uri_for(redirect_uri),
         authorization_endpoint=_GOOGLE_AUTHORIZATION_ENDPOINT,
         token_endpoint=_GOOGLE_TOKEN_ENDPOINT,
         jwks_uri=_GOOGLE_JWKS_URI,
@@ -247,4 +269,5 @@ __all__ = [
     "StandardOidcProvider",
     "google_provider",
     "jwks_document",
+    "link_redirect_uri_for",
 ]

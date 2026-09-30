@@ -66,6 +66,9 @@ ROUTES: list[tuple[str, str, dict[str, Any] | None]] = [
     ("GET", "/auth/sessions", None),
     ("POST", "/auth/logout-all", None),
     ("POST", "/auth/sessions/{auth_session_id}/revoke", None),
+    # AUTH WU-AUTH-10: the caller's own methods and own account link.
+    ("GET", "/auth/methods", None),
+    ("POST", "/auth/oidc/{provider}/link/start", None),
     ("GET", "/workspaces", None),
     ("POST", "/workspaces", {"name": "W"}),
     ("GET", "/workspaces/{ws}", None),
@@ -174,6 +177,7 @@ _UNAUTHENTICATED = {
     ("GET", "/auth/providers"),
     ("GET", "/auth/oidc/{provider}/start"),
     ("GET", "/auth/oidc/{provider}/callback"),
+    ("GET", "/auth/oidc/{provider}/link/callback"),
     ("GET", "/auth/test-provider/authorize"),
     ("POST", "/auth/test-provider/authorize"),
 }
@@ -185,6 +189,8 @@ _CROSS_WORKSPACE_EXEMPT = {
     ("GET", "/auth/sessions"),
     ("POST", "/auth/logout-all"),
     ("POST", "/auth/sessions/{auth_session_id}/revoke"),
+    ("GET", "/auth/methods"),
+    ("POST", "/auth/oidc/{provider}/link/start"),
     ("GET", "/workspaces"),  # the caller's own Workspace list (checked separately)
     ("POST", "/workspaces"),  # founding one's own Workspace (F01 bootstrap)
 }
@@ -232,6 +238,7 @@ def _world(db: sa.Connection) -> dict[str, Any]:
     return {
         # AUTH WU-AUTH-04: an authentication-session id that names no session.
         "auth_session_id": str(uuid.uuid4()),
+        "provider": "test",  # AUTH WU-AUTH-10: a provider id (unconfigured in this suite)
         "ws": str(ctx["ws"].value),
         "challenge": str(ctx["challenge"].challenge_id.value),
         "session": str(ctx["session"].value),

@@ -25,6 +25,9 @@ IN_PROGRESS.
 - **HA-AUTH-01 OPEN** (WU-AUTH-09): production account creation policy for
   unknown provider subjects; DENIED in force. Block in `WU-AUTH-09.md`,
   queue in `HUMAN_DECISIONS.md`.
+- **Proof cadence (HD-AUTH-04, 2026-10-01):** progressive proof radius from
+  WU-AUTH-11 on; the WU-AUTH-10 full run is the current broad checkpoint;
+  the next full repository regression at a chosen checkpoint or Field closure.
 - Open Human Authority boundaries: all 18 of 24 §36. Touched and left
   undecided so far: #10 session lifetime (12 h kept), #18 multi-account UX
   (an earlier session is not revoked by a new login).
@@ -59,15 +62,15 @@ preceded them, so the counts are those of the pin.
 | WU-AUTH-06 Redirect Target Validation | PROVEN (same mutation disclosure) | `69b806a` |
 | WU-AUTH-07 OIDC Provider Adapter, start / callback | PROVEN against the local test issuer; REAL GOOGLE PROOF BLOCKED_EXTERNAL (no client credentials) | `5aa13ae` |
 | WU-AUTH-08 Provider Identity Binding | PROVEN | `e097de1` |
-| WU-AUTH-09 Account Creation Boundary | PROVEN; HA-AUTH-01 OPEN (production policy), DENIED in force | this commit |
-| WU-AUTH-10 Account Linking | next | — |
-| WU-AUTH-11..17 | not started | — |
+| WU-AUTH-09 Account Creation Boundary | PROVEN; HA-AUTH-01 OPEN (production policy), DENIED in force | `8d3df59` |
+| WU-AUTH-10 Account Linking | PROVEN | this commit |
+| WU-AUTH-11 Email Verification | next | — |
+| WU-AUTH-12..17 | not started | — |
 
 ### Current First Broken Relation
 
-Account linking: an authenticated identity cannot add a provider method; no
-ACCOUNT_LINK start / callback, collision rule or link audit exists (owner
-WU-AUTH-10).
+Email verification: no verified-email relation, no challenge issuance or
+completion, no local delivery sink (owner WU-AUTH-11; FBR-AUTH-003).
 
 ### Migrations
 

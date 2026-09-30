@@ -72,6 +72,8 @@ class ProviderIdentityRepository(Protocol):
         self, provider_issuer: str, provider_subject: str
     ) -> ProviderIdentityBinding | None: ...
 
+    def list_for_user(self, user_id: UserId) -> tuple[ProviderIdentityBinding, ...]: ...
+
     def authenticate(
         self,
         provider_issuer: str,

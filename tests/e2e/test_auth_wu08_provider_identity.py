@@ -178,7 +178,12 @@ def test_a_binding_maps_issuer_and_subject_to_a_user_never_an_email(
     assert repository.find(TEST_ISSUER, "s-2") is None
     assert repository.find("https://another-issuer.nquiry.local", "s-1") is None
     public = {name for name in dir(repository) if not name.startswith("_")}
-    assert public == {"create", "find", "authenticate"}
+    assert public == {
+        "create",
+        "find",
+        "list_for_user",
+        "authenticate",
+    }  # by id or user, never by email
     assert "email" not in " ".join(public)
 
 

@@ -12,6 +12,8 @@ Settings (environment variables, read once at startup, same discipline as
 - `NQUIRY_ACCOUNT_CREATION_POLICY` (24 §11.14; default `DENIED`):
   `SELF_REGISTRATION_ALLOWED` in DEVELOPMENT / TEST only; the other policies
   are refused until their relations exist.
+- `NQUIRY_GOOGLE_LINK_REDIRECT_URI` (optional): the ACCOUNT_LINK callback's
+  registered URI; default is the login URI with `/link/callback`.
 - `NQUIRY_PUBLIC_API_BASE_URL`: where a browser reaches this API (the test
   provider's authorize page and callback live under it); default
   `http://localhost:8000`.
@@ -96,6 +98,8 @@ def auth_runtime_from_environment(
                     client_id=values["NQUIRY_GOOGLE_CLIENT_ID"],
                     client_secret=values["NQUIRY_GOOGLE_CLIENT_SECRET"],
                     redirect_uri=values["NQUIRY_GOOGLE_REDIRECT_URI"],
+                    link_redirect_uri=source.get("NQUIRY_GOOGLE_LINK_REDIRECT_URI", "").strip()
+                    or None,
                 )
             else:
                 incomplete.append("google")

@@ -67,13 +67,22 @@ class OidcProvider(Protocol):
 
     @property
     def redirect_uri(self) -> str:
-        """The registered provider redirect URI. Never an application
-        redirect target (24 §11.17)."""
+        """The registered provider redirect URI of the LOGIN callback. Never
+        an application redirect target (24 §11.17)."""
         ...
 
-    def authorization_url(self, *, state: str, nonce: str, code_challenge: str) -> str: ...
+    @property
+    def link_redirect_uri(self) -> str:
+        """The registered redirect URI of the ACCOUNT_LINK callback (24 §11.21:
+        a separate contact, so a LOGIN transaction cannot be consumed by the
+        link callback or the reverse)."""
+        ...
 
-    def exchange_code(self, *, code: str, code_verifier: str) -> str:
+    def authorization_url(
+        self, *, state: str, nonce: str, code_challenge: str, redirect_uri: str
+    ) -> str: ...
+
+    def exchange_code(self, *, code: str, code_verifier: str, redirect_uri: str) -> str:
         """Returns the raw ID Token from the token response, or raises
         `ProviderExchangeRejected` / `ProviderExchangeUncertain`."""
         ...

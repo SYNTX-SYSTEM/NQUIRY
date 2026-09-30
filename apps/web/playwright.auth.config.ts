@@ -15,7 +15,7 @@ const PORT = Number(process.env.AUTH_WEB_PORT ?? 13460);
 export default defineConfig({
   testDir: "./tests/e2e",
   // AUTH_SPEC_MATCH=".*" runs every mocked spec on this port (preservation check).
-  testMatch: new RegExp(process.env.AUTH_SPEC_MATCH ?? "(auth|account-security|oidc-login)\\.spec\\.ts$"),
+  testMatch: new RegExp(process.env.AUTH_SPEC_MATCH ?? "(auth|account-security|account-security-methods|oidc-login)\\.spec\\.ts$"),
   fullyParallel: true,
   reporter: "list",
   outputDir: "./test-results/auth-mocked",

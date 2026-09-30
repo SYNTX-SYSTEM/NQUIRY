@@ -56,6 +56,40 @@ No production tags.
 **Scope:** this Field and this branch only. It does not change 20 §14 for any
 other Field.
 
+## HD-AUTH-04 — Proof cadence: progressive proof radius (2026-10-01)
+
+**Decision (human operator, SFE proof-cadence update, confirmed in session):**
+From WU-AUTH-11 onward the per-Work-Unit full-repository regression of the
+original brief is replaced by a progressive proof radius:
+
+```
+IMPLEMENT / REPAIR → LOCAL FALSIFIERS → LOCAL MUTATION PROOF → AFFECTED SUITES → CONTINUE
+LOCAL → AFFECTED → AUTH FIELD / INTEGRATION → FULL REPOSITORY
+```
+
+- A local defect or a failed affected test does not trigger a full
+  regression; it is repaired and re-proven at the narrowest valid radius.
+  Repairs may accumulate under local / affected proof as long as no failure
+  is hidden or deferred unresolved. `ERROR FOUND != FULL REGRESSION REQUIRED`.
+- A broader AUTH integration regression runs at meaningful block boundaries;
+  failures it reveals are repaired one by one at the narrowest radius, then
+  the broader level is rerun.
+- The FULL repository regression runs only at final AUTH Field closure, at a
+  deliberately selected major checkpoint, or immediately when a delta touches
+  a genuinely global invariant (migration-wide semantics, shared persistence
+  infrastructure, the session foundation, identity / authority boundary
+  infrastructure, repository-wide protocol or serialization changes).
+- The regression running at the time of the decision (WU-AUTH-10) finishes
+  normally and is the current broad preservation checkpoint.
+- Tests are not weakened; failures are not hidden; only the expensive global
+  re-proof is deferred to the appropriate boundary.
+
+**Why:** the full run costs 35–45 minutes per Work Unit; the proof radius must
+follow the relations a delta affects, not the fact that a defect was found.
+
+**Recorded:** here, `STATUS.md` (cadence line), and the WU reports from
+WU-AUTH-11 on (a "PROOF_RADIUS" line replaces the per-WU full regression block).
+
 ## Open boundaries (OPEN, awaiting the operator)
 
 | # | Boundary | Home | What it blocks | Default in force | Status |

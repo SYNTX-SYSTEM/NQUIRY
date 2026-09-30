@@ -10,14 +10,26 @@
  * patched locally. "Revoked" is shown only after the server said `ok`. When
  * the server reports that no session authenticates any more (the current
  * session was revoked, here or elsewhere), the page goes to `/login`.
+ *
+ * WU-AUTH-10 (24 §14.2, §24.5): the identity's authentication methods
+ * (`GET /auth/methods`) and, for each configured provider not yet linked, a
+ * "Link" action. Linking is a form POST the browser navigates to (the API
+ * answers with the provider redirect). The link callback returns here with
+ * `?link=<projection>`, shown as a safe message.
  */
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AppShell } from "../../../components/f02/AppShell";
 import {
+  linkProjectionMessage,
+  linkStartUrl,
+  listMethods,
+  listProviders,
   listSessions,
   logoutAll,
   revokeSession,
+  type MethodSummary,
+  type ProviderSummary,
   type SessionListResult,
   type SessionSummary,
 } from "../../../lib/api/authClient";
@@ -40,6 +52,17 @@ function methodLabel(methodType: string | null): string {
   return METHOD_LABELS[methodType] ?? methodType;
 }
 
+/** Providers the identity has no ACTIVE method for yet (a link action per provider). */
+function unlinkedProviders(
+  providers: readonly ProviderSummary[],
+  methods: readonly MethodSummary[],
+): readonly ProviderSummary[] {
+  const linked = new Set(
+    methods.filter((m) => m.status === "ACTIVE" && m.provider !== null).map((m) => m.provider!.providerId),
+  );
+  return providers.filter((provider) => !linked.has(provider.providerId));
+}
+
 function formatTime(value: string): string {
   const parsed = new Date(value);
   return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
@@ -51,6 +74,9 @@ export default function AccountSecurityPage() {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [methods, setMethods] = useState<readonly MethodSummary[] | null>(null);
+  const [providers, setProviders] = useState<readonly ProviderSummary[]>([]);
+  const [linkMessage, setLinkMessage] = useState<string | null>(null);
 
   const apply = useCallback(
     (result: SessionListResult) => {
@@ -75,6 +101,29 @@ export default function AccountSecurityPage() {
         if (!cancelled) {
           setState({ kind: "unreachable" });
         }
+      });
+    Promise.resolve(new URLSearchParams(window.location.search).get("link")).then((code) => {
+      if (!cancelled) {
+        setLinkMessage(linkProjectionMessage(code));
+      }
+    });
+    listMethods()
+      .then((result) => {
+        if (!cancelled && result.kind === "ok") {
+          setMethods(result.methods);
+        }
+      })
+      .catch(() => {
+        // The method list stays unknown; nothing is assumed.
+      });
+    listProviders()
+      .then((result) => {
+        if (!cancelled) {
+          setProviders(result.providers);
+        }
+      })
+      .catch(() => {
+        // No provider list means no link action (24 §24.2).
       });
     return () => {
       cancelled = true;
@@ -133,6 +182,41 @@ export default function AccountSecurityPage() {
   return (
     <AppShell crumbs={[{ label: "Workspaces", href: "/workspaces" }, { label: "Account security" }]}>
       <h1>Account security</h1>
+      {linkMessage ? (
+        <p role="status" data-testid="link-projection">
+          {linkMessage}
+        </p>
+      ) : null}
+      <section className="panel" aria-labelledby="methods-heading">
+        <h2 id="methods-heading">Ways to sign in</h2>
+        {methods === null ? (
+          <p data-testid="methods-unknown">The list of sign-in methods is not available.</p>
+        ) : (
+          <ul data-testid="method-list">
+            {methods.map((method) => (
+              <li key={method.methodId} data-testid="method-item">
+                <strong>{methodLabel(method.methodType)}</strong>
+                {method.provider?.email ? <span> ({method.provider.email})</span> : null}
+                {method.status !== "ACTIVE" ? <span className="state"> {method.status}</span> : null}
+              </li>
+            ))}
+          </ul>
+        )}
+        {methods !== null && unlinkedProviders(providers, methods).length > 0 ? (
+          <ul data-testid="link-actions">
+            {unlinkedProviders(providers, methods).map((provider) => (
+              <li key={provider.providerId}>
+                <form method="post" action={linkStartUrl(provider.providerId, "/account/security")}>
+                  <button type="submit" className="button secondary" data-testid={`link-${provider.providerId}`}>
+                    Link {provider.label}
+                    {provider.proofClass === "TEST_PROVIDER" ? " (TEST_PROVIDER, not production)" : ""}
+                  </button>
+                </form>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </section>
       <section className="panel" aria-labelledby="sessions-heading">
         <h2 id="sessions-heading">Active sessions</h2>
         <p>

@@ -1,0 +1,58 @@
+WU-AUTH-10 final full-repository regression (2026-10-01), worktree auth-identity, DB nquiry_purple_test
+HEAD: 8d3df5929b194e260d3bba8fccd55d18a51dcdc4 (auth-identity)
+PRE_RUN_GIT_STATUS:
+   M apps/api/src/nquiry_api/http/oidc.py
+   M apps/web/app/account/security/page.tsx
+   M apps/web/lib/api/authClient.ts
+   M apps/web/playwright.auth.config.ts
+   M docs/implementation/field-reports/AUTH/STATUS.md
+   M packages/application/auth_runtime.py
+   M packages/application/http_oidc.py
+   M packages/application/oidc_identity.py
+   M packages/persistence/provider_identity_repository.py
+   M packages/security/oidc_provider.py
+   M packages/security/oidc_standard.py
+   M packages/security/oidc_test_issuer.py
+   M packages/security/provider_identity.py
+   M tests/e2e/test_auth_wu08_provider_identity.py
+   M tests/e2e/test_pfc_f09_2_isolation_sweep.py
+  ?? apps/web/tests/e2e/account-security-methods.spec.ts
+  ?? apps/web/tests/lib/authMethods.test.ts
+  ?? docs/implementation/field-reports/AUTH/WU-AUTH-10.md
+  ?? tests/e2e/test_auth_wu10_account_linking.py
+PRE_RUN_TREE_HASH: 5a4785c3011cb199600588d1f3a7bf0b9d0c4c6fdbd416e392334914899f402f
+LIVE_COMMAND: DATABASE_URL=<isolated test db> /home/codi/Entwicklung/nquiry/.venv/bin/python -m pytest -q -p no:cacheprovider
+LIVE_RESULT: 2235 passed, 2 skipped in 2572.68s (0:42:52)
+LIVE_EXIT_CODE: 0
+NO_DB_COMMAND: env -u DATABASE_URL /home/codi/Entwicklung/nquiry/.venv/bin/python -m pytest -q -p no:cacheprovider
+NO_DB_RESULT: 986 passed, 1251 skipped in 43.65s
+NO_DB_EXIT_CODE: 0
+MIGRATIONS: MIGRATION_STATIC_CHECK::PASS (38 revision(s), single head ['e6a8c1d3f5b9']) MIGRATION_LIVE_CHECK::PASS (db head matches {'e6a8c1d3f5b9'}) 
+POST_RUN_GIT_STATUS:
+   M apps/api/src/nquiry_api/http/oidc.py
+   M apps/web/app/account/security/page.tsx
+   M apps/web/lib/api/authClient.ts
+   M apps/web/playwright.auth.config.ts
+   M docs/implementation/field-reports/AUTH/HUMAN_DECISIONS.md
+   M docs/implementation/field-reports/AUTH/STATUS.md
+   M packages/application/auth_runtime.py
+   M packages/application/http_oidc.py
+   M packages/application/oidc_identity.py
+   M packages/persistence/provider_identity_repository.py
+   M packages/security/oidc_provider.py
+   M packages/security/oidc_standard.py
+   M packages/security/oidc_test_issuer.py
+   M packages/security/provider_identity.py
+   M tests/e2e/test_auth_wu08_provider_identity.py
+   M tests/e2e/test_pfc_f09_2_isolation_sweep.py
+  ?? apps/web/tests/e2e/account-security-methods.spec.ts
+  ?? apps/web/tests/lib/authMethods.test.ts
+  ?? docs/implementation/field-reports/AUTH/WU-AUTH-10.md
+  ?? tests/e2e/test_auth_wu10_account_linking.py
+POST_RUN_TREE_HASH: e38ee48d2492a232777c9cc2040c1a890892a0ea985247dd50dc677e5603fada
+TREE_UNCHANGED_DURING_RUN: false
+BEFORE (WU-AUTH-09): live 2219 / 2. AFTER: 2235 / 2 = 2219 + 14 (account linking) + 2 (sweep: expired-session law on GET /auth/methods and POST .../link/start).
+TREE DISCLOSURE: TREE_UNCHANGED_DURING_RUN=false. During the run PURPLE wrote the HD-AUTH-04 proof-cadence decision into two documentation files (AUTH/HUMAN_DECISIONS.md, AUTH/STATUS.md). Verified afterwards: the pre-run hash 5a4785c3... is reproduced exactly by removing those two additions, and the post-run hash e38ee48d... by re-adding them; no other file changed. No source, test, migration or configuration file changed during the run; the counts are those of the pre-run tree. Recorded as a process deviation, not a preservation failure.
+FRONTEND: vitest 158 passed (10 new); tsc and eslint clean; mocked lane (:13460) 22 specs passed.
+RED: 14/14 failed (routes absent). MUTATION: no source-mutation script (disclosed).
+HD-AUTH-04: this run is the current broad preservation checkpoint; progressive proof radius from WU-AUTH-11.

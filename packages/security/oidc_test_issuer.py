@@ -101,6 +101,10 @@ class LocalTestIssuer:
         return f"{self.api_base_url}/auth/oidc/test/callback"
 
     @property
+    def link_redirect_uri(self) -> str:
+        return f"{self.api_base_url}/auth/oidc/test/link/callback"
+
+    @property
     def token_endpoint(self) -> str:
         return f"{TEST_ISSUER}/token"
 
@@ -123,6 +127,7 @@ class LocalTestIssuer:
             client_id=TEST_CLIENT_ID,
             client_secret=_TEST_CLIENT_SECRET,
             redirect_uri=self.redirect_uri,
+            link_redirect_uri=self.link_redirect_uri,
             authorization_endpoint=self.authorization_endpoint,
             token_endpoint=self.token_endpoint,
             jwks_uri=self.jwks_uri,
@@ -146,6 +151,8 @@ class LocalTestIssuer:
             raise ValueError("the request is not Authorization Code + PKCE S256")
         if params.get("client_id") != TEST_CLIENT_ID:
             raise ValueError("unknown client")
+        if params.get("redirect_uri") not in (self.redirect_uri, self.link_redirect_uri):
+            raise ValueError("unregistered redirect_uri")
         code = secrets.token_urlsafe(24)
         self._authorizations[code] = _Authorization(
             nonce=params["nonce"],

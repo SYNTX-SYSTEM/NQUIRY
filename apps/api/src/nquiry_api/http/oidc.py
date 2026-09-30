@@ -28,8 +28,11 @@ from application.http_oidc import (
     BINDING_COOKIE_PATH,
     OidcDispatchResult,
     current_auth_runtime,
+    dispatch_list_methods,
     dispatch_list_providers,
     dispatch_oidc_callback,
+    dispatch_oidc_link_callback,
+    dispatch_oidc_link_start,
     dispatch_oidc_start,
 )
 from fastapi import APIRouter, Request, Response
@@ -99,6 +102,37 @@ def oidc_callback(provider: str, request: Request) -> Response:
     )
 
 
+@router.get("/auth/methods")
+def methods(request: Request) -> JSONResponse:
+    status, body = dispatch_list_methods(session_token=request.cookies.get(SESSION_COOKIE_NAME))
+    return JSONResponse(status_code=status, content=body)
+
+
+@router.post("/auth/oidc/{provider}/link/start")
+def oidc_link_start(provider: str, request: Request) -> Response:
+    """WU-AUTH-10 (24 §14.2): an authenticated identity starts an ACCOUNT_LINK
+    transaction. POST, because it creates state for the caller."""
+    return _response(
+        dispatch_oidc_link_start(
+            provider_id=provider,
+            session_token=request.cookies.get(SESSION_COOKIE_NAME),
+            redirect_candidate=request.query_params.get("next"),
+        )
+    )
+
+
+@router.get("/auth/oidc/{provider}/link/callback")
+def oidc_link_callback(provider: str, request: Request) -> Response:
+    return _response(
+        dispatch_oidc_link_callback(
+            provider_id=provider,
+            params=dict(request.query_params),
+            binding_token=request.cookies.get(BINDING_COOKIE_NAME),
+            session_token=request.cookies.get(SESSION_COOKIE_NAME),
+        )
+    )
+
+
 # --- the test provider's consent page (DEVELOPMENT / TEST only) ------------
 
 _AUTHORIZE_FIELDS = (
@@ -153,13 +187,13 @@ async def test_provider_authorize(request: Request) -> Response:
         return JSONResponse(status_code=404, content={"kind": "denied", "reasonCode": "NOT_FOUND"})
     form = {k: v[0] for k, v in parse_qs((await request.body()).decode("utf-8")).items()}
     params = {name: form.get(name, "") for name in _AUTHORIZE_FIELDS}
-    if params["redirect_uri"] != issuer.redirect_uri:
+    if params["redirect_uri"] not in (issuer.redirect_uri, issuer.link_redirect_uri):
         return JSONResponse(
             status_code=400, content={"kind": "rejected", "reasonCode": "REDIRECT_URI_MISMATCH"}
         )
     if form.get("action") != "approve":
         query = urlencode({"error": "access_denied", "state": params["state"]})
-        return RedirectResponse(url=f"{issuer.redirect_uri}?{query}", status_code=303)
+        return RedirectResponse(url=f"{params['redirect_uri']}?{query}", status_code=303)
     subject = form.get("subject", "").strip()
     if not subject:
         return JSONResponse(
@@ -174,7 +208,7 @@ async def test_provider_authorize(request: Request) -> Response:
             status_code=400, content={"kind": "rejected", "reasonCode": "MALFORMED_REQUEST"}
         )
     query = urlencode({"code": code, "state": params["state"]})
-    return RedirectResponse(url=f"{issuer.redirect_uri}?{query}", status_code=303)
+    return RedirectResponse(url=f"{params['redirect_uri']}?{query}", status_code=303)
 
 
 __all__ = ["router"]
