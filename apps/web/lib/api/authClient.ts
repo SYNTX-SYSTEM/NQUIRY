@@ -193,3 +193,67 @@ export async function logoutAll(fetchImpl: typeof fetch = fetch): Promise<Logout
   }
   throw new TypeError(`unrecognized logout-all response ${JSON.stringify(body.kind)}`);
 }
+
+// --- WU-AUTH-07 (24 §24.2): configured external providers ------------------
+//
+// A provider button exists only for a provider the backend reports as
+// configured. The frontend never decides provider availability, and starting
+// a provider login is a plain top-level navigation to the API's start
+// contact (the API redirects to the provider); nothing about the transaction,
+// the state, the nonce or the verifier is ever in frontend state (24 §24.3).
+
+export type ProviderSummary = {
+  readonly providerId: string;
+  readonly label: string;
+  /** "PRODUCTION_PROVIDER" or "TEST_PROVIDER" (24 §27): shown, never hidden. */
+  readonly proofClass: string;
+};
+
+export type ProviderListResult = { readonly kind: "ok"; readonly providers: readonly ProviderSummary[] };
+
+function parseProviderSummary(value: unknown): ProviderSummary {
+  if (!isRecord(value)) {
+    throw new TypeError("provider summary is malformed");
+  }
+  return {
+    providerId: requireString(value, "providerId"),
+    label: requireString(value, "label"),
+    proofClass: requireString(value, "proofClass"),
+  };
+}
+
+export async function listProviders(fetchImpl: typeof fetch = fetch): Promise<ProviderListResult> {
+  const response = await fetchImpl(`${apiBaseUrl()}/auth/providers`, {
+    headers: { Accept: "application/json" },
+    credentials: "include",
+  });
+  const body = requireKind(await response.json());
+  if (body.kind === "ok" && Array.isArray(body.providers)) {
+    return { kind: "ok", providers: body.providers.map(parseProviderSummary) };
+  }
+  throw new TypeError(`unrecognized provider list response ${JSON.stringify(body.kind)}`);
+}
+
+/** The API contact a provider login starts at. `next` is a candidate the server validates. */
+export function providerStartUrl(providerId: string, next: string): string {
+  const query = new URLSearchParams({ next });
+  return `${apiBaseUrl()}/auth/oidc/${encodeURIComponent(providerId)}/start?${query.toString()}`;
+}
+
+/** 24 §24.6: the safe projections the callback may send the browser back with. */
+export const AUTH_PROJECTIONS = {
+  cancelled: "You cancelled the provider login.",
+  provider_unavailable: "The identity provider is unavailable right now. Please try again later.",
+  provider_error: "The identity provider reported an error.",
+  failed: "The provider login could not be completed.",
+  unavailable: "Signing in with this provider is not available for this account.",
+} as const;
+
+export function authProjectionMessage(code: string | null): string | null {
+  if (code === null) {
+    return null;
+  }
+  return Object.prototype.hasOwnProperty.call(AUTH_PROJECTIONS, code)
+    ? AUTH_PROJECTIONS[code as keyof typeof AUTH_PROJECTIONS]
+    : AUTH_PROJECTIONS.failed;
+}

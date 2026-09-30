@@ -1,0 +1,114 @@
+"""The authentication provider runtime (24 §25.2–25.3, §27.1; WU-AUTH-07).
+
+Settings (environment variables, read once at startup, same discipline as
+`analysis_runtime`):
+
+- `NQUIRY_ENVIRONMENT`: DEVELOPMENT / TEST / STAGING / PRODUCTION.
+- `NQUIRY_AUTH_PROVIDER_MODE`: comma-separated provider ids to enable.
+  `google` enables Google when `NQUIRY_GOOGLE_CLIENT_ID`,
+  `NQUIRY_GOOGLE_CLIENT_SECRET` and `NQUIRY_GOOGLE_REDIRECT_URI` are all
+  present (an incomplete configuration enables nothing and is reported as
+  such); `test` enables the local test provider, in DEVELOPMENT / TEST only.
+- `NQUIRY_PUBLIC_API_BASE_URL`: where a browser reaches this API (the test
+  provider's authorize page and callback live under it); default
+  `http://localhost:8000`.
+
+FAIL-CLOSED: unset mode means no external provider (login offers none);
+`test` outside DEVELOPMENT / TEST raises `LocalProviderForbidden` at startup
+(falsifier 41). Enabling Google in production is a human decision (24 §36
+#1, #6); this module makes it possible, never default.
+"""
+
+from __future__ import annotations
+
+import os
+from collections.abc import Mapping
+from dataclasses import dataclass, field
+
+from security.events import Environment
+from security.oidc_provider import OidcProvider
+from security.oidc_standard import google_provider
+from security.oidc_test_issuer import LocalTestIssuer
+
+_DEV_ENVIRONMENTS = frozenset({Environment.DEVELOPMENT, Environment.TEST})
+_GOOGLE_VARIABLES = (
+    "NQUIRY_GOOGLE_CLIENT_ID",
+    "NQUIRY_GOOGLE_CLIENT_SECRET",
+    "NQUIRY_GOOGLE_REDIRECT_URI",
+)
+
+
+class LocalProviderForbidden(RuntimeError):
+    """The test provider was requested outside DEVELOPMENT / TEST."""
+
+
+class UnknownAuthProvider(RuntimeError):
+    """A provider id this runtime does not know; nothing is guessed."""
+
+
+@dataclass(frozen=True)
+class AuthRuntime:
+    environment: Environment | None
+    providers: Mapping[str, OidcProvider] = field(default_factory=dict)
+    test_issuer: LocalTestIssuer | None = None
+    incomplete: tuple[str, ...] = ()
+    """Provider ids that were requested but not fully configured."""
+
+    def provider(self, provider_id: str) -> OidcProvider | None:
+        return self.providers.get(provider_id)
+
+
+def auth_runtime_from_environment(
+    env: Mapping[str, str] | None = None, *, test_issuer: LocalTestIssuer | None = None
+) -> AuthRuntime:
+    source = os.environ if env is None else env
+    raw_environment = source.get("NQUIRY_ENVIRONMENT")
+    try:
+        environment = None if raw_environment is None else Environment(raw_environment)
+    except ValueError:
+        environment = None
+    requested = [
+        item.strip().lower()
+        for item in source.get("NQUIRY_AUTH_PROVIDER_MODE", "").split(",")
+        if item.strip()
+    ]
+    providers: dict[str, OidcProvider] = {}
+    incomplete: list[str] = []
+    issuer: LocalTestIssuer | None = None
+    for provider_id in requested:
+        if provider_id == "google":
+            values = {name: source.get(name, "").strip() for name in _GOOGLE_VARIABLES}
+            if all(values.values()):
+                providers["google"] = google_provider(
+                    client_id=values["NQUIRY_GOOGLE_CLIENT_ID"],
+                    client_secret=values["NQUIRY_GOOGLE_CLIENT_SECRET"],
+                    redirect_uri=values["NQUIRY_GOOGLE_REDIRECT_URI"],
+                )
+            else:
+                incomplete.append("google")
+        elif provider_id == "test":
+            if environment not in _DEV_ENVIRONMENTS:
+                raise LocalProviderForbidden(
+                    "the test provider is DEVELOPMENT / TEST only; refused for "
+                    f"NQUIRY_ENVIRONMENT={raw_environment!r} (24 section 27.1)"
+                )
+            issuer = test_issuer or LocalTestIssuer.create(
+                api_base_url=source.get("NQUIRY_PUBLIC_API_BASE_URL", "http://localhost:8000")
+            )
+            providers["test"] = issuer.provider()
+        else:
+            raise UnknownAuthProvider(f"unknown authentication provider {provider_id!r}")
+    return AuthRuntime(
+        environment=environment,
+        providers=providers,
+        test_issuer=issuer,
+        incomplete=tuple(incomplete),
+    )
+
+
+__all__ = [
+    "AuthRuntime",
+    "LocalProviderForbidden",
+    "UnknownAuthProvider",
+    "auth_runtime_from_environment",
+]

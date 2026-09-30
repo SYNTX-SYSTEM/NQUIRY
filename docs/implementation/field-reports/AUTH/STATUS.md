@@ -25,6 +25,13 @@ IN_PROGRESS.
 - Open Human Authority boundaries: all 18 of 24 §36. Touched and left
   undecided so far: #10 session lifetime (12 h kept), #18 multi-account UX
   (an earlier session is not revoked by a new login).
+  WU-AUTH-07: #1 / #6 (Google as an official, production-enabled method:
+  instantiable from configuration, configured nowhere), #3–#5 (account
+  creation: fails closed).
+- External dependency: real Google proof (24 §41) needs a Google OAuth
+  client (id, secret, registered redirect URI). BLOCKED_EXTERNAL.
+- Tracked for the hardening step (24 §47 item 24): `auth_events` /
+  SecurityEvents for login, logout, session and provider events (24 §31.1).
 
 ### Baseline (the pin, before any PURPLE change)
 
@@ -46,15 +53,16 @@ preceded them, so the counts are those of the pin.
 | WU-AUTH-03 Local Credential Migration Compatibility | PROVEN | `bf046b9` |
 | WU-AUTH-04 Authenticated Session Evolution | PROVEN | `3ffbd1b` |
 | WU-AUTH-05 OIDC Auth Transaction Field | PROVEN (mutation step: guard-necessity falsifiers only, see report) | `4495345` |
-| WU-AUTH-06 Redirect Target Validation | PROVEN (same mutation disclosure) | this commit |
-| WU-AUTH-07 Google OIDC Provider Adapter | next | — |
-| WU-AUTH-08..17 | not started | — |
+| WU-AUTH-06 Redirect Target Validation | PROVEN (same mutation disclosure) | `69b806a` |
+| WU-AUTH-07 OIDC Provider Adapter, start / callback | PROVEN against the local test issuer; REAL GOOGLE PROOF BLOCKED_EXTERNAL (no client credentials) | this commit |
+| WU-AUTH-08 Provider Identity Binding | next | — |
+| WU-AUTH-09..17 | not started | — |
 
 ### Current First Broken Relation
 
-External provider proof: no provider port, start/callback contact, token
-exchange, ID Token validation or provider error path (owner WU-AUTH-07;
-FBR-AUTH-001, -012, -016).
+Provider identity binding: no relation maps provider issuer + subject to a
+canonical UserId; every provider login fails closed at the identity step
+(owner WU-AUTH-08).
 
 ### Migrations
 

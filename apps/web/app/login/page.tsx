@@ -10,10 +10,22 @@
  * routes onward) or shows the server's own `denied` response;
  * `login`'s own fail-closed parsing means a malformed/unexpected server
  * response surfaces as a generic error too, never a silent success.
+ *
+ * WU-AUTH-07 (24 §24.2, §24.6): provider buttons appear only for providers
+ * the server reports as configured (`GET /auth/providers`); each is a plain
+ * navigation to the API's start contact. A provider callback that did not end
+ * in a session sends the browser back here with `?auth=<projection>`, shown
+ * as a safe message; the code itself is never rendered.
  */
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { login } from "../../lib/api/authClient";
+import {
+  authProjectionMessage,
+  listProviders,
+  login,
+  providerStartUrl,
+  type ProviderSummary,
+} from "../../lib/api/authClient";
 
 type SubmitState = { readonly kind: "idle" } | { readonly kind: "submitting" } | { readonly kind: "error"; readonly message: string };
 
@@ -22,6 +34,30 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [state, setState] = useState<SubmitState>({ kind: "idle" });
+  const [providers, setProviders] = useState<readonly ProviderSummary[]>([]);
+  const [projection, setProjection] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    // The projection code arrives in the URL from the API's callback redirect.
+    Promise.resolve(new URLSearchParams(window.location.search).get("auth")).then((code) => {
+      if (!cancelled) {
+        setProjection(authProjectionMessage(code));
+      }
+    });
+    listProviders()
+      .then((result) => {
+        if (!cancelled) {
+          setProviders(result.providers);
+        }
+      })
+      .catch(() => {
+        // No provider list means no provider button (24 §24.2).
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -84,6 +120,30 @@ export default function LoginPage() {
         <p role="alert" data-testid="login-error">
           {state.message}
         </p>
+      ) : null}
+      {projection ? (
+        <p role="alert" data-testid="auth-projection">
+          {projection}
+        </p>
+      ) : null}
+      {providers.length > 0 ? (
+        <section aria-labelledby="providers-heading" data-testid="provider-logins">
+          <h2 id="providers-heading">Or sign in with</h2>
+          <ul>
+            {providers.map((provider) => (
+              <li key={provider.providerId}>
+                <a
+                  className="button secondary"
+                  data-testid={`provider-${provider.providerId}`}
+                  href={providerStartUrl(provider.providerId, "/")}
+                >
+                  {provider.label}
+                  {provider.proofClass === "TEST_PROVIDER" ? " (TEST_PROVIDER, not production)" : ""}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
       ) : null}
     </main>
   );

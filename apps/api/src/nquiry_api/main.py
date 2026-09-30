@@ -69,7 +69,9 @@ from __future__ import annotations
 import uuid
 
 from application.analysis_runtime import runtime_from_environment
+from application.auth_runtime import auth_runtime_from_environment
 from application.http_f04 import configure_runtime
+from application.http_oidc import configure_auth_runtime
 from application.technical_failure import technical_failure_response
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
@@ -81,6 +83,7 @@ from semantic_types.ids import CorrelationId
 from nquiry_api.http import auth as auth_router
 from nquiry_api.http import commands as commands_router
 from nquiry_api.http import inquiry as inquiry_router
+from nquiry_api.http import oidc as oidc_router
 from nquiry_api.http import queries as queries_router
 from nquiry_api.http import workspaces as workspaces_router
 
@@ -123,7 +126,14 @@ async def _technical_failure(request: Request, exc: Exception) -> JSONResponse:
 # the API refuses to start; nothing is substituted silently (19 §40).
 configure_runtime(runtime_from_environment())
 
+# AUTH WU-AUTH-07 (24 §25.3, §27.1; falsifier 41): the provider runtime is
+# validated at startup. `NQUIRY_AUTH_PROVIDER_MODE=test` outside DEVELOPMENT /
+# TEST raises here and the API refuses to start; an incomplete Google
+# configuration enables nothing.
+configure_auth_runtime(auth_runtime_from_environment())
+
 app.include_router(auth_router.router)
+app.include_router(oidc_router.router)
 app.include_router(queries_router.router)
 app.include_router(commands_router.router)
 app.include_router(workspaces_router.router)

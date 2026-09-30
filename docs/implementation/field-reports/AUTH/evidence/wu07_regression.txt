@@ -1,0 +1,54 @@
+WU-AUTH-07 final full-repository regression (2026-09-30), worktree auth-identity, DB nquiry_purple_test
+HEAD: 69b806a5e06e84651c666d9c124cb9b46b33f2c9 (auth-identity)
+PRE_RUN_GIT_STATUS:
+   M apps/api/src/nquiry_api/main.py
+   M apps/web/app/login/page.tsx
+   M apps/web/lib/api/authClient.ts
+   M apps/web/playwright.auth.config.ts
+   M docs/implementation/field-reports/AUTH/STATUS.md
+   M pyproject.toml
+   M tests/e2e/test_pfc_f09_2_isolation_sweep.py
+  ?? apps/api/src/nquiry_api/http/oidc.py
+  ?? apps/web/tests/e2e/oidc-login.spec.ts
+  ?? apps/web/tests/lib/authProviders.test.ts
+  ?? docs/implementation/field-reports/AUTH/WU-AUTH-07.md
+  ?? packages/application/auth_runtime.py
+  ?? packages/application/http_oidc.py
+  ?? packages/application/oidc_identity.py
+  ?? packages/security/oidc_provider.py
+  ?? packages/security/oidc_standard.py
+  ?? packages/security/oidc_test_issuer.py
+  ?? tests/e2e/test_auth_wu07_oidc_provider.py
+PRE_RUN_TREE_HASH: f960c188daa32c4f62af34f99347879c53bc0c88a871aaac67e4b57a44194d79
+LIVE_COMMAND: DATABASE_URL=<isolated test db> /home/codi/Entwicklung/nquiry/.venv/bin/python -m pytest -q -p no:cacheprovider
+LIVE_RESULT: 2187 passed, 2 skipped in 1860.59s (0:31:00)
+LIVE_EXIT_CODE: 0
+NO_DB_COMMAND: env -u DATABASE_URL /home/codi/Entwicklung/nquiry/.venv/bin/python -m pytest -q -p no:cacheprovider
+NO_DB_RESULT: 976 passed, 1213 skipped in 34.79s
+NO_DB_EXIT_CODE: 0
+MIGRATIONS: MIGRATION_STATIC_CHECK::PASS (36 revision(s), single head ['c4e6a8b1d3f5']) MIGRATION_LIVE_CHECK::PASS (db head matches {'c4e6a8b1d3f5'}) 
+POST_RUN_GIT_STATUS:
+   M apps/api/src/nquiry_api/main.py
+   M apps/web/app/login/page.tsx
+   M apps/web/lib/api/authClient.ts
+   M apps/web/playwright.auth.config.ts
+   M docs/implementation/field-reports/AUTH/STATUS.md
+   M pyproject.toml
+   M tests/e2e/test_pfc_f09_2_isolation_sweep.py
+  ?? apps/api/src/nquiry_api/http/oidc.py
+  ?? apps/web/tests/e2e/oidc-login.spec.ts
+  ?? apps/web/tests/lib/authProviders.test.ts
+  ?? docs/implementation/field-reports/AUTH/WU-AUTH-07.md
+  ?? packages/application/auth_runtime.py
+  ?? packages/application/http_oidc.py
+  ?? packages/application/oidc_identity.py
+  ?? packages/security/oidc_provider.py
+  ?? packages/security/oidc_standard.py
+  ?? packages/security/oidc_test_issuer.py
+  ?? tests/e2e/test_auth_wu07_oidc_provider.py
+POST_RUN_TREE_HASH: f960c188daa32c4f62af34f99347879c53bc0c88a871aaac67e4b57a44194d79
+TREE_UNCHANGED_DURING_RUN: true
+BEFORE (WU-AUTH-06): live 2155 / 2. AFTER: 2187 / 2 = 2155 + 32 (provider adapter / start / callback).
+FRONTEND: vitest 148 passed (9 new); tsc and eslint clean; mocked lane (:13460) 18 auth / account-security / oidc-login specs passed.
+RED: collection error (application.http_oidc absent), 0/29 ran; vitest 9/9 written with the implementation (classified). MUTATION: no source-mutation script (disclosed).
+REAL GOOGLE PROOF: BLOCKED_EXTERNAL (no Google OAuth client credentials in this repository).

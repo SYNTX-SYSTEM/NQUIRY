@@ -164,7 +164,19 @@ ROUTES: list[tuple[str, str, dict[str, Any] | None]] = [
     ),
     ("POST", "/decisions/{decision}/decide", {"selectedOption": "fix_a"}),
 ]
-_UNAUTHENTICATED = {("POST", "/auth/login"), ("POST", "/auth/logout")}
+_UNAUTHENTICATED = {
+    ("POST", "/auth/login"),
+    ("POST", "/auth/logout"),
+    # AUTH WU-AUTH-07: provider contacts reached before any session exists
+    # (24 §11.19 protocol callback; §23.4 start; §24.2 provider list; the
+    # test provider's consent page). Their own proof:
+    # tests/e2e/test_auth_wu07_oidc_provider.py.
+    ("GET", "/auth/providers"),
+    ("GET", "/auth/oidc/{provider}/start"),
+    ("GET", "/auth/oidc/{provider}/callback"),
+    ("GET", "/auth/test-provider/authorize"),
+    ("POST", "/auth/test-provider/authorize"),
+}
 _CROSS_WORKSPACE_EXEMPT = {
     ("GET", "/auth/me"),  # the caller's own identity
     # AUTH WU-AUTH-04: these act only on the caller's own authentication
