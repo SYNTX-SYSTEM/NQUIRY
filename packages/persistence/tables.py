@@ -1460,6 +1460,130 @@ authentication_methods_table = sa.Table(
     sa.UniqueConstraint("id", "user_id", name="uq_authentication_methods_id_user"),
 )
 
+# WU-AUTH-05: 24 §32.2 internal failure classes (mirrors
+# `security.oidc_transaction.OidcFailureReason`; migrations never import packages).
+OIDC_FAILURE_REASONS: tuple[str, ...] = (
+    "MISSING_TRANSACTION",
+    "EXPIRED_TRANSACTION",
+    "INVALID_STATE",
+    "USER_AGENT_BINDING_MISSING",
+    "USER_AGENT_BINDING_MISMATCH",
+    "PURPOSE_MISMATCH",
+    "INITIATING_USER_MISMATCH",
+    "ALREADY_PROCESSING",
+    "ALREADY_COMPLETED",
+    "CANCELLED_TERMINAL",
+    "FAILED_TERMINAL",
+    "EXPIRED",
+    "MISSING_PKCE_VERIFIER",
+    "TOKEN_EXCHANGE_REJECTED",
+    "TOKEN_EXCHANGE_OUTCOME_UNCERTAIN",
+    "INVALID_ID_TOKEN_SIGNATURE",
+    "INVALID_ISSUER",
+    "INVALID_AUDIENCE",
+    "EXPIRED_ID_TOKEN",
+    "INVALID_NONCE",
+    "PROVIDER_SUBJECT_MISSING",
+    "PROVIDER_SUBJECT_COLLISION",
+    "PROVIDER_ACCESS_DENIED",
+    "USER_CANCEL",
+    "PROVIDER_FAILURE",
+    "MALFORMED_CALLBACK",
+    "REDIRECT_TARGET_REJECTED",
+    "ACCOUNT_CREATION_POLICY_UNRESOLVED",
+    "ACCOUNT_LINK_AUTHORITY_FAILURE",
+    "LOCAL_EFFECT_FAILURE",
+)
+
+# WU-AUTH-05: each transaction state requires exactly its timestamps (24 §11.4).
+_OIDC_STATE_TIMESTAMPS = " OR ".join(
+    (
+        "(state = 'PENDING' AND claimed_at IS NULL AND completed_at IS NULL"
+        " AND failed_terminal_at IS NULL AND expired_at IS NULL AND cancelled_at IS NULL"
+        " AND verifier_unavailable_at IS NULL AND failure_reason IS NULL)",
+        "(state = 'PROCESSING' AND claimed_at IS NOT NULL AND completed_at IS NULL"
+        " AND failed_terminal_at IS NULL AND expired_at IS NULL AND cancelled_at IS NULL"
+        " AND verifier_unavailable_at IS NOT NULL AND failure_reason IS NULL)",
+        "(state = 'COMPLETED' AND claimed_at IS NOT NULL AND completed_at IS NOT NULL"
+        " AND failed_terminal_at IS NULL AND expired_at IS NULL AND cancelled_at IS NULL"
+        " AND verifier_unavailable_at IS NOT NULL AND failure_reason IS NULL)",
+        "(state = 'FAILED_TERMINAL' AND failed_terminal_at IS NOT NULL AND completed_at IS NULL"
+        " AND expired_at IS NULL AND cancelled_at IS NULL"
+        " AND verifier_unavailable_at IS NOT NULL AND failure_reason IS NOT NULL)",
+        "(state = 'EXPIRED' AND claimed_at IS NULL AND expired_at IS NOT NULL"
+        " AND completed_at IS NULL AND failed_terminal_at IS NULL AND cancelled_at IS NULL"
+        " AND verifier_unavailable_at IS NOT NULL AND failure_reason IS NULL)",
+        "(state = 'CANCELLED_TERMINAL' AND claimed_at IS NULL AND cancelled_at IS NOT NULL"
+        " AND completed_at IS NULL AND failed_terminal_at IS NULL AND expired_at IS NULL"
+        " AND verifier_unavailable_at IS NOT NULL AND failure_reason IS NOT NULL)",
+    )
+)
+
+oidc_auth_transactions_table = sa.Table(
+    # WU-AUTH-05 (migration c4e6a8b1d3f5): 24 §11.3 OIDC auth transaction.
+    # Protocol state between a provider login start and its callback; not an
+    # identity, not a method, not a session. The transition legality and the
+    # immutability rules are a trigger in the migration.
+    "oidc_auth_transactions",
+    metadata,
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column("provider", sa.Text(), nullable=False),
+    sa.Column("purpose", sa.Text(), nullable=False),
+    sa.Column(
+        "initiating_user_id",
+        sa.Uuid(),
+        sa.ForeignKey("users.id", ondelete="RESTRICT"),
+        nullable=True,
+    ),
+    sa.Column("state", sa.Text(), nullable=False),
+    sa.Column("state_hash", sa.Text(), nullable=False, unique=True),
+    sa.Column("nonce_hash", sa.Text(), nullable=False),
+    sa.Column("user_agent_binding_hash", sa.Text(), nullable=False),
+    sa.Column("pkce_code_verifier", sa.Text(), nullable=True),
+    sa.Column("pkce_code_challenge", sa.Text(), nullable=False),
+    sa.Column("post_auth_redirect_target", sa.Text(), nullable=False),
+    sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("expires_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("claimed_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("completed_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("failed_terminal_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("expired_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("cancelled_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("verifier_unavailable_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("failure_reason", sa.Text(), nullable=True),
+    sa.Column("provenance_ref", sa.Text(), nullable=False),
+    sa.CheckConstraint("provider <> ''", name="ck_oidc_auth_transactions_provider"),
+    sa.CheckConstraint(
+        "purpose IN ('LOGIN', 'ACCOUNT_LINK')", name="ck_oidc_auth_transactions_purpose"
+    ),
+    sa.CheckConstraint(
+        "(purpose = 'ACCOUNT_LINK') = (initiating_user_id IS NOT NULL)",
+        name="ck_oidc_auth_transactions_initiating_user",
+    ),
+    sa.CheckConstraint(
+        "state IN ('PENDING', 'PROCESSING', 'COMPLETED', 'FAILED_TERMINAL', 'EXPIRED', "
+        "'CANCELLED_TERMINAL')",
+        name="ck_oidc_auth_transactions_state",
+    ),
+    sa.CheckConstraint(
+        "(pkce_code_verifier IS NOT NULL) = (state = 'PENDING')",
+        name="ck_oidc_auth_transactions_verifier_pending",
+    ),
+    sa.CheckConstraint(
+        "post_auth_redirect_target ~ '^/([^/].*)?$'",
+        name="ck_oidc_auth_transactions_local_redirect",
+    ),
+    sa.CheckConstraint(
+        "failure_reason IS NULL OR failure_reason IN ("
+        + ", ".join(f"'{reason}'" for reason in OIDC_FAILURE_REASONS)
+        + ")",
+        name="ck_oidc_auth_transactions_failure_reason",
+    ),
+    sa.CheckConstraint(_OIDC_STATE_TIMESTAMPS, name="ck_oidc_auth_transactions_state_timestamps"),
+    sa.CheckConstraint("expires_at > created_at", name="ck_oidc_auth_transactions_expiry"),
+    sa.CheckConstraint("provenance_ref <> ''", name="ck_oidc_auth_transactions_provenance"),
+)
+
 impact_chains_table = sa.Table(
     "impact_chains",
     metadata,
@@ -1529,6 +1653,7 @@ __all__ = [
     "local_auth_credentials_table",
     "local_auth_sessions_table",
     "authentication_methods_table",
+    "oidc_auth_transactions_table",
     "ai_operation_authorizations_table",
     "ai_validation_proofs_table",
     "question_clusters_table",

@@ -44,21 +44,22 @@ preceded them, so the counts are those of the pin.
 | WU-AUTH-01 Repository Binding Reconstruction | PASS (evidence) | `a0f5982` |
 | WU-AUTH-02 Authentication Method Model | PROVEN | `53823d6` |
 | WU-AUTH-03 Local Credential Migration Compatibility | PROVEN | `bf046b9` |
-| WU-AUTH-04 Authenticated Session Evolution | PROVEN | this commit |
-| WU-AUTH-05 OIDC Auth Transaction Field | next | — |
-| WU-AUTH-06..17 | not started | — |
+| WU-AUTH-04 Authenticated Session Evolution | PROVEN | `3ffbd1b` |
+| WU-AUTH-05 OIDC Auth Transaction Field | PROVEN (mutation step: guard-necessity falsifiers only, see report) | this commit |
+| WU-AUTH-06 Redirect Target Validation | next | — |
+| WU-AUTH-07..17 | not started | — |
 
 ### Current First Broken Relation
 
-OIDC Auth Transaction: no authoritative transaction relation between a
-provider login start and its callback (owner WU-AUTH-05; FBR-AUTH-008, -010,
--013, -014).
+Redirect target legitimacy: no validator turns a redirect candidate into a
+legitimate local destination before it is bound (owner WU-AUTH-06; FBR-AUTH-015).
 
 ### Migrations
 
-Head `b3d5f7a9c2e6`. Chain from the pin head `e8c2a5f1b7d4`: `f1a7c3d9b2e4`
+Head `c4e6a8b1d3f5`. Chain from the pin head `e8c2a5f1b7d4`: `f1a7c3d9b2e4`
 (WU-AUTH-02 `authentication_methods`) → `a2c4e6f8b1d3` (WU-AUTH-03 credential ↔ method) → `b3d5f7a9c2e6` (WU-AUTH-04
-session attribution and revocation reason).
+session attribution and revocation reason) → `c4e6a8b1d3f5` (WU-AUTH-05 OIDC
+transactions).
 
 ## Upstream dependencies
 

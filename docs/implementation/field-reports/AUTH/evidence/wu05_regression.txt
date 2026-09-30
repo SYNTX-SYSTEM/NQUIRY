@@ -1,0 +1,33 @@
+WU-AUTH-05 final full-repository regression (2026-09-30), worktree auth-identity, DB nquiry_purple_test
+HEAD: 3ffbd1bca98829317560f87b12b7092e2e8c11ff (auth-identity)
+PRE_RUN_GIT_STATUS:
+   M docs/implementation/field-reports/AUTH/STATUS.md
+   M packages/persistence/tables.py
+  ?? docs/implementation/field-reports/AUTH/WU-AUTH-05.md
+  ?? migrations/versions/c4e6a8b1d3f5_auth_oidc_transactions.py
+  ?? packages/application/oidc_transactions.py
+  ?? packages/persistence/oidc_transaction_repository.py
+  ?? packages/security/oidc_transaction.py
+  ?? tests/security/test_auth_oidc_transactions.py
+PRE_RUN_TREE_HASH: f3ec6b4b024edeb63a4acbeca07dbd1dfe27dfae44f657598611f996b7ed20d8
+LIVE_COMMAND: DATABASE_URL=<isolated test db> /home/codi/Entwicklung/nquiry/.venv/bin/python -m pytest -q -p no:cacheprovider
+LIVE_RESULT: 2125 passed, 2 skipped in 2149.11s (0:35:49)
+LIVE_EXIT_CODE: 0
+NO_DB_COMMAND: env -u DATABASE_URL /home/codi/Entwicklung/nquiry/.venv/bin/python -m pytest -q -p no:cacheprovider
+NO_DB_RESULT: 942 passed, 1185 skipped in 30.30s
+NO_DB_EXIT_CODE: 0
+MIGRATIONS: MIGRATION_STATIC_CHECK::PASS (36 revision(s), single head ['c4e6a8b1d3f5']) MIGRATION_LIVE_CHECK::PASS (db head matches {'c4e6a8b1d3f5'}) 
+POST_RUN_GIT_STATUS:
+   M docs/implementation/field-reports/AUTH/STATUS.md
+   M packages/persistence/tables.py
+  ?? docs/implementation/field-reports/AUTH/WU-AUTH-05.md
+  ?? migrations/versions/c4e6a8b1d3f5_auth_oidc_transactions.py
+  ?? packages/application/oidc_transactions.py
+  ?? packages/persistence/oidc_transaction_repository.py
+  ?? packages/security/oidc_transaction.py
+  ?? tests/security/test_auth_oidc_transactions.py
+POST_RUN_TREE_HASH: f3ec6b4b024edeb63a4acbeca07dbd1dfe27dfae44f657598611f996b7ed20d8
+TREE_UNCHANGED_DURING_RUN: true
+BEFORE (WU-AUTH-04): live 2096 / 2. AFTER: 2125 / 2 = 2096 + 29 (OIDC transaction falsifiers).
+RED: collection error (application.oidc_transactions absent), 0/29 ran.
+MUTATION: no source-mutation script for this unit (the response writing it was withheld by the session safety classifier); guard-necessity falsifiers cover each protection, see WU-AUTH-05.md.
