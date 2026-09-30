@@ -22,6 +22,9 @@ IN_PROGRESS.
 - Human decisions: `HUMAN_DECISIONS.md` (HD-AUTH-01..03). Consumed from
   predecessors: HD-28 / NQ-DEC-056 (host-operator account creation), F02 HD-3
   (dev-only identity), F02 HD-6 (no own commit boundary in application modules).
+- **HA-AUTH-01 OPEN** (WU-AUTH-09): production account creation policy for
+  unknown provider subjects; DENIED in force. Block in `WU-AUTH-09.md`,
+  queue in `HUMAN_DECISIONS.md`.
 - Open Human Authority boundaries: all 18 of 24 §36. Touched and left
   undecided so far: #10 session lifetime (12 h kept), #18 multi-account UX
   (an earlier session is not revoked by a new login).
@@ -55,22 +58,24 @@ preceded them, so the counts are those of the pin.
 | WU-AUTH-05 OIDC Auth Transaction Field | PROVEN (mutation step: guard-necessity falsifiers only, see report) | `4495345` |
 | WU-AUTH-06 Redirect Target Validation | PROVEN (same mutation disclosure) | `69b806a` |
 | WU-AUTH-07 OIDC Provider Adapter, start / callback | PROVEN against the local test issuer; REAL GOOGLE PROOF BLOCKED_EXTERNAL (no client credentials) | `5aa13ae` |
-| WU-AUTH-08 Provider Identity Binding | PROVEN | this commit |
-| WU-AUTH-09 Account Creation Boundary | next (reaches 24 §36 #3–#5) | — |
-| WU-AUTH-10..17 | not started | — |
+| WU-AUTH-08 Provider Identity Binding | PROVEN | `e097de1` |
+| WU-AUTH-09 Account Creation Boundary | PROVEN; HA-AUTH-01 OPEN (production policy), DENIED in force | this commit |
+| WU-AUTH-10 Account Linking | next | — |
+| WU-AUTH-11..17 | not started | — |
 
 ### Current First Broken Relation
 
-Account creation boundary: an unknown provider subject evaluates no explicit
-policy relation; the approved-policy branch does not exist (owner WU-AUTH-09;
-FBR-AUTH-007; the policy itself is 24 §36 #3–#5).
+Account linking: an authenticated identity cannot add a provider method; no
+ACCOUNT_LINK start / callback, collision rule or link audit exists (owner
+WU-AUTH-10).
 
 ### Migrations
 
-Head `d5f7b9c1e3a7`. Chain from the pin head `e8c2a5f1b7d4`: `f1a7c3d9b2e4`
+Head `e6a8c1d3f5b9`. Chain from the pin head `e8c2a5f1b7d4`: `f1a7c3d9b2e4`
 (WU-AUTH-02 `authentication_methods`) → `a2c4e6f8b1d3` (WU-AUTH-03 credential ↔ method) → `b3d5f7a9c2e6` (WU-AUTH-04
 session attribution and revocation reason) → `c4e6a8b1d3f5` (WU-AUTH-05 OIDC
-transactions) → `d5f7b9c1e3a7` (WU-AUTH-08 provider identities).
+transactions) → `d5f7b9c1e3a7` (WU-AUTH-08 provider identities) → `e6a8c1d3f5b9` (WU-AUTH-09
+account creation failure classes).
 
 ## Upstream dependencies
 

@@ -1494,6 +1494,9 @@ OIDC_FAILURE_REASONS: tuple[str, ...] = (
     "ACCOUNT_LINK_AUTHORITY_FAILURE",
     "LOCAL_EFFECT_FAILURE",
     "AUTHENTICATION_METHOD_REVOKED",  # WU-AUTH-08 (migration d5f7b9c1e3a7)
+    "PROVIDER_EMAIL_MISSING",  # WU-AUTH-09 (migration e6a8c1d3f5b9)
+    "PROVIDER_EMAIL_UNVERIFIED",
+    "EMAIL_COLLISION",
 )
 
 # WU-AUTH-05: each transaction state requires exactly its timestamps (24 §11.4).

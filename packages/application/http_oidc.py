@@ -50,6 +50,16 @@ BINDING_COOKIE_NAME = "nquiry_oidc_binding"
 BINDING_COOKIE_PATH = "/auth"
 LOGIN_PROJECTION_BASE = "/login?auth="
 _PROVIDER_UNAVAILABLE_ERRORS = frozenset({"temporarily_unavailable", "server_error"})
+# Refusals of the account creation boundary: "signing in with this provider is
+# not available for this account" (24 §24.6), as opposed to a failed proof.
+_UNAVAILABLE_REASONS = frozenset(
+    {
+        OidcFailureReason.ACCOUNT_CREATION_POLICY_UNRESOLVED,
+        OidcFailureReason.PROVIDER_EMAIL_MISSING,
+        OidcFailureReason.PROVIDER_EMAIL_UNVERIFIED,
+        OidcFailureReason.EMAIL_COLLISION,
+    }
+)
 
 _runtime: AuthRuntime | None = None
 
@@ -204,27 +214,37 @@ def dispatch_oidc_callback(
         _fail(claimed.transaction_id, invalid.reason, now=now)
         return _projection("failed")
 
-    # (3) the local effect gate and the terminal state, together.
-    with connect() as connection:
-        repository = SqlAlchemyOidcTransactionRepository(connection)
-        try:
-            resolved = resolve_provider_identity(connection, credential, now=now)
-        except ProviderIdentityUnresolved as unresolved:
-            fail_transaction(
-                repository, claimed.transaction_id, reason=unresolved.reason.value, now=now
+    # (3) the local effect gate, the fresh session and the terminal state:
+    # one transaction. A refusal or a failure inside it rolls that transaction
+    # back (no partial identity, 24 §19.11) and the refusal is then written as
+    # FAILED_TERMINAL in its own transaction (24 §11.15).
+    runtime = current_auth_runtime()
+    try:
+        with connect() as connection:
+            resolved = resolve_provider_identity(
+                connection,
+                credential,
+                now=now,
+                policy=runtime.account_creation_policy,
+                environment=runtime.environment,
             )
-            if unresolved.reason is OidcFailureReason.ACCOUNT_CREATION_POLICY_UNRESOLVED:
-                return _projection("unavailable")
-            return _projection("failed")
-        # 24 §19.1 / §19.3: canonical identity resolved and method active ->
-        # fresh session, then the transaction's terminal state, one commit.
-        session = issue_session(
-            SqlAlchemyLocalSessionRepository(connection),
-            user_id=resolved.user_id,
-            method_id=resolved.method_id,
-            now=now,
-        )
-        complete_transaction(repository, claimed.transaction_id, now=now)
+            session = issue_session(
+                SqlAlchemyLocalSessionRepository(connection),
+                user_id=resolved.user_id,
+                method_id=resolved.method_id,
+                now=now,
+            )
+            complete_transaction(
+                SqlAlchemyOidcTransactionRepository(connection), claimed.transaction_id, now=now
+            )
+    except ProviderIdentityUnresolved as unresolved:
+        _fail(claimed.transaction_id, unresolved.reason, now=now)
+        if unresolved.reason in _UNAVAILABLE_REASONS:
+            return _projection("unavailable")
+        return _projection("failed")
+    except Exception:  # noqa: BLE001 -- any local failure after provider proof is terminal
+        _fail(claimed.transaction_id, OidcFailureReason.LOCAL_EFFECT_FAILURE, now=now)
+        return _projection("failed")
     return OidcDispatchResult(
         303,
         location=claimed.redirect_target,

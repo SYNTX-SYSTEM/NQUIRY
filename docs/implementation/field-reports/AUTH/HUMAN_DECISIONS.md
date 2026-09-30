@@ -56,6 +56,17 @@ No production tags.
 **Scope:** this Field and this branch only. It does not change 20 §14 for any
 other Field.
 
+## Open boundaries (OPEN, awaiting the operator)
+
+| # | Boundary | Home | What it blocks | Default in force | Status |
+|---|---|---|---|---|---|
+| HA-AUTH-01 | **Production account creation policy for an unknown, verified external-provider subject** (24 §36 #3–#5). Options: DENIED; SELF_REGISTRATION_ALLOWED; INVITATION_REQUIRED; PRE_PROVISIONED_IDENTITY_REQUIRED; GOVERNANCE_MEDIATED_CREATION (the last three need relations that do not exist). Full block: `WU-AUTH-09.md`. | 24 §11.14, §36; HD-28 (external-provider policy left fail-closed) | First-time provider login of a brand-new identity in PRODUCTION / STAGING | DENIED | OPEN |
+
+Touched and left undecided, not blocking any Work Unit: 24 §36 #1 / #6
+(Google as an official, production-enabled method), #9 (provider-verified
+email as NQUIRY verified email), #10 (session lifetime, 12 h kept), #15
+(governance bootstrap for provider-created identities), #18 (multi-account UX).
+
 ## Ledger reconciliation (deferred, disclosed)
 
 20 §14 requires human decisions to be reconciled into 16 §41, the §6 table and

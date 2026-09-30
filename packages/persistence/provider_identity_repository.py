@@ -17,7 +17,11 @@ from typing import Any
 
 import sqlalchemy as sa
 from security.auth_methods import AuthenticationMethodStatus
-from security.provider_identity import ProviderAuthentication, ProviderIdentityBinding
+from security.provider_identity import (
+    ProviderAuthentication,
+    ProviderIdentityBinding,
+    ProviderIdentityConflict,
+)
 from semantic_types.ids import AuthenticationMethodId, UserId
 
 from persistence.tables import external_provider_identities_table
@@ -57,6 +61,51 @@ class SqlAlchemyProviderIdentityRepository:
         provenance_ref: str,
     ) -> ProviderIdentityBinding:
         binding_id = uuid.uuid4()
+        try:
+            self._insert(
+                binding_id=binding_id,
+                method_id=method_id,
+                user_id=user_id,
+                provider_issuer=provider_issuer,
+                provider_subject=provider_subject,
+                provider_email=provider_email,
+                provider_email_verified=provider_email_verified,
+                provider_display_name=provider_display_name,
+                now=now,
+                provenance_ref=provenance_ref,
+            )
+        except sa.exc.IntegrityError as exc:
+            if "uq_external_provider_identities" in str(exc.orig):
+                raise ProviderIdentityConflict(str(exc.orig).splitlines()[0]) from exc
+            raise
+        return ProviderIdentityBinding(
+            binding_id=binding_id,
+            method_id=method_id,
+            user_id=user_id,
+            provider_issuer=provider_issuer,
+            provider_subject=provider_subject,
+            provider_email=provider_email,
+            provider_email_verified=provider_email_verified,
+            provider_display_name=provider_display_name,
+            linked_at=now,
+            revoked_at=None,
+            provenance_ref=provenance_ref,
+        )
+
+    def _insert(
+        self,
+        *,
+        binding_id: uuid.UUID,
+        method_id: AuthenticationMethodId,
+        user_id: UserId,
+        provider_issuer: str,
+        provider_subject: str,
+        provider_email: str | None,
+        provider_email_verified: bool,
+        provider_display_name: str | None,
+        now: datetime,
+        provenance_ref: str,
+    ) -> None:
         self._connection.execute(
             sa.insert(external_provider_identities_table).values(
                 id=binding_id,
@@ -71,19 +120,6 @@ class SqlAlchemyProviderIdentityRepository:
                 revoked_at=None,
                 provenance_ref=provenance_ref,
             )
-        )
-        return ProviderIdentityBinding(
-            binding_id=binding_id,
-            method_id=method_id,
-            user_id=user_id,
-            provider_issuer=provider_issuer,
-            provider_subject=provider_subject,
-            provider_email=provider_email,
-            provider_email_verified=provider_email_verified,
-            provider_display_name=provider_display_name,
-            linked_at=now,
-            revoked_at=None,
-            provenance_ref=provenance_ref,
         )
 
     def find(self, provider_issuer: str, provider_subject: str) -> ProviderIdentityBinding | None:

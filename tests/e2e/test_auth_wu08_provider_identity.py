@@ -45,6 +45,7 @@ from security.auth_methods import AuthenticationMethodType
 from security.local_auth import hash_password, hash_session_token
 from security.oidc_test_issuer import TEST_ISSUER, LocalTestIssuer
 from security.oidc_transaction import hash_protocol_value
+from security.provider_identity import ProviderIdentityConflict
 from semantic_types.ids import UserId
 
 _NOW = datetime(2030, 1, 1, tzinfo=timezone.utc)
@@ -186,7 +187,9 @@ def test_the_same_issuer_and_subject_cannot_be_bound_to_two_identities(
 ) -> None:
     first, second = _user(db_connection), _user(db_connection)
     _bind(db_connection, first, subject="shared-subject")
-    with pytest.raises(sa.exc.IntegrityError), db_connection.begin_nested():
+    # The database's uniqueness, translated by the adapter into the typed
+    # conflict the account creation / linking effects consume (WU-AUTH-09).
+    with pytest.raises(ProviderIdentityConflict), db_connection.begin_nested():
         _bind(db_connection, second, subject="shared-subject")
 
 

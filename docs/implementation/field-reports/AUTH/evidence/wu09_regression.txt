@@ -1,0 +1,45 @@
+WU-AUTH-09 final full-repository regression (2026-09-30), worktree auth-identity, DB nquiry_purple_test
+HEAD: e097de13e63bcac853845b6a1c84c4091cf5d726 (auth-identity)
+PRE_RUN_GIT_STATUS:
+   M docs/implementation/field-reports/AUTH/HUMAN_DECISIONS.md
+   M docs/implementation/field-reports/AUTH/STATUS.md
+   M packages/application/auth_runtime.py
+   M packages/application/http_oidc.py
+   M packages/application/oidc_identity.py
+   M packages/persistence/provider_identity_repository.py
+   M packages/persistence/tables.py
+   M packages/security/oidc_transaction.py
+   M packages/security/provider_identity.py
+   M tests/e2e/test_auth_wu08_provider_identity.py
+  ?? docs/implementation/field-reports/AUTH/WU-AUTH-09.md
+  ?? migrations/versions/e6a8c1d3f5b9_auth_account_creation_reasons.py
+  ?? packages/security/account_creation.py
+  ?? tests/e2e/test_auth_wu09_account_creation.py
+PRE_RUN_TREE_HASH: 1f5b64869ab736d1c4bb97015fe1bd4478586ed478fc23bb3988bd7d313c859d
+LIVE_COMMAND: DATABASE_URL=<isolated test db> /home/codi/Entwicklung/nquiry/.venv/bin/python -m pytest -q -p no:cacheprovider
+LIVE_RESULT: 2219 passed, 2 skipped in 2623.14s (0:43:43)
+LIVE_EXIT_CODE: 0
+NO_DB_COMMAND: env -u DATABASE_URL /home/codi/Entwicklung/nquiry/.venv/bin/python -m pytest -q -p no:cacheprovider
+NO_DB_RESULT: 986 passed, 1235 skipped in 45.92s
+NO_DB_EXIT_CODE: 0
+MIGRATIONS: MIGRATION_STATIC_CHECK::PASS (38 revision(s), single head ['e6a8c1d3f5b9']) MIGRATION_LIVE_CHECK::PASS (db head matches {'e6a8c1d3f5b9'}) 
+POST_RUN_GIT_STATUS:
+   M docs/implementation/field-reports/AUTH/HUMAN_DECISIONS.md
+   M docs/implementation/field-reports/AUTH/STATUS.md
+   M packages/application/auth_runtime.py
+   M packages/application/http_oidc.py
+   M packages/application/oidc_identity.py
+   M packages/persistence/provider_identity_repository.py
+   M packages/persistence/tables.py
+   M packages/security/oidc_transaction.py
+   M packages/security/provider_identity.py
+   M tests/e2e/test_auth_wu08_provider_identity.py
+  ?? docs/implementation/field-reports/AUTH/WU-AUTH-09.md
+  ?? migrations/versions/e6a8c1d3f5b9_auth_account_creation_reasons.py
+  ?? packages/security/account_creation.py
+  ?? tests/e2e/test_auth_wu09_account_creation.py
+POST_RUN_TREE_HASH: 1f5b64869ab736d1c4bb97015fe1bd4478586ed478fc23bb3988bd7d313c859d
+TREE_UNCHANGED_DURING_RUN: true
+BEFORE (WU-AUTH-08): live 2200 / 2. AFTER: 2219 / 2 = 2200 + 19 (account creation boundary).
+RED: collection error (security.account_creation absent), 0/19 ran. MUTATION: no source-mutation script (disclosed).
+HA-AUTH-01 OPEN: production account creation policy (24 s36 #3-#5); DENIED in force.

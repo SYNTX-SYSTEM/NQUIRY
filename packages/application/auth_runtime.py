@@ -9,6 +9,9 @@ Settings (environment variables, read once at startup, same discipline as
   `NQUIRY_GOOGLE_CLIENT_SECRET` and `NQUIRY_GOOGLE_REDIRECT_URI` are all
   present (an incomplete configuration enables nothing and is reported as
   such); `test` enables the local test provider, in DEVELOPMENT / TEST only.
+- `NQUIRY_ACCOUNT_CREATION_POLICY` (24 §11.14; default `DENIED`):
+  `SELF_REGISTRATION_ALLOWED` in DEVELOPMENT / TEST only; the other policies
+  are refused until their relations exist.
 - `NQUIRY_PUBLIC_API_BASE_URL`: where a browser reaches this API (the test
   provider's authorize page and callback live under it); default
   `http://localhost:8000`.
@@ -25,6 +28,7 @@ import os
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 
+from security.account_creation import MATERIALIZED_POLICIES, AccountCreationPolicy
 from security.events import Environment
 from security.oidc_provider import OidcProvider
 from security.oidc_standard import google_provider
@@ -46,6 +50,14 @@ class UnknownAuthProvider(RuntimeError):
     """A provider id this runtime does not know; nothing is guessed."""
 
 
+class AccountCreationPolicyForbidden(RuntimeError):
+    """SELF_REGISTRATION_ALLOWED outside DEVELOPMENT / TEST (HD-28; 24 §36 #3)."""
+
+
+class AccountCreationPolicyNotMaterialized(RuntimeError):
+    """A policy whose relation does not exist yet was configured."""
+
+
 @dataclass(frozen=True)
 class AuthRuntime:
     environment: Environment | None
@@ -53,6 +65,7 @@ class AuthRuntime:
     test_issuer: LocalTestIssuer | None = None
     incomplete: tuple[str, ...] = ()
     """Provider ids that were requested but not fully configured."""
+    account_creation_policy: AccountCreationPolicy = AccountCreationPolicy.DENIED
 
     def provider(self, provider_id: str) -> OidcProvider | None:
         return self.providers.get(provider_id)
@@ -98,15 +111,31 @@ def auth_runtime_from_environment(
             providers["test"] = issuer.provider()
         else:
             raise UnknownAuthProvider(f"unknown authentication provider {provider_id!r}")
+    policy = AccountCreationPolicy(source.get("NQUIRY_ACCOUNT_CREATION_POLICY", "DENIED").strip())
+    if policy not in MATERIALIZED_POLICIES:
+        raise AccountCreationPolicyNotMaterialized(
+            f"{policy.value} names a relation that is not materialized; nothing is substituted"
+        )
+    if (
+        policy is AccountCreationPolicy.SELF_REGISTRATION_ALLOWED
+        and environment not in _DEV_ENVIRONMENTS
+    ):
+        raise AccountCreationPolicyForbidden(
+            "SELF_REGISTRATION_ALLOWED is DEVELOPMENT / TEST only (HD-28; 24 section 36 #3); "
+            f"refused for NQUIRY_ENVIRONMENT={raw_environment!r}"
+        )
     return AuthRuntime(
         environment=environment,
         providers=providers,
         test_issuer=issuer,
         incomplete=tuple(incomplete),
+        account_creation_policy=policy,
     )
 
 
 __all__ = [
+    "AccountCreationPolicyForbidden",
+    "AccountCreationPolicyNotMaterialized",
     "AuthRuntime",
     "LocalProviderForbidden",
     "UnknownAuthProvider",

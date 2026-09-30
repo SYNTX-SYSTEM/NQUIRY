@@ -20,6 +20,11 @@ from typing import Protocol
 from semantic_types.ids import AuthenticationMethodId, UserId
 
 
+class ProviderIdentityConflict(Exception):
+    """The binding could not be created because the issuer + subject (or the
+    method) is already bound: a concurrent first login or link won."""
+
+
 @dataclass(frozen=True, slots=True)
 class ProviderIdentityBinding:
     binding_id: uuid.UUID
@@ -84,4 +89,9 @@ class ProviderIdentityRepository(Protocol):
         ...
 
 
-__all__ = ["ProviderAuthentication", "ProviderIdentityBinding", "ProviderIdentityRepository"]
+__all__ = [
+    "ProviderAuthentication",
+    "ProviderIdentityBinding",
+    "ProviderIdentityConflict",
+    "ProviderIdentityRepository",
+]
