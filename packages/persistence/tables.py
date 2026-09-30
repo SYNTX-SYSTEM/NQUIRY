@@ -1383,6 +1383,16 @@ local_auth_credentials_table = sa.Table(
     sa.Column("password_hash", sa.Text(), nullable=False),
     sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
     sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
+    # WU-AUTH-03 (migration a2c4e6f8b1d3): the LOCAL_PASSWORD method this
+    # credential belongs to. Same user (composite FK), one credential per
+    # method (UNIQUE). Type and immutability are a trigger in the migration.
+    sa.Column("authentication_method_id", sa.Uuid(), nullable=False, unique=True),
+    sa.ForeignKeyConstraint(
+        ["authentication_method_id", "user_id"],
+        ["authentication_methods.id", "authentication_methods.user_id"],
+        name="fk_local_auth_credentials_method_same_user",
+        ondelete="RESTRICT",
+    ),
 )
 
 local_auth_sessions_table = sa.Table(
@@ -1421,6 +1431,7 @@ authentication_methods_table = sa.Table(
         name="ck_authentication_methods_status_revocation",
     ),
     sa.CheckConstraint("provenance_ref <> ''", name="ck_authentication_methods_provenance"),
+    sa.UniqueConstraint("id", "user_id", name="uq_authentication_methods_id_user"),
 )
 
 impact_chains_table = sa.Table(

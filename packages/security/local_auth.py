@@ -45,7 +45,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Protocol
 
-from semantic_types.ids import UserId
+from semantic_types.ids import AuthenticationMethodId, UserId
 
 _PBKDF2_ALGORITHM = "sha256"
 _PBKDF2_ITERATIONS = 600_000  # OWASP 2023 minimum for PBKDF2-HMAC-SHA256
@@ -105,9 +105,15 @@ def hash_session_token(raw_token: str) -> str:
 
 @dataclass(frozen=True, slots=True)
 class LocalCredentialRecord:
+    """`method_id` (WU-AUTH-03): the LOCAL_PASSWORD authentication method
+    this credential belongs to. The method's status is deliberately not
+    carried: a status read here would be stale by the time it is used. The
+    one status check of a login is `LocalCredentialRepository.mark_authenticated`."""
+
     user_id: UserId
     email: str
     password_hash: str
+    method_id: AuthenticationMethodId
 
 
 @dataclass(frozen=True, slots=True)
@@ -125,6 +131,12 @@ class LocalCredentialRepository(Protocol):
     adapter: `persistence.local_auth_repository.SqlAlchemyLocalCredentialRepository`."""
 
     def get_by_email(self, email: str) -> LocalCredentialRecord | None: ...
+
+    def mark_authenticated(self, method_id: AuthenticationMethodId, *, at: datetime) -> bool:
+        """Records a successful authentication on the method, only while the
+        method is ACTIVE. False means the method is not ACTIVE (or unknown)
+        and the login must not proceed."""
+        ...
 
 
 class LocalSessionRepository(Protocol):

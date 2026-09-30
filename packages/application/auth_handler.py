@@ -109,6 +109,13 @@ def login(
         raise InvalidCredentials("unknown email or wrong password")
     if not normalized_password or not verify_password(normalized_password, record.password_hash):
         raise InvalidCredentials("unknown email or wrong password")
+    # WU-AUTH-03 (24 §16.3 "method active"): the credential's method must be
+    # ACTIVE. Checked after the password so a revoked method costs the same
+    # and answers the same as a wrong password. `mark_authenticated` changes
+    # the method row only while it is ACTIVE, so a revocation committed after
+    # the credential was read still denies this login.
+    if not credential_repository.mark_authenticated(record.method_id, at=now):
+        raise InvalidCredentials("unknown email or wrong password")
 
     raw_token = generate_session_token()
     expires_at = now + SESSION_LIFETIME

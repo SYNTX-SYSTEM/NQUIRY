@@ -40,18 +40,20 @@ preceded them, so the counts are those of the pin.
 | Work Unit | State | Commit |
 |---|---|---|
 | WU-AUTH-01 Repository Binding Reconstruction | PASS (evidence) | `a0f5982` |
-| WU-AUTH-02 Authentication Method Model | PROVEN | this commit |
-| WU-AUTH-03 Local Credential Migration Compatibility | next | — |
-| WU-AUTH-04..17 | not started | — |
+| WU-AUTH-02 Authentication Method Model | PROVEN | `53823d6` |
+| WU-AUTH-03 Local Credential Migration Compatibility | PROVEN | this commit |
+| WU-AUTH-04 Authenticated Session Evolution | next | — |
+| WU-AUTH-05..17 | not started | — |
 
 ### Current First Broken Relation
 
-Local credential ↔ authentication method: credentials belong to no method and
-login does not consult method status (owner WU-AUTH-03).
+Authenticated session ↔ authentication method / proof provenance, and session
+revocation scope (owner WU-AUTH-04; FBR-AUTH-005, FBR-AUTH-017).
 
 ### Migrations
 
-Head `f1a7c3d9b2e4` (WU-AUTH-02: `authentication_methods`). Pin head was `e8c2a5f1b7d4`.
+Head `a2c4e6f8b1d3`. Chain from the pin head `e8c2a5f1b7d4`: `f1a7c3d9b2e4`
+(WU-AUTH-02 `authentication_methods`) → `a2c4e6f8b1d3` (WU-AUTH-03 credential ↔ method).
 
 ## Upstream dependencies
 

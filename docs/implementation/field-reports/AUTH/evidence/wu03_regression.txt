@@ -1,0 +1,37 @@
+WU-AUTH-03 final full-repository regression (2026-09-30), worktree auth-identity, DB nquiry_purple_test
+HEAD: 53823d635b8f841f88d6295aa4b299913b10c3ea (auth-identity)
+PRE_RUN_GIT_STATUS:
+   M docs/implementation/field-reports/AUTH/STATUS.md
+   M packages/application/auth_handler.py
+   M packages/persistence/local_auth_repository.py
+   M packages/persistence/tables.py
+   M packages/security/local_auth.py
+  ?? docs/implementation/field-reports/AUTH/WU-AUTH-03.md
+  ?? migrations/versions/a2c4e6f8b1d3_auth_local_credential_method.py
+  ?? scripts/auth_wu03_mutation_proof.py
+  ?? tests/e2e/test_auth_wu03_local_credential_method.py
+  ?? tests/security/test_auth_migrations.py
+PRE_RUN_TREE_HASH: a064d60f022cedd4796ec9a9d3d3ff4786fa597005a083a44f811dc505f395b3
+LIVE_COMMAND: DATABASE_URL=<isolated test db> /home/codi/Entwicklung/nquiry/.venv/bin/python -m pytest -q -p no:cacheprovider
+LIVE_RESULT: 2065 passed, 2 skipped in 1847.16s (0:30:47)
+LIVE_EXIT_CODE: 0
+NO_DB_COMMAND: env -u DATABASE_URL /home/codi/Entwicklung/nquiry/.venv/bin/python -m pytest -q -p no:cacheprovider
+NO_DB_RESULT: 938 passed, 1129 skipped in 32.65s
+NO_DB_EXIT_CODE: 0
+MIGRATIONS: MIGRATION_STATIC_CHECK::PASS (34 revision(s), single head ['a2c4e6f8b1d3']) MIGRATION_LIVE_CHECK::PASS (db head matches {'a2c4e6f8b1d3'}) 
+POST_RUN_GIT_STATUS:
+   M docs/implementation/field-reports/AUTH/STATUS.md
+   M packages/application/auth_handler.py
+   M packages/persistence/local_auth_repository.py
+   M packages/persistence/tables.py
+   M packages/security/local_auth.py
+  ?? docs/implementation/field-reports/AUTH/WU-AUTH-03.md
+  ?? migrations/versions/a2c4e6f8b1d3_auth_local_credential_method.py
+  ?? scripts/auth_wu03_mutation_proof.py
+  ?? tests/e2e/test_auth_wu03_local_credential_method.py
+  ?? tests/security/test_auth_migrations.py
+POST_RUN_TREE_HASH: a064d60f022cedd4796ec9a9d3d3ff4786fa597005a083a44f811dc505f395b3
+TREE_UNCHANGED_DURING_RUN: true
+BEFORE (WU-AUTH-02): live 2049 / 2. AFTER: 2065 / 2 = 2049 + 14 (credential method) + 2 (migration walk).
+RED: the 14 falsifiers against git archive 53823d6 (db at f1a7c3d9b2e4): 14 failed.
+MUTATION: scripts/auth_wu03_mutation_proof.py 14/14 killed; sources restored: True
