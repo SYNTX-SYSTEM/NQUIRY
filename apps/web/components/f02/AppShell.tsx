@@ -32,6 +32,10 @@ export function AppShell({ crumbs, children }: { readonly crumbs: readonly Crumb
             ))}
           </ol>
         </nav>
+        {/* WU-AUTH-04: the account security surface (own sessions). */}
+        <Link className="button secondary" href="/account/security" data-testid="account-security-link">
+          Account security
+        </Link>
         <LogoutButton />
       </header>
       <main id="main" className="shell-main">

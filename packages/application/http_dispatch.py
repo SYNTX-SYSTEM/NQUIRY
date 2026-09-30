@@ -150,7 +150,16 @@ from application.accessible_workspaces_query import (
     AccessibleWorkspacesDenied,
     list_accessible_workspaces,
 )
-from application.auth_handler import InvalidCredentials, login, logout, resolve_session
+from application.auth_handler import (
+    InvalidCredentials,
+    SessionRequired,
+    list_sessions,
+    login,
+    logout,
+    logout_all_sessions,
+    resolve_session,
+    revoke_own_session,
+)
 from application.authority_binding_handler import (
     AuthorityBindingNotFound,
     GovernanceRootOrphaningRefused,
@@ -291,6 +300,91 @@ def dispatch_current_session(*, session_token: str | None) -> dict[str, object]:
     if principal is None:
         return {"kind": "denied", "reasonCode": "NO_SESSION"}
     return {"kind": "ok", "userId": str(principal.user_id.value)}
+
+
+_NO_SESSION_BODY: dict[str, object] = {"kind": "denied", "reasonCode": "NO_SESSION"}
+
+
+@dataclass(frozen=True, slots=True)
+class SessionDispatchResult:
+    """WU-AUTH-04 session-management dispatch: a status, a JSON body and
+    whether the HTTP adapter must clear the session cookie (the presenting
+    session itself was revoked)."""
+
+    status_code: int
+    body: dict[str, object]
+    clear_cookie: bool = False
+
+
+def dispatch_logout_all(*, session_token: str | None) -> SessionDispatchResult:
+    """`POST /auth/logout-all` (24 §15.7 all-session scope). Requires a valid
+    session: without one nothing is revoked and the answer is `denied`."""
+    with connect() as connection:
+        try:
+            revoked = logout_all_sessions(
+                session_token,
+                session_repository=SqlAlchemyLocalSessionRepository(connection),
+                now=datetime.now(timezone.utc),
+            )
+        except SessionRequired:
+            return SessionDispatchResult(401, _NO_SESSION_BODY)
+    return SessionDispatchResult(200, {"kind": "ok", "revokedSessions": revoked}, clear_cookie=True)
+
+
+def dispatch_list_sessions(*, session_token: str | None) -> SessionDispatchResult:
+    """`GET /auth/sessions`: the caller's own live sessions. Never a token or
+    a token hash; never another identity's session."""
+    with connect() as connection:
+        try:
+            sessions = list_sessions(
+                session_token,
+                session_repository=SqlAlchemyLocalSessionRepository(connection),
+                now=datetime.now(timezone.utc),
+            )
+        except SessionRequired:
+            return SessionDispatchResult(401, _NO_SESSION_BODY)
+    return SessionDispatchResult(
+        200,
+        {
+            "kind": "ok",
+            "sessions": [
+                {
+                    "sessionId": str(item.session_id),
+                    "issuedAt": item.issued_at.isoformat(),
+                    "expiresAt": item.expires_at.isoformat(),
+                    "current": item.current,
+                    "methodType": None if item.method_type is None else item.method_type.value,
+                }
+                for item in sessions
+            ],
+        },
+    )
+
+
+def dispatch_revoke_session(
+    *, session_token: str | None, session_id_str: str
+) -> SessionDispatchResult:
+    """`POST /auth/sessions/{sessionId}/revoke`: the caller revokes one of
+    their own sessions. Unknown, already revoked and foreign ids are one
+    answer (`SESSION_NOT_FOUND`)."""
+    with connect() as connection:
+        repository = SqlAlchemyLocalSessionRepository(connection)
+        now = datetime.now(timezone.utc)
+        principal = resolve_session(session_token, session_repository=repository, now=now)
+        if principal is None:
+            return SessionDispatchResult(401, _NO_SESSION_BODY)
+        try:
+            session_id = uuid.UUID(session_id_str)
+        except ValueError:
+            return SessionDispatchResult(
+                400, {"kind": "rejected", "reasonCode": "MALFORMED_SESSION_ID"}
+            )
+        if not revoke_own_session(
+            session_token, session_id, session_repository=repository, now=now
+        ):
+            return SessionDispatchResult(404, {"kind": "denied", "reasonCode": "SESSION_NOT_FOUND"})
+    own = principal.authentication_session_ref == f"local-session:{session_id}"
+    return SessionDispatchResult(200, {"kind": "ok"}, clear_cookie=own)
 
 
 def _chain_denied_body(chain_result: BoundaryChainResult) -> dict[str, object]:

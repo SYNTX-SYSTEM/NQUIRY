@@ -81,6 +81,9 @@ def run_mutations(mutations: list[Mutation], tests: tuple[str, ...]) -> int:
     if not os.environ.get("DATABASE_URL"):
         print("DATABASE_URL is required")
         return 2
+    selected = sys.argv[1:]  # optional: run only mutations whose name starts with an argument
+    if selected:
+        mutations = [m for m in mutations if any(m[0].startswith(prefix) for prefix in selected)]
     files = {rel for _, edits in mutations for rel, _, _ in edits}
     before = {rel: _sha(ROOT / rel) for rel in files}
     if _pytest(tests, dict(os.environ)) != 0:

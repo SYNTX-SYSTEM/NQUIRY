@@ -25,13 +25,17 @@ fully inert dead input, proven by the mandatory adversarial test).
 
 from __future__ import annotations
 
+import uuid
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
+from security.auth_methods import AuthenticationMethodStatus, AuthenticationMethodType
 from security.identity import AuthenticatedPrincipal
 from security.local_auth import (
     LocalCredentialRepository,
+    LocalSessionRecord,
     LocalSessionRepository,
+    SessionRevocationReason,
     generate_session_token,
     hash_password,
     hash_session_token,
@@ -124,8 +128,34 @@ def login(
         session_token_hash=hash_session_token(raw_token),
         issued_at=now,
         expires_at=expires_at,
+        method_id=record.method_id,
     )
     return LoginSuccess(user_id=record.user_id, session_token=raw_token, expires_at=expires_at)
+
+
+def _live_session(
+    raw_token: str | None, *, session_repository: LocalSessionRepository, now: datetime
+) -> LocalSessionRecord | None:
+    """The one definition of "this token names a session that authenticates
+    now" (24 §15.3, §15.7; 11 AC-11-002 item 4): the row exists, is not
+    revoked, is not expired, and the method that produced it, if any, is still
+    ACTIVE. The last condition makes a session die with its method even before
+    any propagation writes `revoked_at` on it (24 falsifier 76)."""
+    if not raw_token:
+        return None
+    record = session_repository.get_by_token_hash(hash_session_token(raw_token))
+    if record is None:
+        return None
+    if record.revoked_at is not None:
+        return None
+    if record.expires_at <= now:
+        return None
+    if (
+        record.method_id is not None
+        and record.method_status is not AuthenticationMethodStatus.ACTIVE
+    ):
+        return None
+    return record
 
 
 def resolve_session(
@@ -137,19 +167,14 @@ def resolve_session(
     """Verifies `raw_token` (the `nquiry_session` cookie value) against
     a real, persisted `local_auth_sessions` row. Returns `None` — never
     raises — for: no token, an unknown/garbage/tampered token, a
-    revoked session, or an expired session. Every one of these is a
-    distinct, independently-tested failure mode (see
-    `tests/e2e/test_auth_handler.py`); all collapse to the same `None`
-    here so a caller cannot distinguish them (same non-enumeration
+    revoked session, an expired session, or a session whose authentication
+    method has been revoked. Every one of these is a distinct,
+    independently-tested failure mode (see `tests/e2e/test_auth_handler.py`,
+    `tests/e2e/test_auth_wu04_session_evolution.py`); all collapse to the same
+    `None` here so a caller cannot distinguish them (same non-enumeration
     principle as `login`'s own `InvalidCredentials`)."""
-    if not raw_token:
-        return None
-    record = session_repository.get_by_token_hash(hash_session_token(raw_token))
+    record = _live_session(raw_token, session_repository=session_repository, now=now)
     if record is None:
-        return None
-    if record.revoked_at is not None:
-        return None
-    if record.expires_at <= now:
         return None
     return AuthenticatedPrincipal(
         user_id=record.user_id,
@@ -167,17 +192,130 @@ def logout(
 ) -> None:
     """Revokes the session `raw_token` names, if any. A missing/unknown
     token is a silent no-op — logging out twice, or logging out with no
-    session at all, is not an error."""
+    session at all, is not an error, and a second logout does not rewrite
+    the first revocation."""
     if not raw_token:
         return
-    session_repository.revoke(hash_session_token(raw_token), revoked_at=now)
+    session_repository.revoke(
+        hash_session_token(raw_token), revoked_at=now, reason=SessionRevocationReason.LOGOUT
+    )
+
+
+class SessionRequired(Exception):
+    """The operation acts on the caller's own sessions and the caller
+    presented no session that authenticates now. One exception for every
+    cause (no token, unknown, revoked, expired, method revoked)."""
+
+
+@dataclass(frozen=True, slots=True)
+class SessionSummary:
+    """What the owner of a session may see of it. No token, no token hash."""
+
+    session_id: uuid.UUID
+    issued_at: datetime
+    expires_at: datetime
+    current: bool
+    method_type: AuthenticationMethodType | None
+
+
+def _require_live(
+    raw_token: str | None, *, session_repository: LocalSessionRepository, now: datetime
+) -> LocalSessionRecord:
+    record = _live_session(raw_token, session_repository=session_repository, now=now)
+    if record is None:
+        raise SessionRequired("no valid session")
+    return record
+
+
+def list_sessions(
+    raw_token: str | None, *, session_repository: LocalSessionRepository, now: datetime
+) -> tuple[SessionSummary, ...]:
+    """The caller's own live sessions, oldest first (24 §21.2 session management)."""
+    current = _require_live(raw_token, session_repository=session_repository, now=now)
+    return tuple(
+        SessionSummary(
+            session_id=record.session_id,
+            issued_at=record.issued_at,
+            expires_at=record.expires_at,
+            current=record.session_id == current.session_id,
+            method_type=record.method_type,
+        )
+        for record in session_repository.list_live_for_user(current.user_id, now=now)
+    )
+
+
+def logout_all_sessions(
+    raw_token: str | None, *, session_repository: LocalSessionRepository, now: datetime
+) -> int:
+    """All-session scope (24 §15.7): revokes every unrevoked session of the
+    caller's identity, including the presenting one. Returns how many."""
+    current = _require_live(raw_token, session_repository=session_repository, now=now)
+    return session_repository.revoke_all_for_user(
+        current.user_id, revoked_at=now, reason=SessionRevocationReason.ALL_SESSIONS_LOGOUT
+    )
+
+
+def revoke_own_session(
+    raw_token: str | None,
+    session_id: uuid.UUID,
+    *,
+    session_repository: LocalSessionRepository,
+    now: datetime,
+) -> bool:
+    """Single-session scope by id: the caller revokes one of their OWN
+    sessions. False when `session_id` is unknown, already revoked or belongs
+    to another identity; the three are not told apart."""
+    current = _require_live(raw_token, session_repository=session_repository, now=now)
+    return session_repository.revoke_own(
+        session_id,
+        user_id=current.user_id,
+        revoked_at=now,
+        reason=SessionRevocationReason.SESSION_REVOKED,
+    )
+
+
+def rotate_session(
+    raw_token: str | None, *, session_repository: LocalSessionRepository, now: datetime
+) -> LoginSuccess:
+    """Rotation (24 §15.6): the presented session is revoked (ROTATED) and a
+    new one with a fresh token takes its place, in the caller's transaction.
+
+    Rotation is not an authentication. The new session keeps the user, the
+    method or proof provenance, the original `issued_at` (so
+    `authentication_time` stays the time of the real authentication) and the
+    original `expires_at` (rotation never extends a session). Only the winner
+    of the conditional revocation creates the successor, so a token rotates at
+    most once."""
+    current = _require_live(raw_token, session_repository=session_repository, now=now)
+    if not session_repository.revoke(
+        current.session_token_hash, revoked_at=now, reason=SessionRevocationReason.ROTATED
+    ):
+        raise SessionRequired("no valid session")
+    new_token = generate_session_token()
+    session_repository.create(
+        user_id=current.user_id,
+        session_token_hash=hash_session_token(new_token),
+        issued_at=current.issued_at,
+        expires_at=current.expires_at,
+        method_id=current.method_id,
+        proof_provenance=current.proof_provenance,
+    )
+    return LoginSuccess(
+        user_id=current.user_id, session_token=new_token, expires_at=current.expires_at
+    )
 
 
 __all__ = [
     "SESSION_LIFETIME",
     "InvalidCredentials",
     "LoginSuccess",
+    "SessionRequired",
+    "SessionSummary",
+    "list_sessions",
     "login",
-    "resolve_session",
     "logout",
+    "logout_all_sessions",
+    "resolve_session",
+    "revoke_own_session",
+    "rotate_session",
 ]

@@ -1,0 +1,63 @@
+WU-AUTH-04 final full-repository regression (2026-09-30), worktree auth-identity, DB nquiry_purple_test
+FIRST RUN (tree 1a7103ed...): live 1 failed / 2092 passed / 2 skipped, no-DB 1 failed / 937 passed:
+  FAILED tests/e2e/test_pfc_f09_2_isolation_sweep.py::test_the_sweep_covers_every_route
+  FAILED tests/e2e/test_pfc_f09_2_isolation_sweep.py::test_the_sweep_covers_every_route
+  -> repaired: the 3 new routes entered in RED's route sweep (tests/e2e/test_pfc_f09_2_isolation_sweep.py); path parameter renamed auth_session_id.
+SECOND RUN (exact committed tree):
+HEAD: bf046b985aa50d6dacc78f195e139935067d86e9 (auth-identity)
+PRE_RUN_GIT_STATUS:
+   M apps/api/src/nquiry_api/http/auth.py
+   M apps/web/components/f02/AppShell.tsx
+   M apps/web/lib/api/authClient.ts
+   M docs/implementation/field-reports/AUTH/STATUS.md
+   M packages/application/auth_handler.py
+   M packages/application/http_dispatch.py
+   M packages/persistence/local_auth_repository.py
+   M packages/persistence/tables.py
+   M packages/security/local_auth.py
+   M scripts/_auth_mutation.py
+   M tests/e2e/test_pfc_f09_2_isolation_sweep.py
+   M tests/security/test_auth_migrations.py
+  ?? apps/web/app/account/
+  ?? apps/web/playwright.auth.config.ts
+  ?? apps/web/tests/e2e/account-security.spec.ts
+  ?? apps/web/tests/lib/authSessions.test.ts
+  ?? docs/implementation/field-reports/AUTH/WU-AUTH-04.md
+  ?? migrations/versions/b3d5f7a9c2e6_auth_session_evolution.py
+  ?? scripts/auth_wu04_mutation_proof.py
+  ?? tests/e2e/test_auth_wu04_session_evolution.py
+PRE_RUN_TREE_HASH: 2ddb929ab42d5e940a3a724af9e1efc9762e9e9f995dc88c42d4e3ab25414f37
+LIVE_COMMAND: DATABASE_URL=<isolated test db> /home/codi/Entwicklung/nquiry/.venv/bin/python -m pytest -q -p no:cacheprovider
+LIVE_RESULT: 2096 passed, 2 skipped in 2035.86s (0:33:55)
+LIVE_EXIT_CODE: 0
+NO_DB_COMMAND: env -u DATABASE_URL /home/codi/Entwicklung/nquiry/.venv/bin/python -m pytest -q -p no:cacheprovider
+NO_DB_RESULT: 938 passed, 1160 skipped in 35.77s
+NO_DB_EXIT_CODE: 0
+MIGRATIONS: MIGRATION_STATIC_CHECK::PASS (35 revision(s), single head ['b3d5f7a9c2e6']) MIGRATION_LIVE_CHECK::PASS (db head matches {'b3d5f7a9c2e6'}) 
+POST_RUN_GIT_STATUS:
+   M apps/api/src/nquiry_api/http/auth.py
+   M apps/web/components/f02/AppShell.tsx
+   M apps/web/lib/api/authClient.ts
+   M docs/implementation/field-reports/AUTH/STATUS.md
+   M packages/application/auth_handler.py
+   M packages/application/http_dispatch.py
+   M packages/persistence/local_auth_repository.py
+   M packages/persistence/tables.py
+   M packages/security/local_auth.py
+   M scripts/_auth_mutation.py
+   M tests/e2e/test_pfc_f09_2_isolation_sweep.py
+   M tests/security/test_auth_migrations.py
+  ?? apps/web/app/account/
+  ?? apps/web/playwright.auth.config.ts
+  ?? apps/web/tests/e2e/account-security.spec.ts
+  ?? apps/web/tests/lib/authSessions.test.ts
+  ?? docs/implementation/field-reports/AUTH/WU-AUTH-04.md
+  ?? migrations/versions/b3d5f7a9c2e6_auth_session_evolution.py
+  ?? scripts/auth_wu04_mutation_proof.py
+  ?? tests/e2e/test_auth_wu04_session_evolution.py
+POST_RUN_TREE_HASH: 2ddb929ab42d5e940a3a724af9e1efc9762e9e9f995dc88c42d4e3ab25414f37
+TREE_UNCHANGED_DURING_RUN: true
+BEFORE (WU-AUTH-03): live 2065 / 2. AFTER: 2096 / 2 = 2065 + 27 (session evolution) + 1 (migration walk) + 3 (sweep: expired-session law on the new routes).
+FRONTEND: vitest 139 passed (16 new); tsc clean; eslint clean; mocked browser lane (playwright.auth.config.ts, :13460): 14 auth/account-security specs passed; all 47 mocked specs passed.
+RED: backend ImportError (SessionRequired) at collection, 0/27 ran; vitest 16/16 failed.
+MUTATION: scripts/auth_wu04_mutation_proof.py 29/29 killed (28 in the full run, M03 after a site correction); sources restored: True

@@ -43,9 +43,12 @@ import secrets
 import uuid
 from dataclasses import dataclass
 from datetime import datetime
+from enum import Enum
 from typing import Protocol
 
 from semantic_types.ids import AuthenticationMethodId, UserId
+
+from security.auth_methods import AuthenticationMethodStatus, AuthenticationMethodType
 
 _PBKDF2_ALGORITHM = "sha256"
 _PBKDF2_ITERATIONS = 600_000  # OWASP 2023 minimum for PBKDF2-HMAC-SHA256
@@ -103,6 +106,18 @@ def hash_session_token(raw_token: str) -> str:
     return hashlib.sha256(raw_token.encode("utf-8")).hexdigest()
 
 
+class SessionRevocationReason(Enum):
+    """Why a session was revoked (24 §15.7 revocation scopes, §15.6 rotation).
+    Closed; mirrored by the database CHECK."""
+
+    LOGOUT = "LOGOUT"
+    ALL_SESSIONS_LOGOUT = "ALL_SESSIONS_LOGOUT"
+    SESSION_REVOKED = "SESSION_REVOKED"
+    METHOD_REVOKED = "METHOD_REVOKED"
+    ACCOUNT_DISABLED = "ACCOUNT_DISABLED"
+    ROTATED = "ROTATED"
+
+
 @dataclass(frozen=True, slots=True)
 class LocalCredentialRecord:
     """`method_id` (WU-AUTH-03): the LOCAL_PASSWORD authentication method
@@ -118,12 +133,22 @@ class LocalCredentialRecord:
 
 @dataclass(frozen=True, slots=True)
 class LocalSessionRecord:
+    """`method_id` / `proof_provenance` (WU-AUTH-04, 24 §15.3): the
+    authentication method that produced the session, or the proof behind a
+    session no method produced. `method_status` is the method's status read in
+    the same statement as the session (None without a method)."""
+
     session_id: uuid.UUID
     user_id: UserId
     session_token_hash: str
     issued_at: datetime
     expires_at: datetime
     revoked_at: datetime | None
+    method_id: AuthenticationMethodId | None = None
+    proof_provenance: str | None = None
+    revoked_reason: SessionRevocationReason | None = None
+    method_type: AuthenticationMethodType | None = None
+    method_status: AuthenticationMethodStatus | None = None
 
 
 class LocalCredentialRepository(Protocol):
@@ -141,7 +166,11 @@ class LocalCredentialRepository(Protocol):
 
 class LocalSessionRepository(Protocol):
     """Port: create/read/revoke a real, server-verified HTTP session.
-    Concrete adapter: `persistence.local_auth_repository.SqlAlchemyLocalSessionRepository`."""
+    Concrete adapter: `persistence.local_auth_repository.SqlAlchemyLocalSessionRepository`.
+
+    Every revocation is conditional on the session still being unrevoked and
+    carries its reason. The scopes are 24 §15.7's: one session (by token or,
+    for its owner, by id), all sessions of a user, all sessions of a method."""
 
     def create(
         self,
@@ -150,11 +179,43 @@ class LocalSessionRepository(Protocol):
         session_token_hash: str,
         issued_at: datetime,
         expires_at: datetime,
+        method_id: AuthenticationMethodId | None,
+        proof_provenance: str | None = None,
     ) -> LocalSessionRecord: ...
 
     def get_by_token_hash(self, session_token_hash: str) -> LocalSessionRecord | None: ...
 
-    def revoke(self, session_token_hash: str, *, revoked_at: datetime) -> None: ...
+    def list_live_for_user(
+        self, user_id: UserId, *, now: datetime
+    ) -> tuple[LocalSessionRecord, ...]:
+        """The user's sessions that would resolve at `now`: unrevoked,
+        unexpired, method (if any) ACTIVE. Oldest first."""
+        ...
+
+    def revoke(
+        self, session_token_hash: str, *, revoked_at: datetime, reason: SessionRevocationReason
+    ) -> bool: ...
+
+    def revoke_own(
+        self,
+        session_id: uuid.UUID,
+        *,
+        user_id: UserId,
+        revoked_at: datetime,
+        reason: SessionRevocationReason,
+    ) -> bool: ...
+
+    def revoke_all_for_user(
+        self, user_id: UserId, *, revoked_at: datetime, reason: SessionRevocationReason
+    ) -> int: ...
+
+    def revoke_for_method(
+        self,
+        method_id: AuthenticationMethodId,
+        *,
+        revoked_at: datetime,
+        reason: SessionRevocationReason,
+    ) -> int: ...
 
 
 __all__ = [
@@ -164,6 +225,7 @@ __all__ = [
     "hash_session_token",
     "LocalCredentialRecord",
     "LocalSessionRecord",
+    "SessionRevocationReason",
     "LocalCredentialRepository",
     "LocalSessionRepository",
 ]

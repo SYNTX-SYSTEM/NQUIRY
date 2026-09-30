@@ -22,7 +22,9 @@ IN_PROGRESS.
 - Human decisions: `HUMAN_DECISIONS.md` (HD-AUTH-01..03). Consumed from
   predecessors: HD-28 / NQ-DEC-056 (host-operator account creation), F02 HD-3
   (dev-only identity), F02 HD-6 (no own commit boundary in application modules).
-- Open Human Authority boundaries: all 18 of 24 §36; none reached yet.
+- Open Human Authority boundaries: all 18 of 24 §36. Touched and left
+  undecided so far: #10 session lifetime (12 h kept), #18 multi-account UX
+  (an earlier session is not revoked by a new login).
 
 ### Baseline (the pin, before any PURPLE change)
 
@@ -41,19 +43,22 @@ preceded them, so the counts are those of the pin.
 |---|---|---|
 | WU-AUTH-01 Repository Binding Reconstruction | PASS (evidence) | `a0f5982` |
 | WU-AUTH-02 Authentication Method Model | PROVEN | `53823d6` |
-| WU-AUTH-03 Local Credential Migration Compatibility | PROVEN | this commit |
-| WU-AUTH-04 Authenticated Session Evolution | next | — |
-| WU-AUTH-05..17 | not started | — |
+| WU-AUTH-03 Local Credential Migration Compatibility | PROVEN | `bf046b9` |
+| WU-AUTH-04 Authenticated Session Evolution | PROVEN | this commit |
+| WU-AUTH-05 OIDC Auth Transaction Field | next | — |
+| WU-AUTH-06..17 | not started | — |
 
 ### Current First Broken Relation
 
-Authenticated session ↔ authentication method / proof provenance, and session
-revocation scope (owner WU-AUTH-04; FBR-AUTH-005, FBR-AUTH-017).
+OIDC Auth Transaction: no authoritative transaction relation between a
+provider login start and its callback (owner WU-AUTH-05; FBR-AUTH-008, -010,
+-013, -014).
 
 ### Migrations
 
-Head `a2c4e6f8b1d3`. Chain from the pin head `e8c2a5f1b7d4`: `f1a7c3d9b2e4`
-(WU-AUTH-02 `authentication_methods`) → `a2c4e6f8b1d3` (WU-AUTH-03 credential ↔ method).
+Head `b3d5f7a9c2e6`. Chain from the pin head `e8c2a5f1b7d4`: `f1a7c3d9b2e4`
+(WU-AUTH-02 `authentication_methods`) → `a2c4e6f8b1d3` (WU-AUTH-03 credential ↔ method) → `b3d5f7a9c2e6` (WU-AUTH-04
+session attribution and revocation reason).
 
 ## Upstream dependencies
 

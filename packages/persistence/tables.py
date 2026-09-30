@@ -1404,6 +1404,32 @@ local_auth_sessions_table = sa.Table(
     sa.Column("issued_at", sa.DateTime(timezone=True), nullable=False),
     sa.Column("expires_at", sa.DateTime(timezone=True), nullable=False),
     sa.Column("revoked_at", sa.DateTime(timezone=True), nullable=True),
+    # WU-AUTH-04 (migration b3d5f7a9c2e6): what produced the session and why it
+    # was revoked. Immutability, REVOKED-terminal and no-extension are a
+    # trigger in the migration.
+    sa.Column("authentication_method_id", sa.Uuid(), nullable=True),
+    sa.Column("proof_provenance", sa.Text(), nullable=True),
+    sa.Column("revoked_reason", sa.Text(), nullable=True),
+    sa.ForeignKeyConstraint(
+        ["authentication_method_id", "user_id"],
+        ["authentication_methods.id", "authentication_methods.user_id"],
+        name="fk_local_auth_sessions_method_same_user",
+        ondelete="RESTRICT",
+    ),
+    sa.CheckConstraint(
+        "authentication_method_id IS NOT NULL "
+        "OR (proof_provenance IS NOT NULL AND proof_provenance <> '')",
+        name="ck_local_auth_sessions_method_or_proof",
+    ),
+    sa.CheckConstraint(
+        "revoked_reason IS NULL OR revoked_reason IN ('LOGOUT', 'ALL_SESSIONS_LOGOUT', "
+        "'SESSION_REVOKED', 'METHOD_REVOKED', 'ACCOUNT_DISABLED', 'ROTATED')",
+        name="ck_local_auth_sessions_revoked_reason",
+    ),
+    sa.CheckConstraint(
+        "(revoked_at IS NULL) = (revoked_reason IS NULL)",
+        name="ck_local_auth_sessions_revocation_has_reason",
+    ),
 )
 
 authentication_methods_table = sa.Table(

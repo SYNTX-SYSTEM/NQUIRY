@@ -1,4 +1,6 @@
-"""Auth dispatch: `POST /auth/login`, `POST /auth/logout`, `GET /auth/me`.
+"""Auth dispatch: `POST /auth/login`, `POST /auth/logout`, `GET /auth/me`, and
+(WU-AUTH-04) `POST /auth/logout-all`, `GET /auth/sessions`,
+`POST /auth/sessions/{authSessionId}/revoke`.
 
 Local-login field materialization
 (`docs/architecture/18_LOCAL_AUTHENTICATION_ADAPTER.md`). Same thin-
@@ -36,9 +38,13 @@ from datetime import datetime, timezone
 
 from application.http_dispatch import (
     SESSION_COOKIE_NAME,
+    SessionDispatchResult,
     dispatch_current_session,
+    dispatch_list_sessions,
     dispatch_login,
     dispatch_logout,
+    dispatch_logout_all,
+    dispatch_revoke_session,
 )
 from fastapi import APIRouter, Request, Response
 from fastapi.responses import JSONResponse
@@ -87,6 +93,37 @@ def me(request: Request) -> JSONResponse:
     body = dispatch_current_session(session_token=request.cookies.get(SESSION_COOKIE_NAME))
     status_code = 200 if body.get("kind") == "ok" else 401
     return JSONResponse(status_code=status_code, content=body)
+
+
+def _session_response(result: SessionDispatchResult) -> JSONResponse:
+    json_response = JSONResponse(status_code=result.status_code, content=result.body)
+    if result.clear_cookie:
+        json_response.delete_cookie(key=SESSION_COOKIE_NAME, path="/")
+    return json_response
+
+
+@router.post("/auth/logout-all")
+def logout_all(request: Request) -> JSONResponse:
+    """WU-AUTH-04 (24 §15.7): revoke every session of the caller's identity."""
+    return _session_response(
+        dispatch_logout_all(session_token=request.cookies.get(SESSION_COOKIE_NAME))
+    )
+
+
+@router.get("/auth/sessions")
+def sessions(request: Request) -> JSONResponse:
+    return _session_response(
+        dispatch_list_sessions(session_token=request.cookies.get(SESSION_COOKIE_NAME))
+    )
+
+
+@router.post("/auth/sessions/{auth_session_id}/revoke")
+def revoke_session(auth_session_id: str, request: Request) -> JSONResponse:
+    return _session_response(
+        dispatch_revoke_session(
+            session_token=request.cookies.get(SESSION_COOKIE_NAME), session_id_str=auth_session_id
+        )
+    )
 
 
 __all__ = ["router"]

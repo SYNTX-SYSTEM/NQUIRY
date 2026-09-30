@@ -62,6 +62,10 @@ _PROTECTED = (
 # Workspace A's real ids.
 ROUTES: list[tuple[str, str, dict[str, Any] | None]] = [
     ("GET", "/auth/me", None),
+    # AUTH WU-AUTH-04: the caller's own authentication sessions.
+    ("GET", "/auth/sessions", None),
+    ("POST", "/auth/logout-all", None),
+    ("POST", "/auth/sessions/{auth_session_id}/revoke", None),
     ("GET", "/workspaces", None),
     ("POST", "/workspaces", {"name": "W"}),
     ("GET", "/workspaces/{ws}", None),
@@ -163,6 +167,12 @@ ROUTES: list[tuple[str, str, dict[str, Any] | None]] = [
 _UNAUTHENTICATED = {("POST", "/auth/login"), ("POST", "/auth/logout")}
 _CROSS_WORKSPACE_EXEMPT = {
     ("GET", "/auth/me"),  # the caller's own identity
+    # AUTH WU-AUTH-04: these act only on the caller's own authentication
+    # sessions and name no Workspace. Their own-identity scope is proven in
+    # tests/e2e/test_auth_wu04_session_evolution.py.
+    ("GET", "/auth/sessions"),
+    ("POST", "/auth/logout-all"),
+    ("POST", "/auth/sessions/{auth_session_id}/revoke"),
     ("GET", "/workspaces"),  # the caller's own Workspace list (checked separately)
     ("POST", "/workspaces"),  # founding one's own Workspace (F01 bootstrap)
 }
@@ -208,6 +218,8 @@ def _world(db: sa.Connection) -> dict[str, Any]:
     )
     ws_b, outsider = f03.new_workspace_with_member(db, "outsider")
     return {
+        # AUTH WU-AUTH-04: an authentication-session id that names no session.
+        "auth_session_id": str(uuid.uuid4()),
         "ws": str(ctx["ws"].value),
         "challenge": str(ctx["challenge"].challenge_id.value),
         "session": str(ctx["session"].value),
