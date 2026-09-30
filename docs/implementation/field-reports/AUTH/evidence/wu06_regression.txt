@@ -1,0 +1,26 @@
+WU-AUTH-06 final full-repository regression (2026-09-30), worktree auth-identity, DB nquiry_purple_test
+HEAD: 44953452d03b03f70ae1583145c5f82f25cd743d (auth-identity)
+PRE_RUN_GIT_STATUS:
+   M docs/implementation/field-reports/AUTH/STATUS.md
+   M packages/application/oidc_transactions.py
+  ?? docs/implementation/field-reports/AUTH/WU-AUTH-06.md
+  ?? packages/security/redirect_target.py
+  ?? tests/security/test_auth_redirect_target.py
+PRE_RUN_TREE_HASH: 5ec4a98bf5fe9253a68849197c47451a9fe3d5f99145f70c21dc8dcd22b3b4d5
+LIVE_COMMAND: DATABASE_URL=<isolated test db> /home/codi/Entwicklung/nquiry/.venv/bin/python -m pytest -q -p no:cacheprovider
+LIVE_RESULT: 2155 passed, 2 skipped in 2058.31s (0:34:18)
+LIVE_EXIT_CODE: 0
+NO_DB_COMMAND: env -u DATABASE_URL /home/codi/Entwicklung/nquiry/.venv/bin/python -m pytest -q -p no:cacheprovider
+NO_DB_RESULT: 971 passed, 1186 skipped in 31.37s
+NO_DB_EXIT_CODE: 0
+MIGRATIONS: MIGRATION_STATIC_CHECK::PASS (36 revision(s), single head ['c4e6a8b1d3f5']) MIGRATION_LIVE_CHECK::PASS (db head matches {'c4e6a8b1d3f5'}) 
+POST_RUN_GIT_STATUS:
+   M docs/implementation/field-reports/AUTH/STATUS.md
+   M packages/application/oidc_transactions.py
+  ?? docs/implementation/field-reports/AUTH/WU-AUTH-06.md
+  ?? packages/security/redirect_target.py
+  ?? tests/security/test_auth_redirect_target.py
+POST_RUN_TREE_HASH: 5ec4a98bf5fe9253a68849197c47451a9fe3d5f99145f70c21dc8dcd22b3b4d5
+TREE_UNCHANGED_DURING_RUN: true
+BEFORE (WU-AUTH-05): live 2125 / 2. AFTER: 2155 / 2 = 2125 + 30 (redirect target: 31 cases, one of them DB-backed; no-DB +29).
+RED: collection error (security.redirect_target absent). MUTATION: no source-mutation script (guard-necessity list, see WU-AUTH-06.md).

@@ -45,14 +45,16 @@ preceded them, so the counts are those of the pin.
 | WU-AUTH-02 Authentication Method Model | PROVEN | `53823d6` |
 | WU-AUTH-03 Local Credential Migration Compatibility | PROVEN | `bf046b9` |
 | WU-AUTH-04 Authenticated Session Evolution | PROVEN | `3ffbd1b` |
-| WU-AUTH-05 OIDC Auth Transaction Field | PROVEN (mutation step: guard-necessity falsifiers only, see report) | this commit |
-| WU-AUTH-06 Redirect Target Validation | next | — |
-| WU-AUTH-07..17 | not started | — |
+| WU-AUTH-05 OIDC Auth Transaction Field | PROVEN (mutation step: guard-necessity falsifiers only, see report) | `4495345` |
+| WU-AUTH-06 Redirect Target Validation | PROVEN (same mutation disclosure) | this commit |
+| WU-AUTH-07 Google OIDC Provider Adapter | next | — |
+| WU-AUTH-08..17 | not started | — |
 
 ### Current First Broken Relation
 
-Redirect target legitimacy: no validator turns a redirect candidate into a
-legitimate local destination before it is bound (owner WU-AUTH-06; FBR-AUTH-015).
+External provider proof: no provider port, start/callback contact, token
+exchange, ID Token validation or provider error path (owner WU-AUTH-07;
+FBR-AUTH-001, -012, -016).
 
 ### Migrations
 

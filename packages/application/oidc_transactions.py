@@ -36,6 +36,7 @@ from security.oidc_transaction import (
     generate_protocol_token,
     hash_protocol_value,
 )
+from security.redirect_target import resolve_redirect_target
 from semantic_types.ids import UserId
 
 DEFAULT_TRANSACTION_LIFETIME = timedelta(minutes=10)
@@ -96,12 +97,13 @@ def start_transaction(
     provider: str,
     purpose: OidcTransactionPurpose,
     initiating_user_id: UserId | None,
-    redirect_target: str,
+    redirect_target: object,
     now: datetime,
     lifetime: timedelta = DEFAULT_TRANSACTION_LIFETIME,
 ) -> StartedTransaction:
-    """24 §11.2 / §23.4. `redirect_target` must already be a validated local
-    destination (WU-AUTH-06); the database refuses anything but a local path."""
+    """24 §11.2 / §23.4. `redirect_target` is a CANDIDATE (24 §22.8): it is
+    validated here (WU-AUTH-06) and only a legitimate local destination, or
+    the safe default, is bound. The database refuses anything else as well."""
     if (purpose is OidcTransactionPurpose.ACCOUNT_LINK) != (initiating_user_id is not None):
         raise ValueError("ACCOUNT_LINK binds an initiating user; LOGIN binds none")
     state, nonce, binding = (
@@ -111,6 +113,7 @@ def start_transaction(
     )
     verifier = generate_code_verifier()
     challenge = derive_code_challenge(verifier)
+    destination = resolve_redirect_target(redirect_target)
     transaction_id = uuid.uuid4()
     repository.create(
         transaction_id=transaction_id,
@@ -122,7 +125,7 @@ def start_transaction(
         user_agent_binding_hash=hash_protocol_value(binding),
         code_verifier=verifier,
         code_challenge=challenge,
-        redirect_target=redirect_target,
+        redirect_target=destination,
         created_at=now,
         expires_at=now + lifetime,
         provenance_ref=_PROVENANCE,
@@ -135,7 +138,7 @@ def start_transaction(
         nonce=nonce,
         code_challenge=challenge,
         binding_token=binding,
-        redirect_target=redirect_target,
+        redirect_target=destination,
         expires_at=now + lifetime,
     )
 
