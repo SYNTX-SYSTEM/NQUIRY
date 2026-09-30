@@ -1,0 +1,38 @@
+WU-AUTH-02 final full-repository regression (2026-09-30), worktree auth-identity, DB nquiry_purple_test
+HEAD: a0f59825533e7034baedd59ce3f7ee622a5b392f (auth-identity)
+PRE_RUN_GIT_STATUS:
+   M docs/implementation/field-reports/AUTH/STATUS.md
+   M packages/persistence/tables.py
+   M packages/semantic_types/ids.py
+  ?? docs/implementation/field-reports/AUTH/WU-AUTH-02.md
+  ?? migrations/versions/f1a7c3d9b2e4_auth_authentication_methods.py
+  ?? packages/persistence/authentication_method_repository.py
+  ?? packages/security/auth_methods.py
+  ?? scripts/_auth_mutation.py
+  ?? scripts/auth_regression_run.sh
+  ?? scripts/auth_wu02_mutation_proof.py
+  ?? tests/security/test_authentication_methods.py
+PRE_RUN_TREE_HASH: 16005d33a5cd2968381f8d81e2dfc9651708dcbe4dbdc6ce87f42ba34571d722
+LIVE_COMMAND: DATABASE_URL=<isolated test db> /home/codi/Entwicklung/nquiry/.venv/bin/python -m pytest -q -p no:cacheprovider
+LIVE_RESULT: 2049 passed, 2 skipped in 2027.36s (0:33:47)
+LIVE_EXIT_CODE: 0
+NO_DB_COMMAND: env -u DATABASE_URL /home/codi/Entwicklung/nquiry/.venv/bin/python -m pytest -q -p no:cacheprovider
+NO_DB_RESULT: 938 passed, 1113 skipped in 26.71s
+NO_DB_EXIT_CODE: 0
+MIGRATIONS: MIGRATION_STATIC_CHECK::PASS (33 revision(s), single head ['f1a7c3d9b2e4']) MIGRATION_LIVE_CHECK::PASS (db head matches {'f1a7c3d9b2e4'}) 
+POST_RUN_GIT_STATUS:
+   M docs/implementation/field-reports/AUTH/STATUS.md
+   M packages/persistence/tables.py
+   M packages/semantic_types/ids.py
+  ?? docs/implementation/field-reports/AUTH/WU-AUTH-02.md
+  ?? migrations/versions/f1a7c3d9b2e4_auth_authentication_methods.py
+  ?? packages/persistence/authentication_method_repository.py
+  ?? packages/security/auth_methods.py
+  ?? scripts/_auth_mutation.py
+  ?? scripts/auth_regression_run.sh
+  ?? scripts/auth_wu02_mutation_proof.py
+  ?? tests/security/test_authentication_methods.py
+POST_RUN_TREE_HASH: 16005d33a5cd2968381f8d81e2dfc9651708dcbe4dbdc6ce87f42ba34571d722
+TREE_UNCHANGED_DURING_RUN: true
+BASELINE (pin): live 2007 passed / 2 skipped. AFTER: 2049 / 2 = 2007 + 42 WU-AUTH-02 falsifiers.
+MUTATION: scripts/auth_wu02_mutation_proof.py 20/20 killed; sources restored: True

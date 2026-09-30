@@ -315,6 +315,15 @@ class SecurityEventId(_StrongId):
         return _from_str(cls, value)  # type: ignore[return-value]
 
 
+@dataclass(frozen=True, slots=True)
+class AuthenticationMethodId(_StrongId):
+    """Strong, non-semantic identity: AuthenticationMethodId (24 §13.2)."""
+
+    @classmethod
+    def from_str(cls, value: str) -> AuthenticationMethodId:
+        return _from_str(cls, value)  # type: ignore[return-value]
+
+
 __all__ = [
     "InvalidIdentityValue",
     "WorkspaceId",
@@ -345,4 +354,5 @@ __all__ = [
     "FacilitatorScopeBindingId",
     "AuditEventId",
     "SecurityEventId",
+    "AuthenticationMethodId",
 ]

@@ -39,17 +39,19 @@ preceded them, so the counts are those of the pin.
 
 | Work Unit | State | Commit |
 |---|---|---|
-| WU-AUTH-01 Repository Binding Reconstruction | PASS (evidence) | this commit |
-| WU-AUTH-02 Authentication Method Model | next | — |
-| WU-AUTH-03..17 | not started | — |
+| WU-AUTH-01 Repository Binding Reconstruction | PASS (evidence) | `a0f5982` |
+| WU-AUTH-02 Authentication Method Model | PROVEN | this commit |
+| WU-AUTH-03 Local Credential Migration Compatibility | next | — |
+| WU-AUTH-04..17 | not started | — |
 
 ### Current First Broken Relation
 
-FBR-AUTH-002: canonical identity ↔ authentication method (owner WU-AUTH-02).
+Local credential ↔ authentication method: credentials belong to no method and
+login does not consult method status (owner WU-AUTH-03).
 
 ### Migrations
 
-Head `e8c2a5f1b7d4` (unchanged by WU-AUTH-01).
+Head `f1a7c3d9b2e4` (WU-AUTH-02: `authentication_methods`). Pin head was `e8c2a5f1b7d4`.
 
 ## Upstream dependencies
 

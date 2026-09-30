@@ -1396,6 +1396,33 @@ local_auth_sessions_table = sa.Table(
     sa.Column("revoked_at", sa.DateTime(timezone=True), nullable=True),
 )
 
+authentication_methods_table = sa.Table(
+    # WU-AUTH-02 (migration f1a7c3d9b2e4): 24 §13.2 authentication method
+    # relation. Cross-Workspace like `users`: no `workspace_id`, no RLS. The
+    # insert-state, immutability and REVOKED-terminal rules are triggers and
+    # live only in the migration.
+    "authentication_methods",
+    metadata,
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column("user_id", sa.Uuid(), sa.ForeignKey("users.id", ondelete="RESTRICT"), nullable=False),
+    sa.Column("method_type", sa.Text(), nullable=False),
+    sa.Column("status", sa.Text(), nullable=False),
+    sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("revoked_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("last_authenticated_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("provenance_ref", sa.Text(), nullable=False),
+    sa.CheckConstraint(
+        "method_type IN ('LOCAL_PASSWORD', 'GOOGLE_OIDC', 'TEST_PROVIDER')",
+        name="ck_authentication_methods_method_type",
+    ),
+    sa.CheckConstraint(
+        "(status = 'ACTIVE' AND revoked_at IS NULL) "
+        "OR (status = 'REVOKED' AND revoked_at IS NOT NULL)",
+        name="ck_authentication_methods_status_revocation",
+    ),
+    sa.CheckConstraint("provenance_ref <> ''", name="ck_authentication_methods_provenance"),
+)
+
 impact_chains_table = sa.Table(
     "impact_chains",
     metadata,
@@ -1464,6 +1491,7 @@ __all__ = [
     "session_participations_table",
     "local_auth_credentials_table",
     "local_auth_sessions_table",
+    "authentication_methods_table",
     "ai_operation_authorizations_table",
     "ai_validation_proofs_table",
     "question_clusters_table",
