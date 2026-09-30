@@ -81,6 +81,7 @@ from semantic_types.ids import CorrelationId
 from nquiry_api.http import auth as auth_router
 from nquiry_api.http import commands as commands_router
 from nquiry_api.http import inquiry as inquiry_router
+from nquiry_api.http import pcpg as pcpg_router
 from nquiry_api.http import queries as queries_router
 from nquiry_api.http import workspaces as workspaces_router
 
@@ -128,6 +129,7 @@ app.include_router(queries_router.router)
 app.include_router(commands_router.router)
 app.include_router(workspaces_router.router)
 app.include_router(inquiry_router.router)
+app.include_router(pcpg_router.router)
 
 _observation_sink = LocalOtelObservationSink(tracer_name="nquiry.api")
 

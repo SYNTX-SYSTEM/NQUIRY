@@ -159,6 +159,19 @@ ROUTES: list[tuple[str, str, dict[str, Any] | None]] = [
         {"expectedVersion": 1, "case": "RETRY"},
     ),
     ("POST", "/decisions/{decision}/decide", {"selectedOption": "fix_a"}),
+    # WU-PFC-PCPG-1 (Architecture 26, FBR-PCPG-1): the PCPG observation ingress.
+    # Workspace-scoped, not Session-scoped in the URL (a Session is an optional
+    # BODY field here, never a path segment) -- so it is exercised by the
+    # outsider-denied and expired-session sweeps below like every other route,
+    # but structurally falls outside `_SESSION_ROUTES` (no "{session}" in the
+    # path); its own cross-Workspace-Session falsifier is proven directly in
+    # `tests/e2e/test_pcpg_observation_ingress.py::
+    # test_a_session_of_another_workspace_is_not_found_never_disclosed`.
+    (
+        "POST",
+        "/workspaces/{ws}/prompt-observations",
+        {"rawIntent": "Why would an outsider write here?"},
+    ),
 ]
 _UNAUTHENTICATED = {("POST", "/auth/login"), ("POST", "/auth/logout")}
 _CROSS_WORKSPACE_EXEMPT = {
