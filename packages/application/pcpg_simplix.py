@@ -339,7 +339,21 @@ def _detect_modality(clause_lower: str, negated: bool, matched_operation: str | 
     return Modality.ASSERTED
 
 
-_ASSERTION_MARKERS = ("already", "has ", "have ", "is ", "are ", "was ", "were ", "we have")
+_ASSERTION_MARKERS = ("already", "has", "have", "is", "are", "was", "were", "we have")
+_ASSERTION_MARKER_PATTERN = re.compile(
+    r"\b(?:" + "|".join(re.escape(m) for m in _ASSERTION_MARKERS) + r")\b"
+)
+"""Word-boundary matching, not plain substring containment: a naive `in`
+check on "are " previously misread "comp**are** our questions..." as
+containing the claim marker "are " (the space-terminated form matched
+inside the verb "compare" itself), misclassifying a real REQUESTED
+imperative as ASSERTED. Found during R-06's own adversarial testing
+(`test_pcpg_candidate_deltas.py::test_out_of_scope_target_is_carried_
+through`), fixed here at SIMPLIX's own root rather than worked around in
+a later relation -- the same "repair the root" discipline this Field has
+followed throughout (WU-PFC-PCPG-1's coverage-guard repair, WU-PFC-PCPG-2's
+stale-test-scope repair). A falsifier for this exact case now lives in
+`test_pcpg_simplix.py` itself."""
 
 
 def _looks_like_bare_imperative(clause_lower: str) -> bool:
@@ -349,7 +363,7 @@ def _looks_like_bare_imperative(clause_lower: str) -> bool:
     AI). Clauses that assert a fact about the world ("Maya already
     approved it", "We have enough budget") are excluded by their own
     claim markers -- a closed, disclosed set, never a full grammar."""
-    if any(m in clause_lower for m in _ASSERTION_MARKERS):
+    if _ASSERTION_MARKER_PATTERN.search(clause_lower):
         return False
     return not clause_lower.startswith(("i ", "we ", "maya ", "ravi "))
 
