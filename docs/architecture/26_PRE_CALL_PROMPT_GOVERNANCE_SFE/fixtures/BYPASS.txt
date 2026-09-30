@@ -1,0 +1,39 @@
+FIXTURE — BYPASS
+PCPG · RED · falsification fixture (added by the deep sweep: the candidate tree had no home for these).
+Covers: raw prompt bypass (X1), direct provider bypass (X2), frontend-created capability (X3), identity and
+isolation bypass (X4), side effects of observation (X5).
+Law under test: I-06, I-14, I-15, I-16, I-18; B-08, B-10; P-01, P-10, P-11, P-12.
+
+X1 · RAW PROMPT BYPASS
+Attempt: submit a raw intent through any path other than the observation ingress (an existing Command
+body, a capture endpoint, a Decision rationale, a query string) intending it to reach a model.
+Expected: no such path reaches ai_gateway or a provider; user text in existing contracts stays DATA of that
+contract (08 §9). The observation ingress itself has no outgoing edge except R-02…R-12.
+Falsifier: any code path from user-supplied text to a provider adapter or Gateway request that does not pass
+an admitted operation contract with its human authorization.
+
+X2 · DIRECT PROVIDER BYPASS
+Attempt: during an observation, cause any network egress to a model endpoint (misconfiguration, a
+"helpful" SIMPLIX model call, a provider-backed classifier).
+Expected: zero egress; PCPG results identical with all provider routes removed (except PROVIDER_EXECUTABLE).
+Falsifier: egress observed, or any governance value that changes with provider availability other than
+PROVIDER_EXECUTABLE.
+
+X3 · FRONTEND-CREATED CAPABILITY
+Attempt: a manipulated client sends a request carrying canSend=true, a copied observation, a copied basis,
+or calls a guessed "send" route.
+Expected: the server ignores client-supplied capability, observation and basis (never an input); no send
+route exists in this Field (404/405); nothing is executed, stored or changed.
+Falsifier: any server-side effect, capability or state change caused by client-supplied values.
+
+X4 · IDENTITY AND ISOLATION
+Attempt: an outsider, a member of another Workspace, or an expired session calls the observation ingress
+for the review Workspace.
+Expected: the uniform denial before any fact is read (F09-2 rule); no existence signal.
+Falsifier: any other response shape or any disclosed fact.
+
+X5 · OBSERVATION SIDE EFFECTS
+Attempt: run every fixture's observation.
+Expected: canonical, audit, outbox, committed-event, AI-record and security-event row counts unchanged; no
+log line containing raw-intent content; no persistence of the observation (HA-PCPG-3 default).
+Falsifier: any changed count, any logged content, any stored observation.

@@ -1,0 +1,56 @@
+ENRICO E7 — RECONSTRUCTION SWEEP
+PRE_CALL_PROMPT_GOVERNANCE (PCPG) · RED · architecture agent prompt (independently executable)
+
+MODE
+DISCARD_AND_RECONSTRUCT. Read-only. You deliberately throw away the proposed shape — the file tree, the
+relation numbering, any module or component idea, the brief's timeline — and rebuild the target
+architecture from nothing but the relations and invariants that E1–E6 proved. What survives is the
+architecture; what does not was accidental.
+
+SCOPE
+The whole PCPG Field, and any proposed materialization of it (a BLUE plan, a module tree, a Work Unit
+order).
+
+FORBIDDEN ACTIONS
+- Writing or changing any file, code, test or frontend.
+- Starting from the existing file tree, module tree or relation numbering.
+- Keeping any element "because it was in the proposal".
+- Calling any provider.
+
+AUTHORITATIVE INPUTS
+1. The proven results of E1 (FBR chain), E2 (semantic model), E3 (reconstruction, Pulse, freshness), E4
+   (per-delta results and equivalence proof), E5 (composition, chain, capability, eligibility), E6
+   (trace table, defects). If any of these was not run, run it first.
+2. The canonical homes (03, 04, 05, 06, 07, 08, 09, 11, 20, 21; HD-*).
+3. The proposal under test (the SFE directory, or a BLUE plan) — read only at step 5 below.
+
+RECURSIVE QUESTIONS
+1. From the proven relations alone, what is the minimal set of relations from RAW USER INTENT to CYAN
+   PROJECTION that satisfies every invariant and every fixture? Derive it without looking at 02_RELATIONS.md.
+2. From those relations, what are the authority homes of the Field (each concept decided in exactly one
+   place)? That set — not a template — determines the documents (for RED) or the components (for BLUE).
+3. Which concepts must NOT exist because an existing home already owns them (authority, state, data
+   classes, contracts, provider policy, readiness)? List them with their owner.
+4. What is the smallest coherent order of materialization (each step closing one broken relation, each
+   step provable on its own, none depending on a later one)?
+5. Only now read the proposal. Diff: what does the proposal contain that your reconstruction does not
+   (accidental structure, duplicated homes, premature components)? What does your reconstruction contain
+   that the proposal lacks (missing relations, missing proofs)?
+6. Recurse: re-run steps 1–4 on your own reconstruction with one relation removed at a time. If the
+   invariants still hold without it, it was unnecessary. If a fixture fails, it was necessary.
+
+OUTPUT CONTRACT
+- RECONSTRUCTED RELATION SET with, per relation, the invariants and fixtures that require it.
+- AUTHORITY-HOME MAP (for RED: document structure; for BLUE: component responsibilities — not names).
+- MUST-NOT-EXIST LIST with owners.
+- MATERIALIZATION ORDER (Work Units as broken relations, each with its closing proof).
+- DIFF vs PROPOSAL: remove / add / merge / split, each justified by a relation.
+- VERDICT: the proposal is CONFIRMED, CONFIRMED_WITH_CHANGES (list), or REJECTED (why).
+
+STOP CONDITION
+Stop when the reconstruction is minimal (no removable relation) and the diff against the proposal is
+justified relation by relation.
+
+HUMAN AUTHORITY CONDITION
+If the reconstruction cannot be completed without deciding an open question (HA-PCPG-*, HA-23, HA-07),
+reconstruct up to that boundary, apply its fail-closed default, and state the question.

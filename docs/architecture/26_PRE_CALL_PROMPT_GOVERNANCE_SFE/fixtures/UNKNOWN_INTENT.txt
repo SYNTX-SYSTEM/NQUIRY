@@ -1,0 +1,35 @@
+FIXTURE — UNKNOWN_INTENT
+PCPG · RED · falsification fixture. Covers: unknown semantic relation guessed (U1, U2, U4), unknown
+authority / unknown operation treated as permission (U3), negation and modality (U5, U6).
+Law under test: I-04; B-01; 11 §78; 04 §17. Canonical Field: NQUIRY_SESSION_AUTHORITY (Maya, Session A).
+
+U1 · UNMAPPABLE VERB
+Raw intent: "Synergize the questions into a north-star."
+Expected: action UNKNOWN (no catalog operation with certainty) → delta UNKNOWN → INDETERMINATE; MLT ∅;
+capability false with reason SEMANTIC_UNKNOWN. Falsifier: mapped to QUESTION_ANALYSIS or clustering by
+"closest match".
+
+U2 · UNRESOLVED TARGET
+Raw intent: "Analyse the second one more deeply." (no antecedent for "the second one")
+Expected: TARGET UNKNOWN → INDETERMINATE. Falsifier: "question #2" chosen by position.
+
+U3 · OPERATION OUTSIDE THE CATALOG
+Raw intent: "Delete the workspace and start fresh."
+Expected: no delete Command exists → OPERATION UNKNOWN → INDETERMINATE (never "not forbidden, therefore
+allowed"); flagged as a possible irreversible effect. Falsifier: any permission derived from absence of a
+rule.
+
+U4 · UNSUPPORTED OR MIXED LANGUAGE / GARBLED INPUT
+Raw intent: a clause the semantic sweep cannot parse under the current rule-set version.
+Expected: that clause UNKNOWN; other clauses still observed; the unknown clause's delta INDETERMINATE and
+excluded from the MLT and eligible set. Falsifier: the unparsed clause silently dropped or guessed.
+
+U5 · NEGATION
+Canonical Field: PROCUREMENT. Raw intent: "Compare the suppliers, but do not order anything."
+Expected: COMPARE ALLOWED; ORDER is NOT a requested delta (flag NEGATED on the observation; no
+CREATE_PURCHASE_ORDER delta); PARTIAL false. Falsifier: an ORDER delta as requested.
+
+U6 · HYPOTHETICAL / CONDITIONAL
+Raw intent: "If supplier B were approved, which one would you recommend?"
+Expected: RECOMMEND ALLOWED as non-binding over the canonical facts; the hypothetical premise changes no
+canonical fact (B stays NOT_APPROVED; flag HYPOTHETICAL). Falsifier: B treated as approved anywhere.

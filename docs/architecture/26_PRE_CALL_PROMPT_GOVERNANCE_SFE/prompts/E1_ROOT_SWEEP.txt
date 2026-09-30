@@ -1,0 +1,65 @@
+ENRICO E1 — ROOT SWEEP
+PRE_CALL_PROMPT_GOVERNANCE (PCPG) · RED · architecture agent prompt (independently executable)
+
+MODE
+ROOT_RELATION_DISCOVERY. Read-only. You find where the Field truly starts to be broken before anyone
+builds anything. You do not design the solution.
+
+SCOPE
+The NQUIRY repository (RED line: branch pfc-integration, worktree worktrees/pfc-integration) and the
+SFE directory docs/architecture/26_PRE_CALL_PROMPT_GOVERNANCE_SFE/. Target question: "What is the first
+relation between RAW USER INTENT and CYAN PROJECTION of a governance observation that does not exist or
+does not hold in the repository today, and which relations depend on it?"
+
+FORBIDDEN ACTIONS
+- Writing or changing any file, code, test, migration, configuration, frontend or document.
+- Calling any AI provider or model; enabling any provider; running anything against a live system.
+- Proposing modules, classes, functions or file trees.
+- Answering a Human Authority question (00_FIELD.md §13) by derivation.
+- Treating the brief's timeline or the SFE's own FBR list as true without re-deriving it.
+
+AUTHORITATIVE INPUTS (read in this order; the earlier wins on conflict with the SFE)
+1. docs/architecture/20_SYSTEM_FIELD_ENGINEERING.md (the execution law) and 25_… (the parent Field).
+2. docs/architecture/03, 04, 05, 06 (BND-001..018, especially BND-009, BND-010, BND-017), 07, 08
+   (§2, §3, §6, §8, §9, §17, §21, §39, §40, §55), 09 (Query vs Command), 11 (§25–§28, §47, §78, TB-list),
+   16 (register), 18.
+3. docs/implementation/frontend/21_SYMBIOTIC_FRONTEND_ARCHITECTURE.md §37–§38.
+4. docs/implementation/field-reports/PFC/HUMAN_DECISIONS.md (HD-16 … HD-28, HD-LIVE-1 in the live-review
+   record) and HUMAN_AUTHORITY_QUEUE.md.
+5. Code as evidence of what exists: packages/application (session_position in inquiry_queries.py; the
+   readiness/blocker functions; http dispatchers), packages/authority (resolver), packages/ai_gateway,
+   packages/ai_contracts, packages/security (events, identity), apps/api routes.
+6. The SFE files 00–05 (as the hypothesis under test).
+
+RECURSIVE QUESTIONS
+1. For each relation R-01 … R-12 of 02_RELATIONS.md: does a producer for its INPUT exist today? Does a
+   consumer for its OUTPUT exist? Name the exact file/section or code symbol, or state ABSENT.
+2. Order the ABSENT or broken relations by dependency. Which is first — i.e. which one no other broken
+   relation depends on and which every later one needs? That is the root FBR. Justify "first".
+3. For the root FBR: is it broken because (a) nothing exists, (b) something exists but violates an
+   invariant (01_INVARIANTS.md), or (c) its authoritative home is undecided (Case 3)? Only (c) is a Human
+   Authority boundary.
+4. Does anything that already exists sit in the Field's path and would become a bypass once the Field is
+   built (a route, a script, a provider adapter, a dev path) — e.g. any path from user text to
+   ai_gateway? Recurse: what reaches it?
+5. Is the SFE's own FBR list (00_FIELD.md §12) correct, complete and in the right order? If not, what is?
+6. Recurse once more from the root FBR you found: assuming it were repaired, what becomes the next FBR?
+   Stop recursing when the next FBR is a Human Authority boundary or a future Field (SEND, provider).
+
+OUTPUT CONTRACT
+- ROOT RELATION: the relation id, its producer/consumer, and why it is the root.
+- FBR CHAIN: ordered list FBR-1 … FBR-n, each with evidence (file:section or code symbol), break type
+  (a/b/c), and the relation(s) that depend on it.
+- EXISTING-BYPASS REPORT: every path that could reach a provider, a Command or a log with user text
+  without passing the Field; or "none", with the evidence searched.
+- SFE CORRECTIONS: any correction to 00_FIELD.md §12, stated as a finding (you do not edit).
+- HUMAN AUTHORITY: which FBRs are Case 3, mapped to HA-PCPG-* or to an existing HA-*.
+
+STOP CONDITION
+Stop when the FBR chain is derived up to the first Human Authority boundary or future Field, with evidence
+for every link. Do not continue into design.
+
+HUMAN AUTHORITY CONDITION
+If the root FBR itself is a Case 3 (its authoritative home is undecided and no fail-closed default of
+00_FIELD.md §13 applies), stop and state exactly that question — options, what each permits/forbids, the
+fail-closed default — and nothing else.

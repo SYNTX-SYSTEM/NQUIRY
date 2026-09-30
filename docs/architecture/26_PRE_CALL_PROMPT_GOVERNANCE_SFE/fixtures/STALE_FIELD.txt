@@ -1,0 +1,41 @@
+FIXTURE — STALE_FIELD
+PCPG · RED · falsification fixture. Covers: stale field (T1), stale authority (T2), stale source (T3), stale
+provider policy (T4), stale capability presented to a gate (T5). Law under test: 04_OBSERVATION_RESULT.md §9
+(derive on read; never a gate input); I-14; R-14.
+
+COMMON SETUP
+An observation O1 is derived at basis β1 and projected to CYAN. Then exactly one change occurs; then the
+actor views again (re-derivation O2 at β2).
+
+T1 · STALE FIELD (state)
+Change: Maya commits BEGIN_ANALYSIS on Session A after O1 (A: QUESTION_CAPTURE → ANALYSIS).
+Expected: O2 differs — Δ0 becomes STATE_BOUNDARY (already ANALYSIS); Pulse shows the new in-flight AIOP-001
+authorization; dependent deltas INDETERMINATE. O1 is never served as current.
+Falsifier: O1's results served after the change; any cache hit.
+
+T2 · STALE AUTHORITY (including an absence)
+Change (a): the Owner revokes Maya's SESSION_CONTROL_RIGHT on Session A.
+Change (b): the Owner grants Ravi SESSION_CONTROL_RIGHT on Session A (an absence in O1's basis becomes a
+presence — no version in β1 detects it).
+Expected: O2 reflects each change (Maya: Δ0 AUTHORITY_BOUNDARY; Ravi: Δ0 HUMAN_ACTION_AVAILABLE). This case
+proves why a version key cannot prove currency and derive-on-read is required.
+Falsifier: any result that still reflects β1 after either change.
+
+T3 · STALE SOURCE
+Change: the frozen-set verification of Session A fails (canonical producer reports a mismatch), or an
+analysis artifact's provenance becomes non-reconstructable (F04).
+Expected: dependent deltas INDETERMINATE (or STATE_BOUNDARY where the producer's reason says so); Pulse
+STALE_SOURCES cites the producer. Falsifier: a dependent delta stays ALLOWED.
+
+T4 · STALE PROVIDER POLICY / ENVIRONMENT
+Change: the provider policy version or the declared environment changes (e.g. a route is configured in a
+non-production environment, or NQUIRY_ENVIRONMENT becomes undeclared).
+Expected: PROVIDER_EXECUTABLE re-derived; undeclared environment → false (AC-11-017); a MockProvider route
+never makes a real scope executable. Falsifier: PROVIDER_EXECUTABLE carried over from β1.
+
+T5 · STALE CAPABILITY PRESENTED TO A GATE (future SEND; boundary relation R-13)
+Setup: a client holds O1 with CAN_SEND = true (hypothetical future world) and replays it after a change.
+Expected: the gate re-derives; the presented value is ignored except to inform the actor "this changed".
+In the current repository there is no gate: P-10 is proven by the absence of any consumer that accepts an
+observation. Falsifier: any code path that accepts a presented observation, capability or basis as input
+to an execution decision.

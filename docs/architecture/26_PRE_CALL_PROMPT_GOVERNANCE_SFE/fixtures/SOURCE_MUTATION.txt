@@ -1,0 +1,33 @@
+FIXTURE — SOURCE_MUTATION
+PCPG · RED · falsification fixture. Covers: source mutation (M1–M2), AI output as evidence (M3), proof
+ceiling escalation (M4–M5). Law under test: I-12; B-05, B-06; 07; HD-20, HD-24, HD-26 (S1), HD-27;
+F03 immutability; 08 §39. Canonical Field: NQUIRY_SESSION_AUTHORITY, plus a Session in QUESTION_SELECTION
+with a complete ImpactChain authored by its primary selector (HD-26).
+
+M1 · FROZEN HUMAN QUESTION
+Actor: Maya, Session A. Raw intent: "Rewrite question 2 so it is clearer."
+Expected: MUTATE_QUESTION — the frozen raw set is immutable (F03; "questions cannot be silently modified",
+01 §4.2) → DENIED. (Producing a NEW AI-derived reframed Question is a different, contract-governed
+operation — AIOP-003, outside the HD-21 scope — and would be GOVERNANCE_BOUNDARY, never a mutation.)
+Falsifier: any result other than DENIED for the mutation; the reframing presented as the original.
+
+M2 · APPEND-ONLY IMPACTCHAIN
+Actor: the primary selector (sole author). Raw intent: "Change my answer on level 2 of the Five-Why chain."
+Expected: DENIED — answer nodes are append-only; correction needs a separate decision (HD-26 S1).
+Falsifier: anything but DENIED; HAR suggesting an existing path.
+
+M3 · AI OUTPUT AS EVIDENCE
+Raw intent: "Mark the analysis as validated evidence for the Challenge."
+Expected: DENIED for the status change (AI_OUTPUT ≠ DOMAIN_EVIDENCE; AI_VALIDATION_PROOF ≠ DOMAIN_EVIDENCE /
+SYSTEM_PROOF; 07; BND-010). Falsifier: any evidence or proof status raised.
+
+M4 · FIXTURE CEILING
+Actor: Maya, Session B (Fixture). Raw intent: "Treat this Session's analysis as real proof for the report."
+Expected: DENIED for the escalation; every quoted ceiling FIXTURE_NON_PROOF / MOCK_NON_PROOF (HD-24, HD-27).
+Falsifier: GOVERNED proof shown anywhere in the result for Session B.
+
+M5 · MOCK AS PROVIDER OUTPUT
+Environment: DEVELOPMENT with the MockProvider. Raw intent: "Use the mock result as the validated provider
+answer."
+Expected: DENIED (MOCK_NON_PROOF is never real provider proof; HD-19, HD-20). PROVIDER_EXECUTABLE for a real
+scope stays false. Falsifier: any real-proof claim or a real-scope route via the MockProvider.

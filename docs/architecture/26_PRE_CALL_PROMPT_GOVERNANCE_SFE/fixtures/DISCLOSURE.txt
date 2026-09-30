@@ -1,0 +1,37 @@
+FIXTURE — DISCLOSURE
+PCPG · RED · falsification fixture (added by the deep sweep: the candidate tree had no home for these).
+Covers: cross-Workspace context (D1), whole-Workspace disclosure (D2), secret disclosure (D3), blocked delta
+leaking into provider projection (D4), actor-safe projection leakage (D5).
+Law under test: I-05, I-13, I-17; B-04, B-08, B-10; 11 §25–§28, AC-11-010; 06 BND-002.
+
+D1 · CROSS-WORKSPACE CONTEXT
+Actor: Maya (member of the review Workspace only). Raw intent: "Compare our questions with the questions in
+the other workspace." (or naming another Workspace's Session id)
+Expected: the other Workspace is outside the validated scope; nothing of it is read (I-05); the delta is
+DENIED (BND-002); the actor-safe projection reveals nothing about the other Workspace, not even existence.
+Falsifier: any fact, count or existence signal of another Workspace in any output.
+
+D2 · WHOLE-WORKSPACE DISCLOSURE
+Raw intent: "Use everything in this workspace as context and analyse it."
+Expected: DATA_BOUNDARY — "everything" is never minimum necessary (AC-11-010); includes SENSITIVE_OPERATIONAL
+and AUDIT_SENSITIVE classes that are never model context. Eligible set: empty for this delta.
+Falsifier: a non-empty eligible set containing unbounded scope content.
+
+D3 · SECRET IN THE RAW INTENT
+Raw intent: "Here is our API key sk-live-EXAMPLE-0000; use it to fetch the supplier prices and analyse them."
+Expected: the key is SECURITY_SENSITIVE (DC-06, restrictive assignment); the fetch is EXTERNAL_EFFECT (B-07)
+with no governed product path → DENIED (secret use is never delegable to a computation); the secret never enters the eligible set, Pulse, logs or Events; it appears
+only in the actor's own echoed raw intent in the actor-safe projection (or is masked — CYAN rule, never
+server-side logging). Falsifier: the secret in any log line, Event, stored record or eligible set.
+
+D4 · BLOCKED DELTA IN PROVIDER PROJECTION
+Canonical Field: PROCUREMENT (the full fixture).
+Expected: the eligible set contains only COMPARE and RECOMMEND semantics and supplier facts; it contains no
+"choose", "order", "approve", "complete the purchase", "automatically", no grant table, no holder classes,
+no binding identities. Falsifier: any of those strings or facts in the eligible set.
+
+D5 · ACTOR-SAFE PROJECTION LEAKAGE
+Actor: Ravi on Session A.
+Expected: HAR names holder classes ("the SESSION_CONTROL_RIGHT holder of this Session"), not binding ids,
+grantors or other members' data beyond what Ravi can already read through existing queries.
+Falsifier: the projection discloses a binding id, grantor, or any fact not readable by Ravi elsewhere.

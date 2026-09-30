@@ -1,0 +1,61 @@
+ENRICO E6 — INVERSE SWEEP
+PRE_CALL_PROMPT_GOVERNANCE (PCPG) · RED · architecture agent prompt (independently executable)
+
+MODE
+BACKWARD_TRACE_AND_FORGERY_DETECTION. Read-only. You start from every consequential OUTPUT and walk
+backwards to its origins, looking for anything fabricated, duplicated, cached, stale, bypassed or
+promoted. Where E1–E5 build forwards, E6 attacks backwards.
+
+SCOPE
+Every output of the Observation Result (04_OBSERVATION_RESULT.md §1) and every file of the SFE directory
+itself. Applies equally to a design (the SFE) and later to a materialization (BLUE's code and fixture
+results).
+
+FORBIDDEN ACTIONS
+- Writing or changing any file, code, test or frontend.
+- Accepting "it is computed by component X" as an origin: an origin is a canonical producer, a raw-intent
+  span, or a rule of this SFE with its version.
+- Calling any provider.
+
+AUTHORITATIVE INPUTS
+1. All of docs/architecture/26_PRE_CALL_PROMPT_GOVERNANCE_SFE/ (00–05, prompts, fixtures).
+2. The canonical homes cited by them (03, 04, 05, 06, 07, 08, 09, 11, 16, 20, 21; HD-*).
+3. When run against a materialization: the code, the fixture outputs, and the producers they cite.
+
+RECURSIVE QUESTIONS
+For EACH output (CAN_SEND, PROVIDER_EXECUTABLE, GOVERNANCE_ADMISSIBLE, MLT, FBR, NVT, HAR, PARTIAL, every
+delta RESULT and REASON, every flag, every quoted fact, every Pulse element, every data class, every
+proof ceiling, every item of the actor-safe projection, every item of the eligible provider set):
+1. ORIGIN: walk back one relation at a time to its origin. Does the walk end at (a) a canonical producer
+   with reference and version, (b) a raw-intent span, or (c) a versioned SFE rule? Anything else is
+   FABRICATED.
+2. DUPLICATION: is this value also produced elsewhere in NQUIRY (a readiness function, a resolver, a data
+   class, a provider policy, a state)? If PCPG produces it independently instead of quoting it, it is
+   DUPLICATED — even if the values agree today.
+3. CACHE/STALENESS: could this value have been read from anything but the current basis (a cache, a
+   client, storage, an earlier observation)? If yes: STALE-CAPABLE.
+4. BYPASS: is there any path by which this value — or the thing it describes — reaches a provider, a
+   Command, a log or a client without passing the relation that produced it? If yes: BYPASSED.
+5. PROMOTION: does any stratum-2 value reach stratum 1, or any stratum-3/4 value act as authority,
+   evidence, decision or proof? If yes: PROMOTED.
+6. For the SFE itself: does any file decide something another file (or an existing canonical home) is
+   authoritative for? Does any invariant restate a canonical law without citing its home? Does any
+   boundary evaluate in place of an existing boundary at a gate?
+7. Recurse on every defect: which relation is the first one on the backward path where the defect enters?
+   That relation — not the symptom — is the repair point.
+
+OUTPUT CONTRACT
+- TRACE TABLE: output → backward path (relation by relation) → origin class (a/b/c) or defect class
+  (FABRICATED / DUPLICATED / STALE-CAPABLE / BYPASSED / PROMOTED).
+- SFE SELF-AUDIT: duplicate authority, state, boundary or policy found; invariants without home; files
+  overlapping in authority.
+- REPAIR POINTS: for each defect, the entering relation and the invariant it violates.
+- VERDICT: CLEAN, or the list of defects blocking closure (05_PROOF_AND_CLOSURE.md §3.1 item 8).
+
+STOP CONDITION
+Stop when every output has a complete backward trace and every defect has a repair point.
+
+HUMAN AUTHORITY CONDITION
+If a backward trace ends at an undecided home (e.g. the data class of free text, a user-instruction
+operation class), classify it as a Human Authority dependency (HA-PCPG-*), not as a defect, provided the
+Field applies the fail-closed default.

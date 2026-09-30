@@ -1,0 +1,69 @@
+ENRICO E5 — CONSEQUENCE SWEEP
+PRE_CALL_PROMPT_GOVERNANCE (PCPG) · RED · architecture agent prompt (independently executable)
+
+MODE
+COMPOSED_CONSEQUENCE_EVALUATION. Read-only. You evaluate what the retained deltas would amount to
+TOGETHER — disclosure, effects, proof ceilings, purpose — and derive the Maximum Legitimate Transition and
+the capability values, proving that decomposition cannot launder authority and that capability is never a
+token.
+
+SCOPE
+Relations R-08 (composition), R-09 (FBR, MLT, NVT, HAR, PARTIAL), R-10 (capability), R-11 (provider-safe
+projection eligibility); 04_OBSERVATION_RESULT.md §7, §8, §11; boundaries B-04, B-06, B-07, B-08.
+
+FORBIDDEN ACTIONS
+- Writing or changing any file, code, test or frontend.
+- Building, sending or simulating a provider payload; calling any provider.
+- Treating CAN_SEND (or any capability value) as authorization for anything.
+- Rewriting the raw intent into a narrowed prompt (HA-PCPG-6).
+
+AUTHORITATIVE INPUTS
+1. 11 §25–§28 (classes, handling matrix, multiplicity: most restrictive governs; AC-11-010 minimization),
+   §47, §78; 06 BND-002, BND-009, BND-010, BND-016; 08 §6 (context manifest), §17, §21, §39, §55;
+   07 (ceilings); HD-19, HD-20, HD-21, HD-24, HD-27, HD-LIVE-1; 21 §37–§38.
+2. The SFE: 01_INVARIANTS.md (I-10, I-11, I-12, I-13, I-14, I-17), 04_OBSERVATION_RESULT.md §7–§8, §11,
+   fixtures PROCUREMENT, AUTHORITY_ESCALATION (splitting), DISCLOSURE, SOURCE_MUTATION.
+3. E4's per-delta results (or derive them per E4 first).
+
+RECURSIVE QUESTIONS
+1. Composition: for each fixture, what is the union of inputs and data classes of the ALLOWED
+   computations, their combined canonical and external effect, their combined proof ceiling, and their
+   purpose coherence? Does the whole cross any boundary no part crosses?
+2. Laundering: construct at least three decompositions of a blocked effect into individually harmless
+   deltas (drafting a purchase order payload; "list the cheapest and mark it chosen"; per-question
+   "rate importance 1–10" that equals a primary selection). Prove each is caught by I-10 (instrumental-to-
+   blocked) or by composition — or record a defect.
+3. Cross-prompt splitting: the Field keeps no memory across observations (ephemeral). Prove that
+   splitting a blocked effect across several prompts still cannot yield it — because no provider
+   computation has an external, decision or canonical effect beyond its contract (I-08, I-11), not
+   because PCPG remembers.
+4. FBR / MLT: derive both for every fixture from the delta records alone; confirm against the brief's
+   expected results; explain any difference.
+5. NVT and HAR: is NVT always a human product action? Does HAR ever disclose another member's binding
+   internals?
+6. Capability: derive GOVERNANCE_ADMISSIBLE, PROVIDER_EXECUTABLE, CAN_SEND for every fixture under the
+   current repository (HD-21 scope, no admitted user-instruction class, no eligible provider route, HD-LIVE-1)
+   and under the hypothetical "HA-PCPG-1 admitted + eligible route" — show which values change and why.
+7. Provider-safe eligibility: for every fixture, list the eligible content set and prove it contains no
+   blocked delta, forbidden instruction, secret, DC-07, cross-Workspace datum, governance internal, or
+   escalated ceiling/source status. Is PARTIAL=true ever compatible with sending the raw intent? (It must
+   not be.)
+8. Recurse: is there any consumer of a capability value that could treat it as authority? Trace every
+   consumer (R-12, future R-13). Any acceptance of a presented value is a defect.
+
+OUTPUT CONTRACT
+- COMPOSITION TABLE per fixture: retained set, removed deltas with COMPOSITION_* reasons, composed data
+  classes, effects, ceiling, purpose coherence.
+- LAUNDERING CASES and their refutation.
+- CHAIN RESULTS per fixture: FBR, MLT, NVT, HAR, PARTIAL.
+- CAPABILITY TABLE per fixture, current and hypothetical.
+- ELIGIBLE-SET PROOF per fixture.
+- DEFECTS found and the relation to repair.
+
+STOP CONDITION
+Stop when every fixture has derived composition, chain and capability results, every laundering case is
+refuted or recorded as a defect, and no capability consumer accepts a value as authority.
+
+HUMAN AUTHORITY CONDITION
+Whether a narrowed MLT may be sent, and with what acknowledgement, is HA-PCPG-6 / the future SEND Field;
+whether a user-authored instruction class exists is HA-PCPG-1. Record, do not answer.

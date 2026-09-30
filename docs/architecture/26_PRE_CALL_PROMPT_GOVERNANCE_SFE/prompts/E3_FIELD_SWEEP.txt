@@ -1,0 +1,68 @@
+ENRICO E3 — FIELD SWEEP
+PRE_CALL_PROMPT_GOVERNANCE (PCPG) · RED · architecture agent prompt (independently executable)
+
+MODE
+FIELD_RECONSTRUCTION_AND_PULSE_DERIVATION. Read-only. You derive, from existing authoritative producers
+only, what the current Field is for an (actor, scope) and what is active in it — so that nothing the Field
+uses is manufactured by the prompt or by PCPG.
+
+SCOPE
+Relations R-02 (scope validation), R-03 (field reconstruction), R-04 (Pulse) and R-14 (reconstruction after
+material change); 04_OBSERVATION_RESULT.md §3 and §9; boundaries B-02, B-03, B-05.
+
+FORBIDDEN ACTIONS
+- Writing or changing any file, code, test, migration or frontend.
+- Introducing any status, lifecycle, counter, flag or cache owned by PCPG.
+- Reading any fact before identity, Workspace and membership are proven.
+- Treating a cached, client-supplied or prompt-supplied value as a current fact.
+- Calling any provider.
+
+AUTHORITATIVE INPUTS
+1. 06 BND-001..003 and the F09-2 isolation rule (docs/implementation/field-reports/PFC/WU-PFC-F09-2.md;
+   code: application.session_control_handler.deny_unless_member).
+2. 03 (states and transitions), 04 (authority), 05 (governance, bindings, binding history), 07 (sources,
+   evidence, proof), 10 and 06 BND-017 (unresolved and INDETERMINATE), 11 §25–§28 (data classes), 08
+   §17/§55 and HD-19/HD-LIVE-1 (provider configuration), HD-20/24/26/27 (ceilings and immutability).
+3. Code producers: application.inquiry_queries.session_position (actions: relevant/available/reasonCode),
+   the readiness functions (reflection_readiness, question_selection_blocker, selection_blocker,
+   impact_chain_blocker, investigation_readiness, begin-analysis readiness), authority.resolver,
+   reflection_proof._unresolved, frozen-set verification, analysis provenance, recovery records,
+   analysis_runtime (environment/provider).
+4. The SFE: 00_FIELD.md §7, 01_INVARIANTS.md (I-02, I-05, I-06, I-07, I-14), 04_OBSERVATION_RESULT.md §3, §9.
+
+RECURSIVE QUESTIONS
+1. For every Field-reconstruction item named in 00_FIELD.md §3 and the brief (FIELD, FIELD VERSION, SCOPE,
+   WORKSPACE, SESSION, ACTOR, ROLE, MEMBERSHIP, PARTICIPATION, AUTHORITY, AUTHORITY SCOPE, CURRENT STATE,
+   ACTIVE TRANSITIONS, SOURCE, SOURCE VERSION, SOURCE AUTHORITY, SOURCE MUTABILITY, EVIDENCE STATUS,
+   PROOF STATUS, DATA CLASSIFICATION, DATA HANDLING RULES, PROVIDER POLICY, AIOP CONTRACT, CURRENT
+   EXTERNAL EFFECT STATE, CURRENT DEPENDENCIES, INDETERMINATE RELATIONS): name its existing producer and
+   version carrier, or state that none exists (then it is UNRESOLVED, not invented).
+2. Which of these can only be known as an ABSENCE (e.g. "no binding")? How is an absence stated with its
+   evidence, and why can no version key prove it current?
+3. Derive the minimum Pulse: for each candidate element (active transitions, pending human decisions,
+   pending authority requirements, in-flight operations, stale sources, recent authority change, current
+   external dependencies, unresolved eligibility, indeterminate consequences, governance blockers) —
+   which existing record or producer result is it a VIEW of? Drop any element with no canonical source.
+   Prove no element duplicates a canonical concept.
+4. Is there one consistent snapshot? Which reads must share it so that Pulse and reconstruction cannot
+   disagree? What happens if a producer is unavailable (UNRESOLVED; never defaulted)?
+5. Derive the freshness basis from dependencies: which inputs can change which stratum-3/4 value? Remove
+   any dimension that cannot; add any that can. Prove (or refute) "derive on read; never a gate input".
+6. Recurse: can any reconstruction item be influenced by the raw intent (scope widening, target naming
+   an out-of-scope object, claimed version)? If yes, find the relation that lets it and repair it.
+
+OUTPUT CONTRACT
+- RECONSTRUCTION MAP: item → producer (file/symbol) → version carrier → absence handling → UNRESOLVED case.
+- PULSE MODEL: element → canonical source → effect on evaluation; dropped elements with reason.
+- SNAPSHOT RULE and FAILURE RULES.
+- FRESHNESS BASIS: the derived dimensions with justification; the change classes that make an
+  observation stale.
+- SFE FINDINGS: corrections to §3/§9/R-03/R-04/R-14 (you do not edit).
+
+STOP CONDITION
+Stop when every item has a producer or an explicit UNRESOLVED rule, every Pulse element has a canonical
+source, and the freshness basis is derived.
+
+HUMAN AUTHORITY CONDITION
+If an item required by the Field has no producer and its producer's home is undecided (e.g. data class of
+free text: GAP-11-006), record the dependency on the matching HA-PCPG-* and apply its fail-closed default.

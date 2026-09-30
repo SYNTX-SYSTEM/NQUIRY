@@ -1,0 +1,69 @@
+ENRICO E4 — AUTHORITY SWEEP
+PRE_CALL_PROMPT_GOVERNANCE (PCPG) · RED · architecture agent prompt (independently executable)
+
+MODE
+PER_DELTA_GOVERNANCE_EVALUATION. Read-only. For each candidate delta you determine its governance
+result strictly from existing authority, state, purpose, source and contract relations — proving that
+PCPG adds no authority model of its own.
+
+SCOPE
+Relation R-07 (per-delta evaluation); 04_OBSERVATION_RESULT.md §4–§6; boundaries B-02, B-03, B-05, B-06,
+B-09. Single deltas only — composition belongs to E5.
+
+FORBIDDEN ACTIONS
+- Writing or changing any file, code, test or frontend.
+- Re-implementing, paraphrasing or "simplifying" any existing readiness or authority rule; you must cite
+  the producer and use its result.
+- Treating role, participation, prompt claims, declared purpose, comparative properties (cheapest,
+  in-budget) or AI output as authority, eligibility or approval.
+- Answering an open Case 3.
+
+AUTHORITATIVE INPUTS
+1. 04 (every AUTH-DEP, including AI permitted/prohibited roles; §17 default deny; §54 participation is not
+   general authority); 05 (bindings, typed authority sources); HD-6 (BINDING / ROLE / FOUNDING /
+   PARTICIPATION).
+2. 03 (legal transitions per state); 06 BND-005, BND-007, BND-010, BND-017.
+3. 07 (evidence and source status); 08 §39–§40 (effect matrix, adoption); HD-16, HD-20, HD-21, HD-24,
+   HD-25, HD-26, HD-27.
+4. Code: authority.resolver (exact-scope resolution), application.inquiry_queries.session_position
+   actions, the readiness/blocker functions, application.selection_command, impact_chain_handler,
+   investigation_handler.
+5. The SFE: 01_INVARIANTS.md (I-03, I-04, I-08, I-09, I-12), 04_OBSERVATION_RESULT.md §4–§6, fixtures
+   PROCUREMENT, NQUIRY_SESSION_AUTHORITY, AUTHORITY_ESCALATION, DECISION_SUBSTITUTION.
+
+RECURSIVE QUESTIONS
+1. For each NQUIRY operation that a delta can map to (BEGIN_ANALYSIS, BEGIN_REFLECTION,
+   BEGIN_QUESTION_SELECTION, SELECT_COMPELLING/PRIMARY_QUESTION, CREATE_IMPACT_CHAIN,
+   APPEND_IMPACT_CHAIN_NODE, BEGIN_INVESTIGATION, decision operations, AIOP-001/002 requests): which
+   existing producer yields REQUIRED_AUTHORITY, ACTUAL_AUTHORITY, AUTHORITY_SOURCE/SCOPE and state
+   availability? Is its result available at the observation's basis without re-implementation?
+2. Show, for Ravi and Maya on the live review Sessions (A: QUESTION_CAPTURE governed; B: Fixture; C:
+   ANALYSIS), that the delta result for every mapped operation equals the existing capability result.
+   Any difference falsifies the SFE (P-14).
+3. For each delta, is its execution class consistent with 08 §39 and 04 AI roles? Could any
+   decision-class effect be classified PROVIDER_COMPUTATION? Test every DECISION_SUBSTITUTION case.
+4. Where the actor HAS the authority for a HUMAN_COMMAND delta, is the result HUMAN_ACTION_AVAILABLE and
+   never ALLOWED/MLT? Where the actor lacks it, is HAR the correct holder class?
+5. For the procurement fixture: which facts are canonical (fixture producer, FIXTURE_NON_PROOF), and does
+   every result follow from them alone? Prove CHEAPEST ≠ COMPLIANCE_ELIGIBLE ≠ SELECTABLE ≠ APPROVABLE ≠
+   PURCHASABLE, BUDGET_FIT ≠ APPROVAL.
+6. Precedence: when several findings apply, is the §6 order total and dependency-correct? Construct a
+   counter-example or prove it.
+7. Recurse: after evaluation, does any RESULT depend on the wording of the raw intent rather than on the
+   mapped operation and canonical facts? If yes, find the leak.
+
+OUTPUT CONTRACT
+- OPERATION → PRODUCER TABLE for every mappable operation (authority home, readiness producer, reason
+  codes, version carrier).
+- DELTA RESULTS for every fixture delta: all §5 fields that E4 owns, RESULT, REASON, precedence
+  justification.
+- EQUIVALENCE PROOF: PCPG result = canonical capability result, per operation, per actor, per Session.
+- COUNTER-EXAMPLES found (each is an SFE defect) and the relation to repair.
+
+STOP CONDITION
+Stop when every fixture delta has a derived result traceable only to canonical producers and invariants,
+and the equivalence proof holds or its failures are listed.
+
+HUMAN AUTHORITY CONDITION
+If a delta's authority home is undecided (e.g. leaving INVESTIGATION: HA-23; a user-authored instruction
+class: HA-PCPG-1), its RESULT is GOVERNANCE_BOUNDARY citing that question; do not derive an answer.

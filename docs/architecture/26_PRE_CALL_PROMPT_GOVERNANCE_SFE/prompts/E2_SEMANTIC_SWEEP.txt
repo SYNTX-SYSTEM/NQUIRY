@@ -1,0 +1,66 @@
+ENRICO E2 — SEMANTIC SWEEP
+PRE_CALL_PROMPT_GOVERNANCE (PCPG) · RED · architecture agent prompt (independently executable)
+
+MODE
+SEMANTIC_OBSERVATION_MODEL_DERIVATION. Read-only. You derive what the Field may observe in a raw intent,
+and how, such that no observation can ever act as authority.
+
+SCOPE
+Relation R-05 (local SIMPLIX semantic sweep) and R-06 (candidate delta formation) of
+docs/architecture/26_PRE_CALL_PROMPT_GOVERNANCE_SFE/02_RELATIONS.md; stratum 2 of 04_OBSERVATION_RESULT.md;
+boundary B-01 (03_BOUNDARIES.md). The semantic model only — not authority, state or capability.
+
+FORBIDDEN ACTIONS
+- Writing or changing any file, code, test, configuration or frontend.
+- Calling any model or provider, locally or remotely; assuming SIMPLIX is a model (HA-PCPG-2 decides).
+- Mapping any semantic item to an authority, permission, state or source status.
+- Inventing an operation that is not in the existing catalog (03 transitions, 09 Commands, 04 AUTH-DEPs,
+  08 AIOPs) — unmapped means UNKNOWN.
+- Choosing a "closest match" for an ambiguous verb or target.
+
+AUTHORITATIVE INPUTS
+1. 08 §8.2 (prompt is not authority), §9 (user content is DATA), §58–§59 (injection, retrieved-content
+   takeover); 11 §78 (ambiguity cannot relax controls); 04 §17 (default deny).
+2. The operation catalog in its homes: 03 (TRN-SESS-*, TRN-SEL-*, …), 04 (AUTH-DEP-*, AI permitted and
+   prohibited roles), 08 §23–§39 (AIOP contracts and effect matrix), 09 Command registry.
+3. The SFE: 01_INVARIANTS.md (I-01..I-04, I-08, I-10), 04_OBSERVATION_RESULT.md §4–§5, fixtures/*.
+
+RECURSIVE QUESTIONS
+1. What are the minimal observable units of a raw intent needed by R-06 and R-07 — clauses, actions,
+   targets, modality (asserted / requested / conditional / prohibited / hypothetical), negation,
+   conjunction and dependency, declared purpose, semantic purpose? For each unit: which downstream
+   relation consumes it? Remove any unit nothing consumes.
+2. For each unit: what makes it UNKNOWN? Enumerate the ambiguity classes (lexical, referential, scope,
+   modality, language, cross-clause dependency) and prove each lands in UNKNOWN, never in a guess.
+3. How is a requested action mapped to an operation of the existing catalog without the mapping
+   carrying authority? Show that two phrasings of the same operation yield the same OPERATION and that
+   the mapping only selects which canonical evaluations R-07 consults (I-03).
+4. How is the execution class determined by EFFECT and not by verb or requested executor (04 §4)? Test:
+   "let the AI pick the primary question", "choose the cheapest", "prepare the order for submission",
+   "summarise and mark as evidence".
+5. When may an intermediate delta be IMPLIED (e.g. RECOMMEND before SELECT, APPROVE before ORDER)? Only
+   from a canonical chain relation — which one, in which home? What happens when no canonical chain
+   exists for the domain?
+6. Which instructions embedded in a raw intent could try to change the rule set, the catalog or the
+   evaluation (injection)? Prove none crosses B-01.
+7. What is semantic drift (declared vs semantic purpose vs the operation's canonical purpose), and what
+   may it influence? (It may only add a flag and a reason; it never permits.)
+8. Recurse: after your model, is there any semantic item whose value could change a RESULT other than by
+   selecting a canonical evaluation or producing UNKNOWN? If yes, the model is wrong; repair it.
+
+OUTPUT CONTRACT
+- SEMANTIC MODEL: the units, each with definition, span requirement, UNKNOWN conditions, consumer.
+- MAPPING LAW: how actions map to catalog operations; how execution class is assigned; when IMPLIED.
+- AMBIGUITY TABLE: class → handling → resulting delta state.
+- INJECTION PROOF: the cases tried and why each fails to cross B-01.
+- FIXTURE CHECK: the semantic decomposition of every fixture's raw intent, with spans; flag any fixture
+  whose expected decomposition you cannot derive.
+- SFE FINDINGS: corrections to R-05/R-06/§4–§5 (you do not edit).
+
+STOP CONDITION
+Stop when every unit has a consumer, every ambiguity class has a fail-closed handling, and every fixture
+decomposes without a guess.
+
+HUMAN AUTHORITY CONDITION
+If a unit can only be observed by a model (not reproducibly by rules), do not assume one: record it as
+depending on HA-PCPG-2 and mark the unit UNKNOWN-by-default.

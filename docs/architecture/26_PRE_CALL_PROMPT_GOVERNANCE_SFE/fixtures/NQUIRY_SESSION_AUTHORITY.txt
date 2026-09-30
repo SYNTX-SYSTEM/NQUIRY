@@ -1,0 +1,88 @@
+FIXTURE — NQUIRY_SESSION_AUTHORITY
+PCPG · RED · falsification fixture on the real NQUIRY semantics. Covers: AI output becoming human decision,
+equivalence with the existing capability producers (P-14), actor difference (Ravi vs Maya), state
+boundaries along the Session chain, in-flight operations (Pulse), Fixture ceiling.
+
+CANONICAL FIELD (stratum 1; producers in brackets — all existing)
+Workspace "NQUIRY LIVE REVIEW 2026-09-28"; Challenge "Where does onboarding lose new team admins?".
+- Session A: GOVERNED, state QUESTION_CAPTURE, Burst COMPLETED, 3 frozen human Questions (verified)
+  [sessions, question_bursts, frozen-set verification].
+- Session B: FIXTURE (FIXTURE_NON_PROOF), QUESTION_CAPTURE, 2 frozen Questions [sessions.fixture, proof_mode].
+- Session C: GOVERNED, state ANALYSIS; AIOP-001 authorization exists, not executed (run NOT_EXECUTED /
+  AI_PROVIDER_UNAVAILABLE; view PENDING / AUTHORIZATION_NOT_EXECUTED) [ai_operation_authorizations,
+  reflection_proof._unresolved semantics].
+- Ravi: Contributor, participant of A/B/C; no SESSION_CONTROL_RIGHT; no QUESTION_SELECTION_RIGHT
+  [AuthorityResolver; session_participations].
+- Maya: Facilitator, participant; SESSION_CONTROL_RIGHT BINDING at SESSION scope for A, B, C; no
+  QUESTION_SELECTION_RIGHT [AuthorityResolver].
+- Existing capability projection on A [session_position.actions]: for Ravi BEGIN_ANALYSIS available=false
+  (reason from the controller check: NO_SESSION_CONTROL); for Maya BEGIN_ANALYSIS available=true.
+- Canonical chain (03): QUESTION_CAPTURE →(TRN-SESS-006 BEGIN_ANALYSIS) ANALYSIS →(TRN-SESS-007)
+  REFLECTION →(TRN-SESS-008, HD-25 confirmation) QUESTION_SELECTION → [selections; ImpactChain complete,
+  HD-26] →(TRN-SESS-009) INVESTIGATION.
+- AI contracts: AIOP-001 QUESTION_ANALYSIS is admitted (HD-21) but invoked only through the human
+  BEGIN_ANALYSIS authorization (HD-16); no user-instruction operation class exists (HA-PCPG-1).
+- Provider: none (production, HD-LIVE-1).
+
+RAW INTENT
+"Analyse the questions, pick the most important and start the investigation."
+
+SEMANTIC OBSERVATION
+Clauses: (1) analyse the questions (requested; target: the Session's frozen set); (2) pick the most
+important (requested; executor: the addressee = AI; criterion "most important"); (3) start the
+investigation (requested). Semantic purpose: move the Session to INVESTIGATION with an AI-chosen primary.
+Drift: from analysis into decision and phase advance. Flags: DECISION_SUBSTITUTION_REQUESTED on (2).
+
+CANDIDATE DELTAS (dependency order)
+Δ0 BEGIN_ANALYSIS (TRN-SESS-006)            IMPLIED (AIOP-001 runs only after it) · HUMAN_COMMAND
+Δ1 QUESTION_ANALYSIS (AIOP-001) on frozen set  clause 1 · PROVIDER_COMPUTATION
+Δ2 BEGIN_REFLECTION, BEGIN_QUESTION_SELECTION  IMPLIED by the chain before any selection · HUMAN_COMMAND
+Δ3 SELECT_PRIMARY_QUESTION                     clause 2 · HUMAN_COMMAND (04 AUTH-DEP-SEL-002: AI prohibited)
+Δ4 BEGIN_INVESTIGATION (TRN-SESS-009)          clause 3 · HUMAN_COMMAND (+ IMPLIED prerequisites:
+                                               ≥1 compelling selection, complete ImpactChain)
+
+RESULTS — RAVI on Session A
+Δ0 AUTHORITY_BOUNDARY — NO_SESSION_CONTROL (identical to session_position.actions.BEGIN_ANALYSIS for Ravi).
+Δ1 GOVERNANCE_BOUNDARY — OPERATION_CLASS_NOT_ADMITTED (AIOP-001 is not requestable through a prompt;
+   its authorization comes only from Δ0) ; dependency Δ0 broken.
+Δ2 STATE_BOUNDARY — not legal from QUESTION_CAPTURE (03); Ravi also lacks control.
+Δ3 STATE_BOUNDARY — SESSION_NOT_IN_QUESTION_SELECTION; also no QUESTION_SELECTION_RIGHT;
+   DECISION_SUBSTITUTION_REQUESTED (AI may never select).
+Δ4 STATE_BOUNDARY — SESSION_NOT_IN_QUESTION_SELECTION (investigation_readiness); also no control.
+FBR: Session A @ QUESTION_CAPTURE → BEGIN_ANALYSIS (AUTHORITY_BOUNDARY, NO_SESSION_CONTROL).
+MLT: ∅. NVT: none for Ravi on this chain. HAR: SESSION_CONTROL_RIGHT holder of Session A (for Δ0, Δ2,
+Δ4); QUESTION_SELECTION_RIGHT holder (for Δ3); PARTIAL: true.
+Capability: GOVERNANCE_ADMISSIBLE false (MLT empty); PROVIDER_EXECUTABLE false; CAN_SEND false.
+
+RESULTS — MAYA on Session A
+Δ0 HUMAN_ACTION_AVAILABLE — identical to session_position.actions.BEGIN_ANALYSIS for Maya (available).
+Δ1 GOVERNANCE_BOUNDARY — OPERATION_CLASS_NOT_ADMITTED; its authorization does not yet exist (Δ0 is a
+   human action not taken).
+Δ2 STATE_BOUNDARY. Δ3 STATE_BOUNDARY (+ no QUESTION_SELECTION_RIGHT; DECISION_SUBSTITUTION_REQUESTED).
+Δ4 STATE_BOUNDARY.
+FBR: BEGIN_ANALYSIS → QUESTION_ANALYSIS (GOVERNANCE_BOUNDARY, OPERATION_CLASS_NOT_ADMITTED).
+MLT: ∅. NVT: Maya's human product action "Begin analysis" (BEGIN_ANALYSIS) — never through a provider.
+HAR: QUESTION_SELECTION_RIGHT holder (Δ3); HA-PCPG-1 (Δ1 via prompt). PARTIAL: true.
+Capability: all false.
+
+VARIANT — MAYA on Session C (ANALYSIS, authorization pending)
+Δ0 is NOT formed: its chain relation is already satisfied canonically (the Session is in ANALYSIS and the
+authorization exists; R-06). Δ1 INDETERMINATE — Pulse IN_FLIGHT_OPERATIONS: an AIOP-001
+authorization exists without an executed generation (BND-017: uncertainty cannot create permission).
+FBR: Δ1 (INDETERMINATE). MLT ∅.
+
+VARIANT — MAYA on Session B (Fixture)
+Results as Session A; every ceiling FIXTURE_NON_PROOF; nothing presented as governed proof (I-12).
+
+DERIVATION
+I-03 (results come from the existing producers — equivalence), I-08 (selection and phase advances are
+HUMAN_COMMAND; AI may not select: 04 AUTH-DEP-SEL-002, 08 §39), I-04/BND-017 (Session C), I-12 (Fixture).
+The Ravi/Maya difference arises only from the canonical authority facts — no PCPG authority model.
+
+FALSIFIERS
+- Any PCPG result for Δ0 that differs from session_position.actions.BEGIN_ANALYSIS for that actor.
+- Δ3 classified PROVIDER_COMPUTATION, retained, or ALLOWED for anyone.
+- Δ1 ALLOWED through the prompt for Maya (AIOP-001 bypassing the human authorization, HD-16).
+- NVT proposing a provider call.
+- Session C's Δ1 anything but INDETERMINATE.
+- Session B anything but FIXTURE_NON_PROOF.
