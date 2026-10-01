@@ -1,0 +1,36 @@
+
+        SETUP    F db_connection
+        SETUP    F email['no-at-sign']
+        SETUP    F name['A']
+        SETUP    F password['dev-password-123']
+        tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused[no-at-sign-A-dev-password-123] (fixtures used: db_connection, email, name, password)
+        TEARDOWN F password['dev-password-123']
+        TEARDOWN F name['A']
+        TEARDOWN F email['no-at-sign']
+        TEARDOWN F db_connection
+        SETUP    F db_connection
+        SETUP    F email['dev-1b0494af75@dev.local.test']
+        SETUP    F name[' ']
+        SETUP    F password['dev-password-123']
+        tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused[dev-1b0494af75@dev.local.test- -dev-password-123] (fixtures used: db_connection, email, name, password)
+        TEARDOWN F password['dev-password-123']
+        TEARDOWN F name[' ']
+        TEARDOWN F email['dev-1b0494af75@dev.local.test']
+        TEARDOWN F db_connection
+        SETUP    F db_connection
+        SETUP    F email['dev-d7be398021@dev.local.test']
+        SETUP    F name['A']
+        SETUP    F password['short']
+        tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused[dev-d7be398021@dev.local.test-A-short] (fixtures used: db_connection, email, name, password)
+        TEARDOWN F password['short']
+        TEARDOWN F name['A']
+        TEARDOWN F email['dev-d7be398021@dev.local.test']
+        TEARDOWN F db_connection
+        tests/e2e/test_pfc_f09_1_technical_failure.py::test_worker_loop_survives_a_database_outage_and_stops_gracefully
+=============================== warnings summary ===============================
+../../.venv-proof313-orange/lib/python3.13/site-packages/starlette/testclient.py:45
+  /home/codi/Entwicklung/nquiry/.venv-proof313-orange/lib/python3.13/site-packages/starlette/testclient.py:45: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+1 warning in 2.56s

@@ -1,0 +1,4 @@
+tests/e2e/test_pfc_f09_1_technical_failure.py::test_worker_loop_survives_a_database_outage_and_stops_gracefully
+tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused[dev-058352909b@dev.local.test-A-short]
+tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused[dev-b367047950@dev.local.test- -dev-password-123]
+tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused[no-at-sign-A-dev-password-123]

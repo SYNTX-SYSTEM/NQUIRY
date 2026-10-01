@@ -1,0 +1,2 @@
+ERROR: ORANGE worker-DB binding REFUSED: controller has DATABASE_URL set; workers would inherit one shared mutable database
+

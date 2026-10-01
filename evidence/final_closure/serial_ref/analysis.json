@@ -1,0 +1,42 @@
+{
+ "checks": {
+  "COLLECTED_2239": true,
+  "EXECUTED_SET_EQUALS_COLLECTION": true,
+  "SKIP_SET_EQUALS_DECLARED_2": true,
+  "ZERO_FAILURES_ERRORS": true,
+  "CONCURRENCY_13_EXECUTED": true,
+  "EXIT_CODE_0": true,
+  "TREE_UNCHANGED": true,
+  "ENV_MANIFEST_UNCHANGED": true,
+  "GUARD_GREEN_BEFORE_AND_AFTER": true,
+  "PROOF_DBS_SAME_HEAD_FINGERPRINT": true,
+  "PROOF_DBS_CLEAN_AFTER": true,
+  "PROOF_DBS_NO_CONNECTIONS_AFTER": true,
+  "NO_RESIDUAL_RACE_DB": true,
+  "NO_RESIDUAL_ZZ_PKG25_ROLE": true
+ },
+ "counts": {
+  "passed": 2237,
+  "skipped": 2
+ },
+ "skipped": [
+  "tests/e2e/test_http_dispatch_real_connection_lifecycle.py::test_dispatch_record_human_decision_survives_a_real_closing_connection",
+  "tests/security/test_direct_write.py::test_direct_write_is_technically_rejected"
+ ],
+ "concurrency": {
+  "tests/e2e/test_f03_concurrency.py::test_an_open_capture_excludes_a_completion_and_is_then_frozen": "passed",
+  "tests/e2e/test_f03_concurrency.py::test_an_open_completion_excludes_a_capture_which_then_finds_the_burst_completed": "passed",
+  "tests/e2e/test_f03_concurrency.py::test_concurrent_captures_are_serialized_without_order_collisions": "passed",
+  "tests/e2e/test_f03_concurrency.py::test_real_thread_race_between_captures_and_completion": "passed",
+  "tests/e2e/test_f04_concurrency.py::test_open_begin_excludes_a_second_begin": "passed",
+  "tests/e2e/test_f04_concurrency.py::test_pi2_multi_transaction_run_commits_each_step_durably": "passed",
+  "tests/e2e/test_f04_concurrency.py::test_r1_r2_real_commit_happy_path_binds_every_accepted_artifact": "passed",
+  "tests/e2e/test_f04_concurrency.py::test_r2_real_commit_denied_acceptance_leaves_no_validated_proof": "passed",
+  "tests/e2e/test_f04_concurrency.py::test_r2_real_commit_refuses_an_orphan_validated_proof": "passed",
+  "tests/e2e/test_f04_concurrency.py::test_request_racing_an_execution_of_the_same_unconsumed_oa": "passed",
+  "tests/e2e/test_f04_concurrency.py::test_thread_race_of_begins": "passed",
+  "tests/e2e/test_f04_concurrency.py::test_thread_race_of_executions_of_one_oa": "passed",
+  "tests/e2e/test_f04_concurrency.py::test_thread_race_of_retry_requests": "passed"
+ },
+ "failed_or_error": []
+}

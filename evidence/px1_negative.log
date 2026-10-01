@@ -1,0 +1,81 @@
+== N1 PYTHONNOUSERSITE unset -> must REFUSE
+ORANGE import-origin guard REFUSED:
+  user site-packages enabled (PYTHONNOUSERSITE=1 must hold)
+exit=1
+== N2 master checkout packages prepended via PYTHONPATH -> must REFUSE
+ORANGE import-origin guard REFUSED:
+  first-party distribution 'nquiry' is installed (0.0.0)
+  ai_contracts: resolves outside ORANGE -> ['/home/codi/Entwicklung/nquiry/packages/ai_contracts']
+  ai_gateway: resolves outside ORANGE -> ['/home/codi/Entwicklung/nquiry/packages/ai_gateway']
+exit=1
+== N3 foreign shadow package 'domain' -> must REFUSE
+ORANGE import-origin guard REFUSED:
+  domain: resolves outside ORANGE -> ['/tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/px1/neg/shadow/domain']
+exit=1
+== N4 master-bound .venv-proof313 interpreter running the guard -> must REFUSE
+ORANGE import-origin guard REFUSED:
+  interpreter prefix /home/codi/Entwicklung/nquiry/.venv-proof313 is not /home/codi/Entwicklung/nquiry/.venv-proof313-orange
+  first-party distribution 'nquiry' is installed (0.0.0)
+  editable finder on sys.meta_path: __editable___nquiry_0_0_0_finder._EditableFinder
+  _repo_scan: not resolvable
+  ai_contracts: resolves outside ORANGE -> ['/home/codi/Entwicklung/nquiry/packages/ai_contracts']
+exit=1
+== N5 pytest: front-inserted master finder (editable-style) -> must REFUSE (UsageError)
+ERROR: ORANGE import-origin guard REFUSED:
+  domain: resolves outside ORANGE -> ['/home/codi/Entwicklung/nquiry/packages/domain']
+
+exit=4
+== N6 xdist workers: same poison under -n 2 -> must REFUSE
+ERROR: ORANGE import-origin guard REFUSED:
+  domain: resolves outside ORANGE -> ['/home/codi/Entwicklung/nquiry/packages/domain']
+
+exit=4
+== N7 guard deliberately disabled (-p no:nquiry_orange_guard) shows it is the thing refusing
+
+7 tests collected in 2.23s
+exit=0
+== N6b poison only inside xdist workers (controller clean) -> workers must REFUSE
+tests/domain/test_challenge.py::test_challenge_has_no_status_field
+tests/domain/test_challenge.py::test_challenge_has_no_emotional_temperature_field
+tests/domain/test_challenge.py::test_challenge_rejects_a_bare_uuid_identity
+tests/domain/test_challenge.py::test_challenge_rejects_a_workspace_id_of_the_wrong_id_type
+tests/domain/test_challenge.py::test_challenge_requires_a_title
+7 tests collected in 2.14s
+exit=0
+== P7 xdist positive: -n 2 collect with clean env
+
+7 tests collected in 2.21s
+exit=0
+== N6b' poison only inside xdist WORKERS, real workers (-n 2, 7 pure tests) -> must REFUSE
+    raise pytest.UsageError(str(exc)) from None
+pytest.UsageError: ORANGE import-origin guard REFUSED:
+  domain: resolves outside ORANGE -> ['/home/codi/Entwicklung/nquiry/packages/domain']
+    raise pytest.UsageError(str(exc)) from None
+pytest.UsageError: ORANGE import-origin guard REFUSED:
+  domain: resolves outside ORANGE -> ['/home/codi/Entwicklung/nquiry/packages/domain']
+exit=5
+== P7' clean env, real workers (-n 2, same 7 pure tests) -> must PASS
+.......                                                                  [100%]
+7 passed in 8.67s
+exit=0
+== N6c (hardened) poison only inside real xdist workers -> must REFUSE with exit != 0 and != 5
+2 errors in 9.36s
+E     domain: resolves outside ORANGE -> ['/home/codi/Entwicklung/nquiry/packages/domain']
+E   nquiry_orange_guard.ImportOriginViolation: ORANGE import-origin guard REFUSED:
+______________________________ ERROR collecting . ______________________________
+ERROR . - nquiry_orange_guard.ImportOriginViolation: ORANGE import-origin gua...
+==================================== ERRORS ====================================
+exit=1
+== P7'' clean env, real workers -> must PASS
+7 passed in 8.36s
+exit=0
+== N5' serial pytest poison still UsageError
+ERROR: ORANGE import-origin guard REFUSED:
+exit=4
+== P6' guard CLI
+ORANGE_IMPORT_ORIGIN::PASS (44 first-party names under /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra)
+exit=0
+== N8 first-party module loaded from master AFTER configure -> post-collection check must REFUSE
+! _pytest.outcomes.Exit: ORANGE import-origin guard REFUSED:
+  loaded governance.master_copy from /home/codi/Entwicklung/nquiry/packages/governance/__init__.py !
+exit=4

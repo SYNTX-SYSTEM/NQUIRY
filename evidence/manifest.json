@@ -1,0 +1,355 @@
+{
+ "python": "3.13.15 (main, Sep 29 2026, 15:01:28) [Clang 22.1.3 ]",
+ "prefix": "/home/codi/Entwicklung/nquiry/.venv-proof313-orange",
+ "purelib": "/home/codi/Entwicklung/nquiry/.venv-proof313-orange/lib/python3.13/site-packages",
+ "frozen_target": "checkpoint-PFC-PCPG-5 e0a6b3b25d4309d16d6e3db3ee0958183a279dfd",
+ "equivalence_pins": [
+  "fastapi==0.122.0",
+  "starlette==0.50.0"
+ ],
+ "distributions": [
+  {
+   "name": "alembic",
+   "version": "1.20.0",
+   "class": "DECLARED",
+   "reason": "required by pyproject.toml (runtime)",
+   "record_sha256": "74eb8ac0469d803e3b187a48499f03e2448e5782d81051e8d751a63c81d8a577"
+  },
+  {
+   "name": "annotated-doc",
+   "version": "0.0.5",
+   "class": "TRANSITIVE",
+   "reason": "required by fastapi",
+   "record_sha256": "eee5b3b5754ae1cb431e5aba650cdab050673d518473f0fb2b4ad9f48671e2e7"
+  },
+  {
+   "name": "annotated-types",
+   "version": "0.8.0",
+   "class": "TRANSITIVE",
+   "reason": "required by pydantic",
+   "record_sha256": "8191d3aa1ac93480688819b4db2385606219a3f7a453b85e086646134ded4f96"
+  },
+  {
+   "name": "anyio",
+   "version": "4.15.1",
+   "class": "TRANSITIVE",
+   "reason": "required by starlette, watchfiles",
+   "record_sha256": "61566393fe741ef449f387182a94956cc11dda629cdea4a5823b89f6eb9dc6b3"
+  },
+  {
+   "name": "ast_serialize",
+   "version": "0.11.2",
+   "class": "TRANSITIVE",
+   "reason": "required by mypy",
+   "record_sha256": "62ed4117c1e51c5c6e9308547559873a33eeb6d79735b82e3ea72efd4fb53329"
+  },
+  {
+   "name": "certifi",
+   "version": "2026.7.22",
+   "class": "PROOF_ONLY",
+   "reason": "required by httpx",
+   "record_sha256": "cff9d243744c96445494c29abee3d592d0a6955d5504f4fbe034dce7aaf38490"
+  },
+  {
+   "name": "click",
+   "version": "8.5.0",
+   "class": "TRANSITIVE",
+   "reason": "required by uvicorn",
+   "record_sha256": "924078ec3a47b97192425dbc0c3693085af7a7b863afcf6b4e110cf0bd97dea4"
+  },
+  {
+   "name": "coverage",
+   "version": "7.16.2",
+   "class": "TRANSITIVE",
+   "reason": "required by pytest-cov",
+   "record_sha256": "7cb16c96ff4d03a0ea6e024e95cf54fb143971243c523025423d577d45d3e5ec"
+  },
+  {
+   "name": "execnet",
+   "version": "2.1.2",
+   "class": "PROOF_ONLY",
+   "reason": "required by pytest-xdist",
+   "record_sha256": "99eb1e122fae4023274964af2a5c53d765712a9f1ad5d8a3a74423712f639770"
+  },
+  {
+   "name": "fastapi",
+   "version": "0.122.0",
+   "class": "DECLARED",
+   "reason": "required by pyproject.toml (runtime) | EQUIVALENCE_PINNED fastapi==0.122.0 (historical proven state; equivalence-pins.txt)",
+   "record_sha256": "64cf5c3d7d827e7d6b4f64fbbd996d6507a11c16e4bf22588ccbcb0c33a8ce2d"
+  },
+  {
+   "name": "h11",
+   "version": "0.16.0",
+   "class": "TRANSITIVE",
+   "reason": "required by uvicorn",
+   "record_sha256": "3779e13c17d8e21c769ed9ee8780af123cc3f8656185f5f8d3af258ff5639b3e"
+  },
+  {
+   "name": "httpcore",
+   "version": "1.0.9",
+   "class": "PROOF_ONLY",
+   "reason": "required by httpx",
+   "record_sha256": "67cb4644d84fef1df8c5a0862c57c3380eff058a153bac7a4ba2722779982554"
+  },
+  {
+   "name": "httptools",
+   "version": "0.8.0",
+   "class": "TRANSITIVE",
+   "reason": "required by uvicorn",
+   "record_sha256": "7549abbb10f2c9b81b7cc61e05817a0d48da765725f26e6329bc52b0267ce4ac"
+  },
+  {
+   "name": "httpx",
+   "version": "0.28.1",
+   "class": "PROOF_ONLY",
+   "reason": "the only HTTP-client family the frozen tree names (5 runtime-proof scripts import it); TestClient dependency; 0.28.1 = historical proven version",
+   "record_sha256": "55b33ce9f2d4f4cfe6fedace6da33338018b9ff215360ccd621a53e9b2914298"
+  },
+  {
+   "name": "hypothesis",
+   "version": "6.168.3",
+   "class": "DECLARED",
+   "reason": "required by pyproject.toml (dev)",
+   "record_sha256": "10b9170ceed734e52594ae31ed2cd66fb57a5802cf8280160b64a65117ac0b1c"
+  },
+  {
+   "name": "idna",
+   "version": "3.20",
+   "class": "TRANSITIVE",
+   "reason": "required by anyio",
+   "record_sha256": "2d9698b229bca39e0194db2ddd4dc10a5a894efa7a12d1d94425ed76e3c76875"
+  },
+  {
+   "name": "iniconfig",
+   "version": "2.3.0",
+   "class": "TRANSITIVE",
+   "reason": "required by pytest",
+   "record_sha256": "4b560f65489a4dc0f32d8403da676d2e6338c371fe844160934b3fe469785185"
+  },
+  {
+   "name": "librt",
+   "version": "0.16.0",
+   "class": "TRANSITIVE",
+   "reason": "required by mypy",
+   "record_sha256": "a4ab88ab7d6b12aa6ec7f0a7fe804e7d1d14ad8511ba7167ef585ba25d067945"
+  },
+  {
+   "name": "Mako",
+   "version": "1.4.3",
+   "class": "TRANSITIVE",
+   "reason": "required by alembic",
+   "record_sha256": "73d802d9d80e0bb9813c8d705ca4be97a947663f0c604b77fb818f9158445028"
+  },
+  {
+   "name": "MarkupSafe",
+   "version": "3.0.3",
+   "class": "TRANSITIVE",
+   "reason": "required by mako",
+   "record_sha256": "cf0b1a3aae7a0861eb593b6cdecf50b10759fd8de07e3565cfb557dd43ad3977"
+  },
+  {
+   "name": "mypy",
+   "version": "2.3.1",
+   "class": "DECLARED",
+   "reason": "required by pyproject.toml (dev)",
+   "record_sha256": "f5c1b511d7eb59b4c0e7d41ea0851ba029cc0b03ab472d9bf3d7e87852028b00"
+  },
+  {
+   "name": "mypy_extensions",
+   "version": "1.1.0",
+   "class": "TRANSITIVE",
+   "reason": "required by mypy",
+   "record_sha256": "51eeeb4cfd7ca7392127eacad3a563247b56e5fbdbc48cea4fb1286542c48d85"
+  },
+  {
+   "name": "nquiry-orange-guard",
+   "version": "1.2.0",
+   "class": "PROOF_ONLY",
+   "reason": "PX-1 proof-owned import-origin guard (pytest11 plugin)",
+   "record_sha256": "ef29efb1a9e4fdd999a716459bd4131918ee57b27f4f45192d703925af561c25"
+  },
+  {
+   "name": "opentelemetry-api",
+   "version": "1.45.0",
+   "class": "DECLARED",
+   "reason": "required by opentelemetry-sdk, opentelemetry-semantic-conventions, pyproject.toml (runtime)",
+   "record_sha256": "702b2a5ccf3a76bfb07c66997cc62b7acdbed1f05e250fd2de483c28a57b4e15"
+  },
+  {
+   "name": "opentelemetry-sdk",
+   "version": "1.45.0",
+   "class": "DECLARED",
+   "reason": "required by pyproject.toml (dev)",
+   "record_sha256": "5fc0aa1f200ff30ada79348af8b14a66d62a723b58291d3668641179eadc3a8c"
+  },
+  {
+   "name": "opentelemetry-semantic-conventions",
+   "version": "0.66b0",
+   "class": "TRANSITIVE",
+   "reason": "required by opentelemetry-sdk",
+   "record_sha256": "d088f8bf20b09f66fdf02445ed3436d4ca4b3da2b9cf3b87b326d333ad4aaeb7"
+  },
+  {
+   "name": "packaging",
+   "version": "26.3",
+   "class": "TRANSITIVE",
+   "reason": "required by pytest",
+   "record_sha256": "1b8655965b0d83e9a067fd7f84b977bd1e117e0fb9f2874b2572781bdc9e2147"
+  },
+  {
+   "name": "pathspec",
+   "version": "1.1.1",
+   "class": "TRANSITIVE",
+   "reason": "required by mypy",
+   "record_sha256": "f9531bc29d0c741f02f975537a1bcc4c0aa091c2b1a7d2cbf4bcb31a6316eaf4"
+  },
+  {
+   "name": "pluggy",
+   "version": "1.6.0",
+   "class": "TRANSITIVE",
+   "reason": "required by pytest, pytest-cov",
+   "record_sha256": "a42a63bcba12ddb7e7db19158c8d05d8fc41d51f48686b411ad3a0213fbd7721"
+  },
+  {
+   "name": "psycopg",
+   "version": "3.3.6",
+   "class": "DECLARED",
+   "reason": "required by pyproject.toml (runtime)",
+   "record_sha256": "1a0b7ccd23a3006d31cdd8e693e89dcce157dab245f76dc5fdeb7abb8c094e62"
+  },
+  {
+   "name": "psycopg-binary",
+   "version": "3.3.6",
+   "class": "TRANSITIVE",
+   "reason": "required by psycopg",
+   "record_sha256": "0c406a7fd815a1f458f0e0337c9cbeaa7072d87e0b7c8706b2447d8cd50931d9"
+  },
+  {
+   "name": "pydantic",
+   "version": "2.13.5",
+   "class": "DECLARED",
+   "reason": "required by fastapi, pyproject.toml (runtime)",
+   "record_sha256": "93253f807bd8a0440d58d159ffeef610528e8a687b948095955114275c16881f"
+  },
+  {
+   "name": "pydantic_core",
+   "version": "2.46.5",
+   "class": "TRANSITIVE",
+   "reason": "required by pydantic",
+   "record_sha256": "d0b86d3f3d21d5b23d2ec645ebf1a3404155ba880f9b814d360f60ae1e1cc42a"
+  },
+  {
+   "name": "Pygments",
+   "version": "2.21.0",
+   "class": "TRANSITIVE",
+   "reason": "required by pytest",
+   "record_sha256": "eb78ecc4176f093d6242b7fca304a935202ab19d21980c6ef1b4043c10ed648f"
+  },
+  {
+   "name": "pytest",
+   "version": "9.1.1",
+   "class": "DECLARED",
+   "reason": "required by pyproject.toml (dev), pytest-cov",
+   "record_sha256": "ce03c141c58e4353c7caf06e0ba934d5e2b8244f8aabcfd7c1708dee63f0934b"
+  },
+  {
+   "name": "pytest-cov",
+   "version": "7.1.0",
+   "class": "DECLARED",
+   "reason": "required by pyproject.toml (dev)",
+   "record_sha256": "115408c1989f669153666396affa70c5edeb9a80a88a5b51e0dce4911c986357"
+  },
+  {
+   "name": "pytest-xdist",
+   "version": "3.8.0",
+   "class": "PROOF_ONLY",
+   "reason": "PX field: parallel workers; not declared by the frozen tree",
+   "record_sha256": "4fbc0eac4a66338c671236cf5a50b43fb26f8cfcc5eab005d8de1959fb9db5c0"
+  },
+  {
+   "name": "python-dotenv",
+   "version": "1.2.3",
+   "class": "TRANSITIVE",
+   "reason": "required by uvicorn",
+   "record_sha256": "831a111b2fada500386221d8d9e6d13b2ad258367c9b66c3de70c30b518efea0"
+  },
+  {
+   "name": "PyYAML",
+   "version": "6.0.3",
+   "class": "TRANSITIVE",
+   "reason": "required by uvicorn",
+   "record_sha256": "6aa69fec0dd3582b26a35731d3855cb6c5e3940fb65a74613f2464d9c11c6828"
+  },
+  {
+   "name": "ruff",
+   "version": "0.16.9",
+   "class": "DECLARED",
+   "reason": "required by pyproject.toml (dev)",
+   "record_sha256": "bbe39e2416d32104c53c37b3a7c343109979f22eca9f0cc3298fb429c425e3a1"
+  },
+  {
+   "name": "sortedcontainers",
+   "version": "2.4.0",
+   "class": "TRANSITIVE",
+   "reason": "required by hypothesis",
+   "record_sha256": "2e764b15bb6fc2e19a0a795409c5da3eae994032a5d9173a4dadc7ef238cab52"
+  },
+  {
+   "name": "SQLAlchemy",
+   "version": "2.1.1",
+   "class": "DECLARED",
+   "reason": "required by alembic, pyproject.toml (runtime)",
+   "record_sha256": "cdd2cc006a7e0b74eb07ac8f8c2ccef573be2afc7f70c0ffb48ea916b1f571d7"
+  },
+  {
+   "name": "starlette",
+   "version": "0.50.0",
+   "class": "TRANSITIVE",
+   "reason": "required by fastapi | EQUIVALENCE_PINNED starlette==0.50.0 (historical proven state; equivalence-pins.txt)",
+   "record_sha256": "f616c6cc8c6b1c9fbfb4a6bf96718a3a185f9f4685b5f1d13cd490f9aee9a563"
+  },
+  {
+   "name": "typing_extensions",
+   "version": "4.16.0",
+   "class": "TRANSITIVE",
+   "reason": "required by alembic, anyio, fastapi, mypy, opentelemetry-api, opentelemetry-sdk, opentelemetry-semantic-conventions, pydantic, pydantic-core, sqlalchemy, typing-inspection",
+   "record_sha256": "9e07fea845cac76293d927afa7157a14ecba39b318bc8af236b8de530b7656c1"
+  },
+  {
+   "name": "typing-inspection",
+   "version": "0.4.4",
+   "class": "TRANSITIVE",
+   "reason": "required by pydantic",
+   "record_sha256": "83fc23669db31500d06056b13ecebe4f088f56a81c1ea86e3b68f1de3b8c7d95"
+  },
+  {
+   "name": "uvicorn",
+   "version": "0.54.0",
+   "class": "DECLARED",
+   "reason": "required by pyproject.toml (runtime)",
+   "record_sha256": "50a881b14bc131e9606ee7d7ee52f187721a816730f7a600dd71b35d64c37cc8"
+  },
+  {
+   "name": "uvloop",
+   "version": "0.22.1",
+   "class": "TRANSITIVE",
+   "reason": "required by uvicorn",
+   "record_sha256": "a703aed81db4575562909e5ec0c277f8c839a2deaea97cacd7ac8e8919063ee7"
+  },
+  {
+   "name": "watchfiles",
+   "version": "1.3.0",
+   "class": "TRANSITIVE",
+   "reason": "required by uvicorn",
+   "record_sha256": "4f71d8de3a632c68b8ab8cbf8ca0457e25351b6b603b1d68df173c362f4dc9a2"
+  },
+  {
+   "name": "websockets",
+   "version": "17.1",
+   "class": "TRANSITIVE",
+   "reason": "required by uvicorn",
+   "record_sha256": "4bd95d49083b90f465ec1232ebd2344f1750257e8e3887f5ba984e80ed8336a2"
+  }
+ ]
+}

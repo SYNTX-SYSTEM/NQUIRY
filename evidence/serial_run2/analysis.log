@@ -1,0 +1,20 @@
+NONDETERMINISTIC_NODE_ID (collected -> executed):
+    test_malformed_input_is_refused[dev-5304688206@dev.local.test- -dev-password-123] -> test_malformed_input_is_refused[dev-bdb2f3d4de@dev.local.test- -dev-password-123] = passed
+    test_malformed_input_is_refused[dev-8d58ce9dd3@dev.local.test-A-short] -> test_malformed_input_is_refused[dev-226252abc1@dev.local.test-A-short] = passed
+collected=2239 executed_in_junit=2239 counts={'passed': 2237, 'skipped': 2}
+concurrency states: ['passed']
+COLLECTED_2239::PASS
+EXECUTED_SET_EQUALS_COLLECTION::PASS
+SKIP_SET_EQUALS_DECLARED_2::PASS
+ZERO_FAILURES_ERRORS::PASS
+CONCURRENCY_13_EXECUTED::PASS
+EXIT_CODE_0::PASS
+TREE_UNCHANGED::PASS
+ENV_MANIFEST_UNCHANGED::PASS
+GUARD_GREEN_BEFORE_AND_AFTER::PASS
+PROOF_DBS_SAME_HEAD_FINGERPRINT::PASS
+PROOF_DBS_CLEAN_AFTER::PASS
+PROOF_DBS_NO_CONNECTIONS_AFTER::PASS
+NO_RESIDUAL_RACE_DB::PASS
+NO_RESIDUAL_ZZ_PKG25_ROLE::PASS
+SERIAL_BASELINE::PASS

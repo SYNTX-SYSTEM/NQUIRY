@@ -1,0 +1,3 @@
+tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused[dev-26a531de36@dev.local.test- -dev-password-123]
+tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused[dev-5e6752121d@dev.local.test-A-short]
+tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused[no-at-sign-A-dev-password-123]

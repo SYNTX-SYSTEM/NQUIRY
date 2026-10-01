@@ -1,0 +1,2 @@
+tests/e2e/test_http_dispatch_real_connection_lifecycle.py::test_dispatch_record_human_decision_survives_a_real_closing_connection
+tests/security/test_direct_write.py::test_direct_write_is_technically_rejected

@@ -1,0 +1,14 @@
+bringing up nodes...
+bringing up nodes...
+
+ss
+=============================== warnings summary ===============================
+../../.venv-proof313-orange/lib/python3.13/site-packages/starlette/testclient.py:45
+../../.venv-proof313-orange/lib/python3.13/site-packages/starlette/testclient.py:45
+../../.venv-proof313-orange/lib/python3.13/site-packages/starlette/testclient.py:45
+../../.venv-proof313-orange/lib/python3.13/site-packages/starlette/testclient.py:45
+  /home/codi/Entwicklung/nquiry/.venv-proof313-orange/lib/python3.13/site-packages/starlette/testclient.py:45: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+2 skipped, 4 warnings in 15.04s

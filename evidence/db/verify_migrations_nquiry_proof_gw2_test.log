@@ -1,0 +1,38 @@
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 72e4c8ea6772, semantic identity workspace
+INFO  [alembic.runtime.migration] Running upgrade 72e4c8ea6772 -> 01a37c093cd6, membership governance
+INFO  [alembic.runtime.migration] Running upgrade 01a37c093cd6 -> d467112ce46d, challenge session
+INFO  [alembic.runtime.migration] Running upgrade d467112ce46d -> 33e1d1feed5b, question identity lineage
+INFO  [alembic.runtime.migration] Running upgrade 33e1d1feed5b -> d8a1147fde30, burst and membership
+INFO  [alembic.runtime.migration] Running upgrade d8a1147fde30 -> b2f3a5d5096c, command envelope and attempts
+INFO  [alembic.runtime.migration] Running upgrade b2f3a5d5096c -> b5b33834b7ea, idempotency records
+INFO  [alembic.runtime.migration] Running upgrade b5b33834b7ea -> 6119c9dcf073, audit and outbox
+INFO  [alembic.runtime.migration] Running upgrade 6119c9dcf073 -> b06f9a5b3d1b, commit units
+INFO  [alembic.runtime.migration] Running upgrade b06f9a5b3d1b -> d9d99d8d2869, question selections
+INFO  [alembic.runtime.migration] Running upgrade d9d99d8d2869 -> e2f94137f8a9, decisions
+INFO  [alembic.runtime.migration] Running upgrade e2f94137f8a9 -> 321e335bb130, evidence provenance
+INFO  [alembic.runtime.migration] Running upgrade 321e335bb130 -> 4a7c1e9f2b3d, ai operational
+INFO  [alembic.runtime.migration] Running upgrade 4a7c1e9f2b3d -> 7c2e8a4f1d6b, ai context manifests
+INFO  [alembic.runtime.migration] Running upgrade 7c2e8a4f1d6b -> 1bc6021cb651, projection
+INFO  [alembic.runtime.migration] Running upgrade 1bc6021cb651 -> fb881bc022b1, recovery
+INFO  [alembic.runtime.migration] Running upgrade fb881bc022b1 -> b7ec21429b53, recovery command fields
+INFO  [alembic.runtime.migration] Running upgrade b7ec21429b53 -> 2feb99a01f9d, service identity db principals
+INFO  [alembic.runtime.migration] Running upgrade 2feb99a01f9d -> 047bdf9bc528, rls and security events
+INFO  [alembic.runtime.migration] Running upgrade 047bdf9bc528 -> 05794035ef3c, local auth credentials and sessions
+INFO  [alembic.runtime.migration] Running upgrade 05794035ef3c -> a7f2c91d4e10, typed authority provenance on audit_events
+INFO  [alembic.runtime.migration] Running upgrade a7f2c91d4e10 -> b3d8e5f0a2c7, session participation relation + one open Burst per Session
+INFO  [alembic.runtime.migration] Running upgrade b3d8e5f0a2c7 -> c4e9a2b7d135, PARTICIPATION as a typed authority source on audit_events
+INFO  [alembic.runtime.migration] Running upgrade c4e9a2b7d135 -> e5a1b3c8f204, F03 burst-membership law: ACTIVE-only capture, participation, order, one Burst
+INFO  [alembic.runtime.migration] Running upgrade e5a1b3c8f204 -> f6b2c4d9a318, commands.target_refs: a persisted link from a Command to what it targets
+INFO  [alembic.runtime.migration] Running upgrade f6b2c4d9a318 -> a8d3f1c6e902, F04: SYSTEM_OPERATION source, operation authorizations, AI record integrity
+INFO  [alembic.runtime.migration] Running upgrade a8d3f1c6e902 -> c2e7b9a4f513, F04: QuestionCluster and QuestionClusterMembership (09 §34 / §35)
+INFO  [alembic.runtime.migration] Running upgrade c2e7b9a4f513 -> e7c1d4a9b206, F04: bind the accepted artifact to its VALIDATED proof (independent-review R1, R2)
+INFO  [alembic.runtime.migration] Running upgrade e7c1d4a9b206 -> a9f3c2e81d57, PFC F08-1: the durable, immutable committed Event basis
+INFO  [alembic.runtime.migration] Running upgrade a9f3c2e81d57 -> c3b8e5a1f7d2, PFC F08-2: projections remember the aggregate version they reflect
+INFO  [alembic.runtime.migration] Running upgrade c3b8e5a1f7d2 -> d4f7b2c9e6a1, PFC B0: Fixture Session identity (HD-24 / NQ-DEC-052)
+INFO  [alembic.runtime.migration] Running upgrade d4f7b2c9e6a1 -> e8c2a5f1b7d4, PFC B4: ImpactChain and its answer nodes (09 §48; HD-26 / NQ-DEC-054)
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+MIGRATION_STATIC_CHECK::PASS (32 revision(s), single head ['e8c2a5f1b7d4'])
+MIGRATION_LIVE_CHECK::PASS (db head matches {'e8c2a5f1b7d4'})

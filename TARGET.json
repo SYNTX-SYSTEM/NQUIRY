@@ -1,0 +1,43 @@
+{
+  "lineage": "orange-proof-lineage",
+  "role": "ORANGE PROOF INFRASTRUCTURE (proof executor / verifier). Never part of the proof target.",
+  "relation": "FROZEN PRODUCT TREE -> proof target; ORANGE PROOF INFRASTRUCTURE -> proof executor / verifier. A commit of this lineage does NOT change the target identity it claims.",
+  "target": {
+    "target_checkpoint": "checkpoint-PFC-PCPG-5",
+    "target_tag_object": "45ee38ac342f44abfa2786c4b3e3654b71d99792",
+    "target_commit": "e0a6b3b25d4309d16d6e3db3ee0958183a279dfd",
+    "target_git_tree": "8ca54418c3fe503c0ed3e3625557b24e8708cca4",
+    "target_tree_content_sha256": "ba25b56f293b4e7f4d74860a128c2f97ad93ac044781dec6dc1a11b1fa5c5603",
+    "target_tree_content_sha256_definition": "sha256 over `find . -path ./.git -prune -o -type f -print0 | sort -z | xargs -0 sha256sum` in the target worktree (serial_baseline.sh / parallel_proof.sh tree_hash)",
+    "target_worktree": "/home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra",
+    "migration_head": "e8c2a5f1b7d4",
+    "migration_revisions": 32,
+    "proof_db_schema_fingerprint": "3c899691e52cef9fbd65d4ea9e9489a86d05e199c068c49e556e9e2d987c27a6"
+  },
+  "environment": {
+    "path": "/home/codi/Entwicklung/nquiry/.venv-proof313-orange",
+    "python": "CPython 3.13.15 (uv-managed)",
+    "environment_manifest_sha256": "82f6c73aab6f7d2eddd9eda4d088901c20d3bf8f30ebfc54f047e93a7791922d",
+    "site_packages_content_sha256": "7a833a0c93829604d3e1ecb2601d6fe23d7a3e3b42e0a3145f7921e42772baca",
+    "distributions": 49,
+    "constraints": "constraints-from-venv-proof313.txt (in evidence/) + equivalence-pins.txt",
+    "path_binding": "site-packages/nquiry_orange_tree.pth = the target's 4 pytest pythonpath roots",
+    "runtime_bytecode_cache": "/home/codi/Entwicklung/nquiry/.venv-proof313-orange/orange-proof/pycache (never versioned)"
+  },
+  "proof_tool_version": {
+    "nquiry-orange-guard": "1.2.0",
+    "guard/src/nquiry_orange_guard.py": "fa2017f489e8996c2a5a5c6ae9a454d07f3d306e3f93840646e7f23e114a912e",
+    "guard/src/nquiry_orange_workerdb.py": "b80f7fd97ac02cf1e3ef705025ae85cb38cf5b11533221b3c6875d4f8f8188f0",
+    "installed_equals_versioned_source": true,
+    "lineage_commit": "the commit of this file (recorded by git; not self-referential here)"
+  },
+  "status_at_lineage_creation": {
+    "proof_infrastructure": "CLOSED for the governed PCPG-5 proof lane, subject to the recorded claim ceiling",
+    "product_test_equivalence": "2238 / 2239 equivalent",
+    "open_relation": "SF-PX-03 FIXED_TIME_WINDOW_NOT_EXECUTION_LOAD_INVARIANT (tests/e2e/test_pfc_f09_1_technical_failure.py::test_worker_loop_survives_a_database_outage_and_stops_gracefully)",
+    "claim_ceiling": "2235 nodes under governed 4-worker parallel execution + 4 nodes under governed serial execution = complete 2239-node coverage; 2238/2239 equivalent; never '2239 parallel', never '2239 equivalent'",
+    "performance": "same environment: serial 1958.6 s vs governed 768.2 s = 2.55x (PROVISIONAL for full equivalence)",
+    "successors_outside_this_closure": ["SF-PX-01", "SWU-PX-02", "SWU-PX-03", "canonical pyproject.toml dependency declarations", "TF-PX-01"],
+    "tooling_defects_recorded": ["TF-PX-02 px1 P8/N6 cadence miss after guard 1.1.0 (repaired in lineage, re-proven)"]
+  }
+}

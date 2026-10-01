@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nquiry-orange-guard"
+version = "1.2.0"
+description = "ORANGE proof lane: fail-closed import-origin guard bound to checkpoint-PFC-PCPG-5 (e0a6b3b)."
+requires-python = ">=3.13"
+
+[project.entry-points.pytest11]
+nquiry_orange_guard = "nquiry_orange_guard"
+nquiry_orange_workerdb = "nquiry_orange_workerdb"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+py-modules = ["nquiry_orange_guard", "nquiry_orange_workerdb"]

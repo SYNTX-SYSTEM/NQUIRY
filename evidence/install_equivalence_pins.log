@@ -1,0 +1,9 @@
+Using Python 3.13.15 environment at: .venv-proof313-orange
+Resolved 10 packages in 30ms
+Prepared 1 package in 713ms
+Uninstalled 2 packages in 7ms
+Installed 2 packages in 19ms
+ - fastapi==0.142.2
+ + fastapi==0.122.0
+ - starlette==1.7.0
+ + starlette==0.50.0

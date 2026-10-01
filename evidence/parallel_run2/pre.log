@@ -1,0 +1,15 @@
+pre race_dbs=0 zz_roles=0 proof_conns=[]
+HEAD=e0a6b3b25d4309d16d6e3db3ee0958183a279dfd
+status_entries_incl_ignored=0
+diff_vs_tag=none
+content_sha256=ba25b56f293b4e7f4d74860a128c2f97ad93ac044781dec6dc1a11b1fa5c5603
+ENV_MANIFEST pre_env_manifest.json: 49 dists, 3872 files, content 7a833a0c93829604, manifest sha256 82f6c73aab6f7d2e
+ORANGE_IMPORT_ORIGIN::PASS (44 first-party names under /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra)
+ALLOWLIST_SET::PASS (cluster proof DBs == allowlist, exactly 5)
+SCHEMA_FINGERPRINT_EQUIVALENCE::PASS (3c899691e52cef9fbd65d4ea9e9489a86d05e199c068c49e556e9e2d987c27a6)
+DB_METADATA_EQUIVALENCE::PASS
+PROOF_DB_PRECONDITIONS::PASS
+full: 2239 selected | 2239 tests collected in 5.97s
+serial: 4 selected | 4 tests collected in 2.40s
+xdist: 2235 selected | 2235/2239 tests collected (4 deselected) in 5.80s
+declared skips: 2

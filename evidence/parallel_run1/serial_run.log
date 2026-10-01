@@ -1,0 +1,18 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.15, pytest-9.1.1, pluggy-1.6.0
+ORANGE import-origin guard: bound to /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra (env /home/codi/Entwicklung/nquiry/.venv-proof313-orange)
+ORANGE worker-DB binding: gwN -> nquiry_proof_gwN_test (xdist lane only)
+rootdir: /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra
+configfile: pyproject.toml
+plugins: cov-7.1.0, xdist-3.8.0, nquiry-orange-guard-1.2.0, anyio-4.15.1, hypothesis-6.168.3
+collected 3 items
+
+tests/security/test_dev_identity_provisioning.py ...                     [100%]
+
+==================================== PASSES ====================================
+- generated xml file: /home/codi/Entwicklung/nquiry/.venv-proof313-orange/orange-proof/evidence/parallel_run1/serial_junit.xml -
+=========================== short test summary info ============================
+PASSED tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused[no-at-sign-A-dev-password-123]
+PASSED tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused[dev-9450be48db@dev.local.test- -dev-password-123]
+PASSED tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused[dev-a618fd1cd3@dev.local.test-A-short]
+============================== 3 passed in 4.36s ===============================

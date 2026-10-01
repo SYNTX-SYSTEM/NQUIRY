@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="4" time="5.706" timestamp="2026-10-01T01:46:21.109245+02:00" hostname="codi-ThinkPad-T470p"><testcase classname="tests.security.test_dev_identity_provisioning" name="test_malformed_input_is_refused[no-at-sign-A-dev-password-123]" time="0.448" /><testcase classname="tests.security.test_dev_identity_provisioning" name="test_malformed_input_is_refused[dev-f8b080dae8@dev.local.test- -dev-password-123]" time="0.029" /><testcase classname="tests.security.test_dev_identity_provisioning" name="test_malformed_input_is_refused[dev-5c136e6943@dev.local.test-A-short]" time="0.032" /><testcase classname="tests.e2e.test_pfc_f09_1_technical_failure" name="test_worker_loop_survives_a_database_outage_and_stops_gracefully" time="2.511"><failure message="AssertionError: &#10;assert -15 == 0&#10; +  where -15 = &lt;Popen: returncode: -15 args: ['/home/codi/Entwicklung/nquiry/.venv-proof313...&gt;.returncode">def test_worker_loop_survives_a_database_outage_and_stops_gracefully() -&gt; None:
+        p = _worker("--interval", "0.2", url=_UNREACHABLE)
+        time.sleep(2.5)
+        p.send_signal(signal.SIGTERM)
+        _, err = p.communicate(timeout=30)
+&gt;       assert p.returncode == 0, err
+E       AssertionError: 
+E       assert -15 == 0
+E        +  where -15 = &lt;Popen: returncode: -15 args: ['/home/codi/Entwicklung/nquiry/.venv-proof313...&gt;.returncode
+
+tests/e2e/test_pfc_f09_1_technical_failure.py:280: AssertionError</failure></testcase></testsuite></testsuites>

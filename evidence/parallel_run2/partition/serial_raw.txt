@@ -1,0 +1,12 @@
+tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused[no-at-sign-A-dev-password-123]
+tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused[dev-458bd64a45@dev.local.test- -dev-password-123]
+tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused[dev-0cb45c366d@dev.local.test-A-short]
+tests/e2e/test_pfc_f09_1_technical_failure.py::test_worker_loop_survives_a_database_outage_and_stops_gracefully
+
+=============================== warnings summary ===============================
+../../.venv-proof313-orange/lib/python3.13/site-packages/starlette/testclient.py:45
+  /home/codi/Entwicklung/nquiry/.venv-proof313-orange/lib/python3.13/site-packages/starlette/testclient.py:45: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+4 tests collected in 2.40s

@@ -1,0 +1,51 @@
+bringing up nodes...
+bringing up nodes...
+
+
+==================================== ERRORS ====================================
+______________________________ ERROR collecting . ______________________________
+../../.venv-proof313-orange/lib/python3.13/site-packages/pluggy/_hooks.py:512: in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../.venv-proof313-orange/lib/python3.13/site-packages/pluggy/_manager.py:120: in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../.venv-proof313-orange/lib/python3.13/site-packages/nquiry_orange_workerdb.py:147: in pytest_collect_file
+    raise WorkerBindingRefused(_REFUSAL[0])
+E   nquiry_orange_workerdb.WorkerBindingRefused: ORANGE worker-DB binding REFUSED (gw1): xdist worker without ORANGE_XDIST_LANE=1: workers must never share an inherited DATABASE_URL; ORANGE_DB_BASE is not the proof cluster base
+______________________________ ERROR collecting . ______________________________
+../../.venv-proof313-orange/lib/python3.13/site-packages/pluggy/_hooks.py:512: in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../.venv-proof313-orange/lib/python3.13/site-packages/pluggy/_manager.py:120: in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../.venv-proof313-orange/lib/python3.13/site-packages/nquiry_orange_workerdb.py:147: in pytest_collect_file
+    raise WorkerBindingRefused(_REFUSAL[0])
+E   nquiry_orange_workerdb.WorkerBindingRefused: ORANGE worker-DB binding REFUSED (gw0): xdist worker without ORANGE_XDIST_LANE=1: workers must never share an inherited DATABASE_URL; ORANGE_DB_BASE is not the proof cluster base
+______________________________ ERROR collecting . ______________________________
+../../.venv-proof313-orange/lib/python3.13/site-packages/pluggy/_hooks.py:512: in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../.venv-proof313-orange/lib/python3.13/site-packages/pluggy/_manager.py:120: in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../.venv-proof313-orange/lib/python3.13/site-packages/nquiry_orange_workerdb.py:147: in pytest_collect_file
+    raise WorkerBindingRefused(_REFUSAL[0])
+E   nquiry_orange_workerdb.WorkerBindingRefused: ORANGE worker-DB binding REFUSED (gw2): xdist worker without ORANGE_XDIST_LANE=1: workers must never share an inherited DATABASE_URL; ORANGE_DB_BASE is not the proof cluster base
+______________________________ ERROR collecting . ______________________________
+../../.venv-proof313-orange/lib/python3.13/site-packages/pluggy/_hooks.py:512: in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../.venv-proof313-orange/lib/python3.13/site-packages/pluggy/_manager.py:120: in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../.venv-proof313-orange/lib/python3.13/site-packages/nquiry_orange_workerdb.py:147: in pytest_collect_file
+    raise WorkerBindingRefused(_REFUSAL[0])
+E   nquiry_orange_workerdb.WorkerBindingRefused: ORANGE worker-DB binding REFUSED (gw3): xdist worker without ORANGE_XDIST_LANE=1: workers must never share an inherited DATABASE_URL; ORANGE_DB_BASE is not the proof cluster base
+=========================== short test summary info ============================
+ERROR . - nquiry_orange_workerdb.WorkerBindingRefused: ORANGE worker-DB bindi...
+ERROR . - nquiry_orange_workerdb.WorkerBindingRefused: ORANGE worker-DB bindi...
+ERROR . - nquiry_orange_workerdb.WorkerBindingRefused: ORANGE worker-DB bindi...
+ERROR . - nquiry_orange_workerdb.WorkerBindingRefused: ORANGE worker-DB bindi...
+4 errors in 2.42s

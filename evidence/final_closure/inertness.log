@@ -1,0 +1,5 @@
+nodes=2239 identical_outcomes=2239 documented_SF-PX-03_differences=[] undocumented_differences=[]
+FALSIFIER_DETECTS[undocumented_outcome_change]::PASS
+FALSIFIER_DETECTS[missing_node]::PASS
+SF_PX_03_NODE: accepted=passed new=passed (documented, never normalized)
+INSTRUMENTATION_INERT_FOR_SERIAL_OUTCOMES::PASS

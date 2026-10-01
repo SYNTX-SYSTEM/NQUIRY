@@ -1,0 +1,23 @@
+== P1 lane on, -n 4, xdist partition: each worker bound to its own proof DB (identity verified)
+P1_bound exit=0 :: 2 skipped, 4 warnings in 12.16s
+  gw0 pid 1643860 -> nquiry_proof_gw0_test | current_database nquiry_proof_gw0_test head ['e8c2a5f1b7d4'] foreign 0 nonempty {}
+  gw1 pid 1643863 -> nquiry_proof_gw1_test | current_database nquiry_proof_gw1_test head ['e8c2a5f1b7d4'] foreign 0 nonempty {}
+  gw2 pid 1643866 -> nquiry_proof_gw2_test | current_database nquiry_proof_gw2_test head ['e8c2a5f1b7d4'] foreign 0 nonempty {}
+  gw3 pid 1643869 -> nquiry_proof_gw3_test | current_database nquiry_proof_gw3_test head ['e8c2a5f1b7d4'] foreign 0 nonempty {}
+P1_DISTINCT_WORKERS_DISTINCT_DBS::PASS ['gw0', 'gw1', 'gw2', 'gw3'] distinct dbs 4 distinct pids 4
+== N1 -n 4 WITHOUT the lane -> every worker REFUSED (no shared DATABASE_URL fallback)
+N1_no_lane exit=1 :: REFUSED (gw0): xdist worker without ORANGE_XDIST_LANE=1: workers must never share an inherited DATABASE_URL
+== N2 -n 5 -> gw4 REFUSED (not in allowlist)
+N2_five_workers exit=1 :: REFUSED (gw4): worker id 'gw4' not in allowlist ['gw0', 'gw1', 'gw2', 'gw3'] (max 4, no restarts)
+== N3 controller DATABASE_URL set (would be shared) -> controller REFUSED before any worker starts
+N3_controller_url exit=4 :: REFUSED: controller has DATABASE_URL set
+== N4 NQUIRY_RUN_REAL_COMMIT_TESTS=1 -> REFUSED
+N4_real_commit exit=1 :: REFUSED (gw0): NQUIRY_RUN_REAL_COMMIT_TESTS is set (would commit durable rows into a worker DB)
+== N5 base URL not the proof cluster -> REFUSED before any connection
+N5_foreign_base exit=1 :: REFUSED (gw0): ORANGE_DB_BASE is not the proof cluster base
+== N6 pure identity function: wrong db / wrong head / foreign connection / dirty -> each REFUSED
+N6_IDENTITY_FUNCTION::PASS {'good': 0, 'wrong_db': 1, 'wrong_head': 1, 'foreign_connection': 1, 'dirty': 1}
+MAP_INJECTIVE::PASS {'gw0': 'nquiry_proof_gw0_test', 'gw1': 'nquiry_proof_gw1_test', 'gw2': 'nquiry_proof_gw2_test', 'gw3': 'nquiry_proof_gw3_test'}
+== N7 serial mode (no xdist): plugin inert, explicit DATABASE_URL honoured, no worker binding
+N7_serial_inert exit=0 :: 
+== TREE ORANGE entries=0

@@ -1,0 +1,6 @@
+# ORANGE equivalence pins (Human Authority: EQUIVALENCE ENVIRONMENT, 2026-09-30).
+# Exact historically proven pair: system Python 3.10.12 user-site of the historical PCPG proof env
+# (~/.local/lib/python3.10/site-packages: fastapi-0.122.0.dist-info, starlette-0.50.0.dist-info).
+# Proof-environment material only; the frozen PCPG-5 tree and its pyproject.toml are NOT modified.
+fastapi==0.122.0
+starlette==0.50.0

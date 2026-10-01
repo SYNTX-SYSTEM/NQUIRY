@@ -1,0 +1,2 @@
+createdb nquiry_proof_serial_test: OK
+db_roles.sql on nquiry_proof_serial_test: OK

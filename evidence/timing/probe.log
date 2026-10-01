@@ -1,0 +1,8 @@
+load before: 6.48 8.45 9.08  cpus: 8
+round 1: passes per worker = 5 5 4 5  | load 6.93
+round 2: passes per worker = 3 4 5 4  | load 6.85
+round 3: passes per worker = 5 7 4 5  | load 6.85
+round 4: passes per worker = 3 4 5 5  | load 7.51
+round 5: passes per worker = 6 4 7 5  | load 7.46
+samples=20 min_passes=3 max=7 mean=4.8 all_stopped_gracefully=True required>=2
+TIMING_MARGIN_UNDER_8_WAY_CONTENTION::PASS

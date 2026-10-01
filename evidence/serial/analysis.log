@@ -1,0 +1,21 @@
+NONDETERMINISTIC_NODE_ID (collected -> executed):
+    test_malformed_input_is_refused[dev-156f400067@dev.local.test- -dev-password-123] -> test_malformed_input_is_refused[dev-6a2f093705@dev.local.test- -dev-password-123] = passed
+    test_malformed_input_is_refused[dev-349a67ebc5@dev.local.test-A-short] -> test_malformed_input_is_refused[dev-30d4c32899@dev.local.test-A-short] = passed
+collected=2239 executed_in_junit=2239 counts={'passed': 2234, 'skipped': 2, 'failed': 3}
+failed/error: ['tests/e2e/test_http_f03.py::test_no_route_can_update_delete_or_rewrite_a_question', 'tests/e2e/test_pfc_f09_1_technical_failure.py::test_worker_loop_survives_a_database_outage_and_stops_gracefully', 'tests/e2e/test_pfc_f09_2_isolation_sweep.py::test_the_sweep_covers_every_route']
+concurrency states: ['passed']
+COLLECTED_2239::PASS
+EXECUTED_SET_EQUALS_COLLECTION::PASS
+SKIP_SET_EQUALS_DECLARED_2::PASS
+ZERO_FAILURES_ERRORS::FAIL
+CONCURRENCY_13_EXECUTED::PASS
+EXIT_CODE_0::FAIL
+TREE_UNCHANGED::PASS
+ENV_MANIFEST_UNCHANGED::PASS
+GUARD_GREEN_BEFORE_AND_AFTER::PASS
+PROOF_DBS_SAME_HEAD_FINGERPRINT::PASS
+PROOF_DBS_CLEAN_AFTER::PASS
+PROOF_DBS_NO_CONNECTIONS_AFTER::PASS
+NO_RESIDUAL_RACE_DB::PASS
+NO_RESIDUAL_ZZ_PKG25_ROLE::PASS
+SERIAL_BASELINE::FAIL

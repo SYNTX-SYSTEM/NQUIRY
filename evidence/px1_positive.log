@@ -1,0 +1,65 @@
+== P1 interpreter
+/home/codi/Entwicklung/nquiry/.venv-proof313-orange/bin/python 3.13.15 CPython prefix /home/codi/Entwicklung/nquiry/.venv-proof313-orange base /home/codi/.local/share/uv/python/cpython-3.13.15-linux-x86_64-gnu
+== P2 user site
+ENABLE_USER_SITE False no_user_site 1
+== P3 pytest / xdist / TestClient dependency origins
+pytest         9.1.1      /home/codi/Entwicklung/nquiry/.venv-proof313-orange/lib/python3.13/site-packages/pytest/__init__.py
+pytest-xdist   3.8.0      /home/codi/Entwicklung/nquiry/.venv-proof313-orange/lib/python3.13/site-packages/xdist/__init__.py
+httpx2         2.13.1     /home/codi/Entwicklung/nquiry/.venv-proof313-orange/lib/python3.13/site-packages/httpx2/__init__.py
+httpcore2      2.13.1     /home/codi/Entwicklung/nquiry/.venv-proof313-orange/lib/python3.13/site-packages/httpcore2/__init__.py
+starlette      1.7.0      /home/codi/Entwicklung/nquiry/.venv-proof313-orange/lib/python3.13/site-packages/starlette/__init__.py
+fastapi        0.142.2    /home/codi/Entwicklung/nquiry/.venv-proof313-orange/lib/python3.13/site-packages/fastapi/__init__.py
+httpx (1.x family) installed: False
+== P4 TestClient binds httpx2, no deprecation fallback
+TestClient OK; starlette.testclient.httpx = httpx2 /home/codi/Entwicklung/nquiry/.venv-proof313-orange/lib/python3.13/site-packages/httpx2/__init__.py
+== P5 no first-party distribution, no editable finder
+nquiry dist: []
+editable finders: []
+== P6 guard (non-pytest)
+ORANGE_IMPORT_ORIGIN::PASS (44 first-party names under /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra)
+exit=0
+== P6b first-party origins
+_repo_scan                             /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/scripts/_repo_scan.py
+ai_contracts                           /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/packages/ai_contracts
+ai_gateway                             /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/packages/ai_gateway
+application                            /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/packages/application
+audit                                  /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/packages/audit
+authority                              /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/packages/authority
+boundaries                             /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/packages/boundaries
+check_architecture_dependencies        /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/scripts/check_architecture_dependencies.py
+check_provider_sdk_imports             /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/scripts/check_provider_sdk_imports.py
+check_test_only_imports                /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/scripts/check_test_only_imports.py
+command                                /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/packages/command
+commit                                 /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/packages/commit
+dev_provision_local_identity           /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/scripts/dev_provision_local_identity.py
+domain                                 /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/packages/domain
+events                                 /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/packages/events
+evidence                               /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/packages/evidence
+f04_mutation_proof                     /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/scripts/f04_mutation_proof.py
+governance                             /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/packages/governance
+nquiry_api                             /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/apps/api/src/nquiry_api
+nquiry_worker                          /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/apps/worker/src/nquiry_worker
+observability                          /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/packages/observability
+persistence                            /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/packages/persistence
+pfc_a1_mutation_proof                  /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/scripts/pfc_a1_mutation_proof.py
+pfc_ac1_mutation_proof                 /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/scripts/pfc_ac1_mutation_proof.py
+pfc_b0_mutation_proof                  /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/scripts/pfc_b0_mutation_proof.py
+pfc_b1_mutation_proof                  /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/scripts/pfc_b1_mutation_proof.py
+pfc_b2_mutation_proof                  /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/scripts/pfc_b2_mutation_proof.py
+pfc_b3_mutation_proof                  /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/scripts/pfc_b3_mutation_proof.py
+pfc_b4_mutation_proof                  /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/scripts/pfc_b4_mutation_proof.py
+pfc_b5_mutation_proof                  /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/scripts/pfc_b5_mutation_proof.py
+pfc_f08_1_mutation_proof               /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/scripts/pfc_f08_1_mutation_proof.py
+pfc_f08_2_mutation_proof               /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/scripts/pfc_f08_2_mutation_proof.py
+pfc_f08_3_mutation_proof               /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/scripts/pfc_f08_3_mutation_proof.py
+pfc_f09_1_mutation_proof               /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/scripts/pfc_f09_1_mutation_proof.py
+pfc_f09_2_mutation_proof               /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/scripts/pfc_f09_2_mutation_proof.py
+pfc_f09_3_mutation_proof               /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/scripts/pfc_f09_3_mutation_proof.py
+projection                             /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/packages/projection
+recovery                               /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/packages/recovery
+run_mutation_harness                   /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/scripts/run_mutation_harness.py
+security                               /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/packages/security
+seed_local_demo                        /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/scripts/seed_local_demo.py
+semantic_types                         /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/packages/semantic_types
+test_support                           /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/packages/test_support
+verify_migrations                      /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/scripts/verify_migrations.py

@@ -1,0 +1,261 @@
+{
+ "base_prefix": "/home/codi/.local/share/uv/python/cpython-3.13.15-linux-x86_64-gnu",
+ "distributions": [
+  {
+   "name": "alembic",
+   "record_sha256": "74eb8ac0469d803e3b187a48499f03e2448e5782d81051e8d751a63c81d8a577",
+   "version": "1.20.0"
+  },
+  {
+   "name": "annotated-doc",
+   "record_sha256": "eee5b3b5754ae1cb431e5aba650cdab050673d518473f0fb2b4ad9f48671e2e7",
+   "version": "0.0.5"
+  },
+  {
+   "name": "annotated-types",
+   "record_sha256": "8191d3aa1ac93480688819b4db2385606219a3f7a453b85e086646134ded4f96",
+   "version": "0.8.0"
+  },
+  {
+   "name": "anyio",
+   "record_sha256": "61566393fe741ef449f387182a94956cc11dda629cdea4a5823b89f6eb9dc6b3",
+   "version": "4.15.1"
+  },
+  {
+   "name": "ast_serialize",
+   "record_sha256": "62ed4117c1e51c5c6e9308547559873a33eeb6d79735b82e3ea72efd4fb53329",
+   "version": "0.11.2"
+  },
+  {
+   "name": "certifi",
+   "record_sha256": "cff9d243744c96445494c29abee3d592d0a6955d5504f4fbe034dce7aaf38490",
+   "version": "2026.7.22"
+  },
+  {
+   "name": "click",
+   "record_sha256": "924078ec3a47b97192425dbc0c3693085af7a7b863afcf6b4e110cf0bd97dea4",
+   "version": "8.5.0"
+  },
+  {
+   "name": "coverage",
+   "record_sha256": "7cb16c96ff4d03a0ea6e024e95cf54fb143971243c523025423d577d45d3e5ec",
+   "version": "7.16.2"
+  },
+  {
+   "name": "execnet",
+   "record_sha256": "99eb1e122fae4023274964af2a5c53d765712a9f1ad5d8a3a74423712f639770",
+   "version": "2.1.2"
+  },
+  {
+   "name": "fastapi",
+   "record_sha256": "9fde6d723dc670403f3b28a8a75da8d362afb43ac47b4ebe3e13a98a1cb17446",
+   "version": "0.142.2"
+  },
+  {
+   "name": "h11",
+   "record_sha256": "3779e13c17d8e21c769ed9ee8780af123cc3f8656185f5f8d3af258ff5639b3e",
+   "version": "0.16.0"
+  },
+  {
+   "name": "httpcore",
+   "record_sha256": "67cb4644d84fef1df8c5a0862c57c3380eff058a153bac7a4ba2722779982554",
+   "version": "1.0.9"
+  },
+  {
+   "name": "httptools",
+   "record_sha256": "7549abbb10f2c9b81b7cc61e05817a0d48da765725f26e6329bc52b0267ce4ac",
+   "version": "0.8.0"
+  },
+  {
+   "name": "httpx",
+   "record_sha256": "55b33ce9f2d4f4cfe6fedace6da33338018b9ff215360ccd621a53e9b2914298",
+   "version": "0.28.1"
+  },
+  {
+   "name": "hypothesis",
+   "record_sha256": "10b9170ceed734e52594ae31ed2cd66fb57a5802cf8280160b64a65117ac0b1c",
+   "version": "6.168.3"
+  },
+  {
+   "name": "idna",
+   "record_sha256": "2d9698b229bca39e0194db2ddd4dc10a5a894efa7a12d1d94425ed76e3c76875",
+   "version": "3.20"
+  },
+  {
+   "name": "iniconfig",
+   "record_sha256": "4b560f65489a4dc0f32d8403da676d2e6338c371fe844160934b3fe469785185",
+   "version": "2.3.0"
+  },
+  {
+   "name": "librt",
+   "record_sha256": "a4ab88ab7d6b12aa6ec7f0a7fe804e7d1d14ad8511ba7167ef585ba25d067945",
+   "version": "0.16.0"
+  },
+  {
+   "name": "Mako",
+   "record_sha256": "73d802d9d80e0bb9813c8d705ca4be97a947663f0c604b77fb818f9158445028",
+   "version": "1.4.3"
+  },
+  {
+   "name": "MarkupSafe",
+   "record_sha256": "cf0b1a3aae7a0861eb593b6cdecf50b10759fd8de07e3565cfb557dd43ad3977",
+   "version": "3.0.3"
+  },
+  {
+   "name": "mypy",
+   "record_sha256": "f5c1b511d7eb59b4c0e7d41ea0851ba029cc0b03ab472d9bf3d7e87852028b00",
+   "version": "2.3.1"
+  },
+  {
+   "name": "mypy_extensions",
+   "record_sha256": "51eeeb4cfd7ca7392127eacad3a563247b56e5fbdbc48cea4fb1286542c48d85",
+   "version": "1.1.0"
+  },
+  {
+   "name": "nquiry-orange-guard",
+   "record_sha256": "a8deb5eed8a2f3a566bcf83d3b8cf9a2e4ada3b1ba501eb769b5a45af1f1d546",
+   "version": "1.0.0"
+  },
+  {
+   "name": "opentelemetry-api",
+   "record_sha256": "702b2a5ccf3a76bfb07c66997cc62b7acdbed1f05e250fd2de483c28a57b4e15",
+   "version": "1.45.0"
+  },
+  {
+   "name": "opentelemetry-sdk",
+   "record_sha256": "5fc0aa1f200ff30ada79348af8b14a66d62a723b58291d3668641179eadc3a8c",
+   "version": "1.45.0"
+  },
+  {
+   "name": "opentelemetry-semantic-conventions",
+   "record_sha256": "d088f8bf20b09f66fdf02445ed3436d4ca4b3da2b9cf3b87b326d333ad4aaeb7",
+   "version": "0.66b0"
+  },
+  {
+   "name": "packaging",
+   "record_sha256": "1b8655965b0d83e9a067fd7f84b977bd1e117e0fb9f2874b2572781bdc9e2147",
+   "version": "26.3"
+  },
+  {
+   "name": "pathspec",
+   "record_sha256": "f9531bc29d0c741f02f975537a1bcc4c0aa091c2b1a7d2cbf4bcb31a6316eaf4",
+   "version": "1.1.1"
+  },
+  {
+   "name": "pluggy",
+   "record_sha256": "a42a63bcba12ddb7e7db19158c8d05d8fc41d51f48686b411ad3a0213fbd7721",
+   "version": "1.6.0"
+  },
+  {
+   "name": "psycopg",
+   "record_sha256": "1a0b7ccd23a3006d31cdd8e693e89dcce157dab245f76dc5fdeb7abb8c094e62",
+   "version": "3.3.6"
+  },
+  {
+   "name": "psycopg-binary",
+   "record_sha256": "0c406a7fd815a1f458f0e0337c9cbeaa7072d87e0b7c8706b2447d8cd50931d9",
+   "version": "3.3.6"
+  },
+  {
+   "name": "pydantic",
+   "record_sha256": "93253f807bd8a0440d58d159ffeef610528e8a687b948095955114275c16881f",
+   "version": "2.13.5"
+  },
+  {
+   "name": "pydantic_core",
+   "record_sha256": "d0b86d3f3d21d5b23d2ec645ebf1a3404155ba880f9b814d360f60ae1e1cc42a",
+   "version": "2.46.5"
+  },
+  {
+   "name": "Pygments",
+   "record_sha256": "eb78ecc4176f093d6242b7fca304a935202ab19d21980c6ef1b4043c10ed648f",
+   "version": "2.21.0"
+  },
+  {
+   "name": "pytest",
+   "record_sha256": "ce03c141c58e4353c7caf06e0ba934d5e2b8244f8aabcfd7c1708dee63f0934b",
+   "version": "9.1.1"
+  },
+  {
+   "name": "pytest-cov",
+   "record_sha256": "115408c1989f669153666396affa70c5edeb9a80a88a5b51e0dce4911c986357",
+   "version": "7.1.0"
+  },
+  {
+   "name": "pytest-xdist",
+   "record_sha256": "4fbc0eac4a66338c671236cf5a50b43fb26f8cfcc5eab005d8de1959fb9db5c0",
+   "version": "3.8.0"
+  },
+  {
+   "name": "python-dotenv",
+   "record_sha256": "831a111b2fada500386221d8d9e6d13b2ad258367c9b66c3de70c30b518efea0",
+   "version": "1.2.3"
+  },
+  {
+   "name": "PyYAML",
+   "record_sha256": "6aa69fec0dd3582b26a35731d3855cb6c5e3940fb65a74613f2464d9c11c6828",
+   "version": "6.0.3"
+  },
+  {
+   "name": "ruff",
+   "record_sha256": "bbe39e2416d32104c53c37b3a7c343109979f22eca9f0cc3298fb429c425e3a1",
+   "version": "0.16.9"
+  },
+  {
+   "name": "sortedcontainers",
+   "record_sha256": "2e764b15bb6fc2e19a0a795409c5da3eae994032a5d9173a4dadc7ef238cab52",
+   "version": "2.4.0"
+  },
+  {
+   "name": "SQLAlchemy",
+   "record_sha256": "cdd2cc006a7e0b74eb07ac8f8c2ccef573be2afc7f70c0ffb48ea916b1f571d7",
+   "version": "2.1.1"
+  },
+  {
+   "name": "starlette",
+   "record_sha256": "cb7896d9aee395b013249bb4015c7a4ccd87e33268f4261148f97ae4c8eda4b3",
+   "version": "1.7.0"
+  },
+  {
+   "name": "typing-inspection",
+   "record_sha256": "83fc23669db31500d06056b13ecebe4f088f56a81c1ea86e3b68f1de3b8c7d95",
+   "version": "0.4.4"
+  },
+  {
+   "name": "typing_extensions",
+   "record_sha256": "9e07fea845cac76293d927afa7157a14ecba39b318bc8af236b8de530b7656c1",
+   "version": "4.16.0"
+  },
+  {
+   "name": "uvicorn",
+   "record_sha256": "50a881b14bc131e9606ee7d7ee52f187721a816730f7a600dd71b35d64c37cc8",
+   "version": "0.54.0"
+  },
+  {
+   "name": "uvloop",
+   "record_sha256": "a703aed81db4575562909e5ec0c277f8c839a2deaea97cacd7ac8e8919063ee7",
+   "version": "0.22.1"
+  },
+  {
+   "name": "watchfiles",
+   "record_sha256": "4f71d8de3a632c68b8ab8cbf8ca0457e25351b6b603b1d68df173c362f4dc9a2",
+   "version": "1.3.0"
+  },
+  {
+   "name": "websockets",
+   "record_sha256": "4bd95d49083b90f465ec1232ebd2344f1750257e8e3887f5ba984e80ed8336a2",
+   "version": "17.1"
+  }
+ ],
+ "executable": "/home/codi/Entwicklung/nquiry/.venv-proof313-orange/bin/python",
+ "prefix": "/home/codi/Entwicklung/nquiry/.venv-proof313-orange",
+ "pth_binding": [
+  "/home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/packages",
+  "/home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/apps/api/src",
+  "/home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/apps/worker/src",
+  "/home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra/scripts"
+ ],
+ "python": "3.13.15 (main, Sep 29 2026, 15:01:28) [Clang 22.1.3 ]",
+ "site_packages_content_sha256": "2d46c1cb298cd633f601d8f185b5035e76a139bfd3d118c1915d93ff78968463",
+ "site_packages_files": 3880
+}

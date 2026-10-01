@@ -1,0 +1,27 @@
+bringing up nodes...
+bringing up nodes...
+
+
+==================================== ERRORS ====================================
+_____________________________ ERROR collecting gw1 _____________________________
+Different tests were collected between gw0 and gw1. The difference is:
+--- gw0
+
++++ gw1
+
+@@ -2,8 +2,8 @@
+
+ tests/security/test_dev_identity_provisioning.py::test_provisioned_identity_can_log_in_through_real_local_auth
+ tests/security/test_dev_identity_provisioning.py::test_duplicate_email_is_refused
+ tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused[no-at-sign-A-dev-password-123]
+-tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused[dev-ed32723b57@dev.local.test- -dev-password-123]
+-tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused[dev-ff6fea7c87@dev.local.test-A-short]
++tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused[dev-cd85d95f7d@dev.local.test- -dev-password-123]
++tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused[dev-a86e2d3c10@dev.local.test-A-short]
+ tests/security/test_dev_identity_provisioning.py::test_guard_refuses_without_explicit_opt_in
+ tests/security/test_dev_identity_provisioning.py::test_guard_refuses_non_local_database_host
+ tests/security/test_dev_identity_provisioning.py::test_guard_allows_local_host_with_opt_in
+To see why this happens see 'Known limitations' in documentation for pytest-xdist
+=========================== short test summary info ============================
+ERROR gw1 - Different tests were collected between gw0 and gw1. The differenc...
+1 error in 3.59s

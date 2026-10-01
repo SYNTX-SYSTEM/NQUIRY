@@ -1,0 +1,69 @@
+== P1 interpreter
+/home/codi/Entwicklung/nquiry/.venv-proof313-orange/bin/python 3.13.15 prefix /home/codi/Entwicklung/nquiry/.venv-proof313-orange
+== P2 user site
+ENABLE_USER_SITE False no_user_site 1
+== P3 test tooling + TestClient dependency origins
+pytest         9.1.1      /home/codi/Entwicklung/nquiry/.venv-proof313-orange/lib/python3.13/site-packages/pytest/__init__.py
+pytest-xdist   3.8.0      /home/codi/Entwicklung/nquiry/.venv-proof313-orange/lib/python3.13/site-packages/xdist/__init__.py
+execnet        2.1.2      /home/codi/Entwicklung/nquiry/.venv-proof313-orange/lib/python3.13/site-packages/execnet/__init__.py
+httpx          0.28.1     /home/codi/Entwicklung/nquiry/.venv-proof313-orange/lib/python3.13/site-packages/httpx/__init__.py
+httpcore       1.0.9      /home/codi/Entwicklung/nquiry/.venv-proof313-orange/lib/python3.13/site-packages/httpcore/__init__.py
+starlette      0.50.0     /home/codi/Entwicklung/nquiry/.venv-proof313-orange/lib/python3.13/site-packages/starlette/__init__.py
+fastapi        0.122.0    /home/codi/Entwicklung/nquiry/.venv-proof313-orange/lib/python3.13/site-packages/fastapi/__init__.py
+httpx2 installed: False
+== P4 TestClient binds the tree-named httpx family (deprecated-fallback warning expected)
+starlette.testclient.httpx = httpx 0.28.1 /home/codi/Entwicklung/nquiry/.venv-proof313-orange/lib/python3.13/site-packages/httpx/__init__.py
+warnings: ['DeprecationWarning']
+== P5 no first-party distribution, no editable finder
+nquiry dist: []
+editable finders: []
+== P6 guard CLI
+ORANGE_IMPORT_ORIGIN::PASS (44 first-party names under /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra)
+exit=0
+== P7 five runtime-proof scripts: every import resolvable (static, not executed)
+f04_runtime_proof.py: 14 imports, missing=[]
+pfc_b1_runtime_proof.py: 14 imports, missing=[]
+pfc_b2_runtime_proof.py: 14 imports, missing=[]
+pfc_b3_runtime_proof.py: 14 imports, missing=[]
+pfc_b4_runtime_proof.py: 14 imports, missing=[]
+RUNTIME_PROOF_SCRIPTS_IMPORTABLE::PASS
+== P8 TestClient actually executes over httpx (DB-free apps/api tests, real xdist workers)
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+6 passed, 2 warnings in 13.59s
+exit=0
+== P9 DB-free full collection of the frozen tree
+exit=0
+2239 tests collected in 18.20s
+errors: 0
+== N1 PYTHONNOUSERSITE unset -> REFUSE
+ORANGE import-origin guard REFUSED:
+  user site-packages enabled (PYTHONNOUSERSITE=1 must hold)
+exit=1
+== N2 master checkout packages first on PYTHONPATH -> REFUSE
+ORANGE import-origin guard REFUSED:
+  first-party distribution 'nquiry' is installed (0.0.0)
+exit=1
+== N3 foreign shadow 'domain' -> REFUSE
+ORANGE import-origin guard REFUSED:
+  domain: resolves outside ORANGE -> ['/home/codi/Entwicklung/nquiry/.venv-proof313-orange/orange-proof/negative-fixtures/shadow/domain']
+exit=1
+== N4 master-bound .venv-proof313 interpreter -> REFUSE
+ORANGE import-origin guard REFUSED:
+  interpreter prefix /home/codi/Entwicklung/nquiry/.venv-proof313 is not /home/codi/Entwicklung/nquiry/.venv-proof313-orange
+exit=1
+== N5 pytest, front-inserted master finder -> REFUSE (exit 4)
+ERROR: ORANGE import-origin guard REFUSED:
+exit=4
+== N6 poison only inside real xdist workers -> REFUSE as collection ERROR (exit 1, never 5)
+2 errors in 9.72s
+exit=1
+== N7 guard disabled -> poison passes (the guard is what refuses)
+7 tests collected in 2.07s
+exit=0
+== N8 master module loaded after configure -> REFUSE (exit 4)
+  loaded governance.master_copy from /home/codi/Entwicklung/nquiry/packages/governance/__init__.py !
+exit=4
+== CONTROL master-bound .venv-proof313 cannot collect the frozen tree
+1785 tests collected, 25 errors in 18.45s
+exit=2
+== TREE ORANGE entries(incl. ignored)=0 head=e0a6b3b25d4309d16d6e3db3ee0958183a279dfd diff-vs-tag=none

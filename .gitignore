@@ -1,0 +1,19 @@
+# runtime artifacts — never versioned
+pycache/
+__pycache__/
+*.pyc
+guard/build/
+*.egg-info/
+observer.stop
+
+# lineage re-proof raw outputs > 100 KB (hash-recorded in evidence/lineage_reproof/RAW_EXCLUDED.tsv; kept locally)
+/evidence/lineage_reproof/binding/N2_five_workers.txt
+/evidence/lineage_reproof/claim/aggregated_outcomes.tsv
+/evidence/lineage_reproof/claim/partition/full_nodeids.txt
+/evidence/lineage_reproof/claim/partition/full_raw.txt
+/evidence/lineage_reproof/claim/partition/xdist_nodeids.txt
+/evidence/lineage_reproof/claim/partition/xdist_raw.txt
+/evidence/lineage_reproof/claim/xdist_junit.xml
+/evidence/lineage_reproof/claim/xdist_run.log
+/evidence/lineage_reproof/px1/collect_orange_env.txt
+/evidence/lineage_reproof/px1_repaired/collect_orange_env.txt
