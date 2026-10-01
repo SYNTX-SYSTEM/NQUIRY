@@ -165,8 +165,8 @@ describe("no governance change, no new relation (falsifiers 12–19)", () => {
   });
 });
 
-describe("no rendering in this Work Unit (falsifier 20)", () => {
-  it("20. no component or page imports the attachment relation or the presentation derivation yet", () => {
-    expect(SOURCES).not.toMatch(/pcpgAttachment|pcpgPresentation|attachPresentation|presentationOf\(/);
+describe("no attachment rendering (falsifier 20; successor truth after CYAN-PCPG-04)", () => {
+  it("20. no component or page imports the attachment relation: targets stay unrendered until CYAN-PCPG-05 (the membrane of CYAN-PCPG-04 consumes presentationOf only)", () => {
+    expect(SOURCES).not.toMatch(/pcpgAttachment|attachPresentation|data-governance-attachment/);
   });
 });

@@ -6318,3 +6318,54 @@ h3.chamber-title {
 .plane.chamber[data-semantic="derived"] .tag {
   font-size: 0.8rem;
 }
+
+/* ===== CYAN-PCPG-04: the Session object membrane — a quiet governance strip inside the object core (Architecture 27 v4
+   §07.1, §07.4). Presentation only: words, time, prominence. No control, no tone of success; prominence follows the
+   derived label. Text stays ≥ 0.78rem; no green token. */
+.governance-membrane {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0 0.5em;
+  margin: 10px auto 0;
+  padding: 3px 12px;
+  border: 1px solid color-mix(in srgb, var(--blue) 22%, transparent);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  background: color-mix(in srgb, var(--blue-deep) 55%, transparent);
+}
+.governance-membrane .membrane-field {
+  font-family: var(--type-system);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  opacity: 0.75;
+}
+.governance-membrane .membrane-field::after {
+  content: " ·";
+}
+.governance-membrane .membrane-words {
+  color: var(--ink);
+}
+.governance-membrane .membrane-time {
+  font-size: 0.72rem;
+}
+.governance-membrane[data-prominence="quiet"] {
+  opacity: 0.82;
+}
+.governance-membrane[data-prominence="visible"] {
+  border-color: color-mix(in srgb, var(--blue) 45%, transparent);
+}
+.governance-membrane[data-prominence="prominent"] {
+  border-color: color-mix(in srgb, var(--attention) 60%, transparent);
+  background: color-mix(in srgb, var(--attention) 12%, transparent);
+}
+.governance-membrane[data-prominence="prominent"] .membrane-words {
+  color: var(--attention);
+}
+.governance-membrane[data-prominence="explicit"] {
+  border-color: color-mix(in srgb, var(--ai) 60%, transparent);
+}

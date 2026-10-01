@@ -55,8 +55,10 @@ import {
   type SessionPosition,
 } from "../../../../../lib/api/inquiryClient";
 import type { FieldEventDescription } from "../../../../../lib/field/fieldEvent";
+import { GovernanceMembrane } from "../../../../../components/field/GovernanceMembrane";
 import { OriginMark } from "../../../../../components/field/Origin";
 import { analysisFacts, proofModeOf } from "../../../../../lib/field/analysis";
+import { presentationOf, type ObservationPresence } from "../../../../../lib/field/pcpgPresentation";
 import { humanPosition } from "../../../../../lib/field/humanPosition";
 import { accessTrace, sessionTrace } from "../../../../../lib/field/position";
 import { lifecycleEmphasis } from "../../../../../lib/field/topology";
@@ -101,6 +103,13 @@ const ADMIT_RELATION = "session:admit-participant";
 const GRANT_RELATION = "governance:grant-session-control";
 
 const AT = new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" });
+
+/**
+ * CYAN-PCPG-04: there is no standing governance observation for a Session (Architecture 27 v4 §01, §04.1); an
+ * observation exists only after the actor submits a raw intent through the prompt-observation query. No producer of
+ * that submission exists on this surface yet, so the object's presence is honestly "none" — never an empty result.
+ */
+const NO_OBSERVATION_YET: ObservationPresence = { kind: "none" };
 
 /** Doc 26 §27: the confirmed effect of each lifecycle step, in human-readable words (scope: this Session). */
 const STEP_EVENTS: Readonly<Record<StepAction, FieldEventDescription>> = {
@@ -343,6 +352,7 @@ export default function SessionPage() {
             }
           >
             <ReconstructionNote field={effect.field} />
+            <GovernanceMembrane presentation={presentationOf(NO_OBSERVATION_YET)} />
           </FieldCore>
           <Orbit kind="lifecycle" ring={1} heading="Lifecycle" nodes={lifecycleNodes} testId="session-phases" listAriaLabel="Session phases" />
           <Orbit kind="participation" ring={2} heading="Participation and control" nodes={relationNodes} testId="session-relations" listAriaLabel="Participants and Session control" />
