@@ -1,0 +1,81 @@
+<!doctype html>
+<!--
+  WU-AUTH-14 real-browser falsifier page. Served from a THIRD origin (neither
+  the web app nor the API) by scripts/auth_real_stack.sh. It is the hostile
+  page of 24 §21.6 / §21.7: it tries to (1) log the visiting browser into an
+  attacker-selected local account through form submissions of every shape a
+  page can produce, and (2) commit unsafe cookie-authenticated effects against
+  a victim who is logged in to the real app. The spec drives it and reads the
+  outcome from the real API through the real app origin.
+-->
+<html lang="en">
+  <head><meta charset="utf-8" /><title>hostile page</title></head>
+  <body>
+    <h1>hostile page</h1>
+    <iframe name="sink" id="sink" title="sink"></iframe>
+    <script>
+      // The API base and the attacker's credentials arrive in the URL.
+      const q = new URLSearchParams(location.search);
+      const API = q.get("api");
+      const email = q.get("email") || "";
+      const password = q.get("password") || "";
+      window.__attacks = {
+        // (a) classic cross-site form POSTs into the victim browser
+        formLoginUrlencoded() {
+          const f = document.createElement("form");
+          f.method = "post"; f.action = API + "/auth/login"; f.target = "sink";
+          for (const [k, v] of [["email", email], ["password", password]]) {
+            const i = document.createElement("input"); i.name = k; i.value = v; f.appendChild(i);
+          }
+          document.body.appendChild(f); f.submit();
+        },
+        formLoginTextPlain() {
+          // the text/plain trick: the single field name carries a JSON body
+          const f = document.createElement("form");
+          f.method = "post"; f.action = API + "/auth/login"; f.target = "sink"; f.enctype = "text/plain";
+          const i = document.createElement("input");
+          i.name = JSON.stringify({ email, password, x: "" }).slice(0, -3); i.value = '"}';
+          f.appendChild(i); document.body.appendChild(f); f.submit();
+        },
+        formLogoutAll() {
+          const f = document.createElement("form");
+          f.method = "post"; f.action = API + "/auth/logout-all"; f.target = "sink";
+          document.body.appendChild(f); f.submit();
+        },
+        formUnlink(methodId) {
+          const f = document.createElement("form");
+          f.method = "post"; f.action = API + "/auth/methods/" + methodId + "/unlink"; f.target = "sink";
+          document.body.appendChild(f); f.submit();
+        },
+        // (b) credentialed fetches without custom headers (no preflight: "simple requests")
+        async fetchLogoutAll() {
+          try {
+            const r = await fetch(API + "/auth/logout-all", { method: "POST", credentials: "include" });
+            return "status:" + r.status;
+          } catch (e) { return "blocked:" + String(e && e.name); }
+        },
+        async fetchLoginTextPlain() {
+          try {
+            const r = await fetch(API + "/auth/login", {
+              method: "POST", credentials: "include",
+              headers: { "Content-Type": "text/plain" },
+              body: JSON.stringify({ email, password }),
+            });
+            return "status:" + r.status;
+          } catch (e) { return "blocked:" + String(e && e.name); }
+        },
+        async fetchLoginJson() {
+          // needs a preflight; CORS refuses the origin, the browser never sends it
+          try {
+            const r = await fetch(API + "/auth/login", {
+              method: "POST", credentials: "include",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email, password }),
+            });
+            return "status:" + r.status;
+          } catch (e) { return "blocked:" + String(e && e.name); }
+        },
+      };
+    </script>
+  </body>
+</html>

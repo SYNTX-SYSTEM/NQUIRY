@@ -66,12 +66,18 @@ transcript.
 
 from __future__ import annotations
 
+import os
 import uuid
 
 from application.analysis_runtime import runtime_from_environment
 from application.auth_runtime import auth_runtime_from_environment
 from application.http_f04 import configure_runtime
 from application.http_oidc import configure_auth_runtime
+from application.request_security import (
+    configure_request_security,
+    current_request_security,
+    request_security_from_environment,
+)
 from application.technical_failure import technical_failure_response
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
@@ -89,15 +95,30 @@ from nquiry_api.http import queries as queries_router
 from nquiry_api.http import recovery as recovery_router
 from nquiry_api.http import revocation as revocation_router
 from nquiry_api.http import workspaces as workspaces_router
+from nquiry_api.http.request_security import RequestSecurityMiddleware
 
 app = FastAPI(
     title="nquiry-api",
     version="0.0.0",
     description="NQUIRY architectural prototype API — local-login runtime materialization.",
 )
+# AUTH WU-AUTH-14 (24 §21.6–21.9): the explicit anti-CSRF boundary. Added
+# before CORS so that CORS wraps it: preflights never reach the boundary and
+# its refusals carry the CORS headers. The allowed origins are one explicit,
+# pinned list (`NQUIRY_ALLOWED_ORIGINS`, default the local frontend) shared by
+# the boundary and by CORS; CORS != CSRF — it decides which origin may READ,
+# the boundary decides which origin may ASK for an unsafe effect.
+configure_request_security(request_security_from_environment(os.environ))
+app.add_middleware(RequestSecurityMiddleware)
+_web_base = os.environ.get("NQUIRY_PUBLIC_WEB_BASE_URL", "").strip()
+if _web_base and _web_base not in current_request_security().allowed_origins:
+    raise RuntimeError(
+        f"NQUIRY_PUBLIC_WEB_BASE_URL={_web_base!r} is not one of NQUIRY_ALLOWED_ORIGINS: the "
+        "browser-facing app must be an allowed origin (24 section 21.9)"
+    )
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=list(current_request_security().allowed_origins),
     allow_methods=["GET", "POST"],
     # F02 WU-02.9: `Idempotency-Key` carries the client-generated command
     # identity for every governed Command (not a CORS-safelisted header).

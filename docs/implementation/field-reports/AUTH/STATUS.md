@@ -50,6 +50,10 @@ IN_PROGRESS.
   creation: fails closed).
 - External dependency: real Google proof (24 §41) needs a Google OAuth
   client (id, secret, registered redirect URI). BLOCKED_EXTERNAL.
+- **AUTH real-stack lane (WU-AUTH-14):** `scripts/auth_real_stack.sh` (API
+  :18460, app :13470, hostile origin :13471, database `nquiry_purple_real`,
+  never the pytest proof database). `AUTH_REAL_SPEC_MATCH=".*"` runs every
+  real-stack spec of the repository on it (8 passed at WU-14).
 - Tracked for the hardening step (24 §47 item 24): `auth_events` /
   SecurityEvents for login, logout, session and provider events (24 §31.1).
 
@@ -80,14 +84,15 @@ preceded them, so the counts are those of the pin.
 | WU-AUTH-10 Account Linking | PROVEN (broad checkpoint: live 2235 / 2) | `4e29c9f` |
 | WU-AUTH-11 Email Verification | PROVEN at the affected radius (HD-AUTH-04) | `8ae8b9e` |
 | WU-AUTH-12 Recovery | PROVEN at the affected radius; HA-AUTH-02 OPEN (production policy), DENIED in force | `f171484` |
-| WU-AUTH-13 Revocation Expansion | PROVEN at the affected radius; HA-AUTH-03 (last method) and HA-AUTH-04 (disable authority) OPEN, defaults in force | this commit |
+| WU-AUTH-13 Revocation Expansion | PROVEN at the affected radius; HA-AUTH-03 (last method) and HA-AUTH-04 (disable authority) OPEN, defaults in force | `171a6e7` |
+| WU-AUTH-14 Anti-CSRF Boundary | PROVEN at an escalated radius (security + semantic + regression + all of tests/e2e: 1388 / 2) incl. the real browser/API contract (AUTH real lane) | this commit |
 | WU-AUTH-13..17 | not started | — |
 
 ### Current First Broken Relation
 
-Anti-CSRF boundary: no explicit CSRF boundary for the state-changing browser
-contacts, no local-login-CSRF mechanism, no configurable allowed origin for
-the real-stack browser proof (owner WU-AUTH-14; 24 §21).
+Protocol callback semantics: the callback's GET-with-effect contract is
+governed by the transaction proof but not stated and proven as one unit
+(24 §21.14 boundary list vs WU-05/07/13 proofs) (owner WU-AUTH-15).
 
 ### Migrations
 

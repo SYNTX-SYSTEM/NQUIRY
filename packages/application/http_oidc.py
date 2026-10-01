@@ -114,8 +114,19 @@ class OidcDispatchResult:
     session_expires_at: datetime | None = None
 
 
+def _browser_destination(local_path: str) -> str:
+    """WU-AUTH-14: a validated local destination, made reachable from the
+    browser. With `web_base_url` configured the app lives on another origin
+    than this API and the path is prefixed with it; otherwise it stays
+    relative (same origin). Never applied to a provider URL."""
+    base = current_auth_runtime().web_base_url
+    return local_path if base is None else f"{base}{local_path}"
+
+
 def _login_projection(name: str) -> OidcDispatchResult:
-    return OidcDispatchResult(303, location=f"{LOGIN_PROJECTION_BASE}{name}", clear_binding=True)
+    return OidcDispatchResult(
+        303, location=_browser_destination(f"{LOGIN_PROJECTION_BASE}{name}"), clear_binding=True
+    )
 
 
 def _link_location(name: str, target: str = ACCOUNT_SECURITY_DESTINATION) -> str:
@@ -124,7 +135,9 @@ def _link_location(name: str, target: str = ACCOUNT_SECURITY_DESTINATION) -> str
 
 
 def _link_projection(name: str, target: str = ACCOUNT_SECURITY_DESTINATION) -> OidcDispatchResult:
-    return OidcDispatchResult(303, location=_link_location(name, target), clear_binding=True)
+    return OidcDispatchResult(
+        303, location=_browser_destination(_link_location(name, target)), clear_binding=True
+    )
 
 
 def _now() -> datetime:
@@ -426,7 +439,7 @@ def dispatch_oidc_callback(
         return _login_projection("failed")
     return OidcDispatchResult(
         303,
-        location=claimed.redirect_target,
+        location=_browser_destination(claimed.redirect_target),
         clear_binding=True,
         session_token=session.session_token,
         session_expires_at=session.expires_at,
@@ -488,8 +501,10 @@ def dispatch_oidc_link_callback(
         return _link_projection("failed", claimed.redirect_target)
     return OidcDispatchResult(
         303,
-        location=_link_location(
-            "already_linked" if outcome.already_linked else "ok", claimed.redirect_target
+        location=_browser_destination(
+            _link_location(
+                "already_linked" if outcome.already_linked else "ok", claimed.redirect_target
+            )
         ),
         clear_binding=True,
         session_token=rotated.session_token,

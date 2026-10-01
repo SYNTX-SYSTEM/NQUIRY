@@ -19,6 +19,8 @@ Settings (environment variables, read once at startup, same discipline as
   no delivery (verification / recovery unavailable); anything else is refused.
 - `NQUIRY_RECOVERY_POLICY` (24 §17.7, §36 #11; default `DENIED`):
   `VERIFIED_EMAIL_SELF_SERVICE` in DEVELOPMENT / TEST only.
+- `NQUIRY_PUBLIC_WEB_BASE_URL` (WU-AUTH-14): the browser-facing app origin when it
+  differs from the API origin; local post-auth destinations are prefixed with it.
 - `NQUIRY_PUBLIC_API_BASE_URL`: where a browser reaches this API (the test
   provider's authorize page and callback live under it); default
   `http://localhost:8000`.
@@ -42,6 +44,7 @@ from security.oidc_provider import OidcProvider
 from security.oidc_standard import google_provider
 from security.oidc_test_issuer import LocalTestIssuer
 from security.recovery import RecoveryPolicy
+from security.request_security import is_origin
 
 _DEV_ENVIRONMENTS = frozenset({Environment.DEVELOPMENT, Environment.TEST})
 _GOOGLE_VARIABLES = (
@@ -87,6 +90,12 @@ class AuthRuntime:
     """None: no delivery configured, verification and recovery are unavailable
     (24 §36 #16 production delivery is a human decision)."""
     recovery_policy: RecoveryPolicy = RecoveryPolicy.DENIED
+    web_base_url: str | None = None
+    """WU-AUTH-14: the browser-facing app's origin, prefixed to every local
+    post-authentication destination (login projection, post-login target, link
+    projection) when the API is served from another origin than the app (the
+    local real stack). None: the app shares the API's origin (the deployment's
+    `/api/` proxy) and destinations stay relative."""
 
     def provider(self, provider_id: str) -> OidcProvider | None:
         return self.providers.get(provider_id)
@@ -173,6 +182,12 @@ def auth_runtime_from_environment(
             "VERIFIED_EMAIL_SELF_SERVICE is DEVELOPMENT / TEST only until 24 section 36 #11 is "
             f"decided; refused for NQUIRY_ENVIRONMENT={raw_environment!r}"
         )
+    web_base_url = source.get("NQUIRY_PUBLIC_WEB_BASE_URL", "").strip() or None
+    if web_base_url is not None and not is_origin(web_base_url):
+        raise ValueError(
+            f"NQUIRY_PUBLIC_WEB_BASE_URL={web_base_url!r} is not an explicit origin "
+            "(scheme://host[:port], no path)"
+        )
     return AuthRuntime(
         environment=environment,
         providers=providers,
@@ -181,6 +196,7 @@ def auth_runtime_from_environment(
         account_creation_policy=policy,
         mail_sink=sink,
         recovery_policy=recovery_policy,
+        web_base_url=web_base_url,
     )
 
 

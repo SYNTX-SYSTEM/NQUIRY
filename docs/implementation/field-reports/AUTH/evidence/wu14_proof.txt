@@ -1,0 +1,15 @@
+ruff format --check (Python; the F04 RED Markdown bundle finding is pre-existing, disclosed since WU-AUTH-02):
+464 files already formatted
+All checks passed!
+Success: no issues found in 259 source files
+ARCHITECTURE_DEPENDENCY_CHECK::PASS
+TEST_ONLY_IMPORT_CHECK::PASS
+MIGRATION_STATIC_CHECK::PASS (41 revision(s), single head ['b9d2f4a6c8e1'])
+MIGRATION_LIVE_CHECK::PASS (db head matches {'b9d2f4a6c8e1'})
+Radius escalated (HD-AUTH-04: a repo-wide HTTP protocol change): security, semantic, regression and the whole tests/e2e HTTP surface:
+FAILED tests/e2e/test_pfc_b0_fixture_session.py::test_the_session_read_model_preserves_the_fixture_status
+FAILED tests/e2e/test_pfc_f08_2_delivery.py::test_worker_restart_delivers_nothing_twice
+11 failed, 1377 passed, 2 skipped in 1952.32s (0:32:32)
+
+ESCALATED RUN REPEATED on the rebuilt proof database (the first run's 11 failures occurred with real-stack rows committed into the same database; two of the named tests pass in isolation):
+1388 passed, 2 skipped in 1949.56s (0:32:29)
