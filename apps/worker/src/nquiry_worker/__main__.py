@@ -20,6 +20,11 @@ DELIVERED or FAILED_DELIVERY, all in one transaction per pass
   rejected or unproven) is reported as `delivery pass failed: <REASON>`. The
   loop continues with the next pass, since the pass rolled back and its
   records stay due. `--once` exits 3.
+- SWU-PX-03: once both stop handlers (SIGTERM, SIGINT) are installed, and
+  before the first pass, the worker reports `nquiry_worker: ready.` on
+  stderr. A stop request sent after that line always takes the graceful
+  path. One sent earlier meets the default disposition. Readiness is
+  observable, never inferred from elapsed time.
 
 PKG-27: one `ObservationContext` per startup and one per pass, through
 `LocalOtelObservationSink`. Operational telemetry only, never authoritative
@@ -110,6 +115,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     signal.signal(signal.SIGTERM, _request_stop)
     signal.signal(signal.SIGINT, _request_stop)
+    print("nquiry_worker: ready.", file=sys.stderr, flush=True)
     while True:
         try:
             _one_pass(args.retry_backoff)

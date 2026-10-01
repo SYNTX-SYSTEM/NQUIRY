@@ -25,7 +25,6 @@ import os
 import signal
 import subprocess
 import sys
-import time
 import uuid
 from collections.abc import Iterator
 from contextlib import contextmanager
@@ -35,6 +34,7 @@ from typing import Any
 import pytest
 import sqlalchemy as sa
 from fastapi.testclient import TestClient
+from worker_readiness_support import start_worker
 
 _UNREACHABLE = "postgresql+psycopg://nquiry:x@127.0.0.1:1/none"
 
@@ -273,10 +273,14 @@ def test_worker_once_reports_an_unavailable_database_and_fails_the_pass() -> Non
 
 
 def test_worker_loop_survives_a_database_outage_and_stops_gracefully() -> None:
-    p = _worker("--interval", "0.2", url=_UNREACHABLE)
-    time.sleep(2.5)
-    p.send_signal(signal.SIGTERM)
-    _, err = p.communicate(timeout=30)
-    assert p.returncode == 0, err
+    """SWU-PX-03 (SF-PX-03): SIGTERM is sent only once the worker has reported
+    readiness (both stop handlers installed) and two failed passes have been
+    observed. It is never sent after an assumed wall-clock interval. The waits
+    are bounded only to fail without hanging."""
+    with start_worker("--interval", "0.2", url=_UNREACHABLE) as w:
+        w.wait_ready()
+        w.wait_unavailable_passes(2)
+        returncode, err = w.stop(signal.SIGTERM)
+    assert returncode == 0, err
     assert err.count("DATABASE_UNAVAILABLE") >= 2  # it kept trying, pass after pass
     assert "stopped" in err
