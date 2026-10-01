@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from security.identity import (
     ALL_PROTECTED_TABLES,
+    AUTH_PROTECTED_TABLES,
     SECURITY_CAPABILITY_MAP,
     ServicePrincipal,
     TableOperation,
@@ -23,8 +24,10 @@ _PROJECTION_WRITER_TABLES = capability_tables(ServicePrincipal.PROJECTION_WRITER
 _RECOVERY_READER_TABLES = capability_tables(ServicePrincipal.RECOVERY_READER)
 _AUDIT_READER_TABLES = capability_tables(ServicePrincipal.AUDIT_READER)
 
-# 14's own PKG-25 OBJECTIVE names exactly these 9 principals, verbatim.
+# 14's own PKG-25 OBJECTIVE names the first 9 principals verbatim; 24 §21.18
+# (AUTH WU-AUTH-17) adds the scoped authentication runtime principal.
 _EXPECTED_PRINCIPAL_NAMES = {
+    "auth_runtime",
     "migration_owner",
     "api_reader",
     "governed_commit_writer",
@@ -37,11 +40,13 @@ _EXPECTED_PRINCIPAL_NAMES = {
 }
 
 # 11 §14's own explicit list of components that do NOT receive canonical
-# write capability, materialized here as the 5 tables that (as of
-# PKG-25) have no real production writer anywhere in this codebase.
+# write capability, materialized here as the tables that have no real
+# production writer anywhere in this codebase. `users` left this list with
+# AUTH WU-AUTH-17: its writer is the scoped `auth_runtime` principal
+# (account creation under policy, host-operator creation / disable; 24
+# §11.14, §18.2), never a business principal.
 _NO_GOVERNED_WRITER_YET_TABLES = frozenset(
     {
-        "users",
         "workspaces",
         "workspace_memberships",
         "role_assignments",
@@ -52,7 +57,7 @@ _NO_GOVERNED_WRITER_YET_TABLES = frozenset(
 )
 
 
-def test_exactly_the_nine_named_principals_exist() -> None:
+def test_exactly_the_named_principals_exist() -> None:
     names = {p.value for p in ServicePrincipal}
     assert names == _EXPECTED_PRINCIPAL_NAMES
 
@@ -64,7 +69,16 @@ def test_api_reader_is_select_only_on_every_protected_table() -> None:
     for table in ALL_PROTECTED_TABLES:
         ops = capability_operations(ServicePrincipal.API_READER, table)
         assert ops == frozenset({TableOperation.SELECT}), table
-    assert capability_tables(ServicePrincipal.API_READER) == frozenset(ALL_PROTECTED_TABLES)
+    # AUTH WU-AUTH-17: plus the two session-resolution reads, never a
+    # credential or token hash table.
+    assert capability_tables(ServicePrincipal.API_READER) == frozenset(ALL_PROTECTED_TABLES) | {
+        "local_auth_sessions",
+        "authentication_methods",
+    }
+    for table in ("local_auth_sessions", "authentication_methods"):
+        assert capability_operations(ServicePrincipal.API_READER, table) == frozenset(
+            {TableOperation.SELECT}
+        )
 
 
 def test_migration_owner_has_no_row_level_dml_capability_at_all() -> None:
@@ -139,8 +153,12 @@ def test_test_principal_has_broad_dml_but_capability_map_names_no_ddl_verb() -> 
     power) but `TableOperation` itself has no DDL member at all --
     structurally, this map can never grant CREATE/ALTER/DROP to
     anything."""
-    assert capability_tables(ServicePrincipal.TEST_PRINCIPAL) == frozenset(ALL_PROTECTED_TABLES)
-    for table in ALL_PROTECTED_TABLES:
+    assert capability_tables(ServicePrincipal.TEST_PRINCIPAL) == frozenset(ALL_PROTECTED_TABLES) | (
+        frozenset(AUTH_PROTECTED_TABLES) - {"security_events"}
+    )
+    for table in (*ALL_PROTECTED_TABLES, *AUTH_PROTECTED_TABLES):
+        if table == "security_events":
+            continue  # append-only audit: no principal deletes it (11 §47)
         ops = capability_operations(ServicePrincipal.TEST_PRINCIPAL, table)
         expected = {
             TableOperation.SELECT,
@@ -168,4 +186,25 @@ def test_all_protected_tables_is_exhaustive_against_the_capability_map() -> None
         for capabilities in SECURITY_CAPABILITY_MAP.values()
         for capability in capabilities
     }
-    assert named_tables <= set(ALL_PROTECTED_TABLES)
+    assert named_tables <= set(ALL_PROTECTED_TABLES) | set(AUTH_PROTECTED_TABLES)
+
+
+def test_auth_runtime_is_scoped_to_the_authentication_relations_without_delete() -> None:
+    """AUTH WU-AUTH-17 (24 §21.18): the structural shape of the scoped
+    authentication runtime principal; the live grants are proven in
+    `tests/security/test_auth_db_principal.py`."""
+    tables = capability_tables(ServicePrincipal.AUTH_RUNTIME)
+    assert tables == frozenset(AUTH_PROTECTED_TABLES) | {"users"}
+    for table in tables:
+        ops = capability_operations(ServicePrincipal.AUTH_RUNTIME, table)
+        assert TableOperation.DELETE not in ops, table
+    assert capability_operations(ServicePrincipal.AUTH_RUNTIME, "security_events") == frozenset(
+        {TableOperation.INSERT}
+    )
+    governed_writes = {
+        c.table
+        for c in SECURITY_CAPABILITY_MAP[ServicePrincipal.GOVERNED_COMMIT_WRITER]
+        if c.operations & _WRITE_OPS
+    }
+    assert not tables & governed_writes
+    assert not tables & _NO_GOVERNED_WRITER_YET_TABLES

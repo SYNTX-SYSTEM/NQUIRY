@@ -33,6 +33,10 @@ IN_PROGRESS.
 - **HA-AUTH-04 OPEN** (WU-AUTH-13): who may disable an identity in
   PRODUCTION / STAGING; the host-operator command is admitted in
   DEVELOPMENT / TEST only. Block in `WU-AUTH-13.md`.
+- **HA-AUTH-05 OPEN** (WU-AUTH-17; = PFC HA-10): switching the deployment /
+  compose runtime to the scoped `auth_runtime` principal
+  (`NQUIRY_AUTH_DATABASE_URL`); the runtime declares `UNSCOPED_BOOTSTRAP`
+  until then. Block in `WU-AUTH-17.md`.
 - **Proof cadence (HD-AUTH-04, 2026-10-01):** progressive proof radius from
   WU-AUTH-11 on; the WU-AUTH-10 full run is the current broad checkpoint;
   the next full repository regression at a chosen checkpoint or Field closure.
@@ -87,24 +91,24 @@ preceded them, so the counts are those of the pin.
 | WU-AUTH-13 Revocation Expansion | PROVEN at the affected radius; HA-AUTH-03 (last method) and HA-AUTH-04 (disable authority) OPEN, defaults in force | `171a6e7` |
 | WU-AUTH-14 Anti-CSRF Boundary | PROVEN at an escalated radius (security + semantic + regression + all of tests/e2e: 1388 / 2) incl. the real browser/API contract (AUTH real lane) | `26a134c` |
 | WU-AUTH-15 Protocol Callback Semantics | PROVEN (declared contacts + write sets, measured over every table) | `5fe3cd6` |
-| WU-AUTH-16 Authorization Regression | PROVEN (6 identity kinds × the full protected route table; no code delta) | this commit |
-| WU-AUTH-13..17 | not started | — |
+| WU-AUTH-16 Authorization Regression | PROVEN (6 identity kinds × the full protected route table; no code delta) | `a4c3bc3` |
+| WU-AUTH-17 Runtime DB Principal Capability Boundary | PROVEN in TEST (auth_runtime, exact capability matrix, live paths scoped, real lane scoped); HA-AUTH-05 (= PFC HA-10 deployment switch) OPEN | this commit |
 
 ### Current First Broken Relation
 
-Runtime DB principal capability boundary: the authentication relations are
-written by a runtime principal whose capability set is not scoped to them
-(owner WU-AUTH-17; 24 §21.18; FBR-AUTH-006; reaches PFC HA-09).
+None inside 24 §37's seventeen Work Units. Field closure (24 §46) is next:
+the one full fresh repository regression, the review bundle, FIELD_GREEN.
 
 ### Migrations
 
-Head `b9d2f4a6c8e1`. Chain from the pin head `e8c2a5f1b7d4`: `f1a7c3d9b2e4`
+Head `c1e3a5b7d9f2`. Chain from the pin head `e8c2a5f1b7d4`: `f1a7c3d9b2e4`
 (WU-AUTH-02 `authentication_methods`) → `a2c4e6f8b1d3` (WU-AUTH-03 credential ↔ method) → `b3d5f7a9c2e6` (WU-AUTH-04
 session attribution and revocation reason) → `c4e6a8b1d3f5` (WU-AUTH-05 OIDC
 transactions) → `d5f7b9c1e3a7` (WU-AUTH-08 provider identities) → `e6a8c1d3f5b9` (WU-AUTH-09
 account creation failure classes) → `f7b9d1e3a5c8` (WU-AUTH-11 challenges and
 verified emails) → `a8c1e3f5b7d9` (WU-AUTH-12 recovery challenges, `CREDENTIAL_RESET`) →
-`b9d2f4a6c8e1` (WU-AUTH-13 account disable, one active binding per subject, `ACCOUNT_DISABLED`).
+`b9d2f4a6c8e1` (WU-AUTH-13 account disable, one active binding per subject, `ACCOUNT_DISABLED`) →
+`c1e3a5b7d9f2` (WU-AUTH-17 `auth_runtime` grants, session-resolution reads).
 
 ## Upstream dependencies
 

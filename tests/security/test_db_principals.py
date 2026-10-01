@@ -52,10 +52,11 @@ def _assert_read_denied(engine: sa.Engine, table: str) -> None:
         conn.rollback()
 
 
-def test_all_nine_principals_exist_and_none_is_a_superuser_or_can_create_roles_or_databases(
+def test_all_principals_exist_and_none_is_a_superuser_or_can_create_roles_or_databases(
     db_connection: sa.Connection,
 ) -> None:
-    """14's own "No runtime superuser" requirement -- the hard proof."""
+    """14's own "No runtime superuser" requirement -- the hard proof. The
+    nine of 14 plus `auth_runtime` (24 §21.18, WU-AUTH-17)."""
     rows = (
         db_connection.execute(
             sa.text(

@@ -64,6 +64,55 @@ class CommitOutcomeUnknown(RuntimeError):
     proven (10 section 4.4 INDETERMINATE)."""
 
 
+# --- AUTH WU-AUTH-17 (24 §21.18): the scoped authentication connector ------
+#
+# `NQUIRY_AUTH_DATABASE_URL`, when set, names the database principal under
+# which authentication persistence runs (`auth_runtime`, capability map in
+# `security.db_capabilities`). Unset, authentication persistence uses the
+# request connector above; the runtime then DECLARES itself unscoped
+# (`auth_persistence_scope()`): bootstrap authority is never represented as
+# runtime authority. Switching a deployment is a deployment action (PFC HA-10).
+
+_auth_engine: sa.Engine | None = None
+
+
+def _auth_url() -> str | None:
+    raw = os.environ.get("NQUIRY_AUTH_DATABASE_URL", "")
+    return raw.strip() or None
+
+
+def auth_scope_configured() -> bool:
+    return _auth_url() is not None
+
+
+def auth_persistence_scope() -> str:
+    """`SCOPED` when a scoped auth connector is configured, else
+    `UNSCOPED_BOOTSTRAP`: a declaration, never a claim."""
+    return "SCOPED" if auth_scope_configured() else "UNSCOPED_BOOTSTRAP"
+
+
+def _get_auth_engine() -> sa.Engine:
+    global _auth_engine
+    if _auth_engine is None:
+        url = _auth_url()
+        if url is None:
+            raise DatabaseUrlNotConfigured("NQUIRY_AUTH_DATABASE_URL is not set")
+        _auth_engine = sa.create_engine(url, pool_pre_ping=True)
+    return _auth_engine
+
+
+@contextmanager
+def connect_auth() -> Iterator[sa.Connection]:
+    """The authentication persistence connection: the scoped principal when
+    configured, otherwise exactly `connect()`. Same transaction discipline."""
+    if not auth_scope_configured():
+        with connect() as connection:
+            yield connection
+        return
+    with _connect_with(_get_auth_engine()) as connection:
+        yield connection
+
+
 @contextmanager
 def connect() -> Iterator[sa.Connection]:
     """One request-scoped connection, inside its own transaction,
@@ -81,7 +130,12 @@ def connect() -> Iterator[sa.Connection]:
     An exception raised by the caller inside the block still propagates
     unchanged after rollback, as before.
     """
-    engine = _get_engine()
+    with _connect_with(_get_engine()) as connection:
+        yield connection
+
+
+@contextmanager
+def _connect_with(engine: sa.Engine) -> Iterator[sa.Connection]:
     try:
         connection = engine.connect()
     except sa.exc.SQLAlchemyError as exc:
@@ -111,5 +165,8 @@ __all__ = [
     "CommitRejected",
     "DatabaseUnavailable",
     "DatabaseUrlNotConfigured",
+    "auth_persistence_scope",
+    "auth_scope_configured",
     "connect",
+    "connect_auth",
 ]

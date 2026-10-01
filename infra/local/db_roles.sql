@@ -64,5 +64,11 @@ BEGIN
         CREATE ROLE test_principal LOGIN PASSWORD 'test_principal_local_dev_only'
             NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS;
     END IF;
+    -- AUTH WU-AUTH-17 (24 section 21.18): the scoped runtime principal of
+    -- authentication persistence. Grants: migrations/versions/c1e3a5b7d9f2_*.py.
+    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'auth_runtime') THEN
+        CREATE ROLE auth_runtime LOGIN PASSWORD 'auth_runtime_local_dev_only'
+            NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS;
+    END IF;
 END
 $$;

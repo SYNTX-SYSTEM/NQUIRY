@@ -165,7 +165,7 @@ def run_host_operator_disable(
     except IdentityCreationRefused as exc:
         raise AccountDisableRefused(exc.reason_code) from exc
     if connect is None:
-        from persistence.engine import connect as default_connect
+        from persistence.engine import connect_auth as default_connect
 
         connect = default_connect
     with connect() as connection:

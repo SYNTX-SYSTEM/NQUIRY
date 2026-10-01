@@ -14,7 +14,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
 
-from persistence.engine import connect
+from persistence.engine import connect_auth as connect  # WU-AUTH-17: scoped auth persistence
 from persistence.local_auth_repository import SqlAlchemyLocalSessionRepository
 from persistence.verification_repository import SqlAlchemyVerifiedEmailRepository
 from security.mail import LocalMailCapture

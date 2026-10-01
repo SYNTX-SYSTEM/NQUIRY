@@ -120,7 +120,7 @@ from persistence.decision_repository import (
     SqlAlchemyDecisionRepository,
     SqlAlchemyDecisionVersionReader,
 )
-from persistence.engine import connect
+from persistence.engine import auth_scope_configured, connect, connect_auth
 from persistence.local_auth_repository import (
     SqlAlchemyLocalCredentialRepository,
     SqlAlchemyLocalSessionRepository,
@@ -248,11 +248,20 @@ class LoginDispatchResult:
     expires_at: datetime | None
 
 
+def _auth_connection():  # type: ignore[no-untyped-def]
+    """AUTH WU-AUTH-17 (24 §21.18): the connector of the authentication
+    dispatchers in this module. With `NQUIRY_AUTH_DATABASE_URL` configured,
+    the scoped `auth_runtime` principal (`connect_auth`); otherwise this
+    module's request connector, i.e. exactly the pre-WU-17 behaviour (and
+    what the test fixtures redirect into their transaction)."""
+    return connect_auth() if auth_scope_configured() else connect()
+
+
 def dispatch_login(*, email: str, password: str) -> LoginDispatchResult:
     """`POST /auth/login`. Never raises on bad credentials -- returns a
     `denied` body instead, same fail-closed-but-not-500 discipline as
     every other dispatch function here."""
-    with connect() as connection:
+    with _auth_connection() as connection:
         try:
             result = login(
                 email,
@@ -277,7 +286,7 @@ def dispatch_login(*, email: str, password: str) -> LoginDispatchResult:
 def dispatch_logout(*, session_token: str | None) -> dict[str, object]:
     """`POST /auth/logout`. Idempotent -- a missing/unknown/already-
     revoked token is a silent no-op, never an error."""
-    with connect() as connection:
+    with _auth_connection() as connection:
         logout(
             session_token,
             session_repository=SqlAlchemyLocalSessionRepository(connection),
@@ -291,7 +300,7 @@ def dispatch_current_session(*, session_token: str | None) -> dict[str, object]:
     "show the login page" vs "show the real application" -- never
     raises; a missing/invalid session is a normal `denied` response,
     not a 500."""
-    with connect() as connection:
+    with _auth_connection() as connection:
         principal = resolve_session(
             session_token,
             session_repository=SqlAlchemyLocalSessionRepository(connection),
@@ -319,7 +328,7 @@ class SessionDispatchResult:
 def dispatch_logout_all(*, session_token: str | None) -> SessionDispatchResult:
     """`POST /auth/logout-all` (24 §15.7 all-session scope). Requires a valid
     session: without one nothing is revoked and the answer is `denied`."""
-    with connect() as connection:
+    with _auth_connection() as connection:
         try:
             revoked = logout_all_sessions(
                 session_token,
@@ -334,7 +343,7 @@ def dispatch_logout_all(*, session_token: str | None) -> SessionDispatchResult:
 def dispatch_list_sessions(*, session_token: str | None) -> SessionDispatchResult:
     """`GET /auth/sessions`: the caller's own live sessions. Never a token or
     a token hash; never another identity's session."""
-    with connect() as connection:
+    with _auth_connection() as connection:
         try:
             sessions = list_sessions(
                 session_token,
@@ -367,7 +376,7 @@ def dispatch_revoke_session(
     """`POST /auth/sessions/{sessionId}/revoke`: the caller revokes one of
     their own sessions. Unknown, already revoked and foreign ids are one
     answer (`SESSION_NOT_FOUND`)."""
-    with connect() as connection:
+    with _auth_connection() as connection:
         repository = SqlAlchemyLocalSessionRepository(connection)
         now = datetime.now(timezone.utc)
         principal = resolve_session(session_token, session_repository=repository, now=now)

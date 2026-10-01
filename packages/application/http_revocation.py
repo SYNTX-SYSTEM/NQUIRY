@@ -12,7 +12,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
 
-from persistence.engine import connect
+from persistence.engine import connect_auth as connect  # WU-AUTH-17: scoped auth persistence
 
 from application.http_dispatch import SessionDispatchResult
 from application.http_oidc import current_auth_runtime

@@ -3,7 +3,10 @@
 # browser/API request contract"). Starts, against an already running
 # PostgreSQL with migrations applied (DATABASE_URL):
 #   real FastAPI (uvicorn) on :18460   NQUIRY_ENVIRONMENT=TEST, test provider,
-#                                      capture mail, allowed origin = the web app
+#                                      capture mail, allowed origin = the web app,
+#                                      authentication persistence as the scoped
+#                                      principal auth_runtime (WU-AUTH-17;
+#                                      override with AUTH_DATABASE_URL)
 #   real Next.js dev server on :13470  NEXT_PUBLIC_API_BASE_URL -> the API
 #   a hostile third origin on :13471   tests/real-stack/hostile/ (static)
 # then runs apps/web/playwright.auth-real.config.ts and stops everything.
@@ -39,6 +42,7 @@ NQUIRY_EMAIL_DELIVERY_MODE=capture \
 NQUIRY_ALLOWED_ORIGINS="http://localhost:${WEB_PORT}" \
 NQUIRY_PUBLIC_API_BASE_URL="http://localhost:${API_PORT}" \
 NQUIRY_PUBLIC_WEB_BASE_URL="http://localhost:${WEB_PORT}" \
+NQUIRY_AUTH_DATABASE_URL="${AUTH_DATABASE_URL:-$(printf '%s' "$DATABASE_URL" | sed -E 's#//[^:]+:[^@]+@#//auth_runtime:auth_runtime_local_dev_only@#')}" \
 setsid "$PYTHON" -m uvicorn nquiry_api.main:app --host 127.0.0.1 --port "$API_PORT" >"$LOG_DIR/api.log" 2>&1 &
 pids+=($!)
 (cd apps/web && NEXT_PUBLIC_API_BASE_URL="http://localhost:${API_PORT}" exec setsid npx next dev --port "$WEB_PORT" >"$LOG_DIR/web.log" 2>&1) &

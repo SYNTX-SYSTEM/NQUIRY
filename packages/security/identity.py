@@ -118,6 +118,11 @@ from typing import Protocol, runtime_checkable
 
 from semantic_types.ids import UserId
 
+from security.db_capabilities import (
+    AUTH_PERSISTENCE_CAPABILITIES,
+    SESSION_RESOLUTION_READ_TABLES,
+)
+
 
 @dataclass(frozen=True, slots=True)
 class AuthenticatedPrincipal:
@@ -185,7 +190,8 @@ class IdentityPort(Protocol):
 
 
 class ServicePrincipal(Enum):
-    """14's own PKG-25 OBJECTIVE names these 9 DB principals verbatim.
+    """14's own PKG-25 OBJECTIVE names the first 9 DB principals verbatim;
+    24 §21.18 (WU-AUTH-17) adds the scoped authentication runtime principal.
     Each is a real, LOGIN-capable local PostgreSQL role (see
     `infra/local/db_roles.sql`), none a superuser (14's own "No runtime
     superuser" requirement, proven by
@@ -201,6 +207,9 @@ class ServicePrincipal(Enum):
     SECURITY_EVENT_WRITER = "security_event_writer"
     AUDIT_READER = "audit_reader"
     TEST_PRINCIPAL = "test_principal"
+    # AUTH WU-AUTH-17 (24 §21.18): the tenth principal, the scoped runtime
+    # identity of authentication persistence (`security.db_capabilities`).
+    AUTH_RUNTIME = "auth_runtime"
 
 
 class TableOperation(Enum):
@@ -309,12 +318,36 @@ _AUDIT_READER_TABLES: tuple[str, ...] = ("audit_events",)
 # (which only names tables that already exist) or in this package's own
 # `SECURITY_CAPABILITY_MAP`/migration GRANT statements.
 
+# AUTH WU-AUTH-17 (24 §21.18): the authentication relations and their
+# scoped runtime principal. Their capability map is code-grounded in
+# `security.db_capabilities` (one source for migration c1e3a5b7d9f2 and for
+# the live proof); here it is folded into the repository's own structural
+# map. These tables are NOT in `ALL_PROTECTED_TABLES`: `api_reader` gets no
+# blanket SELECT on them (credential and token hashes), only the three
+# session-resolution reads every governed HTTP request makes.
+AUTH_PROTECTED_TABLES: tuple[str, ...] = tuple(
+    table for table in AUTH_PERSISTENCE_CAPABILITIES if table != "users"
+)
+_SESSION_RESOLUTION_EXTRA_READS: tuple[str, ...] = tuple(
+    table for table in SESSION_RESOLUTION_READ_TABLES if table != "users"
+)
+
+
+def _auth_runtime_capabilities() -> tuple[TableCapability, ...]:
+    return tuple(
+        TableCapability(table, frozenset(TableOperation(op) for op in operations))
+        for table, operations in AUTH_PERSISTENCE_CAPABILITIES.items()
+    )
+
+
 SECURITY_CAPABILITY_MAP: dict[ServicePrincipal, tuple[TableCapability, ...]] = {
     ServicePrincipal.API_READER: tuple(
-        TableCapability(table, _READ_ONLY) for table in ALL_PROTECTED_TABLES
+        TableCapability(table, _READ_ONLY)
+        for table in (*ALL_PROTECTED_TABLES, *_SESSION_RESOLUTION_EXTRA_READS)
     ),
-    ServicePrincipal.GOVERNED_COMMIT_WRITER: tuple(
-        TableCapability(table, _READ_WRITE) for table in _GOVERNED_COMMIT_WRITER_TABLES
+    ServicePrincipal.GOVERNED_COMMIT_WRITER: (
+        *(TableCapability(table, _READ_WRITE) for table in _GOVERNED_COMMIT_WRITER_TABLES),
+        *(TableCapability(table, _READ_ONLY) for table in SESSION_RESOLUTION_READ_TABLES),
     ),
     ServicePrincipal.AI_GATEWAY_WRITER: tuple(
         TableCapability(table, _READ_WRITE) for table in _AI_GATEWAY_WRITER_TABLES
@@ -330,9 +363,12 @@ SECURITY_CAPABILITY_MAP: dict[ServicePrincipal, tuple[TableCapability, ...]] = {
     ),
     ServicePrincipal.SECURITY_EVENT_WRITER: (),
     ServicePrincipal.TEST_PRINCIPAL: tuple(
-        TableCapability(table, _READ_WRITE_DELETE) for table in ALL_PROTECTED_TABLES
+        TableCapability(table, _READ_WRITE_DELETE)
+        for table in (*ALL_PROTECTED_TABLES, *AUTH_PROTECTED_TABLES)
+        if table != "security_events"
     ),
     ServicePrincipal.MIGRATION_OWNER: (),
+    ServicePrincipal.AUTH_RUNTIME: _auth_runtime_capabilities(),
 }
 
 
@@ -359,6 +395,7 @@ __all__ = [
     "TableOperation",
     "TableCapability",
     "ALL_PROTECTED_TABLES",
+    "AUTH_PROTECTED_TABLES",
     "SECURITY_CAPABILITY_MAP",
     "capability_tables",
     "capability_operations",

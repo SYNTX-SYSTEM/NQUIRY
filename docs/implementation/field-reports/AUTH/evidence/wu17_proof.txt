@@ -1,0 +1,22 @@
+468 files already formatted
+All checks passed!
+Success: no issues found in 260 source files
+ARCHITECTURE_DEPENDENCY_CHECK::PASS
+TEST_ONLY_IMPORT_CHECK::PASS
+MIGRATION_STATIC_CHECK::PASS (42 revision(s), single head ['c1e3a5b7d9f2'])
+MIGRATION_LIVE_CHECK::PASS (db head matches {'c1e3a5b7d9f2'})
+INFO  [alembic.runtime.migration] Running downgrade c1e3a5b7d9f2 -> b9d2f4a6c8e1, AUTH WU-AUTH-17: auth_runtime principal capabilities; session resolution reads (24 §21.18)
+INFO  [alembic.runtime.migration] Running upgrade b9d2f4a6c8e1 -> c1e3a5b7d9f2, AUTH WU-AUTH-17: auth_runtime principal capabilities; session resolution reads (24 §21.18)
+AUTH real lane with NQUIRY_AUTH_DATABASE_URL=auth_runtime: 3 passed (see evidence/wu14_real_stack.txt lane; this run 2026-10-01)
+FAILED tests/security/test_service_identity.py::test_exactly_the_nine_named_principals_exist
+1 failed, 564 passed, 2 skipped in 451.30s (0:07:31)
+RERUN after folding the auth capability map into security.identity.SECURITY_CAPABILITY_MAP (the first run's one failure was test_service_identity's nine-principal pin):
+468 files already formatted
+All checks passed!
+Success: no issues found in 260 source files
+ARCHITECTURE_DEPENDENCY_CHECK::PASS
+TEST_ONLY_IMPORT_CHECK::PASS
+MIGRATION_STATIC_CHECK::PASS (42 revision(s), single head ['c1e3a5b7d9f2'])
+MIGRATION_LIVE_CHECK::PASS (db head matches {'c1e3a5b7d9f2'})
+...........s........................                                     [100%]
+610 passed, 2 skipped in 442.94s (0:07:22)
