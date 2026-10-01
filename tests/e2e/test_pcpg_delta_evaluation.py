@@ -543,15 +543,40 @@ def test_result_is_this_fields_own_complete_vocabulary() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_the_module_never_references_source_status_or_proof_ceiling() -> None:
+def test_the_module_never_invents_a_producer_for_source_status() -> None:
     """Required falsifier: "I-12 absence remains observable where
-    required." This module does not invent a producer for I-12 (Source
-    status / proof ceiling) -- proven directly by static source
-    inspection, not merely asserted in prose."""
+    required." This module does not invent a producer for I-12's own
+    richer per-input scope (source authority, mutability, evidence
+    status, AI output class) -- proven directly by static source
+    inspection. `proof_ceiling` itself IS now a legitimate substring
+    (WU-PFC-PCPG-16's own Session-level passthrough field), so this
+    falsifier checks the narrower, still-real claim: nothing beyond
+    `session_proof_ceiling` appears."""
     root = pathlib.Path(__file__).resolve().parents[2] / "packages" / "application"
     source = (root / "pcpg_delta_evaluation.py").read_text().lower()
-    for forbidden in ("source_status", "proof_ceiling", "sourcestatus"):
+    for forbidden in ("source_status", "sourcestatus", "source_authority", "evidence_status"):
         assert forbidden not in source
+
+
+def test_session_proof_ceiling_is_passed_through_never_consulted_for_a_result() -> None:
+    """WU-PFC-PCPG-16: R-07 now CARRIES I-12's own Session-level proof
+    ceiling (I-12's own named consumers: "R-03, R-06, R-08"), but never
+    CONSULTS it for any RESULT/REASON decision -- proven directly: the
+    attribute never appears inside any conditional/comparison expression
+    anywhere in this module, only as a value assigned straight through."""
+    root = pathlib.Path(__file__).resolve().parents[2] / "packages" / "application"
+    source = (root / "pcpg_delta_evaluation.py").read_text()
+    tree = ast.parse(source)
+
+    def references_ceiling(node: ast.AST) -> bool:
+        return any(
+            isinstance(n, ast.Attribute) and n.attr == "session_proof_ceiling"
+            for n in ast.walk(node)
+        )
+
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.If, ast.Compare, ast.BoolOp, ast.IfExp)):
+            assert not references_ceiling(node), ast.dump(node)[:200]
 
 
 # ---------------------------------------------------------------------------

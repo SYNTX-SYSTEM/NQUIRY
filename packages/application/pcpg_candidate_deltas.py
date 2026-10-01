@@ -41,6 +41,29 @@ consequence directly: "ORDER is NOT a requested delta" for a negated
 clause. PROHIBITED, HYPOTHETICAL, CONDITIONAL and ASSERTED actions
 therefore form no delta at all in this module — not a weaker delta, no
 delta.
+
+WU-PFC-PCPG-16 UPDATE: SESSION-LEVEL I-12 PROOF CEILING CARRIED HERE
+--------------------------------------------------------------------------
+`01_INVARIANTS.md` I-12: "The source authority, mutability, evidence
+status and proof class of every input are quoted canonically... Fixture
+scopes stay FIXTURE_NON_PROOF." I-12's own CONSUMERS are named verbatim
+as "R-03, R-06, R-08" — R-06 is explicitly one of them. The already-real,
+already-authoritative fact is `snapshot.session.proof_mode` (R-03,
+`checkpoint-PFC-PCPG-4`; itself produced by `inquiry_queries.proof_mode`,
+HD-24 rule 5: `"FIXTURE_NON_PROOF" if fixture else "GOVERNED"`) — this
+Work Unit does not create a second producer for it, only quotes it
+canonically onto each `CandidateDelta`, exactly as I-12's own LAW
+requires ("quoted canonically", never re-derived).
+
+Disclosed, narrow scope: `session_proof_ceiling` carries ONLY the
+Session-level fact (`"FIXTURE_NON_PROOF"` / `"GOVERNED"`, or `None` when
+no Session is named — never guessed). It does NOT carry source
+authority, mutability status, evidence status, or the proof class of any
+individual input beyond the Session itself, and it is never inferred
+from `target` (a free-form, already-resolved reference string, never
+treated as a lookup key into any canonical object — I-12's own richer
+per-input scope remains genuinely open, `WU-PFC-PCPG-13.md`/`WU-PFC-
+PCPG-16.md` §1). `PARTIAL I-12 != I-12 COMPLETE`.
 """
 
 from __future__ import annotations
@@ -76,6 +99,10 @@ class CandidateDelta:
     dependency_edges: tuple[str, ...]
     """Always `()` in this increment — see the module docstring
     (IMPLIED-delta formation is out of scope)."""
+    session_proof_ceiling: str | None = None
+    """I-12's own Session-level proof ceiling, quoted canonically from
+    `snapshot.session.proof_mode` — `None` when no Session is named
+    (never guessed). WU-PFC-PCPG-16 update, module docstring."""
 
 
 def form_candidate_deltas(
@@ -83,6 +110,7 @@ def form_candidate_deltas(
 ) -> tuple[CandidateDelta, ...]:
     """The R-06 producer (DIRECT deltas only). Pure, deterministic, no I/O."""
     current_state = snapshot.session.state if snapshot.session is not None else None
+    session_proof_ceiling = snapshot.session.proof_mode if snapshot.session is not None else None
 
     deltas: list[CandidateDelta] = []
     for index, action in enumerate(observation.actions):
@@ -104,6 +132,7 @@ def form_candidate_deltas(
                 current_state=current_state,
                 proposed_state=None,
                 dependency_edges=(),
+                session_proof_ceiling=session_proof_ceiling,
             )
         )
     return tuple(deltas)

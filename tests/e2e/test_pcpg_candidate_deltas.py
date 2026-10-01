@@ -47,6 +47,7 @@ from datetime import datetime, timezone
 import f03_support as f03
 import pytest
 import sqlalchemy as sa
+from application.inquiry_queries import proof_mode
 from application.pcpg_candidate_deltas import CandidateDelta, form_candidate_deltas
 from application.pcpg_field_pulse import derive_pulse
 from application.pcpg_field_snapshot import (
@@ -64,19 +65,21 @@ def _now() -> datetime:
     return datetime(2026, 9, 30, 12, 0, tzinfo=timezone.utc)
 
 
-def _bare_snapshot(session_state: str | None = None) -> FieldSnapshot:
+def _bare_snapshot(session_state: str | None = None, *, fixture: bool = False) -> FieldSnapshot:
     """A minimal, synthetic (not DB-backed) FieldSnapshot -- legitimate
     here because R-06 is a pure function of its two real inputs, neither
     of which requires a live database to construct for a unit-level
-    falsifier (the DB-backed end-to-end case is covered separately)."""
+    falsifier (the DB-backed end-to-end case is covered separately).
+    `proof_mode` is computed by the real `inquiry_queries.proof_mode`
+    producer (HD-24 rule 5), never hand-duplicated as a literal string."""
     session = None
     if session_state is not None:
         session = SessionContext(
             session_id="11111111-1111-4111-8111-111111111111",
             state=session_state,
             version=1,
-            fixture=False,
-            proof_mode="GOVERNED",
+            fixture=fixture,
+            proof_mode=proof_mode(fixture),
             actions={},
         )
     return FieldSnapshot(
@@ -349,6 +352,51 @@ def test_candidate_delta_is_a_frozen_dataclass() -> None:
 
     assert dataclasses.is_dataclass(CandidateDelta)
     assert CandidateDelta.__dataclass_params__.frozen  # type: ignore[attr-defined]
+
+
+# ---------------------------------------------------------------------------
+# WU-PFC-PCPG-16: I-12's own Session-level proof ceiling, quoted
+# canonically from FieldSnapshot.session.proof_mode onto every delta
+# ---------------------------------------------------------------------------
+
+
+def test_a_fixture_session_produces_fixture_non_proof_on_every_delta() -> None:
+    """Required falsifier 1: "fixture Session produces FIXTURE_NON_PROOF
+    at R-06." Proven against the real `proof_mode` producer, not a
+    hand-rolled string."""
+    obs = observe_semantics("Begin the analysis.")
+    snapshot = _bare_snapshot(session_state="QUESTION_CAPTURE", fixture=True)
+    deltas = form_candidate_deltas(obs, snapshot)
+    assert deltas[0].session_proof_ceiling == "FIXTURE_NON_PROOF"
+    assert deltas[0].session_proof_ceiling == proof_mode(True)
+
+
+def test_a_non_fixture_session_carries_the_real_governed_proof_mode() -> None:
+    obs = observe_semantics("Begin the analysis.")
+    snapshot = _bare_snapshot(session_state="QUESTION_CAPTURE", fixture=False)
+    deltas = form_candidate_deltas(obs, snapshot)
+    assert deltas[0].session_proof_ceiling == "GOVERNED"
+    assert deltas[0].session_proof_ceiling == proof_mode(False)
+
+
+def test_no_session_named_gives_no_ceiling_never_guessed() -> None:
+    """No session means no real Session-level fact exists to quote --
+    `None`, never a guessed `"GOVERNED"` default."""
+    obs = observe_semantics("Begin the analysis.")
+    deltas = form_candidate_deltas(obs, _bare_snapshot(session_state=None))
+    assert deltas[0].session_proof_ceiling is None
+
+
+def test_session_proof_ceiling_is_quoted_not_derived_from_target() -> None:
+    """Required falsifier 5: "R-06 does not infer provenance from
+    CandidateDelta.target strings." The ceiling is identical regardless
+    of what `target` resolves to -- it is quoted from the Session alone."""
+    obs = observe_semantics("Begin the analysis regarding the Question.")
+    snapshot = _bare_snapshot(session_state="QUESTION_CAPTURE", fixture=True)
+    deltas = form_candidate_deltas(obs, snapshot)
+    assert deltas[0].session_proof_ceiling == "FIXTURE_NON_PROOF"
+    # The value is the Session's own fact -- never a function of `target`.
+    assert deltas[0].session_proof_ceiling == snapshot.session.proof_mode
 
 
 # ---------------------------------------------------------------------------

@@ -52,6 +52,7 @@ Never guessed `COMPOSABLE` for a case this module cannot actually check.
 from __future__ import annotations
 
 import ast
+import dataclasses
 import pathlib
 
 from application.pcpg_candidate_deltas import CandidateDelta
@@ -232,3 +233,86 @@ def test_candidate_delta_type_is_not_imported_unused() -> None:
     """A static sanity check that this test module's own imports stay
     honest (mirrors the same import discipline used throughout)."""
     assert CandidateDelta.__name__ == "CandidateDelta"
+
+
+# ---------------------------------------------------------------------------
+# WU-PFC-PCPG-16: I-12's own Session-level composed proof ceiling
+# ---------------------------------------------------------------------------
+
+
+def _ceiling_record(delta_id: str, ceiling: str | None) -> DeltaRecord:
+    return dataclasses.replace(
+        _record(Result.ALLOWED, operation="REQUEST_QUESTION_ANALYSIS"),
+        delta_id=delta_id,
+        session_proof_ceiling=ceiling,
+    )
+
+
+def test_a_single_fixture_delta_composes_to_fixture_non_proof() -> None:
+    """Required falsifier 1 (composed level): a retained FIXTURE_NON_
+    PROOF delta's own ceiling is never raised by composition."""
+    effect = compose_effect((_ceiling_record("D0", "FIXTURE_NON_PROOF"),))
+    assert effect.composed_proof_ceiling == "FIXTURE_NON_PROOF"
+
+
+def test_no_later_step_can_raise_a_retained_fixture_non_proof_ceiling() -> None:
+    """Required falsifier 2: mixing a FIXTURE_NON_PROOF delta with
+    further GOVERNED ones never raises the composed ceiling back to
+    GOVERNED -- the most restrictive real ceiling always wins."""
+    effect = compose_effect(
+        (
+            _ceiling_record("D0", "GOVERNED"),
+            _ceiling_record("D1", "FIXTURE_NON_PROOF"),
+            _ceiling_record("D2", "GOVERNED"),
+        )
+    )
+    assert effect.composed_proof_ceiling == "FIXTURE_NON_PROOF"
+
+
+def test_mixed_retained_deltas_compose_to_the_most_restrictive_ceiling() -> None:
+    """Required falsifier 3: a mixed retained set never produces a
+    ceiling weaker (less restrictive) than its own most restrictive
+    real input."""
+    effect = compose_effect(
+        (_ceiling_record("D0", "FIXTURE_NON_PROOF"), _ceiling_record("D1", "GOVERNED"))
+    )
+    assert effect.composed_proof_ceiling == "FIXTURE_NON_PROOF"
+
+
+def test_all_governed_retained_deltas_compose_to_governed() -> None:
+    effect = compose_effect((_ceiling_record("D0", "GOVERNED"), _ceiling_record("D1", "GOVERNED")))
+    assert effect.composed_proof_ceiling == "GOVERNED"
+
+
+def test_an_unknown_ceiling_on_even_one_retained_delta_never_becomes_stronger_proof() -> None:
+    """Required falsifier 4: "absence/unknown proof_mode never becomes
+    stronger proof." A GOVERNED delta alongside an unknown (`None`) one
+    must never compose to the known, weaker-restriction `"GOVERNED"` --
+    that would silently dilute the unknown input away. The composed
+    result is honestly `None` instead."""
+    effect = compose_effect((_ceiling_record("D0", "GOVERNED"), _ceiling_record("D1", None)))
+    assert effect.composed_proof_ceiling is None
+
+
+def test_an_empty_retained_set_has_no_composed_ceiling_to_report() -> None:
+    effect = compose_effect(())
+    assert effect.composed_proof_ceiling is None
+
+
+def test_the_module_invents_no_provider_output_or_evidence_proof_class() -> None:
+    """Required falsifiers 6-7: "no provider-output proof class is
+    invented"; "no Evidence provenance is invented." This module cites
+    only the two real `inquiry_queries.proof_mode` values -- never the
+    richer I-12 vocabulary (`AI_VALIDATION_PROOF`, `DOMAIN_EVIDENCE`,
+    `SYSTEM_PROOF`, `PROPOSAL`, evidence-provenance field names)."""
+    root = pathlib.Path(__file__).resolve().parents[2] / "packages" / "application"
+    source = (root / "pcpg_composed_effect.py").read_text()
+    for forbidden in (
+        "AI_VALIDATION_PROOF",
+        "DOMAIN_EVIDENCE",
+        "SYSTEM_PROOF",
+        "MOCK_NON_PROOF",
+        "evidence_proof_refs",
+        "ProvenanceEnvelope",
+    ):
+        assert forbidden not in source

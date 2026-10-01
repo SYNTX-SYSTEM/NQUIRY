@@ -72,14 +72,27 @@ unconditional any more (it genuinely is not: it now branches on real,
 admitted-operation and real-classification facts), but because
 independent, genuinely still-open gaps each separately and sufficiently
 block it: GAP-08-008's own per-class provider-eligibility policy here,
-and, upstream of this module entirely, I-12's own "Source status"
-producer — deliberately NOT built or consulted here (see
-`WU-PFC-PCPG-15.md` §4). `CLASSIFICATION != AUTHORITY`; admission of the
-operation class is not equivalence to authority; `GOVERNANCE_ADMISSIBLE
-!= CAN_SEND`. This module computes none of those equivalences.
+and, upstream of this module entirely, I-12's own full per-input
+provenance scope — deliberately NOT built here (see `WU-PFC-PCPG-15.md`
+§4; `WU-PFC-PCPG-16.md` materializes only the narrow Session-level
+slice, passed through below, never consulted for any `RESULT`
+decision). `CLASSIFICATION != AUTHORITY`; admission of the operation
+class is not equivalence to authority; `GOVERNANCE_ADMISSIBLE !=
+CAN_SEND`. This module computes none of those equivalences.
 
 `DENIED` is still never emitted: its own producer (an immutable-source-
 mutation detector) does not exist anywhere in this codebase.
+
+WU-PFC-PCPG-16 UPDATE: SESSION-LEVEL I-12 PROOF CEILING PASSED THROUGH
+--------------------------------------------------------------------------
+`DeltaRecord.session_proof_ceiling` is a pure passthrough of R-06's own
+`CandidateDelta.session_proof_ceiling` (I-12's own named CONSUMERS:
+"R-03, R-06, R-08" — this module sits between the latter two and only
+carries the value, exactly as it already does for `target`/
+`source_clause`/`current_state`). It is never read by, or branched on
+in, any `RESULT`/`REASON` decision in this module — I-12's own law ("no
+delta may raise a ceiling") is satisfied by construction: nothing here
+computes a NEW ceiling, only quotes the one R-06 already attached.
 """
 
 from __future__ import annotations
@@ -191,6 +204,10 @@ class DeltaRecord:
     result: Result
     reason: str | None
     flags: frozenset[str]
+    session_proof_ceiling: str | None = None
+    """I-12's own Session-level proof ceiling, passed through verbatim
+    from R-06's own `CandidateDelta.session_proof_ceiling` — never
+    re-derived here (WU-PFC-PCPG-16 update)."""
 
 
 def evaluate_deltas(
@@ -264,6 +281,7 @@ def evaluate_deltas(
                 result=result,
                 reason=reason,
                 flags=flags_by_delta_id.get(delta.delta_id, frozenset()),
+                session_proof_ceiling=delta.session_proof_ceiling,
             )
         )
     return tuple(records)
