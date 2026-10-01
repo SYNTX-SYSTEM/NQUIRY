@@ -59,14 +59,7 @@ The "derivation time" half of "the basis identity" is covered by
 `pcpg_observation.ObservationIngressResult.observed_at` (the one point in
 this pipeline a wall-clock time is already real and cited).
 
-TWO ITEMS ARE EXPLICITLY NOT COVERED — never silently dropped:
-- "the proof ceiling": `04_OBSERVATION_RESULT.md` §5's own `PROOF_CEILING`
-  delta-record field has no producer anywhere in this codebase — R-07's
-  own WU report already disclosed this exact gap (one of ~15 delta-record
-  fields it does not yet produce). R-12 cannot project a value R-07 itself
-  has never computed; building a proof-ceiling producer now would be
-  materializing R-07's own disclosed future scope under this Work Unit,
-  not R-12's.
+ONE ITEM IS EXPLICITLY NOT COVERED — never silently dropped:
 - the richer "basis identity" composite beyond the fingerprint and
   derivation time (`04_OBSERVATION_RESULT.md` §9's full list: the actor
   identity and validated scope — already present via `delta_records`'
@@ -79,9 +72,50 @@ TWO ITEMS ARE EXPLICITLY NOT COVERED — never silently dropped:
   — `pcpg_capability.py`'s own module docstring already disclosed this
   same gap for its own "basis identity" output field.
 
+WU-PFC-PCPG-17 UPDATE: THE COMPOSED PROOF CEILING, PROJECTED DIRECTLY
+  FROM R-08 — NOT ROUTED THROUGH R-09, R-10 OR R-11
+--------------------------------------------------------------------------
+`01_INVARIANTS.md` I-12's own Session-level composed ceiling
+(`pcpg_composed_effect.ComposedEffect.composed_proof_ceiling`,
+`checkpoint-PFC-PCPG-16`) is now a sixth parameter here, read verbatim
+into `ActorSafeProjection.composed_proof_ceiling` — nothing else. The
+companion discovery pass (recorded in this conversation, not a committed
+file) reconstructed every candidate carrier from the real code before
+this Work Unit began: R-09's `ChainResult` and R-10's `Capability` BOTH
+already receive the full `ComposedEffect` object today, but NEITHER
+relation's own RED-declared OUTPUT names "proof ceiling" anywhere — R-09
+owns FBR/MLT/NVT/HAR/PARTIAL; R-10 owns GOVERNANCE_ADMISSIBLE/
+PROVIDER_EXECUTABLE/CAN_SEND/basis identity (a freshness/versioning
+key, a different concept). Threading the ceiling through either would be
+exactly "a relation whose architecture does not legitimately own it."
+R-12's own RED OUTPUT, by contrast, names "the proof ceiling" directly
+(quoted at the top of this docstring) — R-12 is the one relation that
+legitimately owns it. The precedent for reaching an upstream producer
+directly, bypassing an intermediate relation that does not itself carry
+the fact, is not new here: `delta_records` (R-07's own output) is
+already a direct parameter, not received solely through R-09.
+
+`R-12 MAY PROJECT != R-12 MAY RECOMPUTE`: this module performs a single
+attribute read, `composed_effect.composed_proof_ceiling`, never a
+computation, inference from `delta_records`, derivation from
+`ChainResult`/`Capability`, or a guessed fallback for `None`. `PER-DELTA
+CEILING != COMPOSED CEILING`: `delta_records[*].session_proof_ceiling`
+(already real since `checkpoint-PFC-PCPG-16`, unaffected by this update)
+and `composed_proof_ceiling` (this update) are two independent fields,
+never merged or substituted for one another. `UNKNOWN CEILING !=
+GOVERNED`: `None` is read and projected as `None`, never defaulted.
+`PROOF CEILING != GOVERNANCE RESULT / CAPABILITY / PROVIDER ELIGIBILITY
+/ SEND AUTHORITY`: `Capability`, `EligibleContentSet` and the future SEND
+path are untouched by this Work Unit and remain the sole owners of their
+own values. `SESSION-LEVEL I-12 != FULL I-12`; `PARTIAL I-12 != I-12
+COMPLETE`: only `"FIXTURE_NON_PROOF"` / `"GOVERNED"` / `None` are ever
+projected — no full source authority, arbitrary-input provenance,
+mutability status, evidence status, per-input proof class or
+provider-output proof class is claimed anywhere in this module.
+
 THE FAILURE STATE, AND WHY IT IS NOT MODELED AS A SEPARATE BRANCH HERE
 --------------------------------------------------------------------------
-This function's own five parameters are all non-optional: Python's type
+This function's own six parameters are all non-optional: Python's type
 signature itself already enforces "no projection without a complete
 result" at the call site — there is no way to call `derive_actor_safe_
 projection` with a missing input. Any genuine upstream incompleteness
@@ -105,6 +139,7 @@ from datetime import datetime
 
 from application.pcpg_capability import Capability
 from application.pcpg_chain_results import ChainResult
+from application.pcpg_composed_effect import ComposedEffect
 from application.pcpg_delta_evaluation import DeltaRecord
 from application.pcpg_observation import ObservationIngressResult
 from application.pcpg_simplix import SemanticObservation
@@ -119,6 +154,11 @@ class ActorSafeProjection:
     delta_records: tuple[DeltaRecord, ...]
     chain_result: ChainResult
     capability: Capability
+    composed_proof_ceiling: str | None
+    """I-12's own Session-level composed ceiling (WU-PFC-PCPG-17),
+    projected verbatim from `ComposedEffect.composed_proof_ceiling` —
+    never recomputed, never inferred from `delta_records`, never
+    derived from `chain_result` or `capability`."""
 
 
 def derive_actor_safe_projection(
@@ -127,9 +167,10 @@ def derive_actor_safe_projection(
     delta_records: tuple[DeltaRecord, ...],
     chain_result: ChainResult,
     capability: Capability,
+    composed_effect: ComposedEffect,
 ) -> ActorSafeProjection:
     """The R-12 producer (this increment's own disclosed scope). Pure,
-    deterministic, no I/O — a plain re-packaging of five already-real
+    deterministic, no I/O — a plain re-packaging of six already-real
     producers' own output; it reads no new fact and derives no new
     governance value. PRECONDITION: every argument was produced for the
     same observation (same `raw_intent`, same actor, same basis)."""
@@ -141,6 +182,7 @@ def derive_actor_safe_projection(
         delta_records=delta_records,
         chain_result=chain_result,
         capability=capability,
+        composed_proof_ceiling=composed_effect.composed_proof_ceiling,
     )
 
 

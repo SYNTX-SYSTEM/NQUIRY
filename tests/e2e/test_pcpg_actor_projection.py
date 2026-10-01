@@ -15,13 +15,15 @@ R-01 (`ObservationIngressResult`), R-05 (`SemanticObservation`), R-07
 hits outside this module. R-12 is the next First Broken Relation.
 
 SCOPE (disclosed; full reasoning in `pcpg_actor_projection.py`'s own
-module docstring, not repeated here): 5 of 7 named OUTPUT items are
-covered by direct re-packaging of already-real producers; "the proof
-ceiling" (no producer anywhere, R-07's own already-disclosed gap) and
-the richer "basis identity" composite beyond the raw-intent fingerprint
-and derivation time are disclosed absent. The FAILURE STATE is not
-modeled as a separate branch: the function's own non-optional signature
-already enforces "no projection without a complete result" structurally.
+module docstring, not repeated here): 6 of 7 named OUTPUT items are
+covered by direct re-packaging of already-real producers (WU-PFC-PCPG-17
+adds "the proof ceiling", projected directly from R-08's own
+`ComposedEffect.composed_proof_ceiling`, never routed through R-09, R-10
+or R-11 — neither owns the proof-ceiling semantic); the richer "basis
+identity" composite beyond the raw-intent fingerprint and derivation
+time is disclosed absent. The FAILURE STATE is not modeled as a separate
+branch: the function's own non-optional signature already enforces "no
+projection without a complete result" structurally.
 """
 
 from __future__ import annotations
@@ -32,6 +34,7 @@ from datetime import datetime, timezone
 from application.pcpg_actor_projection import ActorSafeProjection, derive_actor_safe_projection
 from application.pcpg_capability import Capability
 from application.pcpg_chain_results import AuthorityRequirement, ChainResult, FirstBrokenRelation
+from application.pcpg_composed_effect import ComposedEffect, CompositionResult
 from application.pcpg_delta_evaluation import DeltaRecord, Result
 from application.pcpg_observation import ObservationIngressResult
 from application.pcpg_operation_index import ExecutionClass
@@ -118,9 +121,21 @@ _CAPABILITY = Capability(
 )
 
 
-def _project() -> ActorSafeProjection:
+def _composed_effect(ceiling: str | None) -> ComposedEffect:
+    return ComposedEffect(
+        retained=(),
+        composition_result=CompositionResult.COMPOSABLE,
+        reason=None,
+        composed_proof_ceiling=ceiling,
+    )
+
+
+_COMPOSED_EFFECT_GOVERNED = _composed_effect("GOVERNED")
+
+
+def _project(composed_effect: ComposedEffect = _COMPOSED_EFFECT_GOVERNED) -> ActorSafeProjection:
     return derive_actor_safe_projection(
-        _INGRESS, _OBSERVATION, _RECORDS, _CHAIN_RESULT, _CAPABILITY
+        _INGRESS, _OBSERVATION, _RECORDS, _CHAIN_RESULT, _CAPABILITY, composed_effect
     )
 
 
@@ -164,8 +179,10 @@ def test_capability_is_carried_through_verbatim() -> None:
 
 def test_projection_adds_no_field_beyond_the_seven_named_items() -> None:
     """I-19/E6 BYPASSED-type check mirrored for FABRICATED: the dataclass
-    shape must contain exactly the real, cited OUTPUT items, nothing
-    extra invented."""
+    shape must contain exactly the real, cited OUTPUT items (6 of R-12's
+    own 7 named items are covered -- `composed_proof_ceiling` is the
+    7th, WU-PFC-PCPG-17; "the basis identity" composite remains
+    disclosed-absent), nothing extra invented."""
     fields = {f.name for f in dataclasses.fields(ActorSafeProjection)}
     assert fields == {
         "raw_intent",
@@ -175,6 +192,7 @@ def test_projection_adds_no_field_beyond_the_seven_named_items() -> None:
         "delta_records",
         "chain_result",
         "capability",
+        "composed_proof_ceiling",
     }
 
 
@@ -182,7 +200,7 @@ def test_two_different_observations_project_independently_no_shared_mutable_stat
     other_ingress = dataclasses.replace(_INGRESS, raw_intent="Compare the suppliers.")
     first = _project()
     second = derive_actor_safe_projection(
-        other_ingress, _OBSERVATION, _RECORDS, _CHAIN_RESULT, _CAPABILITY
+        other_ingress, _OBSERVATION, _RECORDS, _CHAIN_RESULT, _CAPABILITY, _COMPOSED_EFFECT_GOVERNED
     )
     assert first.raw_intent == "Begin the analysis."
     assert second.raw_intent == "Compare the suppliers."
@@ -243,3 +261,109 @@ def test_the_module_touches_no_database_and_no_provider() -> None:
         if isinstance(fn, ast.FunctionDef):
             arg_names = {a.arg for a in fn.args.args}
             assert not ({"ports", "connection", "db"} & arg_names), fn.name
+
+
+# ---------------------------------------------------------------------------
+# WU-PFC-PCPG-17: I-12's own composed proof ceiling, projected directly
+# from R-08 -- never routed through R-09, R-10 or R-11
+# ---------------------------------------------------------------------------
+
+
+def test_fixture_non_proof_from_r08_reaches_r12_unchanged() -> None:
+    """Required falsifier 1."""
+    result = _project(_composed_effect("FIXTURE_NON_PROOF"))
+    assert result.composed_proof_ceiling == "FIXTURE_NON_PROOF"
+
+
+def test_governed_from_r08_reaches_r12_unchanged() -> None:
+    """Required falsifier 2."""
+    result = _project(_composed_effect("GOVERNED"))
+    assert result.composed_proof_ceiling == "GOVERNED"
+
+
+def test_none_from_r08_remains_none_in_r12() -> None:
+    """Required falsifiers 3 and 5: an unknown ceiling is projected as
+    `None`, never silently defaulted to `"GOVERNED"`."""
+    result = _project(_composed_effect(None))
+    assert result.composed_proof_ceiling is None
+    assert result.composed_proof_ceiling != "GOVERNED"
+
+
+def test_r12_reads_the_ceiling_only_from_composed_effect_never_elsewhere() -> None:
+    """Required falsifiers 4, 6, 7: "R-12 does not recompute the ceiling
+    from delta_records"; "does not derive it from ChainResult"; "does not
+    derive it from Capability." Proven directly by static AST inspection:
+    the `composed_proof_ceiling=` keyword argument to `ActorSafeProjection`
+    must be exactly the attribute access `composed_effect.
+    composed_proof_ceiling`, nothing else."""
+    import ast
+    import pathlib
+
+    root = pathlib.Path(__file__).resolve().parents[2] / "packages" / "application"
+    source = (root / "pcpg_actor_projection.py").read_text()
+    tree = ast.parse(source)
+
+    found = False
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call) and getattr(node.func, "id", None) == "ActorSafeProjection":
+            for kw in node.keywords:
+                if kw.arg == "composed_proof_ceiling":
+                    found = True
+                    assert isinstance(kw.value, ast.Attribute)
+                    assert kw.value.attr == "composed_proof_ceiling"
+                    assert isinstance(kw.value.value, ast.Name)
+                    assert kw.value.value.id == "composed_effect"
+    assert found, "composed_proof_ceiling keyword not found in ActorSafeProjection(...) call"
+
+
+def test_per_delta_session_proof_ceiling_remains_independently_present() -> None:
+    """Required falsifier 8: the per-delta ceiling (already real since
+    `checkpoint-PFC-PCPG-16`, carried through `delta_records`) is wholly
+    independent of the composed/aggregate one -- different values on
+    purpose, both present at once."""
+    per_delta_record = dataclasses.replace(_RECORDS[0], session_proof_ceiling="FIXTURE_NON_PROOF")
+    result = derive_actor_safe_projection(
+        _INGRESS,
+        _OBSERVATION,
+        (per_delta_record,),
+        _CHAIN_RESULT,
+        _CAPABILITY,
+        _composed_effect("GOVERNED"),
+    )
+    assert result.delta_records[0].session_proof_ceiling == "FIXTURE_NON_PROOF"
+    assert result.composed_proof_ceiling == "GOVERNED"
+
+
+def test_changing_only_composed_effect_changes_only_the_projected_ceiling() -> None:
+    """Required falsifier 9."""
+    governed = _project(_composed_effect("GOVERNED"))
+    fixture = _project(_composed_effect("FIXTURE_NON_PROOF"))
+    assert governed.composed_proof_ceiling != fixture.composed_proof_ceiling
+    assert governed.raw_intent == fixture.raw_intent
+    assert governed.raw_intent_digest_sha256 == fixture.raw_intent_digest_sha256
+    assert governed.derivation_time == fixture.derivation_time
+    assert governed.semantic_observation is fixture.semantic_observation
+    assert governed.delta_records == fixture.delta_records
+    assert governed.chain_result is fixture.chain_result
+    assert governed.capability is fixture.capability
+
+
+def test_no_source_provenance_or_provider_output_proof_class_is_invented() -> None:
+    """Required falsifiers 10-11: "no source provenance is added"; "no
+    provider-output proof class is invented." This module cites only the
+    two real `inquiry_queries.proof_mode` values, passed through -- never
+    the richer I-12 vocabulary."""
+    import pathlib
+
+    root = pathlib.Path(__file__).resolve().parents[2] / "packages" / "application"
+    source = (root / "pcpg_actor_projection.py").read_text()
+    for forbidden in (
+        "source_authority",
+        "evidence_status",
+        "AI_VALIDATION_PROOF",
+        "DOMAIN_EVIDENCE",
+        "SYSTEM_PROOF",
+        "MOCK_NON_PROOF",
+        "ProvenanceEnvelope",
+    ):
+        assert forbidden not in source
