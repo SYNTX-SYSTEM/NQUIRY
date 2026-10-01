@@ -77,7 +77,8 @@ const GATES: readonly Gate[] = [
     name: "BEGIN_ANALYSIS is consumed only where the position projection is consumed (WU-CY-01, HD-27)",
     pattern: /BEGIN_ANALYSIS|begin-analysis|TRN_SESS_006/,
     violation: "actions.BEGIN_ANALYSIS.available",
-    consumers: ["app/workspaces/[workspaceId]/sessions/[sessionId]/page.tsx", "lib/field/analysis.ts"],
+    // CYAN-PCPG-02: the placement map copies RED operation-index ids (incl. BEGIN_ANALYSIS) for UI placement only
+    consumers: ["app/workspaces/[workspaceId]/sessions/[sessionId]/page.tsx", "lib/field/analysis.ts", "lib/field/pcpgPresentation.ts"],
   },
   {
     name: "no provider, AI operation or analysis contact is named in the client (the producer decides; never mocked here)",
