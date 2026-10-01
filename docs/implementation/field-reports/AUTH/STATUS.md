@@ -19,8 +19,8 @@ Session control, capability or governance root.
 HEAD `b939037`): live 2456 passed / 2 skipped, no-DB 1020 passed,
 42 migrations single head `c1e3a5b7d9f2`, tree hash unchanged during the
 run; vitest 181; mocked lanes 33 / 66; real stack 8 / 8 (authentication
-persistence scoped). Open Human Authority: HA-AUTH-01, -02, -03, -05
-(HA-AUTH-04 resolved by HD-AUTH-05).
+persistence scoped). Open Human Authority: HA-AUTH-01, -02, -03
+(HA-AUTH-04 / -05 resolved by HD-AUTH-05 / -06).
 
 - Worktree `worktrees/auth-identity`, branch `auth-identity`. Local commits
   only; not pushed, not tagged (HD-AUTH-03).
@@ -39,10 +39,10 @@ persistence scoped). Open Human Authority: HA-AUTH-01, -02, -03, -05
 - **HA-AUTH-04 RESOLVED** by HD-AUTH-05 (2026-10-01): identity disable
   authority = HOST_OPERATOR (HD-28 extended), every declared environment;
   no HTTP route, no self-disable, no derived authority; re-enable separate.
-- **HA-AUTH-05 OPEN** (WU-AUTH-17; = PFC HA-10): switching the deployment /
-  compose runtime to the scoped `auth_runtime` principal
-  (`NQUIRY_AUTH_DATABASE_URL`); the runtime declares `UNSCOPED_BOOTSTRAP`
-  until then. Block in `WU-AUTH-17.md`.
+- **HA-AUTH-05 RESOLVED** by HD-AUTH-06 (2026-10-01): SWITCH AUTH ONLY —
+  local compose configured (`NQUIRY_AUTH_DATABASE_URL` → `auth_runtime`);
+  the live deployment switch is recorded as a procedure for the deployment
+  act and not executed (PFC HA-10).
 - **Proof cadence (HD-AUTH-04, 2026-10-01):** progressive proof radius from
   WU-AUTH-11 on; the WU-AUTH-10 full run is the current broad checkpoint;
   the next full repository regression at a chosen checkpoint or Field closure.

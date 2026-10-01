@@ -123,6 +123,36 @@ declared PRODUCTION with the operator recorded; a second run is
 (§36 #13); HA-AUTH-03 keeps only its default (NEVER) and option (c) — option
 (b) "self-disable" is excluded by this decision's constraints.
 
+## HD-AUTH-06 — HA-AUTH-05 resolved: SWITCH AUTH ONLY (2026-10-01)
+
+**Decision (human operator, Human-Authority closure pass):** the running
+deployment and the local compose stack perform authentication persistence
+under the scoped principal `auth_runtime`; business paths keep their current
+principal (option "SWITCH AUTH ONLY" of the HA-AUTH-05 block). The decision
+sets the target posture; executing it on the live deployment is a separate
+deployment act (PFC HA-10 external effect), not performed by PURPLE.
+
+**Materialization (only what was already present):**
+- local compose: `docker-compose.yml` `api` service gains
+  `NQUIRY_AUTH_DATABASE_URL` (default `auth_runtime` on the compose
+  database; `infra/local/db_roles.sql` once, then migrations). The worker
+  performs no authentication persistence and is unchanged.
+- deployment procedure, recorded for the deployment act (not executed): (1)
+  run `infra/local/db_roles.sql` against the deployment database **with a
+  production credential for `auth_runtime`** in place of the local-dev
+  password (11 §23: the credential source is the deployment's, never the
+  repository's); (2) apply migrations through `c1e3a5b7d9f2`; (3) set
+  `NQUIRY_AUTH_DATABASE_URL` in the API's environment; (4) verify
+  `auth_persistence_scope() == SCOPED` and the live login path; rollback =
+  unset the variable (the runtime falls back to `DATABASE_URL`, declared
+  `UNSCOPED_BOOTSTRAP`).
+- no code change: `connect_auth`, the grants and the declaration exist since
+  WU-AUTH-17.
+
+**Not decided by this:** the HTTP server's business-path principal (the
+wider HA-10 question); re-enable / §36 #13; anything about pushing,
+integrating or deploying the branch.
+
 ## Open boundaries (OPEN, awaiting the operator)
 
 | # | Boundary | Home | What it blocks | Default in force | Status |
@@ -131,7 +161,7 @@ declared PRODUCTION with the operator recorded; a second run is
 | HA-AUTH-02 | **Production recovery policy and proof level** (24 §36 #11; §17.6–17.7). Options: DENIED; VERIFIED_EMAIL_SELF_SERVICE (materialized, DEVELOPMENT / TEST only); VERIFIED_EMAIL_SELF_SERVICE plus a second factor; OPERATOR_MEDIATED (§36 #13; not materialized). Full block: `WU-AUTH-12.md`. | 24 §17, §36 #11 / #13; HD-28 (host-operator provisioning) | Self-service password recovery in PRODUCTION / STAGING | DENIED | OPEN |
 | HA-AUTH-03 | **Unlinking the last authentication method** (24 §36 #12; §14.6). Options: NEVER; ALLOWED WITH RECOVERY AUTHORITY (needs HA-AUTH-02 ≠ DENIED). (ALLOWED AS SELF-DISABLE excluded by HD-AUTH-05.) Full block: `WU-AUTH-13.md`. | 24 §14.6, §36 #12 | Nothing (the default is complete) | NEVER (`409 LAST_METHOD`) | OPEN |
 | HA-AUTH-04 | **Who may disable an identity in PRODUCTION / STAGING** | 24 §18, §36 #13; HD-28 | — | HOST_OPERATOR (HD-AUTH-05) | **RESOLVED** by HD-AUTH-05 (2026-10-01): HOST_OPERATOR; no HTTP route, no self-disable, no derived authority; re-enable separate |
-| HA-AUTH-05 | **Deployment switch to the scoped authentication principal** (24 §21.18; = PFC HA-10). Options: SWITCH AUTH ONLY; SWITCH THE API PROCESS; LOCAL COMPOSE FIRST; STAY UNSCOPED, DECLARED. Full block: `WU-AUTH-17.md`. | 24 §21.18, §25.2; 14 §8; PFC HA-09 / HA-10; deployment f5 | Runtime isolation of the live deployment | STAY UNSCOPED, DECLARED (`auth_persistence_scope() == UNSCOPED_BOOTSTRAP`); mechanism proven in TEST | OPEN |
+| HA-AUTH-05 | **Deployment switch to the scoped authentication principal** (24 §21.18; = PFC HA-10) | 24 §21.18, §25.2; 14 §8; PFC HA-09 / HA-10 | — | SWITCH AUTH ONLY (HD-AUTH-06) | **RESOLVED** by HD-AUTH-06 (2026-10-01): SWITCH AUTH ONLY; compose configured; deployment procedure recorded, not executed |
 
 Touched and left undecided, not blocking any Work Unit: 24 §36 #1 / #6
 (Google as an official, production-enabled method), #9 (provider-verified

@@ -37,6 +37,11 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://nquiry:nquiry_local_dev_only@postgres:5432/nquiry}
+      # AUTH HD-AUTH-06 (HA-AUTH-05 = SWITCH AUTH ONLY): authentication
+      # persistence runs as the scoped principal `auth_runtime` (role:
+      # infra/local/db_roles.sql, run once; grants: migration c1e3a5b7d9f2).
+      # Business paths keep DATABASE_URL. Unset it to run unscoped (declared).
+      NQUIRY_AUTH_DATABASE_URL: ${NQUIRY_AUTH_DATABASE_URL:-postgresql+psycopg://auth_runtime:auth_runtime_local_dev_only@postgres:5432/nquiry}
     ports:
       - "8000:8000"
 
