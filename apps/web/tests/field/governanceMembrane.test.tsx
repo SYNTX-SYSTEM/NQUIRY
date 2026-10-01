@@ -138,9 +138,11 @@ describe("membrane laws in the source (falsifiers 11–14, 17–19)", () => {
     expect(src).not.toMatch(/\.role\b|\brole\s*[!=]==?|viewer\.|isGovernanceRoot|isSessionController|\/auth\/me|authClient|bindingId|binding|membership|actorId|userId|holder|grantor/);
   });
   it("17./18. the Session organism stays the primary UI: the membrane is a child of the object core; no new page, route or dashboard", () => {
-    expect(PAGE_SRC).toMatch(/<ReconstructionNote field=\{effect\.field\} \/>\s*<GovernanceMembrane presentation=\{presentationOf\(NO_OBSERVATION_YET\)\} \/>\s*<\/FieldCore>/);
+    // successor truth (CYAN-PCPG-05): the presence now comes from the observation state machine; the membrane stays
+    // the single object-level consumer inside the core, fed by presentationOf only
+    expect(PAGE_SRC).toMatch(/<ReconstructionNote field=\{effect\.field\} \/>\s*<GovernanceMembrane presentation=\{governance\} \/>\s*<\/FieldCore>/);
     expect(PAGE_SRC.match(/<GovernanceMembrane/g)?.length).toBe(1);
-    expect(PAGE_SRC).toContain('const NO_OBSERVATION_YET: ObservationPresence = { kind: "none" };');
+    expect(PAGE_SRC).toContain("const governance = presentationOf(observationPresence);");
     expect(PAGE_SRC).not.toMatch(/submitPromptObservation|parsePromptObservation|pcpgClient/);
   });
   it("19. attachment targets remain unrendered: no component or page imports the attachment relation", () => {

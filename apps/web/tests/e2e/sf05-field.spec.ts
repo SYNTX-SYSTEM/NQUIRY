@@ -155,7 +155,8 @@ test.describe("Semantic chambers (doc 26 §16–§26, §42)", () => {
     await page.goto(sessionUrl);
     await page.getByTestId("context-organ").waitFor();
     const classes = await page.locator(".organ .plane").evaluateAll((els) => els.map((e) => e.getAttribute("data-semantic")));
-    expect(classes).toEqual(["question", "authority", "participation", "proof", "decision-entry"]);
+    // successor truth (CYAN-PCPG-05): the intent chamber (`context`) sits between the proof chamber and the decision entry
+    expect(classes).toEqual(["question", "authority", "participation", "proof", "context", "decision-entry"]);
     const tones = await page.locator(".organ .plane").evaluateAll((els) => els.map((e) => getComputedStyle(e).getPropertyValue("--chamber-tone").trim()));
     expect(new Set(tones).size).toBeGreaterThanOrEqual(4);
     await expect(page.locator('.plane[data-semantic="question"] .chamber-marker')).toHaveText("HUMAN_ONLY");

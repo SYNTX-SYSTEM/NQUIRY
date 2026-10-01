@@ -6369,3 +6369,22 @@ h3.chamber-title {
 .governance-membrane[data-prominence="explicit"] {
   border-color: color-mix(in srgb, var(--ai) 60%, transparent);
 }
+
+/* ===== CYAN-PCPG-05: the intent chamber ("Your intent · observed, never sent") takes its own row in the Session organ
+   before the derived field; the rows below shift by one. No other placement or law changes. */
+@container (min-width: 640px) {
+  .field-stage[data-surface="session"] .organ-body > .plane[data-semantic="context"] {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+  .field-stage[data-surface="session"] .organ-body > .plane[data-semantic="derived"] {
+    grid-row: 4;
+  }
+  .field-stage[data-surface="session"] .organ-body > .plane[data-semantic="decision-entry"] {
+    grid-row: 5;
+  }
+}
+.intent-form textarea {
+  width: 100%;
+  resize: vertical;
+}

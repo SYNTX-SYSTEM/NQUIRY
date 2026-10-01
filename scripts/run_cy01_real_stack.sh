@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # WU-CY-01 ISOLATED real-stack lane against the PINNED RED producer (HD-27 / HA-03 Option B), host entry point.
 #
-# 1. Verifies that the local tag `checkpoint-PFC-B5` is the signed tag whose target is EXACTLY the pinned commit
+# 1. Verifies that the local tag named in PIN_TAG is the signed tag whose target is EXACTLY the pinned commit
 #    (the tuple recorded in docs/implementation/field-reports/CY-01/). A different target stops the lane: a moving
 #    branch never becomes an implicit producer.
 # 2. Exports that commit's backend with `git archive` (no checkout, no worktree, nothing of this tree) and writes
@@ -12,10 +12,14 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PROJECT="nquiry-cy01"
-PIN_TAG="checkpoint-PFC-B5"
-PIN_COMMIT="7d3f74e4685b821cc948f45e413c1e0c207259d4"
-PIN_TAG_OBJECT="fd3d5600132e4dcb9203702d500daccf4c6d0439"
-PIN_TREE="bc77cc8bb6414e6104aabdd5bd2fb1874f63f750"
+# PIN HISTORY (HD-27: a change of the pin needs a new explicit reconstruction and authorization):
+#   2026-09-27 .. 2026-10-01  checkpoint-PFC-B5      7d3f74e4685b821cc948f45e413c1e0c207259d4  tag fd3d5600132e4dcb9203702d500daccf4c6d0439  tree bc77cc8bb6414e6104aabdd5bd2fb1874f63f750
+#   2026-10-01 (CYAN-PCPG-05, local/test lanes only; production stays B5+AC1.1):
+#                             checkpoint-PFC-PCPG-18  41b4324a75077ec33b00ed3a878db7a318fc00d8  tag 0e12895fc64299abde1eb5115303f962b1c227af  tree 0631c936f99c9356f6082f05b460815a09632c7b
+PIN_TAG="checkpoint-PFC-PCPG-18"
+PIN_COMMIT="41b4324a75077ec33b00ed3a878db7a318fc00d8"
+PIN_TAG_OBJECT="0e12895fc64299abde1eb5115303f962b1c227af"
+PIN_TREE="0631c936f99c9356f6082f05b460815a09632c7b"
 PIN_MIGRATION_HEAD="e8c2a5f1b7d4"
 
 cd "$ROOT"
@@ -27,7 +31,7 @@ if [ "$tag_object" != "$PIN_TAG_OBJECT" ] || [ "$commit" != "$PIN_COMMIT" ] || [
   exit 3
 fi
 git verify-tag "$PIN_TAG" >/dev/null 2>&1 || { echo "CY01_GUARD: $PIN_TAG signature not verified" >&2; exit 3; }
-if [ "$(git ls-tree --name-only "$commit" -- "migrations/versions/${PIN_MIGRATION_HEAD}_pfc_b4_impact_chains.py")" = "" ]; then
+if [ "$(git ls-tree --name-only "$commit" -- migrations/versions/ | grep -c "/${PIN_MIGRATION_HEAD}_")" = "0" ]; then
   echo "CY01_GUARD: migration head $PIN_MIGRATION_HEAD not in the pinned tree" >&2
   exit 3
 fi

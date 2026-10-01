@@ -56,9 +56,12 @@ import {
 } from "../../../../../lib/api/inquiryClient";
 import type { FieldEventDescription } from "../../../../../lib/field/fieldEvent";
 import { GovernanceMembrane } from "../../../../../components/field/GovernanceMembrane";
+import { IntentObservationChamber } from "../../../../../components/field/IntentObservationChamber";
 import { OriginMark } from "../../../../../components/field/Origin";
 import { analysisFacts, proofModeOf } from "../../../../../lib/field/analysis";
-import { presentationOf, type ObservationPresence } from "../../../../../lib/field/pcpgPresentation";
+import { presenceFor } from "../../../../../lib/field/observation";
+import { presentationOf } from "../../../../../lib/field/pcpgPresentation";
+import { useObservation } from "../../../../../lib/field/useObservation";
 import { humanPosition } from "../../../../../lib/field/humanPosition";
 import { accessTrace, sessionTrace } from "../../../../../lib/field/position";
 import { lifecycleEmphasis } from "../../../../../lib/field/topology";
@@ -104,12 +107,8 @@ const GRANT_RELATION = "governance:grant-session-control";
 
 const AT = new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" });
 
-/**
- * CYAN-PCPG-04: there is no standing governance observation for a Session (Architecture 27 v4 §01, §04.1); an
- * observation exists only after the actor submits a raw intent through the prompt-observation query. No producer of
- * that submission exists on this surface yet, so the object's presence is honestly "none" — never an empty result.
- */
-const NO_OBSERVATION_YET: ObservationPresence = { kind: "none" };
+// CYAN-PCPG-04/05: there is no standing governance observation for a Session (Architecture 27 v4 §01, §04.1). The
+// presence starts as "none" and becomes an observation only when the actor observes a raw intent (intent chamber).
 
 /** Doc 26 §27: the confirmed effect of each lifecycle step, in human-readable words (scope: this Session). */
 const STEP_EVENTS: Readonly<Record<StepAction, FieldEventDescription>> = {
@@ -141,6 +140,7 @@ export default function SessionPage() {
   const [participant, setParticipant] = useState("");
   const [grantee, setGrantee] = useState("");
   const effect = useEffectField();
+  const observation = useObservation(workspaceId, sessionId);
   // descriptions captured at request time (the names the human chose), read only after the confirmed re-read
   const pendingEvents = useRef<Record<string, FieldEventDescription>>({});
 
@@ -237,6 +237,10 @@ export default function SessionPage() {
   const relevantSteps = STEPS.filter((s) => p.actions[s.action]?.relevant === true);
   const proofMode = proofModeOf(p.session);
   const derived = analysisFacts(p.analysis);
+  // supersession is derived from the canonical versions the page holds now versus those remembered at observation time
+  const objectVersions = { session: p.session.version, burst: p.burst?.version ?? null };
+  const observationPresence = presenceFor(observation.state, objectVersions);
+  const governance = presentationOf(observationPresence);
   const describeEvent = (relation: string): FieldEventDescription | null => {
     if (relation.startsWith(STEP_RELATION)) return STEP_EVENTS[relation.slice(STEP_RELATION.length) as StepAction] ?? null;
     if (relation.startsWith("session:capture:")) return { title: "QUESTION CAPTURED", text: "Your question is stored exactly as you typed it. Only you can see it while the Burst is open." };
@@ -352,7 +356,7 @@ export default function SessionPage() {
             }
           >
             <ReconstructionNote field={effect.field} />
-            <GovernanceMembrane presentation={presentationOf(NO_OBSERVATION_YET)} />
+            <GovernanceMembrane presentation={governance} />
           </FieldCore>
           <Orbit kind="lifecycle" ring={1} heading="Lifecycle" nodes={lifecycleNodes} testId="session-phases" listAriaLabel="Session phases" />
           <Orbit kind="participation" ring={2} heading="Participation and control" nodes={relationNodes} testId="session-relations" listAriaLabel="Participants and Session control" />
@@ -579,6 +583,8 @@ export default function SessionPage() {
               />
             </ProofDepth>
           </Plane>
+
+          <IntentObservationChamber state={observation.state} presence={observationPresence} onObserve={(rawIntent, declaredPurpose) => void observation.observe(rawIntent, declaredPurpose, objectVersions)} />
 
           {derived ? (
             <Plane kind="context" semantic="derived" labelledBy="analysis-title" testId="analysis-chamber" tone={derived.tone}>
