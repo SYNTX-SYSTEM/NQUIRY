@@ -288,3 +288,137 @@ creation by a Workspace governance root.
 - HARD-DEP-001 (legitimate first Workspace governance root) and every
   membership, role, binding or participation relation: unchanged, product-only.
 - Runtime DB-principal isolation (HA-09 / WU-AUTH-17): unchanged.
+
+---
+
+## HD-29 — HA-PCPG-1 user-authored instruction as provider computation: conditional admission, governed-source-material contract (2026-10-01)
+
+**Question (HA-PCPG-1; `docs/architecture/26_PRE_CALL_PROMPT_GOVERNANCE_SFE/00_FIELD.md`
+§13):** "May a user-authored instruction ever become the instruction of a
+provider computation? If so, as which operation class, and with which
+contract and authority? This defines what SEND is." Fail-closed default until
+decided: `GOVERNANCE_ADMISSIBLE = false` with reason
+`OPERATION_CLASS_NOT_ADMITTED`.
+
+**Decision (human operator, verbatim):**
+
+> YES, conditionally.
+>
+> A user-authored instruction may become input to a provider computation,
+> but it must never become provider authority merely because the user authored it.
+>
+> Admit the operation class:
+>
+> PROVIDER_COMPUTATION
+>
+> under the following contract:
+>
+> USER_AUTHORED_INSTRUCTION
+> → governed source material
+>
+> not:
+>
+> USER_AUTHORED_INSTRUCTION
+> → direct provider command
+>
+> The provider computation may become eligible only after the current field has reconstructed and derived, at minimum:
+>
+> - current Field;
+> - Pulse;
+> - Actor;
+> - Authority;
+> - Purpose;
+> - Source;
+> - Data Governance;
+> - candidate deltas / operations;
+> - per-delta governance;
+> - composition result;
+> - provider eligibility;
+> - provider-safe projection.
+>
+> Authority rule:
+>
+> USER REQUEST
+> !=
+> AUTHORIZATION
+>
+> PROMPT
+> != AUTHORITY
+>
+> The authority to permit a provider computation is derived from the governed field and its current authority relations.
+>
+> The user-authored content itself grants no authority.
+>
+> There must be no direct:
+>
+> USER INPUT
+> → PROVIDER
+>
+> path.
+>
+> The legitimate conceptual path is:
+>
+> USER INTENT
+> → PCPG OBSERVATION
+> → FIELD RECONSTRUCTION
+> → SIMPLIX
+> → DELTA / OPERATION MAPPING
+> → GOVERNANCE EVALUATION
+> → COMPOSITION
+> → PROVIDER ELIGIBILITY
+> → PROVIDER-SAFE PROJECTION
+> → FUTURE SEND GATE
+>
+> R-13 remains NOT STARTED.
+>
+> This decision only resolves HA-PCPG-1 sufficiently for the current field to derive the next First Broken Relation.
+>
+> After recording this Human Authority decision:
+>
+> 1. reconstruct the field;
+> 2. determine whether GAP-11-006 / FBR-PCPG-3 now becomes the active blocker;
+> 3. do not begin R-13;
+> 4. do not materialize SEND;
+> 5. do not bind a provider;
+> 6. derive the next legitimate Work Unit from the reconstructed field.
+>
+> Stop if a new Human Authority boundary appears.
+
+**Ledger:** NQ-DEC-057 (PFC-local sequence, assigned inside the `pfc-integration`
+worktree; not yet cross-checked against `16_DECISION_GAP_REGISTER.md` §41, which
+this worktree does not modify — see the reconciliation note below). Queue:
+HA-PCPG-1.
+
+**Reconciliation note (disclosed limitation, not silently glossed over):**
+this worktree is one of several concurrent, isolated BLUE lanes on this
+machine (see `docs/implementation/field-reports/PFC/HUMAN_AUTHORITY_QUEUE.md`'s
+own header). `HD-29`/`NQ-DEC-057` is the next free pair as of this worktree's
+own copy of `16_DECISION_GAP_REGISTER.md` (last entry: `NQ-DEC-056`/`HD-28`),
+but this worktree does not merge with or read live state from any other
+concurrent worktree. Whoever reconciles `pfc-integration` back to a shared
+branch must confirm `HD-29`/`NQ-DEC-057` have not been independently assigned
+to a different decision by a concurrent session, and must add the
+corresponding entry to `16_DECISION_GAP_REGISTER.md` §41 at that time (this
+Work Unit's own report, `WU-PFC-PCPG-13.md`, is not a registry entry).
+
+**What it does not decide:**
+- R-13 (future SEND gate): not started, not designed here.
+- Which exact provider, route, environment or AIOP contract number a future
+  `PROVIDER_COMPUTATION` delta resolves to: unchanged, still governed by
+  HD-21's own existing AIOP-001/002 scope and FBR-PCPG-5 (provider route
+  eligibility, HARD-DEP-002 / GAP-08-002/008, independently OPEN).
+- GAP-11-006 (data class of prompt content): not resolved by this decision;
+  already governed by HA-PCPG-4's own standing fail-closed default
+  ("deterministic, rule-based candidates ... no override"), which this
+  decision does not change or override.
+- Source status / proof-ceiling provenance (01_INVARIANTS.md I-12): this
+  decision names "Source" as a prerequisite but does not itself define a
+  producer, a GAP number, or an owning HA-PCPG-* row for it — see
+  `WU-PFC-PCPG-13.md` for the audit finding that no such row currently exists
+  in the RED text.
+- HA-PCPG-2 through HA-PCPG-6: each remains independently OPEN, unchanged by
+  this decision (HA-PCPG-6 in particular still gates any future partial-SEND
+  acknowledgement question, separately from this one).
+- Binding any real provider, invoking any provider SDK, or any network
+  egress: none of this decision's own text authorizes that; R-13 remains the
+  boundary for it.
