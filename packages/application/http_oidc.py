@@ -71,6 +71,30 @@ BINDING_COOKIE_NAME = "nquiry_oidc_binding"
 BINDING_COOKIE_PATH = "/auth"
 LOGIN_PROJECTION_BASE = "/login?auth="
 ACCOUNT_SECURITY_DESTINATION = "/account/security"
+
+# WU-AUTH-15 (24 §11.19, §21.14): the protocol contacts of this API. They are
+# GET routes because the protocol delivers them by browser navigation (the
+# start by the login page's link, the callbacks by the provider's redirect);
+# they are NOT ordinary application resources. Their effects are declared
+# here as the only tables they may write, and proven as such
+# (`tests/e2e/test_auth_wu15_protocol_callback.py`): every other GET route of
+# the API writes nothing.
+PROTOCOL_CONTACTS: tuple[str, ...] = (
+    "/auth/oidc/{provider}/start",  # protocol initiation: the transaction
+    "/auth/oidc/{provider}/callback",  # protocol response: proof gates → effects
+    "/auth/oidc/{provider}/link/callback",
+)
+PROTOCOL_START_WRITE_SET: frozenset[str] = frozenset({"oidc_auth_transactions"})
+PROTOCOL_CALLBACK_WRITE_SET: frozenset[str] = frozenset(
+    {
+        "oidc_auth_transactions",  # claim, terminal state
+        "local_auth_sessions",  # the fresh session (24 §11.18), rotation after a link
+        "users",  # account creation under the policy (24 §11.14)
+        "authentication_methods",  # the created / linked method
+        "external_provider_identities",  # the binding
+        "security_events",  # the audit facts
+    }
+)
 _PROVIDER_UNAVAILABLE_ERRORS = frozenset({"temporarily_unavailable", "server_error"})
 # Refusals of the account creation boundary: "signing in with this provider is
 # not available for this account" (24 §24.6), as opposed to a failed proof.
@@ -513,6 +537,9 @@ def dispatch_oidc_link_callback(
 
 
 __all__ = [
+    "PROTOCOL_CALLBACK_WRITE_SET",
+    "PROTOCOL_CONTACTS",
+    "PROTOCOL_START_WRITE_SET",
     "ACCOUNT_SECURITY_DESTINATION",
     "BINDING_COOKIE_NAME",
     "BINDING_COOKIE_PATH",

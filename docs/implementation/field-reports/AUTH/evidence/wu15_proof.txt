@@ -1,0 +1,7 @@
+465 files already formatted
+All checks passed!
+Success: no issues found in 259 source files
+ARCHITECTURE_DEPENDENCY_CHECK::PASS
+TEST_ONLY_IMPORT_CHECK::PASS
+.................................................                        [100%]
+337 passed in 466.57s (0:07:46)
