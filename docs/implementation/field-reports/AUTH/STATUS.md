@@ -86,15 +86,15 @@ preceded them, so the counts are those of the pin.
 | WU-AUTH-12 Recovery | PROVEN at the affected radius; HA-AUTH-02 OPEN (production policy), DENIED in force | `f171484` |
 | WU-AUTH-13 Revocation Expansion | PROVEN at the affected radius; HA-AUTH-03 (last method) and HA-AUTH-04 (disable authority) OPEN, defaults in force | `171a6e7` |
 | WU-AUTH-14 Anti-CSRF Boundary | PROVEN at an escalated radius (security + semantic + regression + all of tests/e2e: 1388 / 2) incl. the real browser/API contract (AUTH real lane) | `26a134c` |
-| WU-AUTH-15 Protocol Callback Semantics | PROVEN (declared contacts + write sets, measured over every table) | this commit |
+| WU-AUTH-15 Protocol Callback Semantics | PROVEN (declared contacts + write sets, measured over every table) | `5fe3cd6` |
+| WU-AUTH-16 Authorization Regression | PROVEN (6 identity kinds × the full protected route table; no code delta) | this commit |
 | WU-AUTH-13..17 | not started | — |
 
 ### Current First Broken Relation
 
-Authorization regression: the authorization chain (membership, role,
-binding, participation, governance root) is not yet re-proven as one unit
-against every new identity kind and contact of this Field (owner
-WU-AUTH-16; 24 §20).
+Runtime DB principal capability boundary: the authentication relations are
+written by a runtime principal whose capability set is not scoped to them
+(owner WU-AUTH-17; 24 §21.18; FBR-AUTH-006; reaches PFC HA-09).
 
 ### Migrations
 
