@@ -15,14 +15,14 @@ blocked by the identity's state (login, provider login, session resolution,
 recovery and the session INSERT itself all check it). The identity row is not
 deleted (24 §18.3 "Deletion is not revocation").
 
-WHO MAY DISABLE: not decided. 24 §36 names administrative recovery (#13) and
-HD-28 / NQ-DEC-056 made the host operator the production identity *creator*
-only ("any change to an existing identity" is outside that command). The
-mechanism therefore exists with the HD-28 shape (an explicitly named host
-operator through a server-side command, never an HTTP route) and is admitted
-in DEVELOPMENT / TEST only; PRODUCTION / STAGING refuse with
-ACCOUNT_DISABLE_EXPOSURE_UNDECIDED until HA-AUTH-04 is decided (24 §17.6
-"Default unresolved behavior: fail closed").
+WHO MAY DISABLE: the HOST OPERATOR (HD-AUTH-05, resolving HA-AUTH-04,
+2026-10-01): HD-28's host-operator authority is extended to this one
+command, in every declared environment. Constraints of that decision, all
+structural here: no public HTTP disable route; no self-disable; no role-,
+membership-, email- or session-derived disable authority; the operator is
+named, attributable and recorded in the SecurityEvent and the provenance;
+disable is audited and one-way; nothing broader than identity disable is
+granted. The environment must still be declared (AC-11-017).
 
 Re-enabling a disabled identity is administrative recovery (24 §36 #13) and
 is not materialized.
@@ -54,8 +54,7 @@ from application.identity_provisioning import (
 )
 
 EVENT_TYPE = "ACCOUNT_DISABLED"
-AUTHORITY = "HA-AUTH-04 undecided; DEVELOPMENT / TEST host-operator mechanism"
-_ADMITTED = frozenset({Environment.DEVELOPMENT, Environment.TEST})
+AUTHORITY = "HD-AUTH-05 HOST_OPERATOR (HD-28 extended to identity disable)"
 
 
 class AccountDisableRefused(Exception):
@@ -86,8 +85,6 @@ def disable_identity_by_host_operator(
     environment: Environment,
     now: datetime,
 ) -> DisabledIdentity:
-    if environment not in _ADMITTED:
-        raise AccountDisableRefused("ACCOUNT_DISABLE_EXPOSURE_UNDECIDED")
     operator_id = operator.operator_id.strip()
     if not operator_id:
         raise AccountDisableRefused("OPERATOR_REQUIRED")

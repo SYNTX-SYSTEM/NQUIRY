@@ -90,14 +90,47 @@ follow the relations a delta affects, not the fact that a defect was found.
 **Recorded:** here, `STATUS.md` (cadence line), and the WU reports from
 WU-AUTH-11 on (a "PROOF_RADIUS" line replaces the per-WU full regression block).
 
+## HD-AUTH-05 — HA-AUTH-04 resolved: identity disable authority = HOST_OPERATOR (2026-10-01)
+
+**Decision (human operator, Human-Authority closure pass, verbatim intent):**
+In PRODUCTION / STAGING, identity disable authority belongs to the
+HOST_OPERATOR: HD-28's host-operator authority is extended to the already
+materialized server-side identity-disable command. Constraints:
+
+- no public HTTP disable route;
+- no self-disable authority;
+- no role-, membership-, email- or session-derived disable authority;
+- operator identity must be attributable and recorded;
+- disable remains audited and provenance-bearing;
+- disabling remains one-way in the currently materialized field;
+- re-enable is NOT granted by this decision and remains a separate Human
+  Authority boundary (24 §36 #13);
+- this decision grants only identity-disable authority, not broader account
+  administration authority.
+
+**Materialization (only what was already present):** the environment gate
+that encoded "undecided" (`ACCOUNT_DISABLE_EXPOSURE_UNDECIDED` for
+PRODUCTION / STAGING) is removed from `application.account_disable`; every
+constraint above is structural and unchanged (no route — proven by
+`test_no_http_route_disables_identities`; operator in `actor_id`,
+`disabled_provenance` and the SecurityEvent; one-way trigger; no re-enable
+path exists). `NQUIRY_ENVIRONMENT` must still be declared. Proof:
+`tests/e2e/test_auth_wu13_revocation.py` (the command disables under a
+declared PRODUCTION with the operator recorded; a second run is
+`ALREADY_DISABLED`), WU-16 / WU-17 / HD-28 suites: 81 passed.
+
+**Still OPEN after this decision:** re-enable / administrative recovery
+(§36 #13); HA-AUTH-03 keeps only its default (NEVER) and option (c) — option
+(b) "self-disable" is excluded by this decision's constraints.
+
 ## Open boundaries (OPEN, awaiting the operator)
 
 | # | Boundary | Home | What it blocks | Default in force | Status |
 |---|---|---|---|---|---|
 | HA-AUTH-01 | **Production account creation policy for an unknown, verified external-provider subject** (24 §36 #3–#5). Options: DENIED; SELF_REGISTRATION_ALLOWED; INVITATION_REQUIRED; PRE_PROVISIONED_IDENTITY_REQUIRED; GOVERNANCE_MEDIATED_CREATION (the last three need relations that do not exist). Full block: `WU-AUTH-09.md`. | 24 §11.14, §36; HD-28 (external-provider policy left fail-closed) | First-time provider login of a brand-new identity in PRODUCTION / STAGING | DENIED | OPEN |
 | HA-AUTH-02 | **Production recovery policy and proof level** (24 §36 #11; §17.6–17.7). Options: DENIED; VERIFIED_EMAIL_SELF_SERVICE (materialized, DEVELOPMENT / TEST only); VERIFIED_EMAIL_SELF_SERVICE plus a second factor; OPERATOR_MEDIATED (§36 #13; not materialized). Full block: `WU-AUTH-12.md`. | 24 §17, §36 #11 / #13; HD-28 (host-operator provisioning) | Self-service password recovery in PRODUCTION / STAGING | DENIED | OPEN |
-| HA-AUTH-03 | **Unlinking the last authentication method** (24 §36 #12; §14.6). Options: NEVER; ALLOWED AS SELF-DISABLE (needs HA-AUTH-04); ALLOWED WITH RECOVERY AUTHORITY (needs HA-AUTH-02 ≠ DENIED). Full block: `WU-AUTH-13.md`. | 24 §14.6, §36 #12 | Nothing (the default is complete) | NEVER (`409 LAST_METHOD`) | OPEN |
-| HA-AUTH-04 | **Who may disable an identity in PRODUCTION / STAGING** (24 §18.1; §36 #13 adjacent; HD-28 scope). Options: HOST_OPERATOR; HOST_OPERATOR + SELF; GOVERNANCE_MEDIATED; NONE YET. Full block: `WU-AUTH-13.md`. | 24 §18, §36 #13; HD-28 / NQ-DEC-056 | Production account disable; re-enable | NONE YET in PRODUCTION / STAGING (`ACCOUNT_DISABLE_EXPOSURE_UNDECIDED`); host-operator command in DEVELOPMENT / TEST | OPEN |
+| HA-AUTH-03 | **Unlinking the last authentication method** (24 §36 #12; §14.6). Options: NEVER; ALLOWED WITH RECOVERY AUTHORITY (needs HA-AUTH-02 ≠ DENIED). (ALLOWED AS SELF-DISABLE excluded by HD-AUTH-05.) Full block: `WU-AUTH-13.md`. | 24 §14.6, §36 #12 | Nothing (the default is complete) | NEVER (`409 LAST_METHOD`) | OPEN |
+| HA-AUTH-04 | **Who may disable an identity in PRODUCTION / STAGING** | 24 §18, §36 #13; HD-28 | — | HOST_OPERATOR (HD-AUTH-05) | **RESOLVED** by HD-AUTH-05 (2026-10-01): HOST_OPERATOR; no HTTP route, no self-disable, no derived authority; re-enable separate |
 | HA-AUTH-05 | **Deployment switch to the scoped authentication principal** (24 §21.18; = PFC HA-10). Options: SWITCH AUTH ONLY; SWITCH THE API PROCESS; LOCAL COMPOSE FIRST; STAY UNSCOPED, DECLARED. Full block: `WU-AUTH-17.md`. | 24 §21.18, §25.2; 14 §8; PFC HA-09 / HA-10; deployment f5 | Runtime isolation of the live deployment | STAY UNSCOPED, DECLARED (`auth_persistence_scope() == UNSCOPED_BOOTSTRAP`); mechanism proven in TEST | OPEN |
 
 Touched and left undecided, not blocking any Work Unit: 24 §36 #1 / #6

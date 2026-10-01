@@ -12,8 +12,9 @@ WU-AUTH-01..17). Materialized autonomously under the PURPLE brief
 
 **FIELD_GREEN — READY_FOR_HUMAN_REVIEW.** Seventeen Work Units proven and
 locally committed (never pushed, never tagged; HD-AUTH-03). Five Human
-Authority boundaries recorded OPEN with their fail-closed defaults in force
-(HA-AUTH-01..05). The real Google provider proof is BLOCKED_EXTERNAL.
+Authority boundaries were recorded; HA-AUTH-04 is resolved (HD-AUTH-05,
+HOST_OPERATOR); HA-AUTH-01, -02, -03, -05 remain OPEN with their fail-closed
+defaults in force. The real Google provider proof is BLOCKED_EXTERNAL.
 
 ## Review bundle (24 §46)
 
@@ -53,13 +54,14 @@ Authority boundaries recorded OPEN with their fail-closed defaults in force
 | Authorization regression proof | WU-16 (6 identity kinds × the full F09-2 protected route table; membership path; founding parity; disabled identity) |
 | Session fixation proof | WU-04 (fresh session per login, rotation keeps issued_at / expires_at), WU-14 (second login = new token), WU-16 |
 | Secret redaction statement | No secret in the repository: Google credentials absent; local roles use the `*_local_dev_only` convention of the existing `db_roles.sql`; tokens, verifiers and hashes never appear in responses, logs, SecurityEvents or report prose (checked per unit); report prose carries no attack-payload lists (classifier constraint since WU-05/06, disclosed) |
-| Unresolved human authority boundaries | HA-AUTH-01 production account creation policy (DENIED); HA-AUTH-02 production recovery policy (DENIED); HA-AUTH-03 last-method unlink (NEVER); HA-AUTH-04 who may disable in production (NONE YET; DEV / TEST operator command); HA-AUTH-05 deployment switch to `auth_runtime` (= PFC HA-10; UNSCOPED_BOOTSTRAP declared). Touched, undecided, non-blocking: 24 §36 #1 / #6, #9, #10, #13, #15, #16, #18. Blocks: `WU-AUTH-09/12/13/17.md`; queue: `HUMAN_DECISIONS.md` |
+| Unresolved human authority boundaries | HA-AUTH-01 production account creation policy (DENIED); HA-AUTH-02 production recovery policy (DENIED); HA-AUTH-03 last-method unlink (NEVER); HA-AUTH-04 **resolved** by HD-AUTH-05 (HOST_OPERATOR, 2026-10-01); HA-AUTH-05 deployment switch to `auth_runtime` (= PFC HA-10; UNSCOPED_BOOTSTRAP declared). Touched, undecided, non-blocking: 24 §36 #1 / #6, #9, #10, #13, #15, #16, #18. Blocks: `WU-AUTH-09/12/13/17.md`; queue: `HUMAN_DECISIONS.md` |
 
 ## Human decisions used
 
 HD-AUTH-01 (Field authorization), HD-AUTH-02 (base pin `checkpoint-PFC-AC1.1`),
 HD-AUTH-03 (local per-unit commits, no push, no tags), HD-AUTH-04
-(progressive proof radius from WU-11; full regression at closure). Consumed
+(progressive proof radius from WU-11; full regression at closure), HD-AUTH-05
+(HA-AUTH-04 → HOST_OPERATOR, after FIELD_GREEN). Consumed
 from predecessors: HD-28 / NQ-DEC-056, F02 HD-3, F02 HD-6. 16 §41 ledger
 reconciliation deferred to integration (disclosed in `HUMAN_DECISIONS.md`).
 

@@ -10,8 +10,9 @@ method; a terminal OIDC transaction never re-enters callback processing.
 MUST REMAIN IMPOSSIBLE: unlinking the last ACTIVE method (24 §14.6, §36 #12
 default); a revoked method continuing to log in; a disabled identity
 authenticating, recovering or holding a session; a terminal transaction
-reaching the token endpoint or returning to PENDING; account disable exposed
-in a production-like runtime before its authority is decided (HA-AUTH-04).
+reaching the token endpoint or returning to PENDING; account disable by
+anyone but the named host operator (HD-AUTH-05 resolving HA-AUTH-04: no HTTP
+route, no self-disable, no role / membership / email / session authority).
 """
 
 from __future__ import annotations
@@ -584,14 +585,6 @@ def test_disable_refusals_write_nothing(db_connection: sa.Connection) -> None:
             {"email": email, "operator": HostOperator(operator_id=" ", os_user="x", host="h")},
             "OPERATOR_REQUIRED",
         ),
-        (
-            {"email": email, "environment": Environment.PRODUCTION},
-            "ACCOUNT_DISABLE_EXPOSURE_UNDECIDED",
-        ),
-        (
-            {"email": email, "environment": Environment.STAGING},
-            "ACCOUNT_DISABLE_EXPOSURE_UNDECIDED",
-        ),
     ]
     for kwargs, code in cases:
         with pytest.raises(AccountDisableRefused) as refused, db_connection.begin_nested():
@@ -630,13 +623,21 @@ def test_the_operator_command_disables_under_a_declared_environment_only(
 
     code, out, err = run({})
     assert code == 3 and "ENVIRONMENT_NOT_DECLARED" in err and out == ""
-    code, out, err = run({"NQUIRY_ENVIRONMENT": "PRODUCTION"})
-    assert code == 3 and "ACCOUNT_DISABLE_EXPOSURE_UNDECIDED" in err
+    code, out, err = run({"NQUIRY_ENVIRONMENT": "nowhere"})
+    assert code == 3 and "ENVIRONMENT_UNKNOWN" in err
     assert _user_row(db_connection, user_id)["disabled_at"] is None
-    code, out, err = run({"NQUIRY_ENVIRONMENT": "TEST"})
+    # HD-AUTH-05 (HA-AUTH-04 resolved): the host operator disables in every
+    # declared environment, PRODUCTION included; the operator is recorded.
+    code, out, err = run({"NQUIRY_ENVIRONMENT": "PRODUCTION"})
     assert code == 0 and err == ""
-    assert f'"userId": "{user_id.value}"' in out and '"environment": "TEST"' in out
-    assert _user_row(db_connection, user_id)["disabled_at"] is not None
+    assert f'"userId": "{user_id.value}"' in out and '"environment": "PRODUCTION"' in out
+    assert '"disabledBy": "otti@condyn.eu"' in out
+    row = _user_row(db_connection, user_id)
+    assert row["disabled_at"] is not None and "otti@condyn.eu" in row["disabled_provenance"]
+    event = [e for e in _events(db_connection, user_id) if e["event_type"] == "ACCOUNT_DISABLED"]
+    assert event[0]["actor_type"] == "HOST_OPERATOR" and event[0]["environment"] == "PRODUCTION"
+    code, out, err = run({"NQUIRY_ENVIRONMENT": "PRODUCTION"})
+    assert code == 3 and "ALREADY_DISABLED" in err  # one-way, re-enable not granted
     assert run_host_operator_disable  # the module-level entry exists for the command
 
 

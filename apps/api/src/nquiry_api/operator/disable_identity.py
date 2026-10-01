@@ -8,10 +8,11 @@ session of it is revoked (ACCOUNT_DISABLED), every open recovery challenge is
 revoked, and one SecurityEvent ACCOUNT_DISABLED is recorded. Authentication
 methods are blocked by the identity's state, not rewritten; nothing is deleted.
 
-The command requires `NQUIRY_ENVIRONMENT` to be declared and is admitted in
-DEVELOPMENT and TEST only: who may disable a production identity is undecided
-(HA-AUTH-04), so PRODUCTION and STAGING refuse with
-ACCOUNT_DISABLE_EXPOSURE_UNDECIDED and write nothing.
+The command requires `NQUIRY_ENVIRONMENT` to be declared and records it.
+Authority: the host operator (HD-AUTH-05, resolving HA-AUTH-04; HD-28's
+operator authority extended to identity disable). Nothing else may disable:
+no HTTP route, no self-disable, no role / membership / email / session
+derived authority. Re-enable is not granted (24 §36 #13, separate boundary).
 
 Prints one JSON line on success. Exit codes: 0 disabled; 3 refused (reason
 code on stderr); 2 usage error. No HTTP route performs this.
@@ -53,7 +54,7 @@ def main(
     environ = environ if environ is not None else os.environ
     parser = argparse.ArgumentParser(
         prog="python -m nquiry_api.operator.disable_identity",
-        description="Host-operator account disable (WU-AUTH-13; DEVELOPMENT / TEST only).",
+        description="Host-operator account disable (WU-AUTH-13; HD-AUTH-05).",
     )
     parser.add_argument("--email", required=True)
     parser.add_argument("--operator", default="", help="the host operator, e.g. otti@condyn.eu")
