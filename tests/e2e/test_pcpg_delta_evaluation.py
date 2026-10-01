@@ -86,6 +86,7 @@ THE RESULT-MAPPING ALGORITHM, EACH BRANCH CITED
 from __future__ import annotations
 
 import ast
+import dataclasses
 import pathlib
 from datetime import datetime, timezone
 
@@ -93,6 +94,7 @@ import f03_support as f03
 import pytest
 import sqlalchemy as sa
 from application.pcpg_candidate_deltas import CandidateDelta, form_candidate_deltas
+from application.pcpg_data_classification import DataClass, DataClassification
 from application.pcpg_delta_evaluation import Result, evaluate_deltas
 from application.pcpg_field_pulse import derive_pulse
 from application.pcpg_field_snapshot import (
@@ -182,19 +184,130 @@ def test_unknown_operation_is_indeterminate_semantic_unknown() -> None:
 
 
 # ---------------------------------------------------------------------------
-# PROVIDER_COMPUTATION -> GOVERNANCE_BOUNDARY, always, regardless of state
-# (HA-PCPG-1's own already-decided fail-closed default)
+# PROVIDER_COMPUTATION -- WU-PFC-PCPG-15 update: HD-29's own conditional
+# admission, bound here for the first time. Historical behavior
+# (unconditional GOVERNANCE_BOUNDARY for every PROVIDER_COMPUTATION
+# delta) is preserved exactly for any operation HD-29 does not name;
+# an admitted operation's own further prerequisites (Data Governance,
+# then the independent provider-eligibility-by-class policy gap) are
+# each proven on their own, real path -- never a shortcut to ALLOWED.
 # ---------------------------------------------------------------------------
 
 
-def test_provider_computation_is_always_governance_boundary_never_allowed() -> None:
+def test_a_provider_computation_operation_hd29_does_not_admit_is_still_governance_boundary() -> (
+    None
+):
+    """Required falsifier: "provider computation still denied when
+    HD-29 conditions are not satisfied." An operation outside the closed,
+    admitted `_PROVIDER_COMPUTATION_CONTRACTS` catalog is unaffected by
+    HD-29 -- the historical, unconditional reason still applies."""
+    delta = _delta("SOME_FUTURE_PROVIDER_OPERATION", ExecutionClass.PROVIDER_COMPUTATION)
+    snapshot = _snapshot_with_actions({})
+    records = evaluate_deltas((delta,), snapshot)
+    assert records[0].result is Result.GOVERNANCE_BOUNDARY
+    assert records[0].reason == "OPERATION_CLASS_NOT_ADMITTED"
+
+
+def test_an_admitted_operation_whose_contract_is_not_in_the_snapshot_is_governance_boundary() -> (
+    None
+):
+    """`snapshot.ai_contracts_admitted` is the real, per-call fact
+    consulted -- not a hardcoded assumption. An operation that maps to a
+    real contract ID, but one this particular snapshot does not admit,
+    is still `OPERATION_CLASS_NOT_ADMITTED`."""
+    delta = _delta("REQUEST_QUESTION_ANALYSIS", ExecutionClass.PROVIDER_COMPUTATION)
+    snapshot = dataclasses.replace(_snapshot_with_actions({}), ai_contracts_admitted=frozenset())
+    records = evaluate_deltas((delta,), snapshot)
+    assert records[0].result is Result.GOVERNANCE_BOUNDARY
+    assert records[0].reason == "OPERATION_CLASS_NOT_ADMITTED"
+
+
+def test_an_admitted_operation_with_no_classification_supplied_is_indeterminate() -> None:
+    """HD-29's own "Data Governance" prerequisite is itself unresolved
+    when no classification was supplied at all -- an unresolved input
+    (I-04), never a guess toward ALLOWED. This replaces the pre-HD-29
+    unconditional-GOVERNANCE_BOUNDARY expectation for an admitted
+    operation."""
     delta = _delta("REQUEST_QUESTION_ANALYSIS", ExecutionClass.PROVIDER_COMPUTATION)
     snapshot = _snapshot_with_actions(
         {"REQUEST_QUESTION_ANALYSIS": {"available": True, "reasonCode": None, "relevant": True}}
     )
     records = evaluate_deltas((delta,), snapshot)
-    assert records[0].result is Result.GOVERNANCE_BOUNDARY
-    assert records[0].reason == "OPERATION_CLASS_NOT_ADMITTED"
+    assert records[0].result is Result.INDETERMINATE
+    assert records[0].reason == "DATA_GOVERNANCE_NOT_MATERIALIZED"
+
+
+def test_an_admitted_operation_with_an_unknown_classification_is_indeterminate_never_allowed() -> (
+    None
+):
+    """Required falsifiers: "restrictive/unknown data class cannot be
+    weakened"; "classifier UNKNOWN never becomes permission." The
+    classifier's own honest `unknown=True` is preserved exactly --
+    never silently promoted to anything resembling permission."""
+    delta = _delta("REQUEST_QUESTION_ANALYSIS", ExecutionClass.PROVIDER_COMPUTATION)
+    snapshot = _snapshot_with_actions(
+        {"REQUEST_QUESTION_ANALYSIS": {"available": True, "reasonCode": None, "relevant": True}}
+    )
+    unknown_classification = DataClassification(
+        candidate_classes=frozenset(),
+        unknown=True,
+        most_restrictive_candidate=None,
+        effective_handling_class=DataClass.AUDIT_SENSITIVE,
+        provenance=(),
+    )
+    records = evaluate_deltas(
+        (delta,), snapshot, data_classifications_by_delta_id={"D0": unknown_classification}
+    )
+    assert records[0].result is Result.INDETERMINATE
+    assert records[0].reason == "DATA_CLASS_UNKNOWN"
+    assert records[0].result is not Result.ALLOWED
+
+
+def test_an_admitted_operation_with_a_known_classification_is_data_boundary_not_allowed() -> None:
+    """Required falsifier: "admitted operation class is not equivalent
+    to authority." Even a fully admitted operation with a fully known,
+    non-ambiguous data class never reaches ALLOWED: the independent,
+    genuinely open provider-eligibility-by-class policy gap
+    (GAP-08-008) still blocks it. `CLASSIFICATION != AUTHORITY`."""
+    delta = _delta("REQUEST_QUESTION_ANALYSIS", ExecutionClass.PROVIDER_COMPUTATION)
+    snapshot = _snapshot_with_actions(
+        {"REQUEST_QUESTION_ANALYSIS": {"available": True, "reasonCode": None, "relevant": True}}
+    )
+    known_classification = DataClassification(
+        candidate_classes=frozenset({DataClass.WORKSPACE_CONFIDENTIAL}),
+        unknown=False,
+        most_restrictive_candidate=DataClass.WORKSPACE_CONFIDENTIAL,
+        effective_handling_class=DataClass.WORKSPACE_CONFIDENTIAL,
+        provenance=("WORKSPACE_SCOPED -> DC-03 WORKSPACE_CONFIDENTIAL",),
+    )
+    records = evaluate_deltas(
+        (delta,), snapshot, data_classifications_by_delta_id={"D0": known_classification}
+    )
+    assert records[0].result is Result.DATA_BOUNDARY
+    assert records[0].reason == "PROVIDER_ELIGIBILITY_POLICY_NOT_MATERIALIZED"
+    assert records[0].result is not Result.ALLOWED
+
+
+def test_a_more_restrictive_known_classification_still_never_reaches_allowed() -> None:
+    """The same DATA_BOUNDARY outcome holds for the most restrictive
+    real class too -- admission never depends on which specific class
+    was computed, only on whether the (absent) per-class policy exists."""
+    delta = _delta("REQUEST_QUESTION_ANALYSIS", ExecutionClass.PROVIDER_COMPUTATION)
+    snapshot = _snapshot_with_actions(
+        {"REQUEST_QUESTION_ANALYSIS": {"available": True, "reasonCode": None, "relevant": True}}
+    )
+    restrictive_classification = DataClassification(
+        candidate_classes=frozenset({DataClass.SECURITY_SENSITIVE}),
+        unknown=False,
+        most_restrictive_candidate=DataClass.SECURITY_SENSITIVE,
+        effective_handling_class=DataClass.SECURITY_SENSITIVE,
+        provenance=("POSSIBLE_SECRET_CONTENT -> DC-06 SECURITY_SENSITIVE",),
+    )
+    records = evaluate_deltas(
+        (delta,), snapshot, data_classifications_by_delta_id={"D0": restrictive_classification}
+    )
+    assert records[0].result is Result.DATA_BOUNDARY
+    assert records[0].result is not Result.ALLOWED
 
 
 def test_allowed_is_never_produced_by_this_increment() -> None:
@@ -422,6 +535,57 @@ def test_result_is_this_fields_own_complete_vocabulary() -> None:
         "DENIED",
         "INDETERMINATE",
     }
+
+
+# ---------------------------------------------------------------------------
+# I-12 "Source status" -- deliberately never consulted or invented here
+# (WU-PFC-PCPG-15's own explicit boundary)
+# ---------------------------------------------------------------------------
+
+
+def test_the_module_never_references_source_status_or_proof_ceiling() -> None:
+    """Required falsifier: "I-12 absence remains observable where
+    required." This module does not invent a producer for I-12 (Source
+    status / proof ceiling) -- proven directly by static source
+    inspection, not merely asserted in prose."""
+    root = pathlib.Path(__file__).resolve().parents[2] / "packages" / "application"
+    source = (root / "pcpg_delta_evaluation.py").read_text().lower()
+    for forbidden in ("source_status", "proof_ceiling", "sourcestatus"):
+        assert forbidden not in source
+
+
+# ---------------------------------------------------------------------------
+# Downstream integration: even the richest real path (admitted operation,
+# known classification) never lets a composable, non-empty retained set
+# through R-08 -- proven against the REAL compose_effect, not asserted
+# ---------------------------------------------------------------------------
+
+
+def test_even_the_best_case_provider_delta_never_survives_into_r08s_retained_set() -> None:
+    """Required falsifier: "downstream CAN_SEND remains false unless
+    every independent gate is satisfied." `DATA_BOUNDARY` -- the
+    richest outcome this Work Unit's own binding can produce -- is not
+    `Result.ALLOWED`, so R-08's own real, unmodified `compose_effect`
+    still retains nothing, proven by actually calling it."""
+    from application.pcpg_composed_effect import CompositionResult, compose_effect
+
+    delta = _delta("REQUEST_QUESTION_ANALYSIS", ExecutionClass.PROVIDER_COMPUTATION)
+    snapshot = _snapshot_with_actions(
+        {"REQUEST_QUESTION_ANALYSIS": {"available": True, "reasonCode": None, "relevant": True}}
+    )
+    known_classification = DataClassification(
+        candidate_classes=frozenset({DataClass.WORKSPACE_CONFIDENTIAL}),
+        unknown=False,
+        most_restrictive_candidate=DataClass.WORKSPACE_CONFIDENTIAL,
+        effective_handling_class=DataClass.WORKSPACE_CONFIDENTIAL,
+        provenance=("WORKSPACE_SCOPED -> DC-03 WORKSPACE_CONFIDENTIAL",),
+    )
+    records = evaluate_deltas(
+        (delta,), snapshot, data_classifications_by_delta_id={"D0": known_classification}
+    )
+    effect = compose_effect(records)
+    assert effect.retained == ()
+    assert effect.composition_result is CompositionResult.COMPOSABLE
 
 
 # ---------------------------------------------------------------------------
