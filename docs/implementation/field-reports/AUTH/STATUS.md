@@ -14,7 +14,12 @@ Session control, capability or governance root.
 
 ## Status
 
-IN_PROGRESS.
+**FIELD_GREEN — READY_FOR_HUMAN_REVIEW** (2026-10-01). Review bundle:
+`FIELD_REVIEW.md`. Closure regression (`evidence/field_closure_regression.txt`,
+HEAD `b939037`): live 2456 passed / 2 skipped, no-DB 1020 passed,
+42 migrations single head `c1e3a5b7d9f2`, tree hash unchanged during the
+run; vitest 181; mocked lanes 33 / 66; real stack 8 / 8 (authentication
+persistence scoped). Open Human Authority: HA-AUTH-01..05.
 
 - Worktree `worktrees/auth-identity`, branch `auth-identity`. Local commits
   only; not pushed, not tagged (HD-AUTH-03).
@@ -92,7 +97,7 @@ preceded them, so the counts are those of the pin.
 | WU-AUTH-14 Anti-CSRF Boundary | PROVEN at an escalated radius (security + semantic + regression + all of tests/e2e: 1388 / 2) incl. the real browser/API contract (AUTH real lane) | `26a134c` |
 | WU-AUTH-15 Protocol Callback Semantics | PROVEN (declared contacts + write sets, measured over every table) | `5fe3cd6` |
 | WU-AUTH-16 Authorization Regression | PROVEN (6 identity kinds × the full protected route table; no code delta) | `a4c3bc3` |
-| WU-AUTH-17 Runtime DB Principal Capability Boundary | PROVEN in TEST (auth_runtime, exact capability matrix, live paths scoped, real lane scoped); HA-AUTH-05 (= PFC HA-10 deployment switch) OPEN | this commit |
+| WU-AUTH-17 Runtime DB Principal Capability Boundary | PROVEN in TEST (auth_runtime, exact capability matrix, live paths scoped, real lane scoped); HA-AUTH-05 (= PFC HA-10 deployment switch) OPEN | `b939037` |
 
 ### Current First Broken Relation
 
