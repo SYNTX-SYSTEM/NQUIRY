@@ -269,6 +269,7 @@ def test_revocation_always_carries_a_known_reason(db_connection: sa.Connection) 
         "METHOD_REVOKED",
         "ACCOUNT_DISABLED",
         "ROTATED",
+        "CREDENTIAL_RESET",  # AUTH WU-AUTH-12: sessions ended by a recovery
     }
 
 

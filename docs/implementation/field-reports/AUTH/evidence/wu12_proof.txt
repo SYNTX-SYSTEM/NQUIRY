@@ -1,0 +1,17 @@
+ruff format --check (Python; the F04 RED Markdown bundle finding is pre-existing, disclosed since WU-AUTH-02):
+453 files already formatted
+All checks passed!
+Success: no issues found in 251 source files
+ARCHITECTURE_DEPENDENCY_CHECK::PASS
+TEST_ONLY_IMPORT_CHECK::PASS
+MIGRATION_STATIC_CHECK::PASS (40 revision(s), single head ['a8c1e3f5b7d9'])
+MIGRATION_LIVE_CHECK::PASS (db head matches {'a8c1e3f5b7d9'})
+INFO  [alembic.runtime.migration] Running downgrade a8c1e3f5b7d9 -> f7b9d1e3a5c8, AUTH WU-AUTH-12: recovery_challenges; CREDENTIAL_RESET session reason (24 §17.3, §19.6, §22.2)
+INFO  [alembic.runtime.migration] Running upgrade f7b9d1e3a5c8 -> a8c1e3f5b7d9, AUTH WU-AUTH-12: recovery_challenges; CREDENTIAL_RESET session reason (24 §17.3, §19.6, §22.2)
+........................................................................ [ 87%]
+........................................................................ [100%]
+575 passed, 1 skipped in 671.12s (0:11:11)
+
+Rerun of the WU-12 suite after the attempt-count falsifier was added to test_the_database_refuses_reopening_or_rewriting_a_consumed_recovery (the run above collected the file before that edit):
+...................                                                      [100%]
+19 passed in 89.79s (0:01:29)

@@ -116,6 +116,7 @@ class SessionRevocationReason(Enum):
     METHOD_REVOKED = "METHOD_REVOKED"
     ACCOUNT_DISABLED = "ACCOUNT_DISABLED"
     ROTATED = "ROTATED"
+    CREDENTIAL_RESET = "CREDENTIAL_RESET"  # WU-AUTH-12 (migration a8c1e3f5b7d9)
 
 
 @dataclass(frozen=True, slots=True)

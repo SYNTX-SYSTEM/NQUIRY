@@ -1423,7 +1423,7 @@ local_auth_sessions_table = sa.Table(
     ),
     sa.CheckConstraint(
         "revoked_reason IS NULL OR revoked_reason IN ('LOGOUT', 'ALL_SESSIONS_LOGOUT', "
-        "'SESSION_REVOKED', 'METHOD_REVOKED', 'ACCOUNT_DISABLED', 'ROTATED')",
+        "'SESSION_REVOKED', 'METHOD_REVOKED', 'ACCOUNT_DISABLED', 'ROTATED', 'CREDENTIAL_RESET')",
         name="ck_local_auth_sessions_revoked_reason",
     ),
     sa.CheckConstraint(
@@ -1698,6 +1698,35 @@ verified_emails_table = sa.Table(
     sa.CheckConstraint("provenance_ref <> ''", name="ck_verified_emails_provenance"),
 )
 
+recovery_challenges_table = sa.Table(
+    # WU-AUTH-12 (migration a8c1e3f5b7d9): 24 §17.3 recovery challenge. Not an
+    # authentication method. Hash only; verified and consumed at most once.
+    "recovery_challenges",
+    metadata,
+    sa.Column("id", sa.Uuid(), primary_key=True),
+    sa.Column("user_id", sa.Uuid(), sa.ForeignKey("users.id", ondelete="RESTRICT"), nullable=False),
+    sa.Column("recovery_type", sa.Text(), nullable=False),
+    sa.Column("challenge_hash", sa.Text(), nullable=False, unique=True),
+    sa.Column("issued_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("expires_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("verified_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("consumed_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("revoked_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("failed_attempts", sa.Integer(), nullable=False, server_default="0"),
+    sa.Column("provenance_ref", sa.Text(), nullable=False),
+    sa.CheckConstraint("recovery_type IN ('PASSWORD_RESET')", name="ck_recovery_challenges_type"),
+    sa.CheckConstraint("expires_at > issued_at", name="ck_recovery_challenges_expiry"),
+    sa.CheckConstraint("failed_attempts >= 0", name="ck_recovery_challenges_attempts"),
+    sa.CheckConstraint(
+        "(verified_at IS NULL) = (consumed_at IS NULL)",
+        name="ck_recovery_challenges_verified_consumed",
+    ),
+    sa.CheckConstraint(
+        "consumed_at IS NULL OR revoked_at IS NULL", name="ck_recovery_challenges_one_closure"
+    ),
+    sa.CheckConstraint("provenance_ref <> ''", name="ck_recovery_challenges_provenance"),
+)
+
 __all__ = [
     "metadata",
     "users_table",
@@ -1740,6 +1769,7 @@ __all__ = [
     "external_provider_identities_table",
     "auth_challenges_table",
     "verified_emails_table",
+    "recovery_challenges_table",
     "ai_operation_authorizations_table",
     "ai_validation_proofs_table",
     "question_clusters_table",

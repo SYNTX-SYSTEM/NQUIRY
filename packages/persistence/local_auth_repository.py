@@ -85,6 +85,18 @@ class SqlAlchemyLocalCredentialRepository:
             method_id=AuthenticationMethodId(row["authentication_method_id"]),
         )
 
+    def replace_password(self, *, user_id: UserId, password_hash: str, now: datetime) -> bool:
+        """WU-AUTH-12 (24 §19.6): the credential replacement effect of a
+        verified recovery. One row per user; the previous hash is replaced,
+        the credential's method is unchanged. False when the identity has no
+        local credential (nothing to replace)."""
+        result = self._connection.execute(
+            sa.update(local_auth_credentials_table)
+            .where(local_auth_credentials_table.c.user_id == user_id.value)
+            .values(password_hash=password_hash, updated_at=now)
+        )
+        return result.rowcount == 1
+
     def mark_authenticated(self, method_id: AuthenticationMethodId, *, at: datetime) -> bool:
         """One conditional UPDATE: the row changes only while the method is
         ACTIVE. A revocation that commits first makes this return False."""

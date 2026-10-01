@@ -432,3 +432,60 @@ export async function completeEmailVerification(
   }
   throw new TypeError(`unrecognized verification complete response ${JSON.stringify(body.kind)}`);
 }
+
+// --- WU-AUTH-12 (24 §16.2, §14.4): recovery -----------------------------------
+//
+// Both contacts are unauthenticated. `start` answers `ok` for every well-formed
+// request whether or not an eligible identity exists (24 §45.2: no account
+// enumeration); `complete` proves the mailed token and replaces the password,
+// creating no session. The token travels in the request body only.
+
+export type RecoveryStartResult =
+  | { readonly kind: "ok" }
+  | { readonly kind: "unavailable"; readonly reasonCode: string };
+
+export type RecoveryCompleteResult =
+  | { readonly kind: "ok" }
+  | { readonly kind: "denied"; readonly reasonCode: string }
+  | { readonly kind: "rejected"; readonly reasonCode: string }
+  | { readonly kind: "unavailable"; readonly reasonCode: string };
+
+export async function startRecovery(email: string, fetchImpl: typeof fetch = fetch): Promise<RecoveryStartResult> {
+  const response = await fetchImpl(`${apiBaseUrl()}/auth/recovery/start`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ email }),
+  });
+  const body = requireKind(await response.json());
+  if (body.kind === "unavailable") {
+    return { kind: "unavailable", reasonCode: requireString(body, "reasonCode") };
+  }
+  if (body.kind === "ok") {
+    return { kind: "ok" };
+  }
+  throw new TypeError(`unrecognized recovery start response ${JSON.stringify(body.kind)}`);
+}
+
+export async function completeRecovery(
+  recoveryId: string,
+  token: string,
+  newPassword: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<RecoveryCompleteResult> {
+  const response = await fetchImpl(`${apiBaseUrl()}/auth/recovery/complete`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ recoveryId, token, newPassword }),
+  });
+  const body = requireKind(await response.json());
+  const other = parseReasonKind(body);
+  if (other) {
+    return other;
+  }
+  if (body.kind === "ok") {
+    return { kind: "ok" };
+  }
+  throw new TypeError(`unrecognized recovery complete response ${JSON.stringify(body.kind)}`);
+}

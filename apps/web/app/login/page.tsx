@@ -116,6 +116,11 @@ export default function LoginPage() {
           {submitting ? "Logging in..." : "Log in"}
         </button>
       </form>
+      <p>
+        <a data-testid="login-forgot" href="/recover">
+          Forgot your password?
+        </a>
+      </p>
       {state.kind === "error" ? (
         <p role="alert" data-testid="login-error">
           {state.message}

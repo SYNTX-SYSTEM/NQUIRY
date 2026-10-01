@@ -187,6 +187,10 @@ _UNAUTHENTICATED = {
     ("GET", "/auth/oidc/{provider}/callback"),
     ("GET", "/auth/oidc/{provider}/link/callback"),
     ("GET", "/auth/test-mail/outbox"),
+    # AUTH WU-AUTH-12: recovery is entered without any session (24 §16.2);
+    # its own proof: tests/e2e/test_auth_wu12_recovery.py.
+    ("POST", "/auth/recovery/start"),
+    ("POST", "/auth/recovery/complete"),
     ("GET", "/auth/test-provider/authorize"),
     ("POST", "/auth/test-provider/authorize"),
 }

@@ -17,6 +17,8 @@ Settings (environment variables, read once at startup, same discipline as
 - `NQUIRY_EMAIL_DELIVERY_MODE` (24 §25.2 "email provider config"): `capture`
   enables the in-process local mail sink in DEVELOPMENT / TEST; unset means
   no delivery (verification / recovery unavailable); anything else is refused.
+- `NQUIRY_RECOVERY_POLICY` (24 §17.7, §36 #11; default `DENIED`):
+  `VERIFIED_EMAIL_SELF_SERVICE` in DEVELOPMENT / TEST only.
 - `NQUIRY_PUBLIC_API_BASE_URL`: where a browser reaches this API (the test
   provider's authorize page and callback live under it); default
   `http://localhost:8000`.
@@ -39,6 +41,7 @@ from security.mail import LocalMailCapture, MailSink
 from security.oidc_provider import OidcProvider
 from security.oidc_standard import google_provider
 from security.oidc_test_issuer import LocalTestIssuer
+from security.recovery import RecoveryPolicy
 
 _DEV_ENVIRONMENTS = frozenset({Environment.DEVELOPMENT, Environment.TEST})
 _GOOGLE_VARIABLES = (
@@ -68,6 +71,10 @@ class MailDeliveryForbidden(RuntimeError):
     """The capture sink outside DEVELOPMENT / TEST (24 §25.3)."""
 
 
+class RecoveryPolicyForbidden(RuntimeError):
+    """VERIFIED_EMAIL_SELF_SERVICE outside DEVELOPMENT / TEST (24 §36 #11 undecided)."""
+
+
 @dataclass(frozen=True)
 class AuthRuntime:
     environment: Environment | None
@@ -79,6 +86,7 @@ class AuthRuntime:
     mail_sink: MailSink | None = None
     """None: no delivery configured, verification and recovery are unavailable
     (24 §36 #16 production delivery is a human decision)."""
+    recovery_policy: RecoveryPolicy = RecoveryPolicy.DENIED
 
     def provider(self, provider_id: str) -> OidcProvider | None:
         return self.providers.get(provider_id)
@@ -156,6 +164,15 @@ def auth_runtime_from_environment(
             f"unknown NQUIRY_EMAIL_DELIVERY_MODE {delivery_mode!r}: production delivery is a "
             "Human Authority decision (24 section 36 #16); nothing is substituted"
         )
+    recovery_policy = RecoveryPolicy(source.get("NQUIRY_RECOVERY_POLICY", "DENIED").strip())
+    if (
+        recovery_policy is RecoveryPolicy.VERIFIED_EMAIL_SELF_SERVICE
+        and environment not in _DEV_ENVIRONMENTS
+    ):
+        raise RecoveryPolicyForbidden(
+            "VERIFIED_EMAIL_SELF_SERVICE is DEVELOPMENT / TEST only until 24 section 36 #11 is "
+            f"decided; refused for NQUIRY_ENVIRONMENT={raw_environment!r}"
+        )
     return AuthRuntime(
         environment=environment,
         providers=providers,
@@ -163,11 +180,13 @@ def auth_runtime_from_environment(
         incomplete=tuple(incomplete),
         account_creation_policy=policy,
         mail_sink=sink,
+        recovery_policy=recovery_policy,
     )
 
 
 __all__ = [
     "MailDeliveryForbidden",
+    "RecoveryPolicyForbidden",
     "AccountCreationPolicyForbidden",
     "AccountCreationPolicyNotMaterialized",
     "AuthRuntime",

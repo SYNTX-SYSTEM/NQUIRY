@@ -25,10 +25,15 @@ IN_PROGRESS.
 - **HA-AUTH-01 OPEN** (WU-AUTH-09): production account creation policy for
   unknown provider subjects; DENIED in force. Block in `WU-AUTH-09.md`,
   queue in `HUMAN_DECISIONS.md`.
+- **HA-AUTH-02 OPEN** (WU-AUTH-12): production recovery policy and proof
+  level (24 §36 #11); DENIED in force, the verified-email self-service
+  mechanism is refused outside DEVELOPMENT / TEST. Block in `WU-AUTH-12.md`.
 - **Proof cadence (HD-AUTH-04, 2026-10-01):** progressive proof radius from
   WU-AUTH-11 on; the WU-AUTH-10 full run is the current broad checkpoint;
   the next full repository regression at a chosen checkpoint or Field closure.
 - Open Human Authority boundaries: all 18 of 24 §36.
+  WU-AUTH-12: #11 recorded as HA-AUTH-02; #13 (administrative recovery) not
+  materialized.
   WU-AUTH-11: #16 (production email delivery provider) — no provider exists;
   delivery is unavailable outside the DEVELOPMENT / TEST capture sink. Touched and left
   undecided so far: #10 session lifetime (12 h kept), #18 multi-account UX
@@ -66,23 +71,24 @@ preceded them, so the counts are those of the pin.
 | WU-AUTH-08 Provider Identity Binding | PROVEN | `e097de1` |
 | WU-AUTH-09 Account Creation Boundary | PROVEN; HA-AUTH-01 OPEN (production policy), DENIED in force | `8d3df59` |
 | WU-AUTH-10 Account Linking | PROVEN (broad checkpoint: live 2235 / 2) | `4e29c9f` |
-| WU-AUTH-11 Email Verification | PROVEN at the affected radius (HD-AUTH-04) | this commit |
-| WU-AUTH-12 Recovery | next (reaches 24 §36 #11) | — |
+| WU-AUTH-11 Email Verification | PROVEN at the affected radius (HD-AUTH-04) | `8ae8b9e` |
+| WU-AUTH-12 Recovery | PROVEN at the affected radius; HA-AUTH-02 OPEN (production policy), DENIED in force | this commit |
 | WU-AUTH-13..17 | not started | — |
 
 ### Current First Broken Relation
 
-Recovery: no proof-bearing recovery challenge, credential reset or reset
-session effects (owner WU-AUTH-12; FBR-AUTH-004; policy 24 §36 #11).
+Revocation expansion: no method revocation / provider unlink contact, no
+last-method rule (24 §36 #12), no account disable, terminal OIDC states not
+surfaced as revocation (owner WU-AUTH-13; 24 §18).
 
 ### Migrations
 
-Head `f7b9d1e3a5c8`. Chain from the pin head `e8c2a5f1b7d4`: `f1a7c3d9b2e4`
+Head `a8c1e3f5b7d9`. Chain from the pin head `e8c2a5f1b7d4`: `f1a7c3d9b2e4`
 (WU-AUTH-02 `authentication_methods`) → `a2c4e6f8b1d3` (WU-AUTH-03 credential ↔ method) → `b3d5f7a9c2e6` (WU-AUTH-04
 session attribution and revocation reason) → `c4e6a8b1d3f5` (WU-AUTH-05 OIDC
 transactions) → `d5f7b9c1e3a7` (WU-AUTH-08 provider identities) → `e6a8c1d3f5b9` (WU-AUTH-09
 account creation failure classes) → `f7b9d1e3a5c8` (WU-AUTH-11 challenges and
-verified emails).
+verified emails) → `a8c1e3f5b7d9` (WU-AUTH-12 recovery challenges, `CREDENTIAL_RESET`).
 
 ## Upstream dependencies
 

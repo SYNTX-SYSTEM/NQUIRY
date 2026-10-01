@@ -86,6 +86,7 @@ from nquiry_api.http import email as email_router
 from nquiry_api.http import inquiry as inquiry_router
 from nquiry_api.http import oidc as oidc_router
 from nquiry_api.http import queries as queries_router
+from nquiry_api.http import recovery as recovery_router
 from nquiry_api.http import workspaces as workspaces_router
 
 app = FastAPI(
@@ -136,6 +137,7 @@ configure_auth_runtime(auth_runtime_from_environment())
 app.include_router(auth_router.router)
 app.include_router(oidc_router.router)
 app.include_router(email_router.router)
+app.include_router(recovery_router.router)
 app.include_router(queries_router.router)
 app.include_router(commands_router.router)
 app.include_router(workspaces_router.router)
