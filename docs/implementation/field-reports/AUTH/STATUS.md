@@ -14,7 +14,11 @@ Session control, capability or governance root.
 
 ## Status
 
-**FIELD_GREEN — READY_FOR_HUMAN_REVIEW** (2026-10-01). Review bundle:
+**FIELD_GREEN ON CURRENT HEAD — READY_FOR_HUMAN_REVIEW** (2026-10-01).
+Final global preservation proof on `b47bc78` (after HD-AUTH-05 / -06):
+`evidence/final_global_preservation_b47bc78.txt` — live 2456 passed / 2
+skipped (0:42:54), no-DB 1020, tree hash unchanged, migration head
+`c1e3a5b7d9f2` unchanged, 0 failed. Earlier closure proof at `febf117`:
 `FIELD_REVIEW.md`. Closure regression (`evidence/field_closure_regression.txt`,
 HEAD `b939037`): live 2456 passed / 2 skipped, no-DB 1020 passed,
 42 migrations single head `c1e3a5b7d9f2`, tree hash unchanged during the

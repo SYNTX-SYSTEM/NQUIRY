@@ -1,0 +1,27 @@
+HEAD: b47bc78942b2d2bf3759ffb48b6d51deb5faea1e (auth-identity)
+PRE_RUN_GIT_STATUS:
+PRE_RUN_TREE_HASH: f666a10de2821aa447daa7a600a280d499f868be52f55971a06dae566261b744
+LIVE_COMMAND: DATABASE_URL=<isolated test db> /home/codi/Entwicklung/nquiry/.venv/bin/python -m pytest -q -p no:cacheprovider
+LIVE_RESULT: 2456 passed, 2 skipped in 2574.70s (0:42:54)
+LIVE_EXIT_CODE: 0
+NO_DB_COMMAND: env -u DATABASE_URL /home/codi/Entwicklung/nquiry/.venv/bin/python -m pytest -q -p no:cacheprovider
+NO_DB_RESULT: 1020 passed, 1438 skipped in 38.46s
+NO_DB_EXIT_CODE: 0
+MIGRATIONS: MIGRATION_STATIC_CHECK::PASS (42 revision(s), single head ['c1e3a5b7d9f2']) MIGRATION_LIVE_CHECK::PASS (db head matches {'c1e3a5b7d9f2'}) 
+POST_RUN_GIT_STATUS:
+POST_RUN_TREE_HASH: f666a10de2821aa447daa7a600a280d499f868be52f55971a06dae566261b744
+TREE_UNCHANGED_DURING_RUN: true
+
+POST-RUN CHECKS (2026-10-01, HEAD b47bc78):
+MIGRATION_HEAD_AFTER: c1e3a5b7d9f2 (unchanged)
+DB_RESIDUE: users=0 workspaces=0 local_auth_sessions=0 authentication_methods=0; security_events 14 -> 20
+  (+1 each of EMAIL_VERIFICATION_ISSUED/COMPLETED, IDENTITY_CREATED, RECOVERY_ISSUED/COMPLETED, PASSWORD_RESET:
+  the retained audit facts of the concurrency tests that commit on real connections, disclosed since WU-AUTH-09;
+  no other table holds a row)
+SEMANTICS: HA-AUTH-04 (HOST_OPERATOR, no route, one-way), HA-AUTH-05 (scoped live paths, exact matrix, declared scope),
+  HA-AUTH-01 DENIED default + DEV/TEST-only self-registration, HA-AUTH-02 DENIED default + DEV/TEST-only self-service,
+  HA-AUTH-03 LAST_METHOD: 16 targeted cases passed
+STATIC: ruff format/check PASS, mypy 260 files PASS, ARCHITECTURE_DEPENDENCY_CHECK PASS, TEST_ONLY_IMPORT_CHECK PASS
+FRONTEND: vitest 181 passed; tsc + eslint clean; mocked AUTH lane 33 passed
+REAL STACK (authentication persistence as auth_runtime): 3 passed
+PUBLICATION: no remote branch, no tag contains HEAD; DEPLOYMENT: not executed; GOOGLE: no client credential anywhere
