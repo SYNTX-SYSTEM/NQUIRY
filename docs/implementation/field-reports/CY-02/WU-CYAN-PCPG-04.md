@@ -29,7 +29,8 @@ Not touched: `pcpgClient.ts`, `pcpgPresentation.ts`, `pcpgAttachment.ts`, every 
 - Pre-existing, unchanged: the centred wordmark overlaps the path's current-state chip at 1280 px.
 
 ## Status
-FBR-CYAN-PCPG-04: CLOSED (technically). Object membrane MATERIALIZED; label precedence PRESERVED; "No observation"
+FBR-CYAN-PCPG-04: CLOSED. **Human Frontend Acceptance: ACCEPTED (2026-10-01, `HUMAN_REVIEW_RESULT_PCPG-04.md`)** →
+FIELD_GREEN_WITH_DISCLOSED_CEILINGS (WU scope); not REVIEWED_FIELD, not PUBLISHED_FIELD. Object membrane MATERIALIZED; label precedence PRESERVED; "No observation"
 PRESERVED; governance semantics UNCHANGED; SEND not materialized; attachment rendering NOT STARTED; PURPLE untouched.
 This is a material CYAN change: **TECHNICALLY_CLOSED → READY_FOR_HUMAN_FRONTEND_REVIEW** (TECHNICAL PASS ≠ HUMAN VISUAL
 ACCEPTANCE; not FIELD_GREEN until you accept it). Remaining CYAN First Broken Relation: the membrane's producer — the
