@@ -183,7 +183,10 @@ def test_a_binding_maps_issuer_and_subject_to_a_user_never_an_email(
         "find",
         "list_for_user",
         "authenticate",
-    }  # by id or user, never by email
+        "was_bound",  # WU-AUTH-13: unlinked subject stays known (denied, not re-created)
+        "find_by_method",  # WU-AUTH-13: the binding of a method being unlinked
+        "revoke_for_method",  # WU-AUTH-13: unlink keeps the binding as revoked evidence
+    }  # by id, method or user, never by email
     assert "email" not in " ".join(public)
 
 

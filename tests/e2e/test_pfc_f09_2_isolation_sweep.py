@@ -77,6 +77,8 @@ ROUTES: list[tuple[str, str, dict[str, Any] | None]] = [
         {"challengeId": "{auth_session_id}", "token": "x"},
     ),
     ("GET", "/auth/emails", None),
+    # AUTH WU-AUTH-13: the caller's own method unlink.
+    ("POST", "/auth/methods/{method_id}/unlink", None),
     ("GET", "/workspaces", None),
     ("POST", "/workspaces", {"name": "W"}),
     ("GET", "/workspaces/{ws}", None),
@@ -207,6 +209,7 @@ _CROSS_WORKSPACE_EXEMPT = {
     ("POST", "/auth/email/verification/start"),
     ("POST", "/auth/email/verification/complete"),
     ("GET", "/auth/emails"),
+    ("POST", "/auth/methods/{method_id}/unlink"),
     ("GET", "/workspaces"),  # the caller's own Workspace list (checked separately)
     ("POST", "/workspaces"),  # founding one's own Workspace (F01 bootstrap)
 }
@@ -254,6 +257,7 @@ def _world(db: sa.Connection) -> dict[str, Any]:
     return {
         # AUTH WU-AUTH-04: an authentication-session id that names no session.
         "auth_session_id": str(uuid.uuid4()),
+        "method_id": str(uuid.uuid4()),  # AUTH WU-AUTH-13: a method id that names no method
         "provider": "test",  # AUTH WU-AUTH-10: a provider id (unconfigured in this suite)
         "ws": str(ctx["ws"].value),
         "challenge": str(ctx["challenge"].challenge_id.value),

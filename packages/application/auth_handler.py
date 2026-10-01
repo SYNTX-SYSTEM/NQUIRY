@@ -113,6 +113,12 @@ def login(
         raise InvalidCredentials("unknown email or wrong password")
     if not normalized_password or not verify_password(normalized_password, record.password_hash):
         raise InvalidCredentials("unknown email or wrong password")
+    # WU-AUTH-13 (24 §16.3 "no account disable"): after the password, same
+    # cost and same answer. The session row itself is refused by the database
+    # for a disabled identity, so a disable that commits between this read and
+    # `issue_session` still ends without a session (24 §33.7).
+    if record.account_disabled:
+        raise InvalidCredentials("unknown email or wrong password")
     # WU-AUTH-03 (24 §16.3 "method active"): the credential's method must be
     # ACTIVE. Checked after the password so a revoked method costs the same
     # and answers the same as a wrong password. `mark_authenticated` changes
@@ -154,9 +160,10 @@ def _live_session(
 ) -> LocalSessionRecord | None:
     """The one definition of "this token names a session that authenticates
     now" (24 §15.3, §15.7; 11 AC-11-002 item 4): the row exists, is not
-    revoked, is not expired, and the method that produced it, if any, is still
-    ACTIVE. The last condition makes a session die with its method even before
-    any propagation writes `revoked_at` on it (24 falsifier 76)."""
+    revoked, is not expired, the method that produced it, if any, is still
+    ACTIVE, and the identity is not disabled. The last two conditions make a
+    session die with its method or its identity even before any propagation
+    writes `revoked_at` on it (24 falsifier 76; §18.2)."""
     if not raw_token:
         return None
     record = session_repository.get_by_token_hash(hash_session_token(raw_token))
@@ -170,6 +177,8 @@ def _live_session(
         record.method_id is not None
         and record.method_status is not AuthenticationMethodStatus.ACTIVE
     ):
+        return None
+    if record.account_disabled:  # WU-AUTH-13 (24 §18.2 "If account disabled")
         return None
     return record
 

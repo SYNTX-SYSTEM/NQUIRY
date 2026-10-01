@@ -67,6 +67,7 @@ class SqlAlchemyLocalCredentialRepository:
                 local_auth_credentials_table.c.password_hash,
                 local_auth_credentials_table.c.authentication_method_id,
                 users_table.c.email,
+                users_table.c.disabled_at,
             )
             .select_from(
                 local_auth_credentials_table.join(
@@ -83,6 +84,7 @@ class SqlAlchemyLocalCredentialRepository:
             email=row["email"],
             password_hash=row["password_hash"],
             method_id=AuthenticationMethodId(row["authentication_method_id"]),
+            account_disabled=row["disabled_at"] is not None,
         )
 
     def replace_password(self, *, user_id: UserId, password_hash: str, now: datetime) -> bool:
@@ -144,12 +146,13 @@ def _session_select() -> sa.Select[tuple[object, ...]]:
         local_auth_sessions_table,
         authentication_methods_table.c.method_type.label("method_type"),
         authentication_methods_table.c.status.label("method_status"),
+        users_table.c.disabled_at.label("account_disabled_at"),
     ).select_from(
         local_auth_sessions_table.outerjoin(
             authentication_methods_table,
             authentication_methods_table.c.id
             == local_auth_sessions_table.c.authentication_method_id,
-        )
+        ).join(users_table, users_table.c.id == local_auth_sessions_table.c.user_id)
     )
 
 
@@ -172,6 +175,7 @@ def _to_session(row: Any) -> LocalSessionRecord:
         method_type=(
             None if row["method_type"] is None else AuthenticationMethodType(row["method_type"])
         ),
+        account_disabled=row["account_disabled_at"] is not None,
         method_status=(
             None
             if row["method_status"] is None

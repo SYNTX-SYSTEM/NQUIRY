@@ -96,11 +96,13 @@ WU-AUTH-11 on (a "PROOF_RADIUS" line replaces the per-WU full regression block).
 |---|---|---|---|---|---|
 | HA-AUTH-01 | **Production account creation policy for an unknown, verified external-provider subject** (24 §36 #3–#5). Options: DENIED; SELF_REGISTRATION_ALLOWED; INVITATION_REQUIRED; PRE_PROVISIONED_IDENTITY_REQUIRED; GOVERNANCE_MEDIATED_CREATION (the last three need relations that do not exist). Full block: `WU-AUTH-09.md`. | 24 §11.14, §36; HD-28 (external-provider policy left fail-closed) | First-time provider login of a brand-new identity in PRODUCTION / STAGING | DENIED | OPEN |
 | HA-AUTH-02 | **Production recovery policy and proof level** (24 §36 #11; §17.6–17.7). Options: DENIED; VERIFIED_EMAIL_SELF_SERVICE (materialized, DEVELOPMENT / TEST only); VERIFIED_EMAIL_SELF_SERVICE plus a second factor; OPERATOR_MEDIATED (§36 #13; not materialized). Full block: `WU-AUTH-12.md`. | 24 §17, §36 #11 / #13; HD-28 (host-operator provisioning) | Self-service password recovery in PRODUCTION / STAGING | DENIED | OPEN |
+| HA-AUTH-03 | **Unlinking the last authentication method** (24 §36 #12; §14.6). Options: NEVER; ALLOWED AS SELF-DISABLE (needs HA-AUTH-04); ALLOWED WITH RECOVERY AUTHORITY (needs HA-AUTH-02 ≠ DENIED). Full block: `WU-AUTH-13.md`. | 24 §14.6, §36 #12 | Nothing (the default is complete) | NEVER (`409 LAST_METHOD`) | OPEN |
+| HA-AUTH-04 | **Who may disable an identity in PRODUCTION / STAGING** (24 §18.1; §36 #13 adjacent; HD-28 scope). Options: HOST_OPERATOR; HOST_OPERATOR + SELF; GOVERNANCE_MEDIATED; NONE YET. Full block: `WU-AUTH-13.md`. | 24 §18, §36 #13; HD-28 / NQ-DEC-056 | Production account disable; re-enable | NONE YET in PRODUCTION / STAGING (`ACCOUNT_DISABLE_EXPOSURE_UNDECIDED`); host-operator command in DEVELOPMENT / TEST | OPEN |
 
 Touched and left undecided, not blocking any Work Unit: 24 §36 #1 / #6
 (Google as an official, production-enabled method), #9 (provider-verified
 email as NQUIRY verified email), #10 (session lifetime, 12 h kept), #13
-(administrative recovery; no command exists), #15 (governance bootstrap for
+(administrative recovery / re-enable; no command exists), #15 (governance bootstrap for
 provider-created identities), #16 (production email delivery provider;
 WU-AUTH-11), #18 (multi-account UX).
 

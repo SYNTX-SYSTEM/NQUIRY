@@ -83,6 +83,10 @@ def resolve_provider_identity(
     repository = SqlAlchemyProviderIdentityRepository(connection)
     binding = repository.find(credential.issuer, credential.subject)
     if binding is None:
+        # WU-AUTH-13 (24 §18.2 "provider login denied"): an unlinked subject
+        # stays known; it is denied, never re-created as a fresh identity.
+        if repository.was_bound(credential.issuer, credential.subject):
+            raise ProviderIdentityUnresolved(OidcFailureReason.AUTHENTICATION_METHOD_REVOKED)
         if policy is not AccountCreationPolicy.SELF_REGISTRATION_ALLOWED:
             raise ProviderIdentityUnresolved(OidcFailureReason.ACCOUNT_CREATION_POLICY_UNRESOLVED)
         return _create_identity(connection, credential, now=now, environment=environment)
@@ -95,6 +99,8 @@ def resolve_provider_identity(
         now=now,
     )
     if authenticated is None:
+        if SqlAlchemyIdentityRepository(connection).is_disabled(binding.user_id):
+            raise ProviderIdentityUnresolved(OidcFailureReason.ACCOUNT_DISABLED)
         raise ProviderIdentityUnresolved(OidcFailureReason.AUTHENTICATION_METHOD_REVOKED)
     return ResolvedProviderIdentity(
         user_id=authenticated.user_id, method_id=authenticated.method_id

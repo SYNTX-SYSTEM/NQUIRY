@@ -44,5 +44,42 @@ class SqlAlchemyIdentityRepository:
             )
         )
 
+    # --- WU-AUTH-13 (24 §18.2 account disable) ------------------------------
+
+    def find_by_email(self, normalized_email: str) -> tuple[UserId, bool] | None:
+        """(user id, disabled) for the identity holding `normalized_email`."""
+        row = self._connection.execute(
+            sa.select(users_table.c.id, users_table.c.disabled_at).where(
+                sa.func.lower(users_table.c.email) == normalized_email
+            )
+        ).first()
+        return None if row is None else (UserId(row.id), row.disabled_at is not None)
+
+    def is_disabled(self, user_id: UserId) -> bool:
+        """True when the identity exists and is disabled."""
+        return (
+            self._connection.execute(
+                sa.select(users_table.c.id).where(
+                    users_table.c.id == user_id.value, users_table.c.disabled_at.isnot(None)
+                )
+            ).first()
+            is not None
+        )
+
+    def disable(self, user_id: UserId, *, now: datetime, provenance: str) -> bool:
+        """One conditional write: disables the identity only while it is not
+        disabled. False when it does not exist or is already disabled."""
+        result = self._connection.execute(
+            sa.update(users_table)
+            .where(users_table.c.id == user_id.value, users_table.c.disabled_at.is_(None))
+            .values(
+                disabled_at=now,
+                disabled_provenance=provenance,
+                updated_at=now,
+                record_version=users_table.c.record_version + 1,
+            )
+        )
+        return result.rowcount == 1
+
 
 __all__ = ["SqlAlchemyIdentityRepository"]

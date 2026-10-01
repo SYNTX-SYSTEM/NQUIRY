@@ -36,6 +36,7 @@ import {
   logoutAll,
   revokeSession,
   startEmailVerification,
+  unlinkMethod,
   type MethodSummary,
   type ProviderSummary,
   type SessionListResult,
@@ -70,6 +71,11 @@ function unlinkedProviders(
     methods.filter((m) => m.status === "ACTIVE" && m.provider !== null).map((m) => m.provider!.providerId),
   );
   return providers.filter((provider) => !linked.has(provider.providerId));
+}
+
+/** 24 §14.6: the last ACTIVE method stays; the action is offered only when another remains. */
+function activeMethodCount(methods: readonly MethodSummary[]): number {
+  return methods.filter((m) => m.status === "ACTIVE").length;
 }
 
 function formatTime(value: string): string {
@@ -182,6 +188,49 @@ export default function AccountSecurityPage() {
     }
   }
 
+  async function reloadMethods() {
+    try {
+      const result = await listMethods();
+      setMethods(result.kind === "ok" ? result.methods : null);
+    } catch {
+      setMethods(null);
+    }
+  }
+
+  async function handleUnlink(method: MethodSummary) {
+    setBusy(true);
+    setNotice(null);
+    setError(null);
+    try {
+      const result = await unlinkMethod(method.methodId);
+      if (result.kind === "ok") {
+        if (result.currentSessionEnded) {
+          // The method that signed this browser in is gone, and so is this
+          // session (24 §18.2 dependent sessions). Sign in again.
+          router.replace("/login");
+          return;
+        }
+        setNotice(
+          result.sessionsRevoked > 0
+            ? `${methodLabel(method.methodType)} was removed and ${result.sessionsRevoked} session(s) signed in with it were ended.`
+            : `${methodLabel(method.methodType)} was removed.`,
+        );
+      } else if (result.kind === "denied" && result.reasonCode === "NO_SESSION") {
+        router.replace("/login");
+        return;
+      } else if (result.kind === "denied" && result.reasonCode === "LAST_METHOD") {
+        setError("This is the only way to sign in to this account; it cannot be removed.");
+      } else {
+        setError("That sign-in method could not be removed. It may already have been removed.");
+      }
+      await Promise.all([reloadMethods(), reload()]);
+    } catch {
+      setError("Unable to reach the server. Nothing was changed as far as this page knows.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function handleVerify(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true);
@@ -247,6 +296,22 @@ export default function AccountSecurityPage() {
                 <strong>{methodLabel(method.methodType)}</strong>
                 {method.provider?.email ? <span> ({method.provider.email})</span> : null}
                 {method.status !== "ACTIVE" ? <span className="state"> {method.status}</span> : null}
+                {method.status === "ACTIVE" ? (
+                  <button
+                    type="button"
+                    className="button secondary"
+                    data-testid={`unlink-${method.methodId}`}
+                    disabled={busy || activeMethodCount(methods) <= 1}
+                    title={
+                      activeMethodCount(methods) <= 1
+                        ? "The only way to sign in to this account cannot be removed."
+                        : undefined
+                    }
+                    onClick={() => handleUnlink(method)}
+                  >
+                    Remove
+                  </button>
+                ) : null}
               </li>
             ))}
           </ul>

@@ -74,6 +74,19 @@ class ProviderIdentityRepository(Protocol):
 
     def list_for_user(self, user_id: UserId) -> tuple[ProviderIdentityBinding, ...]: ...
 
+    def was_bound(self, provider_issuer: str, provider_subject: str) -> bool:
+        """WU-AUTH-13: whether this subject was ever bound (an unlinked
+        subject's login is denied, never re-created; 24 §18.2)."""
+        ...
+
+    def find_by_method(
+        self, method_id: AuthenticationMethodId
+    ) -> ProviderIdentityBinding | None: ...
+
+    def revoke_for_method(self, method_id: AuthenticationMethodId, *, revoked_at: datetime) -> bool:
+        """WU-AUTH-13 unlink: the binding becomes revoked evidence (24 §18.3)."""
+        ...
+
     def authenticate(
         self,
         provider_issuer: str,
@@ -85,9 +98,10 @@ class ProviderIdentityRepository(Protocol):
         now: datetime,
     ) -> ProviderAuthentication | None:
         """One conditional write: records the authentication on the binding's
-        method only while the binding is unrevoked and the method ACTIVE, and
-        refreshes the provider attributes. None when no such active binding
-        exists (unknown, revoked, or method inactive)."""
+        method only while the binding is unrevoked, the method ACTIVE and the
+        identity not disabled, and refreshes the provider attributes. None when
+        no such active binding exists (unknown, revoked, method inactive or
+        identity disabled)."""
         ...
 
 

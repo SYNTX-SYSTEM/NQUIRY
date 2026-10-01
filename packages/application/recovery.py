@@ -25,6 +25,7 @@ from typing import Any
 from persistence.authentication_method_repository import (
     SqlAlchemyAuthenticationMethodRepository,
 )
+from persistence.identity_repository import SqlAlchemyIdentityRepository
 from persistence.local_auth_repository import (
     SqlAlchemyLocalCredentialRepository,
     SqlAlchemyLocalSessionRepository,
@@ -105,6 +106,8 @@ def _eligible_identity(connection: Any, address: str) -> UserId | None:
     relation = SqlAlchemyVerifiedEmailRepository(connection).active_for_email(address)
     if relation is None:
         return None
+    if SqlAlchemyIdentityRepository(connection).is_disabled(relation.user_id):
+        return None  # WU-AUTH-13 (24 §18.2): a disabled identity recovers nothing
     methods = SqlAlchemyAuthenticationMethodRepository(connection).list_for_user(relation.user_id)
     if not any(
         m.method_type is AuthenticationMethodType.LOCAL_PASSWORD
@@ -226,6 +229,8 @@ def complete_recovery(
         )
         raise RecoveryDenied("TOKEN_MISMATCH")
     user_id = consumed.user_id
+    if SqlAlchemyIdentityRepository(connection).is_disabled(user_id):
+        raise RecoveryDenied("ACCOUNT_DISABLED")  # the proof is consumed, the effect refused
     if not SqlAlchemyLocalCredentialRepository(connection).replace_password(
         user_id=user_id, password_hash=hash_password(password), now=now
     ):

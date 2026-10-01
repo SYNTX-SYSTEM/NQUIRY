@@ -1,0 +1,16 @@
+ruff format --check (Python; the F04 RED Markdown bundle finding is pre-existing, disclosed since WU-AUTH-02):
+459 files already formatted
+All checks passed!
+Success: no issues found in 256 source files
+ARCHITECTURE_DEPENDENCY_CHECK::PASS
+TEST_ONLY_IMPORT_CHECK::PASS
+MIGRATION_STATIC_CHECK::PASS (41 revision(s), single head ['b9d2f4a6c8e1'])
+MIGRATION_LIVE_CHECK::PASS (db head matches {'b9d2f4a6c8e1'})
+INFO  [alembic.runtime.migration] Running downgrade b9d2f4a6c8e1 -> a8c1e3f5b7d9, AUTH WU-AUTH-13: account disable; one active binding per subject; ACCOUNT_DISABLED (24 §18)
+INFO  [alembic.runtime.migration] Running upgrade a8c1e3f5b7d9 -> b9d2f4a6c8e1, AUTH WU-AUTH-13: account disable; one active binding per subject; ACCOUNT_DISABLED (24 §18)
+=========================== short test summary info ============================
+FAILED tests/e2e/test_auth_wu08_provider_identity.py::test_a_binding_maps_issuer_and_subject_to_a_user_never_an_email
+1 failed, 688 passed, 1 skipped in 570.98s (0:09:30)
+
+Repair: WU-08's adapter-surface pin extended by the three WU-AUTH-13 lookups (no email lookup added); rerun of the WU-08 suite:
+13 passed in 8.40s

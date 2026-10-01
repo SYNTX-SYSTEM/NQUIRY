@@ -128,12 +128,47 @@ class SqlAlchemyProviderIdentityRepository:
                 sa.select(external_provider_identities_table).where(
                     external_provider_identities_table.c.provider_issuer == provider_issuer,
                     external_provider_identities_table.c.provider_subject == provider_subject,
+                    external_provider_identities_table.c.revoked_at.is_(None),
                 )
             )
             .mappings()
             .one_or_none()
         )
         return None if row is None else _to_binding(row)
+
+    def was_bound(self, provider_issuer: str, provider_subject: str) -> bool:
+        return (
+            self._connection.execute(
+                sa.select(external_provider_identities_table.c.id).where(
+                    external_provider_identities_table.c.provider_issuer == provider_issuer,
+                    external_provider_identities_table.c.provider_subject == provider_subject,
+                )
+            ).first()
+            is not None
+        )
+
+    def find_by_method(self, method_id: AuthenticationMethodId) -> ProviderIdentityBinding | None:
+        row = (
+            self._connection.execute(
+                sa.select(external_provider_identities_table).where(
+                    external_provider_identities_table.c.authentication_method_id == method_id.value
+                )
+            )
+            .mappings()
+            .one_or_none()
+        )
+        return None if row is None else _to_binding(row)
+
+    def revoke_for_method(self, method_id: AuthenticationMethodId, *, revoked_at: datetime) -> bool:
+        result = self._connection.execute(
+            sa.update(external_provider_identities_table)
+            .where(
+                external_provider_identities_table.c.authentication_method_id == method_id.value,
+                external_provider_identities_table.c.revoked_at.is_(None),
+            )
+            .values(revoked_at=revoked_at)
+        )
+        return result.rowcount == 1
 
     def list_for_user(self, user_id: UserId) -> tuple[ProviderIdentityBinding, ...]:
         rows = (
@@ -164,6 +199,8 @@ class SqlAlchemyProviderIdentityRepository:
                 "WHERE e.authentication_method_id = m.id "
                 "  AND e.provider_issuer = :issuer AND e.provider_subject = :subject "
                 "  AND e.revoked_at IS NULL AND m.status = :active "
+                "  AND EXISTS (SELECT 1 FROM users u WHERE u.id = m.user_id "
+                "              AND u.disabled_at IS NULL) "
                 "RETURNING m.id, m.user_id, e.id AS binding_id"
             ),
             {

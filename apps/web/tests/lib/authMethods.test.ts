@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { linkProjectionMessage, linkStartUrl, listMethods } from "../../lib/api/authClient";
+import { linkProjectionMessage, linkStartUrl, listMethods, unlinkMethod } from "../../lib/api/authClient";
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
@@ -66,5 +66,40 @@ describe("linkStartUrl / linkProjectionMessage", () => {
     expect(linkProjectionMessage("ok")).toMatch(/linked/);
     expect(linkProjectionMessage("collision")).toMatch(/another account/);
     expect(linkProjectionMessage("hasOwnProperty")).toBe(linkProjectionMessage("failed"));
+  });
+});
+
+describe("unlinkMethod (WU-AUTH-13)", () => {
+  const ok = { kind: "ok", methodId: "m-1", sessionsRevoked: 2, currentSessionEnded: true };
+
+  it("POSTs to the method's unlink contact with credentials and parses the propagation facts", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify(ok), { status: 200, headers: { "Content-Type": "application/json" } }),
+    );
+    const result = await unlinkMethod("m-1", fetchImpl);
+    expect(fetchImpl).toHaveBeenCalledWith(
+      expect.stringMatching(/\/auth\/methods\/m-1\/unlink$/),
+      expect.objectContaining({ method: "POST", credentials: "include" }),
+    );
+    expect(result).toEqual(ok);
+  });
+
+  it.each([
+    [{ kind: "denied", reasonCode: "LAST_METHOD" }, 409],
+    [{ kind: "denied", reasonCode: "UNLINK_DENIED" }, 403],
+    [{ kind: "denied", reasonCode: "NO_SESSION" }, 401],
+    [{ kind: "rejected", reasonCode: "MALFORMED_METHOD_ID" }, 400],
+  ])("keeps %j distinct", async (body, status) => {
+    const fetchImpl = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } }),
+    );
+    expect(await unlinkMethod("m-1", fetchImpl)).toEqual(body);
+  });
+
+  it("fails closed on an ok without the propagation facts", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ kind: "ok", methodId: "m-1" }), { status: 200, headers: { "Content-Type": "application/json" } }),
+    );
+    await expect(unlinkMethod("m-1", fetchImpl)).rejects.toThrow(TypeError);
   });
 });

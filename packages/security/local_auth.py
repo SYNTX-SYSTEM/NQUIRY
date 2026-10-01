@@ -130,6 +130,8 @@ class LocalCredentialRecord:
     email: str
     password_hash: str
     method_id: AuthenticationMethodId
+    # WU-AUTH-13 (24 §16.3 "no account disable"): read with the credential.
+    account_disabled: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -150,6 +152,10 @@ class LocalSessionRecord:
     revoked_reason: SessionRevocationReason | None = None
     method_type: AuthenticationMethodType | None = None
     method_status: AuthenticationMethodStatus | None = None
+    # WU-AUTH-13 (24 §18.2 "all sessions revoked"): the identity's disable
+    # state read in the same statement; a session of a disabled identity does
+    # not authenticate even before propagation wrote `revoked_at`.
+    account_disabled: bool = False
 
 
 class LocalCredentialRepository(Protocol):

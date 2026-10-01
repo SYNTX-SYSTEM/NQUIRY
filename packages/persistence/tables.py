@@ -141,6 +141,14 @@ users_table = sa.Table(
     sa.Column("record_version", sa.BigInteger(), nullable=False),
     sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
     sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
+    # WU-AUTH-13 (migration b9d2f4a6c8e1): 24 §18.2 account disable, one-way.
+    sa.Column("disabled_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("disabled_provenance", sa.Text(), nullable=True),
+    sa.CheckConstraint(
+        "(disabled_at IS NULL) = (disabled_provenance IS NULL) "
+        "AND (disabled_provenance IS NULL OR disabled_provenance <> '')",
+        name="ck_users_disable_provenance",
+    ),
 )
 
 workspaces_table = sa.Table(
@@ -1497,6 +1505,7 @@ OIDC_FAILURE_REASONS: tuple[str, ...] = (
     "PROVIDER_EMAIL_MISSING",  # WU-AUTH-09 (migration e6a8c1d3f5b9)
     "PROVIDER_EMAIL_UNVERIFIED",
     "EMAIL_COLLISION",
+    "ACCOUNT_DISABLED",  # WU-AUTH-13 (migration b9d2f4a6c8e1)
 )
 
 # WU-AUTH-05: each transaction state requires exactly its timestamps (24 §11.4).
@@ -1642,9 +1651,16 @@ external_provider_identities_table = sa.Table(
         name="fk_external_provider_identities_method_same_user",
         ondelete="RESTRICT",
     ),
-    sa.UniqueConstraint(
-        "provider_issuer", "provider_subject", name="uq_external_provider_identities_subject"
+    # WU-AUTH-13 (migration b9d2f4a6c8e1): one ACTIVE binding per subject;
+    # revoked bindings stay as evidence (partial unique index, 24 §18.3).
+    sa.Index(
+        "uq_external_provider_identities_active_subject",
+        "provider_issuer",
+        "provider_subject",
+        unique=True,
+        postgresql_where=sa.text("revoked_at IS NULL"),
     ),
+    sa.Index("ix_external_provider_identities_subject", "provider_issuer", "provider_subject"),
     sa.CheckConstraint(
         "provider_issuer <> '' AND provider_subject <> ''",
         name="ck_external_provider_identities_key",

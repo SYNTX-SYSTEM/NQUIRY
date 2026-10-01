@@ -83,3 +83,58 @@ test("an unknown method list is stated, not shown as empty", async ({ page }) =>
   await expect(page.getByTestId("methods-unknown")).toBeVisible();
   await expect(page.getByTestId("link-actions")).toHaveCount(0);
 });
+
+// --- WU-AUTH-13: unlink ---------------------------------------------------------
+
+const EMAILS_ROUTE = "http://localhost:8000/auth/emails";
+
+test("WU-AUTH-13: a method is removed through the API and the list re-reads; the last active method offers no removal", async ({
+  page,
+}) => {
+  let methods = [LOCAL, LINKED];
+  const unlinkCalls: string[] = [];
+  await page.route(SESSIONS_ROUTE, (route) => route.fulfill({ json: { kind: "ok", sessions: [SESSION] } }));
+  await page.route(METHODS_ROUTE, (route) => route.fulfill({ json: { kind: "ok", methods } }));
+  await page.route(PROVIDERS_ROUTE, (route) => route.fulfill({ json: { kind: "ok", providers: [TEST_PROVIDER] } }));
+  await page.route(EMAILS_ROUTE, (route) => route.fulfill({ json: { kind: "ok", emails: [] } }));
+  await page.route(`http://localhost:8000/auth/methods/${LINKED.methodId}/unlink`, (route) => {
+    unlinkCalls.push(route.request().method());
+    methods = [LOCAL, { ...LINKED, status: "REVOKED" }];
+    return route.fulfill({
+      json: { kind: "ok", methodId: LINKED.methodId, sessionsRevoked: 1, currentSessionEnded: false },
+    });
+  });
+
+  await page.goto("/account/security");
+  await expect(page.getByTestId(`unlink-${LINKED.methodId}`)).toBeEnabled();
+  await page.getByTestId(`unlink-${LINKED.methodId}`).click();
+
+  await expect(page.getByTestId("sessions-notice")).toContainText("1 session(s) signed in with it were ended");
+  expect(unlinkCalls).toEqual(["POST"]);
+  await expect(page.getByTestId("method-item").filter({ hasText: "REVOKED" })).toHaveCount(1);
+  // only the local method is ACTIVE now: it is the last one and cannot be removed
+  await expect(page.getByTestId(`unlink-${LOCAL.methodId}`)).toBeDisabled();
+  await expect(page.getByTestId(`unlink-${LINKED.methodId}`)).toHaveCount(0);
+});
+
+test("WU-AUTH-13: removing the method of the current session returns to /login; LAST_METHOD is explained", async ({
+  page,
+}) => {
+  await page.route(SESSIONS_ROUTE, (route) => route.fulfill({ json: { kind: "ok", sessions: [SESSION] } }));
+  await page.route(METHODS_ROUTE, (route) => route.fulfill({ json: { kind: "ok", methods: [LOCAL, LINKED] } }));
+  await page.route(PROVIDERS_ROUTE, (route) => route.fulfill({ json: { kind: "ok", providers: [] } }));
+  await page.route(EMAILS_ROUTE, (route) => route.fulfill({ json: { kind: "ok", emails: [] } }));
+  await page.route(`http://localhost:8000/auth/methods/${LINKED.methodId}/unlink`, (route) =>
+    route.fulfill({ status: 409, json: { kind: "denied", reasonCode: "LAST_METHOD" } }),
+  );
+  await page.route(`http://localhost:8000/auth/methods/${LOCAL.methodId}/unlink`, (route) =>
+    route.fulfill({ json: { kind: "ok", methodId: LOCAL.methodId, sessionsRevoked: 1, currentSessionEnded: true } }),
+  );
+
+  await page.goto("/account/security");
+  await page.getByTestId(`unlink-${LINKED.methodId}`).click();
+  await expect(page.getByTestId("sessions-error")).toContainText("only way to sign in");
+
+  await page.getByTestId(`unlink-${LOCAL.methodId}`).click();
+  await expect(page).toHaveURL(/\/login$/);
+});

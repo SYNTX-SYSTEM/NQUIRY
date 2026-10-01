@@ -489,3 +489,35 @@ export async function completeRecovery(
   }
   throw new TypeError(`unrecognized recovery complete response ${JSON.stringify(body.kind)}`);
 }
+
+// --- WU-AUTH-13 (24 §18.2, §14.6): method unlink ------------------------------
+
+export type UnlinkResult =
+  | { readonly kind: "ok"; readonly methodId: string; readonly sessionsRevoked: number; readonly currentSessionEnded: boolean }
+  | { readonly kind: "denied"; readonly reasonCode: string }
+  | { readonly kind: "rejected"; readonly reasonCode: string };
+
+export async function unlinkMethod(methodId: string, fetchImpl: typeof fetch = fetch): Promise<UnlinkResult> {
+  const response = await fetchImpl(`${apiBaseUrl()}/auth/methods/${encodeURIComponent(methodId)}/unlink`, {
+    method: "POST",
+    headers: { Accept: "application/json" },
+    credentials: "include",
+  });
+  const body = requireKind(await response.json());
+  if (body.kind === "denied" || body.kind === "rejected") {
+    return { kind: body.kind, reasonCode: requireString(body, "reasonCode") };
+  }
+  if (
+    body.kind === "ok" &&
+    typeof body.sessionsRevoked === "number" &&
+    typeof body.currentSessionEnded === "boolean"
+  ) {
+    return {
+      kind: "ok",
+      methodId: requireString(body, "methodId"),
+      sessionsRevoked: body.sessionsRevoked,
+      currentSessionEnded: body.currentSessionEnded,
+    };
+  }
+  throw new TypeError(`unrecognized unlink response ${JSON.stringify(body.kind)}`);
+}
