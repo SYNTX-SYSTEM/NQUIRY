@@ -41,7 +41,8 @@ Evidence: `browser-evidence/pcpg-05/` (lane summaries, `producer.json`; screensh
 
 
 ## Status
-FBR-CYAN-PCPG-05: CLOSED (technically). Raw intent producer MATERIALIZED; observation presence MATERIALIZED; real
+FBR-CYAN-PCPG-05: CLOSED. **Human Frontend Acceptance: ACCEPTED (2026-10-01, `HUMAN_REVIEW_RESULT_PCPG-05.md`)** →
+FIELD_GREEN_WITH_DISCLOSED_CEILINGS (WU scope); not REVIEWED_FIELD, not PUBLISHED_FIELD. Raw intent producer MATERIALIZED; observation presence MATERIALIZED; real
 PCPG-R12/1 path PROVEN (PCPG-18); supersession PROVEN (versions only); persistence NONE; SEND not materialized;
 provider call NONE; R-13 NOT STARTED; production UNTOUCHED (B5 + AC1.1); PURPLE UNTOUCHED.
 Material visual CYAN change: **TECHNICALLY_CLOSED → READY_FOR_HUMAN_FRONTEND_REVIEW** (not FIELD_GREEN until accepted).
