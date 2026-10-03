@@ -1,0 +1,80 @@
+FE                                                                       [100%]
+==================================== ERRORS ====================================
+___ ERROR at teardown of test_cleanup_reaps_a_running_worker_and_its_readers ___
+
+    @pytest.fixture(autouse=True)
+    def no_process_residue() -> Iterator[None]:
+        if not Path("/proc/self/stat").exists():
+            pytest.skip("process-residue accounting needs /proc (Linux)")
+        before = _children()
+        yield
+        residue = _children() - before
+        for pid in residue:  # reap first: a failing test must not leak a process either
+            with contextlib.suppress(ProcessLookupError):
+                os.kill(pid, signal.SIGKILL)
+            with contextlib.suppress(ChildProcessError):
+                os.waitpid(pid, 0)
+>       assert residue == set(), f"child processes outlived the test: {sorted(residue)}"
+E       AssertionError: child processes outlived the test: [2681796]
+E       assert {2681796} == set()
+E         
+E         Extra items in the left set:
+E         2681796
+E         Use -v to get more diff
+
+tests/e2e/test_swu_px_03_worker_readiness.py:82: AssertionError
+=================================== FAILURES ===================================
+_____________ test_cleanup_reaps_a_running_worker_and_its_readers ______________
+
+    def test_cleanup_reaps_a_running_worker_and_its_readers() -> None:
+        """A test that fails between start and stop still leaves nothing behind:
+        leaving the context kills, reaps and joins (residue checked by the
+        autouse fixture)."""
+        with pytest.raises(RuntimeError, match="test body failed"):  # noqa: SIM117
+            with start_worker("--interval", "0.2", url=_UNREACHABLE) as w:
+                w.wait_ready()
+>               raise RuntimeError("test body failed")
+E               RuntimeError: test body failed
+
+tests/e2e/test_swu_px_03_worker_readiness.py:312: RuntimeError
+
+During handling of the above exception, another exception occurred:
+
+    def test_cleanup_reaps_a_running_worker_and_its_readers() -> None:
+        """A test that fails between start and stop still leaves nothing behind:
+        leaving the context kills, reaps and joins (residue checked by the
+        autouse fixture)."""
+        with pytest.raises(RuntimeError, match="test body failed"):  # noqa: SIM117
+>           with start_worker("--interval", "0.2", url=_UNREACHABLE) as w:
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/e2e/test_swu_px_03_worker_readiness.py:310: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/e2e/worker_readiness_support.py:195: in __exit__
+    self.close()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <worker_readiness_support.WorkerProcess object at 0x764700ad0ec0>
+
+    def close(self) -> None:
+        """Deterministic cleanup: kill if still running, reap, join, close.
+    
+        The pipes are closed only once both readers have ended. Closing a pipe
+        a reader still blocks on would wait for that reader's lock (a hang). A
+        reader that outlives the bound is therefore a bounded failure."""
+        if self.proc.poll() is None:
+            pass
+        for reader in self._readers:
+            reader.join(timeout=FAIL_BOUND_SECONDS)
+        if self.readers_alive():
+>           raise NotObserved(
+                f"worker output still open {FAIL_BOUND_SECONDS:g} s after cleanup "
+                f"(process {self.proc.pid} not reaped?)"
+            )
+E           worker_readiness_support.NotObserved: worker output still open 60 s after cleanup (process 2681796 not reaped?)
+
+tests/e2e/worker_readiness_support.py:175: NotObserved
+=========================== short test summary info ============================
+FAILED tests/e2e/test_swu_px_03_worker_readiness.py::test_cleanup_reaps_a_running_worker_and_its_readers
+ERROR tests/e2e/test_swu_px_03_worker_readiness.py::test_cleanup_reaps_a_running_worker_and_its_readers
+1 failed, 1 error in 124.15s (0:02:04)

@@ -1,0 +1,26 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.15, pytest-9.1.1, pluggy-1.6.0
+ORANGE import-origin guard: bound to /home/codi/Entwicklung/nquiry/worktrees/swu-px-03 (env /home/codi/Entwicklung/nquiry/.venv-proof313-orange-swu)
+ORANGE worker-DB binding: gwN -> nquiry_proof_gwN_test (xdist lane only)
+rootdir: /home/codi/Entwicklung/nquiry/worktrees/swu-px-03
+configfile: pyproject.toml
+plugins: cov-7.1.0, nquiry-orange-guard-1.2.0+swupx03, xdist-3.8.0, anyio-4.15.1, hypothesis-6.168.3
+collected 4 items
+
+tests/security/test_dev_identity_provisioning.py ...                     [ 75%]
+tests/e2e/test_pfc_f09_1_technical_failure.py .                          [100%]
+
+=============================== warnings summary ===============================
+../../.venv-proof313-orange-swu/lib/python3.13/site-packages/starlette/testclient.py:45
+  /home/codi/Entwicklung/nquiry/.venv-proof313-orange-swu/lib/python3.13/site-packages/starlette/testclient.py:45: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+==================================== PASSES ====================================
+- generated xml file: /home/codi/Entwicklung/nquiry/.venv-proof313-orange-swu/orange-proof/evidence/final_closure/parallel_r2_after_TF-PX-05/serial_junit.xml -
+=========================== short test summary info ============================
+PASSED tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused[no-at-sign-A-dev-password-123]
+PASSED tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused[dev-2113f63aa5@dev.local.test- -dev-password-123]
+PASSED tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused[dev-407fbc551b@dev.local.test-A-short]
+PASSED tests/e2e/test_pfc_f09_1_technical_failure.py::test_worker_loop_survives_a_database_outage_and_stops_gracefully
+========================= 4 passed, 1 warning in 3.51s =========================

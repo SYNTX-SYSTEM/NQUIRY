@@ -1,0 +1,1 @@
+STOP: foreign suite running (2714435: /bin/bash -c source /home/codi/.claude/shell-snapshots/snapshot-bash-1790327946426-407mvz.sh 2>/dev/null || true && shop); hogs reaped; LOAD_CONTENTION_PROOF::ABORTED

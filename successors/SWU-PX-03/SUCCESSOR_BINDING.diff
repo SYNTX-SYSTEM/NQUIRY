@@ -1,0 +1,423 @@
+diff -ruN -x evidence -x build -x '*.egg-info' -x SUCCESSOR_BINDING.diff -x pycache -x __pycache__ /tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/lineage_src/aggregate.py /home/codi/Entwicklung/nquiry/.venv-proof313-orange-swu/orange-proof/aggregate.py
+--- /tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/lineage_src/aggregate.py	2026-10-01 08:12:42.000000000 +0200
++++ /home/codi/Entwicklung/nquiry/.venv-proof313-orange-swu/orange-proof/aggregate.py	2026-10-01 14:05:06.706908958 +0200
+@@ -26,9 +26,9 @@
+ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+ from canonical_ids import canonical_junit, canonical_map, canonical_nodeid  # noqa: E402
+ 
+-CLAIM = ("2235 nodes executed under governed 4-worker parallelism + 4 nodes executed under governed "
+-         "serial execution (3 volatile-identity nodes + 1 fixed-time-window node, SF-PX-03) = complete "
+-         "2239-node frozen-field coverage")
++CLAIM = ("2248 nodes executed under governed 4-worker parallelism + 4 nodes executed under governed "
++         "serial execution (3 volatile-identity nodes + the SF-PX-03 node, decomposition unchanged) = complete "
++         "2252-node checkpoint-SWU-PX-03 coverage")
+ RANK = {"error": 3, "failed": 2, "skipped": 1, "passed": 0}
+ 
+ 
+@@ -100,7 +100,7 @@
+             miss, extra = expected[part] - got, got - expected[part]
+             bad.append(f"{part.upper()}_EXECUTED_SET_MISMATCH missing={len(miss)} extra={len(extra)}")
+     if set(executed) != set(cfull.values()):
+-        bad.append(f"UNION_NOT_2239 ({len(executed)})")
++        bad.append(f"UNION_NOT_2252 ({len(executed)})")
+     rows = []
+     for cid, row in executed.items():
+         outcome = max(row["states"], key=RANK.__getitem__)
+@@ -115,8 +115,8 @@
+     diverging = [r["canonical"] for r in rows if r["outcome"] != r["reference"]]
+     if diverging:
+         bad.append(f"OUTCOME_DIVERGES_FROM_SERIAL_REFERENCE:{len(diverging)}")
+-    if len(reference) != 2239:
+-        bad.append("REFERENCE_NOT_2239")
++    if len(reference) != 2252:
++        bad.append("REFERENCE_NOT_2252")
+     return bad, sorted(rows, key=lambda r: r["canonical"])
+ 
+ 
+diff -ruN -x evidence -x build -x '*.egg-info' -x SUCCESSOR_BINDING.diff -x pycache -x __pycache__ /tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/lineage_src/analyze_serial.py /home/codi/Entwicklung/nquiry/.venv-proof313-orange-swu/orange-proof/analyze_serial.py
+--- /tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/lineage_src/analyze_serial.py	2026-10-01 08:12:42.000000000 +0200
++++ /home/codi/Entwicklung/nquiry/.venv-proof313-orange-swu/orange-proof/analyze_serial.py	2026-10-01 14:05:06.705908954 +0200
+@@ -79,7 +79,7 @@
+ 
+     print(f"collected={len(collected)} executed_in_junit={len(executed)} counts={counts}")
+     checks = {
+-        "COLLECTED_2239": len(collected) == 2239,
++        "COLLECTED_2252": len(collected) == 2252,
+         "EXECUTED_SET_EQUALS_COLLECTION": not missing and not unknown and len(executed) == len(collected),
+         "SKIP_SET_EQUALS_DECLARED_2": skipped == declared_skips,
+         "ZERO_FAILURES_ERRORS": not bad,
+diff -ruN -x evidence -x build -x '*.egg-info' -x SUCCESSOR_BINDING.diff -x pycache -x __pycache__ /tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/lineage_src/binding_proof.sh /home/codi/Entwicklung/nquiry/.venv-proof313-orange-swu/orange-proof/binding_proof.sh
+--- /tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/lineage_src/binding_proof.sh	2026-10-01 08:12:42.000000000 +0200
++++ /home/codi/Entwicklung/nquiry/.venv-proof313-orange-swu/orange-proof/binding_proof.sh	2026-10-01 14:05:06.697908919 +0200
+@@ -3,8 +3,8 @@
+ # over the xdist partition. DB contact = the plugin's read-only identity check on gw0..gw3 only.
+ set -u
+ N=/home/codi/Entwicklung/nquiry
+-V=$N/.venv-proof313-orange
+-O=$N/worktrees/orange-proof-infra
++V=$N/.venv-proof313-orange-swu
++O=$N/worktrees/swu-px-03
+ P="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"  # proof-infrastructure root = this script's directory (lineage)
+ PYC=$V/orange-proof/pycache  # runtime bytecode cache (env-owned, never versioned)
+ OUT=${ORANGE_BINDING_OUT:-$P/evidence/binding_$(date +%Y%m%dT%H%M%S)}
+diff -ruN -x evidence -x build -x '*.egg-info' -x SUCCESSOR_BINDING.diff -x pycache -x __pycache__ /tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/lineage_src/final_closure.sh /home/codi/Entwicklung/nquiry/.venv-proof313-orange-swu/orange-proof/final_closure.sh
+--- /tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/lineage_src/final_closure.sh	2026-10-01 08:12:42.000000000 +0200
++++ /home/codi/Entwicklung/nquiry/.venv-proof313-orange-swu/orange-proof/final_closure.sh	2026-10-01 14:10:51.535420808 +0200
+@@ -1,4 +1,5 @@
+ #!/usr/bin/env bash
++# SUCCESSOR BINDING (checkpoint-SWU-PX-03) of the ORANGE final closure chain (lineage c9f276fc).
+ # ORANGE FINAL ENVIRONMENT CLOSURE (Human Authority 2026-10-01). ONE proof environment (guard 1.2.0)
+ # for BOTH the serial reference and the governed parallel/serial partition execution.
+ # FROZEN TREE -> ENV -> MANIFEST -> COLLECTION -> SERIAL REFERENCE -> PARTITION EXECUTION ->
+@@ -6,7 +7,7 @@
+ # No retries, no dependency change, no non-proof database contact.
+ set -u
+ N=/home/codi/Entwicklung/nquiry
+-V=$N/.venv-proof313-orange
++V=$N/.venv-proof313-orange-swu
+ P="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"  # proof-infrastructure root = this script's directory (lineage)
+ PYC=$V/orange-proof/pycache  # runtime bytecode cache (env-owned, never versioned)
+ F=${ORANGE_CLOSURE_DIR:-$P/evidence/final_closure_$(date +%Y%m%dT%H%M%S)}
+@@ -19,7 +20,8 @@
+ # ---- 1. SERIAL REFERENCE under guard 1.2.0 (race clones TEMPLATE serial db -> catalog/observer via gw0)
+ S=$F/serial_ref; mkdir -p "$S"
+ export ORANGE_SERIAL_DIR=$S ORANGE_CATALOG_DB=nquiry_proof_gw0_test
+-bash "$P/serial_baseline.sh" pre > "$S/pre.log" 2>&1; cat "$S/pre.log"
++bash "$P/serial_baseline.sh" pre > "$F/serial_ref.pre.log" 2>&1; rc=$?; mv "$F/serial_ref.pre.log" "$S/pre.log"; cat "$S/pre.log"
++[ $rc -eq 0 ] || { echo "CHAIN STOPPED: serial pre refused (rc=$rc)"; exit 1; }  # TF-PX-04 (successor binding)
+ grep -E "test_direct_write.py|test_http_dispatch_real_connection_lifecycle.py" "$S/collected_nodeids.txt" > "$S/declared_skips.txt"
+ bash "$P/observer.sh" nquiry_proof_gw0_test "$S/observed_cluster_objects.log" "$S/observer.stop" &
+ OBS=$!
+@@ -32,7 +34,8 @@
+ R=$F/parallel; mkdir -p "$R"
+ export ORANGE_PARALLEL_DIR=$R ORANGE_CATALOG_DB=nquiry_proof_serial_test
+ unset ORANGE_SERIAL_DIR
+-bash "$P/parallel_proof.sh" pre > "$R/pre.log" 2>&1; cat "$R/pre.log"
++bash "$P/parallel_proof.sh" pre > "$F/parallel.pre.log" 2>&1; rc=$?; mv "$F/parallel.pre.log" "$R/pre.log"; cat "$R/pre.log"
++[ $rc -eq 0 ] || { echo "CHAIN STOPPED: parallel pre refused (rc=$rc)"; exit 1; }  # TF-PX-04 (successor binding)
+ (cd "$P" && ORANGE_PARTITION_DIR=$R/partition PY partition_proof.py) > "$R/partition_proof.log" 2>&1; tail -1 "$R/partition_proof.log"
+ bash "$P/observer.sh" nquiry_proof_serial_test "$R/observed_cluster_objects.log" "$R/observer.stop" &
+ OBS=$!
+@@ -44,5 +47,5 @@
+ # ---- 3. AGGREGATION + EQUIVALENCE (reference = the NEW serial reference, same environment)
+ (cd "$P" && ORANGE_REFERENCE_DIR=$S PY run_aggregate.py "$R") > "$R/aggregate.log" 2>&1; cat "$R/aggregate.log"
+ (cd "$P" && PY order_proof.py "$R/binding" "$R/partition/xdist_nodeids.txt") > "$R/order_proof.log" 2>&1; tail -1 "$R/order_proof.log"
+-(cd "$P" && PY inertness_compare.py "$S" "${ORANGE_INERTNESS_REFERENCE:-$P/evidence/final_closure/serial_ref}") > "$F/inertness.log" 2>&1; cat "$F/inertness.log"
++(cd "$P" && PY inertness_compare.py "$S" "${ORANGE_INERTNESS_REFERENCE:-/home/codi/Entwicklung/nquiry/worktrees/orange-proof-lineage/evidence/final_closure/serial_ref}") > "$F/inertness.log" 2>&1; cat "$F/inertness.log"
+ echo "== final closure finished $(date -Iseconds); load $(cut -d' ' -f1-3 /proc/loadavg)"
+diff -ruN -x evidence -x build -x '*.egg-info' -x SUCCESSOR_BINDING.diff -x pycache -x __pycache__ /tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/lineage_src/guard/pyproject.toml /home/codi/Entwicklung/nquiry/.venv-proof313-orange-swu/orange-proof/guard/pyproject.toml
+--- /tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/lineage_src/guard/pyproject.toml	2026-10-01 08:12:42.000000000 +0200
++++ /home/codi/Entwicklung/nquiry/.venv-proof313-orange-swu/orange-proof/guard/pyproject.toml	2026-10-01 14:05:06.705908954 +0200
+@@ -4,8 +4,8 @@
+ 
+ [project]
+ name = "nquiry-orange-guard"
+-version = "1.2.0"
+-description = "ORANGE proof lane: fail-closed import-origin guard bound to checkpoint-PFC-PCPG-5 (e0a6b3b)."
++version = "1.2.0+swupx03"
++description = "ORANGE proof lane: fail-closed import-origin guard bound to checkpoint-SWU-PX-03 (944f1ae); successor binding of 1.2.0."
+ requires-python = ">=3.13"
+ 
+ [project.entry-points.pytest11]
+diff -ruN -x evidence -x build -x '*.egg-info' -x SUCCESSOR_BINDING.diff -x pycache -x __pycache__ /tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/lineage_src/guard/src/nquiry_orange_guard.py /home/codi/Entwicklung/nquiry/.venv-proof313-orange-swu/orange-proof/guard/src/nquiry_orange_guard.py
+--- /tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/lineage_src/guard/src/nquiry_orange_guard.py	2026-10-01 08:12:42.000000000 +0200
++++ /home/codi/Entwicklung/nquiry/.venv-proof313-orange-swu/orange-proof/guard/src/nquiry_orange_guard.py	2026-10-01 14:05:06.704908950 +0200
+@@ -1,7 +1,7 @@
+ """ORANGE import-origin guard (proof-infrastructure field, PX-1).
+ 
+ Binds this hermetic Python 3.13 environment exclusively to the frozen ORANGE
+-worktree (checkpoint-PFC-PCPG-5 @ e0a6b3b). It fails closed: a run is refused,
++worktree (checkpoint-SWU-PX-03 @ 944f1ae; successor binding of guard 1.2.0). It fails closed: a run is refused,
+ never silently continued, when
+ 
+ - user site-packages are enabled (PYTHONNOUSERSITE must hold);
+@@ -27,8 +27,8 @@
+ import tomllib
+ from pathlib import Path
+ 
+-ORANGE_ROOT = Path("/home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra").resolve()
+-ENV_PREFIX = Path("/home/codi/Entwicklung/nquiry/.venv-proof313-orange").resolve()
++ORANGE_ROOT = Path("/home/codi/Entwicklung/nquiry/worktrees/swu-px-03").resolve()
++ENV_PREFIX = Path("/home/codi/Entwicklung/nquiry/.venv-proof313-orange-swu").resolve()
+ FORBIDDEN_DISTRIBUTIONS = ("nquiry",)
+ 
+ 
+diff -ruN -x evidence -x build -x '*.egg-info' -x SUCCESSOR_BINDING.diff -x pycache -x __pycache__ /tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/lineage_src/inertness_compare.py /home/codi/Entwicklung/nquiry/.venv-proof313-orange-swu/orange-proof/inertness_compare.py
+--- /tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/lineage_src/inertness_compare.py	2026-10-01 08:12:42.000000000 +0200
++++ /home/codi/Entwicklung/nquiry/.venv-proof313-orange-swu/orange-proof/inertness_compare.py	2026-10-01 14:05:57.060129725 +0200
+@@ -1,7 +1,14 @@
+-"""Instrumentation inertness: per-node serial outcomes under guard 1.2.0 (new serial reference) vs the
+-accepted serial reference under guard 1.0.0 (serial_run2), on canonical identity. The only node allowed
+-to differ is the documented SF-PX-03 node (FIXED_TIME_WINDOW_NOT_EXECUTION_LOAD_INVARIANT); every other
+-difference falsifies inertness. Usage: python inertness_compare.py <new serial dir> <accepted serial dir>"""
++"""SUCCESSOR binding (checkpoint-SWU-PX-03) of the ORANGE inertness comparison (lineage c9f276fc).
++
++Compares the successor's serial reference (successor-bound guard 1.2.0+swupx03) with the PUBLISHED
++PCPG-5 serial reference (lineage evidence/final_closure/serial_ref, guard 1.2.0, read-only), on
++canonical identity:
++- every one of the 2239 PCPG-5 nodes must keep its outcome. No exemption: the SF-PX-03 node is NOT
++  exempt here (it passed in the PCPG-5 serial reference and must pass in the successor's);
++- the only additional nodes allowed are exactly the 13 declared SWU-PX-03 falsifiers
++  (tests/e2e/test_swu_px_03_worker_readiness.py), and each must pass.
++Every other difference, a missing node, an undeclared extra node or a failing delta node falsifies
++successor preservation. Usage: python inertness_compare.py <successor serial dir> <PCPG-5 serial dir>"""
+ 
+ from __future__ import annotations
+ 
+@@ -9,6 +16,8 @@
+ import sys
+ 
+ SF_PX_03 = "tests/e2e/test_pfc_f09_1_technical_failure.py::test_worker_loop_survives_a_database_outage_and_stops_gracefully"
++DELTA_PREFIX = "tests/e2e/test_swu_px_03_worker_readiness.py::"
++PCPG5_N, DELTA_N = 2239, 13
+ 
+ 
+ def outcomes(d: pathlib.Path) -> dict[str, str]:
+@@ -16,33 +25,45 @@
+     return {r[0]: r[3] for r in rows}
+ 
+ 
+-def compare(new: dict[str, str], old: dict[str, str]) -> tuple[list[str], list[str]]:
+-    bad, documented = [], []
+-    if set(new) != set(old) or len(new) != 2239:
+-        bad.append(f"CANONICAL_SETS_DIFFER (new {len(new)}, accepted {len(old)})")
+-    for cid in sorted(set(new) & set(old)):
+-        if new[cid] != old[cid]:
+-            (documented if cid == SF_PX_03 else bad).append(f"{cid}: {old[cid]} -> {new[cid]}")
+-    return bad, documented
++def compare(new: dict[str, str], old: dict[str, str]) -> list[str]:
++    bad = []
++    if len(old) != PCPG5_N:
++        bad.append(f"PCPG5_REFERENCE_NOT_{PCPG5_N} ({len(old)})")
++    missing = sorted(set(old) - set(new))
++    if missing:
++        bad.append(f"PCPG5_NODES_MISSING:{len(missing)}")
++    extra = sorted(set(new) - set(old))
++    if len(extra) != DELTA_N or not all(c.startswith(DELTA_PREFIX) for c in extra):
++        bad.append(f"UNDECLARED_EXTRA_NODES ({len(extra)}: {[c for c in extra if not c.startswith(DELTA_PREFIX)][:5]})")
++    bad += [f"DELTA_NODE_NOT_PASSED:{c}={new[c]}" for c in extra if new[c] != "passed"]
++    bad += [f"{c}: {old[c]} -> {new[c]}" for c in sorted(set(new) & set(old)) if new[c] != old[c]]
++    return bad
+ 
+ 
+ def main() -> int:
+     new, old = outcomes(pathlib.Path(sys.argv[1])), outcomes(pathlib.Path(sys.argv[2]))
+-    bad, documented = compare(new, old)
+-    same = sum(new[c] == old.get(c) for c in new)
+-    print(f"nodes={len(new)} identical_outcomes={same} documented_SF-PX-03_differences={documented} "
+-          f"undocumented_differences={bad}")
+-    # falsifiers: an undocumented difference must be caught; the documented one must not be hidden
+-    probe = dict(new); k = next(c for c in sorted(probe) if c != SF_PX_03)
+-    probe[k] = "failed" if probe[k] != "failed" else "passed"
+-    f1, _ = compare(probe, old)
+-    probe2 = dict(new); probe2.pop(k)
+-    f2, _ = compare(probe2, old)
+-    print("FALSIFIER_DETECTS[undocumented_outcome_change]::" + ("PASS" if f1 else "FAIL"))
+-    print("FALSIFIER_DETECTS[missing_node]::" + ("PASS" if f2 else "FAIL"))
+-    print(f"SF_PX_03_NODE: accepted={old.get(SF_PX_03)} new={new.get(SF_PX_03)} (documented, never normalized)")
+-    ok = not bad and bool(f1) and bool(f2)
+-    print("INSTRUMENTATION_INERT_FOR_SERIAL_OUTCOMES::" + ("PASS" if ok else "FAIL"))
++    bad = compare(new, old)
++    same = sum(new.get(c) == old[c] for c in old)
++    print(f"successor_nodes={len(new)} pcpg5_nodes={len(old)} pcpg5_outcomes_preserved={same} "
++          f"delta_nodes={len(set(new) - set(old))} violations={bad}")
++    # falsifiers: each kind of violation must be caught
++    k = next(c for c in sorted(old) if c != SF_PX_03 and c in new)
++    flipped = dict(new); flipped[k] = "failed" if new[k] != "failed" else "passed"
++    sf = dict(new); sf[SF_PX_03] = "failed" if new.get(SF_PX_03) != "failed" else "passed"
++    dropped = dict(new); dropped.pop(k)
++    extra = dict(new); extra["tests/e2e/test_undeclared.py::test_x"] = "passed"
++    delta = next((c for c in sorted(new) if c.startswith(DELTA_PREFIX)), None)
++    broken = dict(new)
++    if delta:
++        broken[delta] = "failed"
++    probes = (("undocumented_outcome_change", flipped), ("sf_px_03_change_not_exempt", sf),
++              ("missing_node", dropped), ("undeclared_extra_node", extra), ("failing_delta_node", broken))
++    caught = {name: bool(compare(probe, old)) for name, probe in probes}
++    for name, ok in caught.items():
++        print(f"FALSIFIER_DETECTS[{name}]::" + ("PASS" if ok else "FAIL"))
++    print(f"SF_PX_03_NODE: pcpg5_reference={old.get(SF_PX_03)} successor={new.get(SF_PX_03)} (no exemption)")
++    ok = not bad and all(caught.values())
++    print("SUCCESSOR_PRESERVES_PCPG5_SERIAL_OUTCOMES::" + ("PASS" if ok else "FAIL"))
+     return 0 if ok else 1
+ 
+ 
+diff -ruN -x evidence -x build -x '*.egg-info' -x SUCCESSOR_BINDING.diff -x pycache -x __pycache__ /tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/lineage_src/parallel_proof.sh /home/codi/Entwicklung/nquiry/.venv-proof313-orange-swu/orange-proof/parallel_proof.sh
+--- /tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/lineage_src/parallel_proof.sh	2026-10-01 08:12:42.000000000 +0200
++++ /home/codi/Entwicklung/nquiry/.venv-proof313-orange-swu/orange-proof/parallel_proof.sh	2026-10-01 14:54:53.628004662 +0200
+@@ -5,12 +5,13 @@
+ # Phases: pre | xdist | serial | post. Claim ceiling: 2235 parallel + 4 serial = 2239 coverage.
+ set -u
+ N=/home/codi/Entwicklung/nquiry
+-V=$N/.venv-proof313-orange
+-O=$N/worktrees/orange-proof-infra
++V=$N/.venv-proof313-orange-swu
++O=$N/worktrees/swu-px-03
+ P="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"  # proof-infrastructure root = this script's directory (lineage)
+ PYC=$V/orange-proof/pycache  # runtime bytecode cache (env-owned, never versioned)
++export PYC  # TF-PX-05 (successor binding): H is serialized into `bash -c` via declare -f; an unexported PYC became an EMPTY prefix there
+ OUT=${ORANGE_PARALLEL_DIR:?set ORANGE_PARALLEL_DIR to a NEW evidence directory (committed evidence is never overwritten)}
+-FROZEN=e0a6b3b25d4309d16d6e3db3ee0958183a279dfd
++FROZEN=944f1ae94f027b400f07dbdb07a6b9f018395a33
+ BASE="postgresql+psycopg://nquiry:nquiry_local_dev_only@127.0.0.1:15432/"
+ mapfile -t SERIAL_SELECTORS < "$P/serial_partition_selectors.txt"
+ DESELECT=(); for s in "${SERIAL_SELECTORS[@]}"; do DESELECT+=(--deselect "$s"); done
+@@ -31,7 +32,7 @@
+ state() {
+   { echo "HEAD=$(git -C "$O" rev-parse HEAD)"
+     echo "status_entries_incl_ignored=$(git -C "$O" status --porcelain --ignored | wc -l)"
+-    echo "diff_vs_tag=$(git -C "$O" diff --quiet checkpoint-PFC-PCPG-5 && echo none || echo CHANGED)"
++    echo "diff_vs_tag=$(git -C "$O" diff --quiet checkpoint-SWU-PX-03 && echo none || echo CHANGED)"
+     echo "content_sha256=$(tree_hash)"; } > "$OUT/$1_tree.txt"
+   cat "$OUT/$1_tree.txt"
+   H "$V/bin/python" "$P/env_manifest.py" "$OUT/$1_env_manifest.json"
+diff -ruN -x evidence -x build -x '*.egg-info' -x SUCCESSOR_BINDING.diff -x pycache -x __pycache__ /tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/lineage_src/parallel_rerun.sh /home/codi/Entwicklung/nquiry/.venv-proof313-orange-swu/orange-proof/parallel_rerun.sh
+--- /tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/lineage_src/parallel_rerun.sh	1970-01-01 01:00:00.000000000 +0100
++++ /home/codi/Entwicklung/nquiry/.venv-proof313-orange-swu/orange-proof/parallel_rerun.sh	2026-10-01 14:54:53.658004793 +0200
+@@ -0,0 +1,39 @@
++#!/usr/bin/env bash
++# SUCCESSOR BINDING: governed partition phase (final_closure.sh steps 2-3, verbatim) re-run against an EXISTING
++# serial reference after TF-PX-05. No logic change; the serial reference is read, never rewritten.
++# SUCCESSOR BINDING (checkpoint-SWU-PX-03) of the ORANGE final closure chain (lineage c9f276fc).
++# ORANGE FINAL ENVIRONMENT CLOSURE (Human Authority 2026-10-01). ONE proof environment (guard 1.2.0)
++# for BOTH the serial reference and the governed parallel/serial partition execution.
++# FROZEN TREE -> ENV -> MANIFEST -> COLLECTION -> SERIAL REFERENCE -> PARTITION EXECUTION ->
++# AGGREGATION -> EQUIVALENCE -> CLEANUP -> TREE/ENV/DB RECONSTRUCTION.
++# No retries, no dependency change, no non-proof database contact.
++set -u
++N=/home/codi/Entwicklung/nquiry
++V=$N/.venv-proof313-orange-swu
++P="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"  # proof-infrastructure root = this script's directory (lineage)
++PYC=$V/orange-proof/pycache  # runtime bytecode cache (env-owned, never versioned)
++F=${ORANGE_CLOSURE_DIR:?set ORANGE_CLOSURE_DIR to the closure dir holding serial_ref}
++S=$F/serial_ref; [ -f "$S/canonical_outcomes.tsv" ] || { echo "REFUSED: no serial reference in $F"; exit 1; }
++export ORANGE_BYTECODE_ENV="PYTHONPYCACHEPREFIX=$PYC"
++PY() { env -u PYTHONPATH PYTHONNOUSERSITE=1 PYTHONDONTWRITEBYTECODE=1 "$V/bin/python" "$@"; }
++echo "== final closure started $(date -Iseconds); load $(cut -d' ' -f1-3 /proc/loadavg)"
++
++# ---- 2. GOVERNED PARTITION EXECUTION (xdist clones TEMPLATE gwN -> catalog/observer via serial db)
++R=$F/${ORANGE_RERUN_NAME:?set ORANGE_RERUN_NAME}; [ -e "$R" ] && { echo "REFUSED: $R exists"; exit 1; }; mkdir -p "$R"
++export ORANGE_PARALLEL_DIR=$R ORANGE_CATALOG_DB=nquiry_proof_serial_test
++unset ORANGE_SERIAL_DIR
++bash "$P/parallel_proof.sh" pre > "$F/${ORANGE_RERUN_NAME}.pre.log" 2>&1; rc=$?; mv "$F/${ORANGE_RERUN_NAME}.pre.log" "$R/pre.log"; cat "$R/pre.log"
++[ $rc -eq 0 ] || { echo "CHAIN STOPPED: parallel pre refused (rc=$rc)"; exit 1; }  # TF-PX-04 (successor binding)
++(cd "$P" && ORANGE_PARTITION_DIR=$R/partition PY partition_proof.py) > "$R/partition_proof.log" 2>&1; tail -1 "$R/partition_proof.log"
++bash "$P/observer.sh" nquiry_proof_serial_test "$R/observed_cluster_objects.log" "$R/observer.stop" &
++OBS=$!
++bash "$P/parallel_proof.sh" xdist
++bash "$P/parallel_proof.sh" serial
++touch "$R/observer.stop"; wait $OBS
++bash "$P/parallel_proof.sh" post > "$R/post.log" 2>&1; cat "$R/post.log"
++
++# ---- 3. AGGREGATION + EQUIVALENCE (reference = the NEW serial reference, same environment)
++(cd "$P" && ORANGE_REFERENCE_DIR=$S PY run_aggregate.py "$R") > "$R/aggregate.log" 2>&1; cat "$R/aggregate.log"
++(cd "$P" && PY order_proof.py "$R/binding" "$R/partition/xdist_nodeids.txt") > "$R/order_proof.log" 2>&1; tail -1 "$R/order_proof.log"
++(cd "$P" && PY inertness_compare.py "$S" "${ORANGE_INERTNESS_REFERENCE:-/home/codi/Entwicklung/nquiry/worktrees/orange-proof-lineage/evidence/final_closure/serial_ref}") > "$R/inertness.log" 2>&1; cat "$R/inertness.log"
++echo "== final closure finished $(date -Iseconds); load $(cut -d' ' -f1-3 /proc/loadavg)"
+diff -ruN -x evidence -x build -x '*.egg-info' -x SUCCESSOR_BINDING.diff -x pycache -x __pycache__ /tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/lineage_src/partition_proof.py /home/codi/Entwicklung/nquiry/.venv-proof313-orange-swu/orange-proof/partition_proof.py
+--- /tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/lineage_src/partition_proof.py	2026-10-01 08:12:42.000000000 +0200
++++ /home/codi/Entwicklung/nquiry/.venv-proof313-orange-swu/orange-proof/partition_proof.py	2026-10-01 14:05:06.705908954 +0200
+@@ -24,7 +24,7 @@
+ SELECTORS = [l for l in (D / "serial_selector.txt").read_text().splitlines() if l]
+ MOVED = "tests/e2e/test_pfc_f09_1_technical_failure.py::test_worker_loop_survives_a_database_outage_and_stops_gracefully"
+ VOLATILE_FN = "tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused"
+-FULL_N, SERIAL_N, XDIST_N = 2239, 4, 2235
++FULL_N, SERIAL_N, XDIST_N = 2252, 4, 2248
+ results: list[tuple[str, bool, str]] = []
+ 
+ 
+diff -ruN -x evidence -x build -x '*.egg-info' -x SUCCESSOR_BINDING.diff -x pycache -x __pycache__ /tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/lineage_src/partition.sh /home/codi/Entwicklung/nquiry/.venv-proof313-orange-swu/orange-proof/partition.sh
+--- /tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/lineage_src/partition.sh	2026-10-01 08:12:42.000000000 +0200
++++ /home/codi/Entwicklung/nquiry/.venv-proof313-orange-swu/orange-proof/partition.sh	2026-10-01 14:05:06.697908919 +0200
+@@ -6,8 +6,8 @@
+ # This script only COLLECTS (DB-free, DATABASE_URL unset); it never executes a test.
+ set -u
+ N=/home/codi/Entwicklung/nquiry
+-V=$N/.venv-proof313-orange
+-O=$N/worktrees/orange-proof-infra
++V=$N/.venv-proof313-orange-swu
++O=$N/worktrees/swu-px-03
+ P="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"  # proof-infrastructure root = this script's directory (lineage)
+ PYC=$V/orange-proof/pycache  # runtime bytecode cache (env-owned, never versioned)
+ OUT=${ORANGE_PARTITION_DIR:-$P/evidence/partition_$(date +%Y%m%dT%H%M%S)}
+diff -ruN -x evidence -x build -x '*.egg-info' -x SUCCESSOR_BINDING.diff -x pycache -x __pycache__ /tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/lineage_src/provision_proof_dbs.sh /home/codi/Entwicklung/nquiry/.venv-proof313-orange-swu/orange-proof/provision_proof_dbs.sh
+--- /tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/lineage_src/provision_proof_dbs.sh	2026-10-01 08:12:42.000000000 +0200
++++ /home/codi/Entwicklung/nquiry/.venv-proof313-orange-swu/orange-proof/provision_proof_dbs.sh	2026-10-01 14:05:06.698908923 +0200
+@@ -4,8 +4,8 @@
+ # Success = the literal MIGRATION_LIVE_CHECK::PASS line, never exit code 0 alone.
+ set -u
+ N=/home/codi/Entwicklung/nquiry
+-V=$N/.venv-proof313-orange
+-O=$N/worktrees/orange-proof-infra
++V=$N/.venv-proof313-orange-swu
++O=$N/worktrees/swu-px-03
+ P="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"  # proof-infrastructure root (lineage)
+ OUT=${ORANGE_DB_OUT:-$P/evidence/db_$(date +%Y%m%dT%H%M%S)}
+ mkdir -p "$OUT"
+diff -ruN -x evidence -x build -x '*.egg-info' -x SUCCESSOR_BINDING.diff -x pycache -x __pycache__ /tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/lineage_src/px1_falsifiers.sh /home/codi/Entwicklung/nquiry/.venv-proof313-orange-swu/orange-proof/px1_falsifiers.sh
+--- /tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/lineage_src/px1_falsifiers.sh	2026-10-01 08:12:42.000000000 +0200
++++ /home/codi/Entwicklung/nquiry/.venv-proof313-orange-swu/orange-proof/px1_falsifiers.sh	2026-10-01 14:05:57.222130435 +0200
+@@ -1,10 +1,10 @@
+ #!/usr/bin/env bash
+ # ORANGE PX-1 falsifiers (environment closure). DB-free: DATABASE_URL is always unset.
+-# Frozen target: worktrees/orange-proof-infra == checkpoint-PFC-PCPG-5 (e0a6b3b).
++# Target (successor binding): worktrees/swu-px-03 == checkpoint-SWU-PX-03 (944f1ae).
+ set -u
+ N=/home/codi/Entwicklung/nquiry
+-V=$N/.venv-proof313-orange
+-O=$N/worktrees/orange-proof-infra
++V=$N/.venv-proof313-orange-swu
++O=$N/worktrees/swu-px-03
+ P="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"  # proof-infrastructure root (lineage)
+ NEG=${NEG:-$P/negative-fixtures}
+ PX1OUT=${ORANGE_PX1_OUT:-$P/evidence/px1_$(date +%Y%m%dT%H%M%S)}; mkdir -p "$PX1OUT"
+@@ -80,4 +80,4 @@
+ H env PYTHONPATH=$NEG/plug $PY -m pytest -p no:cacheprovider -p evil_late_load -q tests/domain/test_challenge.py 2>&1 | grep -m1 "loaded governance"; echo "exit=${PIPESTATUS[0]}"
+ echo "== CONTROL master-bound .venv-proof313 cannot collect the frozen tree"
+ H $N/.venv-proof313/bin/python -m pytest -p no:cacheprovider --collect-only -q 2>&1 | tail -1; echo "exit=${PIPESTATUS[0]}"
+-echo "== TREE ORANGE entries(incl. ignored)=$(git -C "$O" status --porcelain --ignored | wc -l) head=$(git -C "$O" rev-parse HEAD) diff-vs-tag=$(git -C "$O" diff --quiet checkpoint-PFC-PCPG-5 && echo none)"
++echo "== TREE ORANGE entries(incl. ignored)=$(git -C "$O" status --porcelain --ignored | wc -l) head=$(git -C "$O" rev-parse HEAD) diff-vs-tag=$(git -C "$O" diff --quiet checkpoint-SWU-PX-03 && echo none)"
+diff -ruN -x evidence -x build -x '*.egg-info' -x SUCCESSOR_BINDING.diff -x pycache -x __pycache__ /tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/lineage_src/serial_baseline.sh /home/codi/Entwicklung/nquiry/.venv-proof313-orange-swu/orange-proof/serial_baseline.sh
+--- /tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/lineage_src/serial_baseline.sh	2026-10-01 08:12:42.000000000 +0200
++++ /home/codi/Entwicklung/nquiry/.venv-proof313-orange-swu/orange-proof/serial_baseline.sh	2026-10-01 14:05:06.699908928 +0200
+@@ -3,14 +3,14 @@
+ # Phases: pre | run | post. Target DB: nquiry_proof_serial_test ONLY. No xdist.
+ set -u
+ N=/home/codi/Entwicklung/nquiry
+-V=$N/.venv-proof313-orange
+-O=$N/worktrees/orange-proof-infra
++V=$N/.venv-proof313-orange-swu
++O=$N/worktrees/swu-px-03
+ P="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"  # proof-infrastructure root = this script's directory (lineage)
+ PYC=$V/orange-proof/pycache  # runtime bytecode cache (env-owned, never versioned)
+ OUT=${ORANGE_SERIAL_DIR:?set ORANGE_SERIAL_DIR to a NEW evidence directory (committed evidence is never overwritten)}
+ DB=nquiry_proof_serial_test
+ URL="postgresql+psycopg://nquiry:nquiry_local_dev_only@127.0.0.1:15432/$DB"
+-FROZEN=e0a6b3b25d4309d16d6e3db3ee0958183a279dfd
++FROZEN=944f1ae94f027b400f07dbdb07a6b9f018395a33
+ export PGPASSWORD=nquiry_local_dev_only
+ PSQL=(psql -h 127.0.0.1 -p 15432 -U nquiry -d "${ORANGE_CATALOG_DB:-nquiry_proof_gw0_test}" -At)  # catalog via a PROOF db only
+ H() { env -u PYTHONPATH -u NQUIRY_ENVIRONMENT -u NQUIRY_AI_PROVIDER -u NQUIRY_RUN_REAL_COMMIT_TESTS \
+@@ -29,7 +29,7 @@
+ state() {  # $1 = pre|post
+   echo "HEAD=$(git -C "$O" rev-parse HEAD)" > "$OUT/$1_tree.txt"
+   echo "status_entries_incl_ignored=$(git -C "$O" status --porcelain --ignored | wc -l)" >> "$OUT/$1_tree.txt"
+-  echo "diff_vs_tag=$(git -C "$O" diff --quiet checkpoint-PFC-PCPG-5 && echo none || echo CHANGED)" >> "$OUT/$1_tree.txt"
++  echo "diff_vs_tag=$(git -C "$O" diff --quiet checkpoint-SWU-PX-03 && echo none || echo CHANGED)" >> "$OUT/$1_tree.txt"
+   echo "content_sha256=$(tree_hash)" >> "$OUT/$1_tree.txt"
+   cat "$OUT/$1_tree.txt"
+   H "$V/bin/python" "$P/env_manifest.py" "$OUT/$1_env_manifest.json"
+diff -ruN -x evidence -x build -x '*.egg-info' -x SUCCESSOR_BINDING.diff -x pycache -x __pycache__ /tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/lineage_src/timing_stress_probe.sh /home/codi/Entwicklung/nquiry/.venv-proof313-orange-swu/orange-proof/timing_stress_probe.sh
+--- /tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/lineage_src/timing_stress_probe.sh	2026-10-01 08:12:42.000000000 +0200
++++ /home/codi/Entwicklung/nquiry/.venv-proof313-orange-swu/orange-proof/timing_stress_probe.sh	2026-10-01 14:05:06.698908923 +0200
+@@ -6,8 +6,8 @@
+ # the real lane (8 contending processes instead of 4). Executes no test and touches no database.
+ set -u
+ N=/home/codi/Entwicklung/nquiry
+-V=$N/.venv-proof313-orange
+-O=$N/worktrees/orange-proof-infra
++V=$N/.venv-proof313-orange-swu
++O=$N/worktrees/swu-px-03
+ P="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"  # proof-infrastructure root = this script's directory (lineage)
+ PYC=$V/orange-proof/pycache  # runtime bytecode cache (env-owned, never versioned)
+ OUT=${ORANGE_TIMING_OUT:-$P/evidence/timing_$(date +%Y%m%dT%H%M%S)}; mkdir -p "$OUT"

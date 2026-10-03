@@ -130,3 +130,24 @@ Status unchanged: PROOF INFRASTRUCTURE CLOSED (claim ceiling as recorded); PRODU
 SF-PX-03 OPEN; successors SF-PX-01, SWU-PX-02, SWU-PX-03, pyproject declarations, TF-PX-01.
 Lineage re-proof found one tooling defect (cadence miss): px1 P8/N6 not re-run after guard 1.1.0; repaired in
 the lineage and re-proven (TF-PX-02 in SUCCESSOR_FINDINGS.md). No closure evidence is affected.
+
+## 10. SWU-PX-03 successor proof (Human Authority FINAL_PROOF_RECORDING, 2026-10-03)
+
+The product successor `checkpoint-SWU-PX-03` (`944f1ae`, parent PCPG-5) replaces the fixed 2.5 s window with
+readiness-based synchronization. The final ORANGE proof against it (successor binding of this lineage, guard
+1.2.0+swupx03, PCPG-5 environment's distributions): PARALLEL_PROOF::PASS, ORDER_PROOF::PASS,
+SUCCESSOR_PRESERVES_PCPG5_SERIAL_OUTCOMES::PASS. Serial reference 2250 passed / 2 declared skips / 0 failed (15/15).
+Governed: xdist 2246 passed + 2 skips, serial 4/4.
+
+```text
+SWU-PX-03 = SUCCESSOR PRODUCT/TEST EQUIVALENCE PROVEN
+          = 2252/2252 COMPLETE COVERAGE = 2248 GOVERNED PARALLEL + 4 GOVERNED SERIAL
+          = SF-PX-03 CLOSED FOR SUCCESSOR
+          = PCPG-5 HISTORICAL RECORD PRESERVED (2238/2239, SF-PX-03 OPEN, unchanged)
+          = PERFORMANCE SPEEDUP / WALL-CLOCK STILL PROVISIONAL (637.2 s governed, SINGLE MEASUREMENT)
+```
+
+Never "2252 parallel". Tooling defects found on the way: TF-PX-04 and TF-PX-05 (proof-lineage
+infrastructure, repaired in the successor binding, still present in this lineage's PCPG-5-bound scripts),
+plus the historical PCPG-5 bytecode-prefix disclosure (SUCCESSOR_FINDINGS.md). Record and evidence:
+`successors/SWU-PX-03/`.

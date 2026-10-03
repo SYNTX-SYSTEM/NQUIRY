@@ -1,0 +1,18 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_______ test_worker_loop_survives_a_database_outage_and_stops_gracefully _______
+
+    def test_worker_loop_survives_a_database_outage_and_stops_gracefully() -> None:
+        p = _worker("--interval", "0.2", url=_UNREACHABLE)
+        time.sleep(2.5)
+        p.send_signal(signal.SIGTERM)
+        _, err = p.communicate(timeout=30)
+>       assert p.returncode == 0, err
+E       AssertionError: 
+E       assert -15 == 0
+E        +  where -15 = <Popen: returncode: -15 args: ['/home/codi/Entwicklung/nquiry/.venv-swu-px-0...>.returncode
+
+/tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/swu_proof/load/witness/test_old_fixed_window_consumer.py:37: AssertionError
+=========================== short test summary info ============================
+FAILED ::test_worker_loop_survives_a_database_outage_and_stops_gracefully - A...
+1 failed in 11.79s

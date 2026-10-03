@@ -1,0 +1,20 @@
+== M1_readiness_before_handler_installation: exit=1 -> KILLED
+    FAILED tests/e2e/test_swu_px_03_worker_readiness.py::test_readiness_is_announced_only_after_both_stop_handlers_are_installed
+    1 failed in 2.82s
+== M2_readiness_signal_removed: exit=1 -> KILLED
+    FAILED tests/e2e/test_pfc_f09_1_technical_failure.py::test_worker_loop_survives_a_database_outage_and_stops_gracefully
+    FAILED tests/e2e/test_swu_px_03_worker_readiness.py::test_a_stop_right_after_readiness_is_graceful[SIGTERM]
+    FAILED tests/e2e/test_swu_px_03_worker_readiness.py::test_a_stop_right_after_readiness_is_graceful[SIGINT]
+    3 failed, 1 warning in 182.89s (0:03:02)
+== M3_sigint_handler_not_installed: exit=1 -> KILLED
+    FAILED tests/e2e/test_swu_px_03_worker_readiness.py::test_readiness_is_announced_only_after_both_stop_handlers_are_installed
+    FAILED tests/e2e/test_swu_px_03_worker_readiness.py::test_a_stop_right_after_readiness_is_graceful[SIGINT]
+    2 failed, 1 passed in 3.38s
+== M4_wait_ignores_early_exit: exit=1 -> KILLED
+    FAILED tests/e2e/test_swu_px_03_worker_readiness.py::test_a_worker_that_exits_before_readiness_fails_at_once
+    1 failed in 60.87s (0:01:00)
+== M5_cleanup_does_not_kill: exit=1 -> KILLED
+    FAILED tests/e2e/test_swu_px_03_worker_readiness.py::test_cleanup_reaps_a_running_worker_and_its_readers
+    ERROR tests/e2e/test_swu_px_03_worker_readiness.py::test_cleanup_reaps_a_running_worker_and_its_readers
+    1 failed, 1 error in 279.03s (0:04:39)
+MUTATION_RESULT::PASS (5/5 killed)

@@ -1,0 +1,35 @@
+.............sss.........                                                [100%]
+=============================== warnings summary ===============================
+../../.venv-swu-px-03/lib/python3.13/site-packages/starlette/testclient.py:45
+  /home/codi/Entwicklung/nquiry/.venv-swu-px-03/lib/python3.13/site-packages/starlette/testclient.py:45: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+==================================== PASSES ====================================
+=========================== short test summary info ============================
+PASSED tests/e2e/test_swu_px_03_worker_readiness.py::test_readiness_is_announced_only_after_both_stop_handlers_are_installed
+PASSED tests/e2e/test_swu_px_03_worker_readiness.py::test_sigterm_before_handler_installation_is_not_a_graceful_stop
+PASSED tests/e2e/test_swu_px_03_worker_readiness.py::test_the_old_fixed_window_consumer_fails_when_startup_outlasts_it
+PASSED tests/e2e/test_swu_px_03_worker_readiness.py::test_a_stop_right_after_readiness_is_graceful[SIGTERM]
+PASSED tests/e2e/test_swu_px_03_worker_readiness.py::test_a_stop_right_after_readiness_is_graceful[SIGINT]
+PASSED tests/e2e/test_swu_px_03_worker_readiness.py::test_readiness_reached_then_passes_then_graceful_stop
+PASSED tests/e2e/test_swu_px_03_worker_readiness.py::test_delayed_startup_beyond_the_old_window_still_stops_gracefully
+PASSED tests/e2e/test_swu_px_03_worker_readiness.py::test_a_slowly_failing_database_does_not_change_the_outcome
+PASSED tests/e2e/test_swu_px_03_worker_readiness.py::test_readiness_never_reached_fails_at_the_bound_with_a_diagnostic
+PASSED tests/e2e/test_swu_px_03_worker_readiness.py::test_a_worker_that_exits_before_readiness_fails_at_once
+PASSED tests/e2e/test_swu_px_03_worker_readiness.py::test_cleanup_reaps_a_running_worker_and_its_readers
+PASSED tests/e2e/test_swu_px_03_worker_readiness.py::test_cleanup_is_idempotent_after_a_graceful_stop
+PASSED tests/e2e/test_pfc_f09_1_technical_failure.py::test_engine_reports_an_unreachable_database_as_unavailable
+PASSED tests/e2e/test_pfc_f09_1_technical_failure.py::test_command_with_database_unavailable_is_failed_precommit
+PASSED tests/e2e/test_pfc_f09_1_technical_failure.py::test_query_with_database_unavailable_is_failed_precommit
+PASSED tests/e2e/test_pfc_f09_1_technical_failure.py::test_every_route_family_maps_database_unavailable[/workspaces-body0]
+PASSED tests/e2e/test_pfc_f09_1_technical_failure.py::test_every_route_family_maps_database_unavailable[/auth/login-body1]
+PASSED tests/e2e/test_pfc_f09_1_technical_failure.py::test_command_with_uncertain_commit_is_indeterminate_with_its_identity
+PASSED tests/e2e/test_pfc_f09_1_technical_failure.py::test_command_with_rejected_commit_is_failed_precommit
+PASSED tests/e2e/test_pfc_f09_1_technical_failure.py::test_unexpected_failure_never_claims_success_or_a_proven_outcome
+PASSED tests/e2e/test_pfc_f09_1_technical_failure.py::test_worker_once_reports_an_unavailable_database_and_fails_the_pass
+PASSED tests/e2e/test_pfc_f09_1_technical_failure.py::test_worker_loop_survives_a_database_outage_and_stops_gracefully
+SKIPPED [1] tests/e2e/test_pfc_f09_1_technical_failure.py:79: DATABASE_URL not set; this test needs a live PostgreSQL
+SKIPPED [1] tests/e2e/test_pfc_f09_1_technical_failure.py:93: DATABASE_URL not set; this test needs a live PostgreSQL
+SKIPPED [1] tests/e2e/test_pfc_f09_1_technical_failure.py:111: DATABASE_URL not set; this test needs a live PostgreSQL
+22 passed, 3 skipped, 1 deselected, 1 warning in 27.19s

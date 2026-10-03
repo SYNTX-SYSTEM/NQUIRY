@@ -155,3 +155,51 @@ P/N/CONTROL results unchanged. Impact on closure evidence: none. The final-closu
 under the lane (pre/post_guard, IMPORT_ORIGIN_GUARD_VALID) and the binding proof separately; the pre-1.1.0
 px1 logs remain valid for guard 1.0.0 as recorded. The ORIGINAL px1_falsifiers.sh (unversioned location) is
 left unrepaired and superseded by the lineage copy.
+
+## TF-PX-03 — EMPTY_IGNORED_DIRECTORY_NOT_CAPTURED_BY_GIT_OR_CONTENT_HASH (Human Authority classification, 2026-10-01; recorded 2026-10-03)
+The frozen PCPG-5 worktree `worktrees/orange-proof-infra` contains an empty `pycache/` directory skeleton
+(0 files), created at 01:09:28 by the xdist start of `parallel_run1`. Neither `git status --ignored` nor the
+file-content hash sees it. No effect on product semantics, the frozen git tree, the recorded content hash
+or the PCPG-5 2238/2239 claim. "Filesystem pristine at directory level" is NOT claimed for that historical
+worktree state. Left untouched by decision. The published lineage commit is not amended.
+
+## TF-PX-04 — TOOLING DEFECT (proof-lineage infrastructure, NOT a product failure): the chain driver refuses its own pre phase
+`final_closure.sh` (lineage c9f276fc) redirects `serial_baseline.sh pre` (and `parallel_proof.sh pre`) into
+`$S/pre.log` / `$R/pre.log`. The shell creates that file inside the evidence directory before the pre phase
+runs, so the pre phase's evidence-safety refusal (introduced by this lineage's refactor) finds the directory
+non-empty and refuses. The driver has no `set -e` and kept running in the broken state (it started a serial run
+without a pre state). The lineage re-proof never ran the chain end to end, so the defect was not caught there.
+Found by the first SWU-PX-03 successor run (2026-10-01 14:09). Handling: the orphaned run was terminated by
+PID, proof DBs were verified clean with no residual cluster objects, and the attempt is preserved
+(`successors/SWU-PX-03/evidence/final_closure_ABORTED_TF-PX-04/`).
+Repair (successor binding only): the pre log goes to a sibling file and moves in afterwards, and the chain
+STOPS when a pre phase is refused. The lineage's own PCPG-5-bound `final_closure.sh` still carries the defect
+(not changed by this record).
+
+## TF-PX-05 — TOOLING DEFECT (proof-lineage infrastructure, NOT a product failure): PYC not exported into the governed subshell
+`parallel_proof.sh` runs the xdist and serial partitions as `bash -c "... $(declare -f H); H ..."`. The
+serialized function `H` sets `PYTHONPYCACHEPREFIX=$PYC`, but `PYC` was not exported into that subshell.
+Effect: `PYTHONPYCACHEPREFIX` resolved EMPTY (no prefix), and the xdist workers wrote `.pyc` files into the
+successor tree (44 ignored `__pycache__/` directories). TREE_UNCHANGED failed, and so did PARALLEL_PROOF.
+Introduced by this lineage's refactor (`$P/pycache` -> `$PYC`).
+Repair: `export PYC` right after its definition, so the governed subshell uses the authorized proof prefix
+(`.venv-proof313-orange-swu/orange-proof/pycache`). Verified directly (serialized function without export: empty;
+with export: the prefix).
+Proof: the failed run is preserved (`successors/SWU-PX-03/evidence/final_closure/parallel/`). The successor tree was
+restored to the exact tagged state: only the 44 git-ignored directories, containing only `.pyc`, were removed,
+leaving 0 entries and content `f247dc32…`. The governed partition phase was re-run against the unchanged serial
+reference (`.../parallel_r2_after_TF-PX-05/`): PARALLEL_PROOF::PASS, post-run tree 0 entries,
+TREE_UNCHANGED::PASS. The lineage's own PCPG-5-bound `parallel_proof.sh` still carries the defect (not changed
+by this record).
+HISTORICAL DISCLOSURE (PCPG-5, not a rewrite): in the ORIGINAL PCPG-5 `parallel_proof.sh` the same serialized `H`
+referenced `$P/pycache` with `P` unset in the subshell. The prefix was therefore `/pycache` (unwritable).
+The PCPG-5 governed partitions did NOT use the recorded ORANGE bytecode prefix: bytecode caching was
+effectively disabled (every partition import was cold), and nothing was written into the frozen tree. No
+PCPG-5 outcome or evidence changes. The published PCPG-5 proof is not rewritten.
+
+## SF-PX-03 — successor closure (addendum; the PCPG-5 entry above stays as recorded)
+SF-PX-03 = CLOSED for `checkpoint-SWU-PX-03` (`944f1ae`, tag object `b331fb1d`). The formerly failing node passed in
+the successor's serial reference and in its governed serial partition. Successor product/test equivalence
+2252 / 2252 (2248 governed parallel + 4 governed serial). All 2239 PCPG-5 nodes preserved, plus the 13 SWU-PX-03
+falsifiers. `checkpoint-PFC-PCPG-5` remains permanently 2238 / 2239 with SF-PX-03 OPEN.
+Record: `successors/SWU-PX-03/PROOF_RECORD.md`.

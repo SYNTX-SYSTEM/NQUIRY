@@ -1,0 +1,42 @@
+FE                                                                       [100%]
+==================================== ERRORS ====================================
+___ ERROR at teardown of test_cleanup_reaps_a_running_worker_and_its_readers ___
+
+    @pytest.fixture(autouse=True)
+    def no_process_residue() -> Iterator[None]:
+        if not Path("/proc/self/stat").exists():
+            pytest.skip("process-residue accounting needs /proc (Linux)")
+        before = _children()
+        yield
+        residue = _children() - before
+>       assert residue == set(), f"child processes outlived the test: {sorted(residue)}"
+E       AssertionError: child processes outlived the test: [2660083]
+E       assert {2660083} == set()
+E         
+E         Extra items in the left set:
+E         2660083
+E         Use -v to get more diff
+
+tests/e2e/test_swu_px_03_worker_readiness.py:76: AssertionError
+=================================== FAILURES ===================================
+_____________ test_cleanup_reaps_a_running_worker_and_its_readers ______________
+
+    def test_cleanup_reaps_a_running_worker_and_its_readers() -> None:
+        """A test that fails between start and stop still leaves nothing behind:
+        leaving the context kills, reaps and joins (residue checked by the
+        autouse fixture)."""
+        with pytest.raises(RuntimeError, match="test body failed"):  # noqa: SIM117
+            with start_worker("--interval", "0.2", url=_UNREACHABLE) as w:
+                w.wait_ready()
+                raise RuntimeError("test body failed")
+>       assert w.proc.returncode == -signal.SIGKILL
+E       AssertionError: assert None == -<Signals.SIGKILL: 9>
+E        +  where None = <Popen: returncode: None args: ['/home/codi/Entwicklung/nquiry/.venv-swu-px-...>.returncode
+E        +    where <Popen: returncode: None args: ['/home/codi/Entwicklung/nquiry/.venv-swu-px-...> = <worker_readiness_support.WorkerProcess object at 0x73b468492270>.proc
+E        +  and   <Signals.SIGKILL: 9> = signal.SIGKILL
+
+tests/e2e/test_swu_px_03_worker_readiness.py:305: AssertionError
+=========================== short test summary info ============================
+FAILED tests/e2e/test_swu_px_03_worker_readiness.py::test_cleanup_reaps_a_running_worker_and_its_readers
+ERROR tests/e2e/test_swu_px_03_worker_readiness.py::test_cleanup_reaps_a_running_worker_and_its_readers
+1 failed, 1 error in 279.03s (0:04:39)

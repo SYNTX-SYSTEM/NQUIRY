@@ -1,0 +1,6 @@
+== M5_cleanup_does_not_kill: exit=1 -> KILLED
+    FAILED tests/e2e/test_swu_px_03_worker_readiness.py::test_cleanup_reaps_a_running_worker_and_its_readers
+    ERROR tests/e2e/test_swu_px_03_worker_readiness.py::test_cleanup_reaps_a_running_worker_and_its_readers
+    1 failed, 1 error in 124.15s (0:02:04)
+    residue_swept_after_mutant=[]
+MUTATION_RESULT::PASS (1/1 killed)

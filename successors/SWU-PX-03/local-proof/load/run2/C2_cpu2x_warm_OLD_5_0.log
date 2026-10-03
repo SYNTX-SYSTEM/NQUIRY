@@ -1,0 +1,20 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_______ test_worker_loop_survives_a_database_outage_and_stops_gracefully _______
+
+    def test_worker_loop_survives_a_database_outage_and_stops_gracefully() -> None:
+        p = _worker("--interval", "0.2", url=_UNREACHABLE)
+        time.sleep(2.5)
+        p.send_signal(signal.SIGTERM)
+        _, err = p.communicate(timeout=30)
+        assert p.returncode == 0, err
+>       assert err.count("DATABASE_UNAVAILABLE") >= 2  # it kept trying, pass after pass
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: assert 1 >= 2
+E        +  where 1 = <built-in method count of str object at 0x700621d81cf0>('DATABASE_UNAVAILABLE')
+E        +    where <built-in method count of str object at 0x700621d81cf0> = 'nquiry_worker: ready.\nnquiry_worker: delivery pass failed: DATABASE_UNAVAILABLE\nnquiry_worker: stopped.\n'.count
+
+/tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/swu_proof/load/witness/test_old_fixed_window_consumer.py:38: AssertionError
+=========================== short test summary info ============================
+FAILED ::test_worker_loop_survives_a_database_outage_and_stops_gracefully - A...
+1 failed in 7.39s

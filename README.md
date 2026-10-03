@@ -65,3 +65,10 @@ Local-dev-only credentials (`nquiry_local_dev_only`) follow the repository's exi
 
 Disclosed deviations and the tooling defects found during the pass are recorded, not normalized away
 (`evidence/ORANGE_PROOF_STATUS.md` §7–§9, `evidence/SUCCESSOR_FINDINGS.md`).
+
+## Successor proofs
+
+`successors/<WU>/` records ORANGE proofs against product successor checkpoints, each with its own target identity
+(`SUCCESSOR_TARGET.json`), the exact successor binding of this tooling (`SUCCESSOR_BINDING.diff`), evidence
+with a hash manifest, and a proof record. The PCPG-5 record above is never rewritten by a successor.
+- `successors/SWU-PX-03/`: `checkpoint-SWU-PX-03` (944f1ae), 2252/2252, SF-PX-03 CLOSED for the successor.

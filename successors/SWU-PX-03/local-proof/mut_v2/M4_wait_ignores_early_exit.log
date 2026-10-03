@@ -1,0 +1,19 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___________ test_a_worker_that_exits_before_readiness_fails_at_once ____________
+
+    def test_a_worker_that_exits_before_readiness_fails_at_once() -> None:
+        """No database configured: the worker refuses to start (exit 2). The wait
+        fails at once with the exit status. It does not sit out the bound."""
+        with start_worker("--interval", "0.2", url="") as w:
+            started = time.monotonic()
+>           with pytest.raises(NotObserved, match=r"exited before readiness .*returncode=2"):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AssertionError: Regex pattern did not match.
+E             Expected regex: 'exited before readiness .*returncode=2'
+E             Actual message: "readiness not observed within the 60 s fail bound (fail / no-hang bound, not a readiness proof); stderr=['nquiry_worker: DATABASE_URL is not set; refusing to start.']"
+
+tests/e2e/test_swu_px_03_worker_readiness.py:297: AssertionError
+=========================== short test summary info ============================
+FAILED tests/e2e/test_swu_px_03_worker_readiness.py::test_a_worker_that_exits_before_readiness_fails_at_once
+1 failed in 60.90s (0:01:00)

@@ -1,0 +1,46 @@
+{
+  "record": "ORANGE successor proof record: SWU-PX-03 (product successor of SF-PX-03)",
+  "relation": "checkpoint-SWU-PX-03 -> proof target (immutable, external); ORANGE successor binding -> proof executor / verifier. This record does not change the target it claims.",
+  "target": {
+    "target_checkpoint": "checkpoint-SWU-PX-03",
+    "target_tag_object": "b331fb1db08fc3126490f5916989878104e389a8",
+    "target_commit": "944f1ae94f027b400f07dbdb07a6b9f018395a33",
+    "target_git_tree": "3b900955bf06ffa4d89adcdfbcf9305eb912c900",
+    "target_tree_content_sha256": "f247dc324fa8dc34a2c74194493c931d3b49c66312004f147744666e81247bf3",
+    "target_parent": "checkpoint-PFC-PCPG-5 e0a6b3b25d4309d16d6e3db3ee0958183a279dfd",
+    "target_branch": "swu-px-03-worker-readiness (local, not pushed)",
+    "target_worktree": "/home/codi/Entwicklung/nquiry/worktrees/swu-px-03",
+    "product_delta_files": 5,
+    "migration_head": "e8c2a5f1b7d4 (unchanged from PCPG-5)",
+    "proof_db_schema_fingerprint": "3c899691e52cef9fbd65d4ea9e9489a86d05e199c068c49e556e9e2d987c27a6"
+  },
+  "environment": {
+    "path": "/home/codi/Entwicklung/nquiry/.venv-proof313-orange-swu",
+    "python": "CPython 3.13.15 (uv-managed)",
+    "third_party_distributions": "48, freeze-identical to the PCPG-5 proof environment",
+    "environment_manifest_sha256": "9b0bc9a9b1b97a5db80404fcd0c7ce4dcb5a9487dd21c4db76292ef78cd337f3",
+    "site_packages_content_sha256": "cb2682fa3b3e6ab97931bc8bdcbd7642eac87ae8ad414139c1d746ffbba1117d",
+    "manifest_identical_across": "serial reference pre/post and partition re-run pre/post",
+    "path_binding": "nquiry_orange_tree.pth = the successor's 4 pytest pythonpath roots",
+    "pcpg5_environment_unchanged": "82f6c73aab6f7d2eddd9eda4d088901c20d3bf8f30ebfc54f047e93a7791922d"
+  },
+  "proof_tool_version": {
+    "binding_source": "orange-proof-lineage c9f276fc21eb7e78f8a1dd785f7001d450cc3254 (parameters + 3 recorded repairs; SUCCESSOR_BINDING.diff)",
+    "nquiry-orange-guard": "1.2.0+swupx03",
+    "guard/src/nquiry_orange_guard.py": "0d416422d3db670afa607c97bc0e9eeddc547dfa00cc142f45da450504cbc71f",
+    "guard/src/nquiry_orange_workerdb.py": "b80f7fd97ac02cf1e3ef705025ae85cb38cf5b11533221b3c6875d4f8f8188f0 (byte-identical to published 1.2.0)"
+  },
+  "result": {
+    "final_orange_proof": "PARALLEL_PROOF::PASS, ORDER_PROOF::PASS, SUCCESSOR_PRESERVES_PCPG5_SERIAL_OUTCOMES::PASS",
+    "serial_reference": "2250 passed / 2 declared skips / 0 failed; 15/15 criteria PASS (evidence/final_closure/serial_ref)",
+    "governed_execution": "xdist 2246 passed + 2 declared skips; serial 4/4 passed (evidence/final_closure/parallel_r2_after_TF-PX-05)",
+    "failed_first_partition_run": "evidence/final_closure/parallel (PARALLEL_PROOF::FAIL on TREE_UNCHANGED only, TF-PX-05), preserved",
+    "aborted_first_attempt": "evidence/final_closure_ABORTED_TF-PX-04, preserved",
+    "product_test_equivalence": "2252 / 2252, for checkpoint-SWU-PX-03 only",
+    "historical_node_preservation": "all 2239 PCPG-5 nodes keep their outcomes; +13 SWU-PX-03 falsifiers, all passed",
+    "sf_px_03": "CLOSED for checkpoint-SWU-PX-03 (node passed in the serial reference and in the governed serial partition)",
+    "claim_ceiling": "2248 governed parallel + 4 governed serial = complete 2252-node coverage; never '2252 parallel'",
+    "performance": "governed 637.2 s (xdist 632.5 + serial 4.8) vs serial reference 1785.0 s = 2.80x; SINGLE MEASUREMENT, PROVISIONAL PERFORMANCE EVIDENCE"
+  },
+  "historical": "checkpoint-PFC-PCPG-5 remains 2238 / 2239 with SF-PX-03 OPEN; its evidence is not rewritten."
+}

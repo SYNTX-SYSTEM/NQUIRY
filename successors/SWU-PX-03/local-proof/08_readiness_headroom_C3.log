@@ -1,0 +1,5 @@
+sample 0: ready_after=11.94s two_passes_after_ready=1.78s rc=0 stopped=True headroom=48.1s load1=18.4
+sample 1: ready_after=8.84s two_passes_after_ready=1.71s rc=0 stopped=True headroom=51.2s load1=18.9
+sample 2: ready_after=8.89s two_passes_after_ready=2.04s rc=0 stopped=True headroom=51.1s load1=19.3
+sample 3: ready_after=11.82s two_passes_after_ready=2.19s rc=0 stopped=True headroom=48.2s load1=20.5
+sample 4: ready_after=15.21s two_passes_after_ready=2.88s rc=0 stopped=True headroom=44.8s load1=26.1

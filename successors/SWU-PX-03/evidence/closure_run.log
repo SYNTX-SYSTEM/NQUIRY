@@ -1,0 +1,97 @@
+== final closure started 2026-10-01T14:11:01+02:00; load 11.17 12.08 10.57
+pre race_dbs=0 zz_roles=0 proof_conns=[]
+HEAD=944f1ae94f027b400f07dbdb07a6b9f018395a33
+status_entries_incl_ignored=0
+diff_vs_tag=none
+content_sha256=f247dc324fa8dc34a2c74194493c931d3b49c66312004f147744666e81247bf3
+ENV_MANIFEST pre_env_manifest.json: 49 dists, 3872 files, content cb2682fa3b3e6ab9, manifest sha256 9b0bc9a9b1b97a5d
+ORANGE_IMPORT_ORIGIN::PASS (44 first-party names under /home/codi/Entwicklung/nquiry/worktrees/swu-px-03)
+ALLOWLIST_SET::PASS (cluster proof DBs == allowlist, exactly 5)
+SCHEMA_FINGERPRINT_EQUIVALENCE::PASS (3c899691e52cef9fbd65d4ea9e9489a86d05e199c068c49e556e9e2d987c27a6)
+DB_METADATA_EQUIVALENCE::PASS
+PROOF_DB_PRECONDITIONS::PASS
+collected: 2252 (2252 tests collected in 5.00s)
+exit=0
+========== 2250 passed, 2 skipped, 756 warnings in 1785.00s (0:29:45) ==========
+post race_dbs=0 zz_roles=0 proof_conns=[]
+HEAD=944f1ae94f027b400f07dbdb07a6b9f018395a33
+status_entries_incl_ignored=0
+diff_vs_tag=none
+content_sha256=f247dc324fa8dc34a2c74194493c931d3b49c66312004f147744666e81247bf3
+ENV_MANIFEST post_env_manifest.json: 49 dists, 3872 files, content cb2682fa3b3e6ab9, manifest sha256 9b0bc9a9b1b97a5d
+ORANGE_IMPORT_ORIGIN::PASS (44 first-party names under /home/codi/Entwicklung/nquiry/worktrees/swu-px-03)
+ALLOWLIST_SET::PASS (cluster proof DBs == allowlist, exactly 5)
+SCHEMA_FINGERPRINT_EQUIVALENCE::PASS (3c899691e52cef9fbd65d4ea9e9489a86d05e199c068c49e556e9e2d987c27a6)
+DB_METADATA_EQUIVALENCE::PASS
+PROOF_DB_PRECONDITIONS::PASS
+COLLECTED_2252::PASS
+EXECUTED_SET_EQUALS_COLLECTION::PASS
+SKIP_SET_EQUALS_DECLARED_2::PASS
+ZERO_FAILURES_ERRORS::PASS
+CONCURRENCY_13_EXECUTED::PASS
+EXIT_CODE_0::PASS
+TREE_UNCHANGED::PASS
+ENV_MANIFEST_UNCHANGED::PASS
+GUARD_GREEN_BEFORE_AND_AFTER::PASS
+PROOF_DBS_SAME_HEAD_FINGERPRINT::PASS
+PROOF_DBS_CLEAN_AFTER::PASS
+PROOF_DBS_NO_CONNECTIONS_AFTER::PASS
+NO_RESIDUAL_RACE_DB::PASS
+NO_RESIDUAL_ZZ_PKG25_ROLE::PASS
+SERIAL_BASELINE::PASS
+pre race_dbs=0 zz_roles=0 proof_conns=[]
+HEAD=944f1ae94f027b400f07dbdb07a6b9f018395a33
+status_entries_incl_ignored=0
+diff_vs_tag=none
+content_sha256=f247dc324fa8dc34a2c74194493c931d3b49c66312004f147744666e81247bf3
+ENV_MANIFEST pre_env_manifest.json: 49 dists, 3872 files, content cb2682fa3b3e6ab9, manifest sha256 9b0bc9a9b1b97a5d
+ORANGE_IMPORT_ORIGIN::PASS (44 first-party names under /home/codi/Entwicklung/nquiry/worktrees/swu-px-03)
+ALLOWLIST_SET::PASS (cluster proof DBs == allowlist, exactly 5)
+SCHEMA_FINGERPRINT_EQUIVALENCE::PASS (3c899691e52cef9fbd65d4ea9e9489a86d05e199c068c49e556e9e2d987c27a6)
+DB_METADATA_EQUIVALENCE::PASS
+PROOF_DB_PRECONDITIONS::PASS
+full: 2252 selected | 2252 tests collected in 4.88s
+serial: 4 selected | 4 tests collected in 2.11s
+xdist: 2248 selected | 2248/2252 tests collected (4 deselected) in 4.66s
+declared skips: 2
+PARTITION_PROOF::PASS (24/24)
+xdist exit=0 wall=710.643383885 s
+========== 2246 passed, 2 skipped, 759 warnings in 708.35s (0:11:48) ===========
+serial exit=0 wall=4.231864742 s
+========================= 4 passed, 1 warning in 3.07s =========================
+post race_dbs=0 zz_roles=0 proof_conns=[]
+HEAD=944f1ae94f027b400f07dbdb07a6b9f018395a33
+status_entries_incl_ignored=44
+diff_vs_tag=none
+content_sha256=d34f04c373aebb25b7ade4d04c0d60c0e813bd77f295bbbf07e48a612110c565
+ENV_MANIFEST post_env_manifest.json: 49 dists, 3872 files, content cb2682fa3b3e6ab9, manifest sha256 9b0bc9a9b1b97a5d
+ORANGE_IMPORT_ORIGIN::PASS (44 first-party names under /home/codi/Entwicklung/nquiry/worktrees/swu-px-03)
+ALLOWLIST_SET::PASS (cluster proof DBs == allowlist, exactly 5)
+SCHEMA_FINGERPRINT_EQUIVALENCE::PASS (3c899691e52cef9fbd65d4ea9e9489a86d05e199c068c49e556e9e2d987c27a6)
+DB_METADATA_EQUIVALENCE::PASS
+PROOF_DB_PRECONDITIONS::PASS
+aggregated nodes=2252 per partition={'xdist': {'passed': 2246, 'skipped': 2}, 'serial': {'passed': 4}} xdist_exit=0 serial_exit=0
+AGGREGATION_AND_EQUIVALENCE::PASS
+AGGREGATION_AND_EQUIVALENCE::PASS
+TREE_UNCHANGED::FAIL
+ENV_MANIFEST_UNCHANGED::PASS
+IMPORT_ORIGIN_GUARD_VALID::PASS
+MIGRATION_HEADS_AND_FINGERPRINT_UNCHANGED::PASS
+PROOF_DBS_CLEAN_AND_UNCONNECTED_AFTER::PASS
+NO_RESIDUAL_RACE_DB::PASS
+NO_RESIDUAL_ZZ_PKG25_ROLE::PASS
+OBSERVED_OBJECTS_ATTRIBUTABLE::PASS
+observed proof-created objects: 13 (race dbs 13, roles 0)
+DURATION xdist_partition=710.6s serial_partition=4.2s governed_total=714.9s accepted_serial_baseline=1785.0s speedup=2.50x
+RESULT: NOT PROVEN
+PARALLEL_PROOF::FAIL
+ORDER_PROOF::PASS
+successor_nodes=2252 pcpg5_nodes=2239 pcpg5_outcomes_preserved=2239 delta_nodes=13 violations=[]
+FALSIFIER_DETECTS[undocumented_outcome_change]::PASS
+FALSIFIER_DETECTS[sf_px_03_change_not_exempt]::PASS
+FALSIFIER_DETECTS[missing_node]::PASS
+FALSIFIER_DETECTS[undeclared_extra_node]::PASS
+FALSIFIER_DETECTS[failing_delta_node]::PASS
+SF_PX_03_NODE: pcpg5_reference=passed successor=passed (no exemption)
+SUCCESSOR_PRESERVES_PCPG5_SERIAL_OUTCOMES::PASS
+== final closure finished 2026-10-01T14:53:25+02:00; load 4.07 7.48 8.36

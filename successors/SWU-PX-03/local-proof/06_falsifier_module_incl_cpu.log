@@ -1,0 +1,58 @@
+.............                                                            [100%]
+==================================== PASSES ====================================
+============================== slowest durations ===============================
+6.24s call     tests/e2e/test_swu_px_03_worker_readiness.py::test_delayed_startup_beyond_the_old_window_still_stops_gracefully
+3.75s call     tests/e2e/test_swu_px_03_worker_readiness.py::test_high_cpu_contention_does_not_change_the_outcome
+3.21s call     tests/e2e/test_swu_px_03_worker_readiness.py::test_a_slowly_failing_database_does_not_change_the_outcome
+2.50s call     tests/e2e/test_swu_px_03_worker_readiness.py::test_the_old_fixed_window_consumer_fails_when_startup_outlasts_it
+1.38s call     tests/e2e/test_swu_px_03_worker_readiness.py::test_readiness_reached_then_passes_then_graceful_stop
+1.12s call     tests/e2e/test_swu_px_03_worker_readiness.py::test_a_stop_right_after_readiness_is_graceful[SIGTERM]
+1.08s call     tests/e2e/test_swu_px_03_worker_readiness.py::test_cleanup_is_idempotent_after_a_graceful_stop
+1.00s call     tests/e2e/test_swu_px_03_worker_readiness.py::test_readiness_never_reached_fails_at_the_bound_with_a_diagnostic
+0.97s call     tests/e2e/test_swu_px_03_worker_readiness.py::test_a_stop_right_after_readiness_is_graceful[SIGINT]
+0.94s call     tests/e2e/test_swu_px_03_worker_readiness.py::test_a_worker_that_exits_before_readiness_fails_at_once
+0.74s call     tests/e2e/test_swu_px_03_worker_readiness.py::test_cleanup_reaps_a_running_worker_and_its_readers
+0.26s call     tests/e2e/test_swu_px_03_worker_readiness.py::test_readiness_is_announced_only_after_both_stop_handlers_are_installed
+0.11s teardown tests/e2e/test_swu_px_03_worker_readiness.py::test_a_slowly_failing_database_does_not_change_the_outcome
+0.08s setup    tests/e2e/test_swu_px_03_worker_readiness.py::test_high_cpu_contention_does_not_change_the_outcome
+0.08s setup    tests/e2e/test_swu_px_03_worker_readiness.py::test_readiness_never_reached_fails_at_the_bound_with_a_diagnostic
+0.08s teardown tests/e2e/test_swu_px_03_worker_readiness.py::test_a_stop_right_after_readiness_is_graceful[SIGINT]
+0.07s setup    tests/e2e/test_swu_px_03_worker_readiness.py::test_a_stop_right_after_readiness_is_graceful[SIGTERM]
+0.07s setup    tests/e2e/test_swu_px_03_worker_readiness.py::test_readiness_is_announced_only_after_both_stop_handlers_are_installed
+0.07s teardown tests/e2e/test_swu_px_03_worker_readiness.py::test_delayed_startup_beyond_the_old_window_still_stops_gracefully
+0.07s setup    tests/e2e/test_swu_px_03_worker_readiness.py::test_readiness_reached_then_passes_then_graceful_stop
+0.06s teardown tests/e2e/test_swu_px_03_worker_readiness.py::test_cleanup_is_idempotent_after_a_graceful_stop
+0.06s teardown tests/e2e/test_swu_px_03_worker_readiness.py::test_the_old_fixed_window_consumer_fails_when_startup_outlasts_it
+0.06s teardown tests/e2e/test_swu_px_03_worker_readiness.py::test_high_cpu_contention_does_not_change_the_outcome
+0.06s setup    tests/e2e/test_swu_px_03_worker_readiness.py::test_the_old_fixed_window_consumer_fails_when_startup_outlasts_it
+0.06s teardown tests/e2e/test_swu_px_03_worker_readiness.py::test_readiness_is_announced_only_after_both_stop_handlers_are_installed
+0.06s teardown tests/e2e/test_swu_px_03_worker_readiness.py::test_a_worker_that_exits_before_readiness_fails_at_once
+0.05s setup    tests/e2e/test_swu_px_03_worker_readiness.py::test_a_slowly_failing_database_does_not_change_the_outcome
+0.05s setup    tests/e2e/test_swu_px_03_worker_readiness.py::test_cleanup_reaps_a_running_worker_and_its_readers
+0.05s teardown tests/e2e/test_swu_px_03_worker_readiness.py::test_a_stop_right_after_readiness_is_graceful[SIGTERM]
+0.05s setup    tests/e2e/test_swu_px_03_worker_readiness.py::test_delayed_startup_beyond_the_old_window_still_stops_gracefully
+0.05s teardown tests/e2e/test_swu_px_03_worker_readiness.py::test_readiness_never_reached_fails_at_the_bound_with_a_diagnostic
+0.05s teardown tests/e2e/test_swu_px_03_worker_readiness.py::test_readiness_reached_then_passes_then_graceful_stop
+0.05s setup    tests/e2e/test_swu_px_03_worker_readiness.py::test_sigterm_before_handler_installation_is_not_a_graceful_stop
+0.05s teardown tests/e2e/test_swu_px_03_worker_readiness.py::test_cleanup_reaps_a_running_worker_and_its_readers
+0.05s setup    tests/e2e/test_swu_px_03_worker_readiness.py::test_a_stop_right_after_readiness_is_graceful[SIGINT]
+0.05s setup    tests/e2e/test_swu_px_03_worker_readiness.py::test_a_worker_that_exits_before_readiness_fails_at_once
+0.05s teardown tests/e2e/test_swu_px_03_worker_readiness.py::test_sigterm_before_handler_installation_is_not_a_graceful_stop
+0.04s setup    tests/e2e/test_swu_px_03_worker_readiness.py::test_cleanup_is_idempotent_after_a_graceful_stop
+
+(1 durations < 0.005s hidden.  Use -vv to show these durations.)
+=========================== short test summary info ============================
+PASSED tests/e2e/test_swu_px_03_worker_readiness.py::test_readiness_is_announced_only_after_both_stop_handlers_are_installed
+PASSED tests/e2e/test_swu_px_03_worker_readiness.py::test_sigterm_before_handler_installation_is_not_a_graceful_stop
+PASSED tests/e2e/test_swu_px_03_worker_readiness.py::test_the_old_fixed_window_consumer_fails_when_startup_outlasts_it
+PASSED tests/e2e/test_swu_px_03_worker_readiness.py::test_a_stop_right_after_readiness_is_graceful[SIGTERM]
+PASSED tests/e2e/test_swu_px_03_worker_readiness.py::test_a_stop_right_after_readiness_is_graceful[SIGINT]
+PASSED tests/e2e/test_swu_px_03_worker_readiness.py::test_readiness_reached_then_passes_then_graceful_stop
+PASSED tests/e2e/test_swu_px_03_worker_readiness.py::test_delayed_startup_beyond_the_old_window_still_stops_gracefully
+PASSED tests/e2e/test_swu_px_03_worker_readiness.py::test_high_cpu_contention_does_not_change_the_outcome
+PASSED tests/e2e/test_swu_px_03_worker_readiness.py::test_a_slowly_failing_database_does_not_change_the_outcome
+PASSED tests/e2e/test_swu_px_03_worker_readiness.py::test_readiness_never_reached_fails_at_the_bound_with_a_diagnostic
+PASSED tests/e2e/test_swu_px_03_worker_readiness.py::test_a_worker_that_exits_before_readiness_fails_at_once
+PASSED tests/e2e/test_swu_px_03_worker_readiness.py::test_cleanup_reaps_a_running_worker_and_its_readers
+PASSED tests/e2e/test_swu_px_03_worker_readiness.py::test_cleanup_is_idempotent_after_a_graceful_stop
+13 passed in 25.21s

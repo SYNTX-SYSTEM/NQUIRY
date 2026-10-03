@@ -1,0 +1,15 @@
+aggregated nodes=2252 per partition={'xdist': {'passed': 2246, 'skipped': 2}, 'serial': {'passed': 4}} xdist_exit=0 serial_exit=0
+AGGREGATION_AND_EQUIVALENCE::PASS
+AGGREGATION_AND_EQUIVALENCE::PASS
+TREE_UNCHANGED::PASS
+ENV_MANIFEST_UNCHANGED::PASS
+IMPORT_ORIGIN_GUARD_VALID::PASS
+MIGRATION_HEADS_AND_FINGERPRINT_UNCHANGED::PASS
+PROOF_DBS_CLEAN_AND_UNCONNECTED_AFTER::PASS
+NO_RESIDUAL_RACE_DB::PASS
+NO_RESIDUAL_ZZ_PKG25_ROLE::PASS
+OBSERVED_OBJECTS_ATTRIBUTABLE::PASS
+observed proof-created objects: 13 (race dbs 13, roles 0)
+DURATION xdist_partition=632.5s serial_partition=4.8s governed_total=637.2s accepted_serial_baseline=1785.0s speedup=2.80x
+RESULT: 2248 nodes executed under governed 4-worker parallelism + 4 nodes executed under governed serial execution (3 volatile-identity nodes + the SF-PX-03 node, decomposition unchanged) = complete 2252-node checkpoint-SWU-PX-03 coverage
+PARALLEL_PROOF::PASS

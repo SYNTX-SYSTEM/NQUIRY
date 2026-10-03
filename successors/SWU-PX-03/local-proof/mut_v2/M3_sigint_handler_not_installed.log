@@ -1,0 +1,103 @@
+F.F                                                                      [100%]
+=================================== FAILURES ===================================
+___ test_readiness_is_announced_only_after_both_stop_handlers_are_installed ____
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7d2aadb36d70>
+
+    def test_readiness_is_announced_only_after_both_stop_handlers_are_installed(
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """Deterministic, in-process: the ready line follows the installation of
+        BOTH handlers, and both handlers request a graceful stop."""
+        import nquiry_worker.__main__ as worker
+    
+        events: list[tuple[str, Any]] = []
+    
+        def install(signum: int, handler: Any) -> None:
+            events.append(("handler", signum))
+            assert handler is worker._request_stop
+    
+        class _Stderr:
+            def write(self, text: str) -> int:
+                if text.strip():
+                    events.append(("stderr", text.strip()))
+                return len(text)
+    
+            def flush(self) -> None:
+                return None
+    
+        monkeypatch.setenv("DATABASE_URL", _UNREACHABLE)
+        monkeypatch.setattr(
+            worker,
+            "signal",
+            SimpleNamespace(signal=install, SIGTERM=signal.SIGTERM, SIGINT=signal.SIGINT),
+        )
+        monkeypatch.setattr(worker, "_one_pass", lambda _backoff: None)
+        monkeypatch.setattr(worker.sys, "stderr", _Stderr())
+    
+        assert worker.main(["--once"]) == 0
+    
+        ready = events.index(("stderr", READY_LINE))
+        term = events.index(("handler", signal.SIGTERM))
+>       intr = events.index(("handler", signal.SIGINT))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ValueError: ('handler', <Signals.SIGINT: 2>) is not in list
+
+tests/e2e/test_swu_px_03_worker_readiness.py:136: ValueError
+____________ test_a_stop_right_after_readiness_is_graceful[SIGINT] _____________
+
+sig = <Signals.SIGINT: 2>
+
+    @pytest.mark.parametrize("sig", [signal.SIGTERM, signal.SIGINT], ids=["SIGTERM", "SIGINT"])
+    def test_a_stop_right_after_readiness_is_graceful(sig: signal.Signals) -> None:
+        """Readiness is sufficient on its own: a stop sent the moment the line is
+        observed, before any pass is awaited, is graceful for both handlers."""
+        with start_worker("--interval", "0.2", url=_UNREACHABLE) as w:
+            w.wait_ready()
+            returncode, err = w.stop(sig)
+>       assert returncode == 0, err
+E       AssertionError: nquiry_worker: ready.
+E         Traceback (most recent call last):
+E           File "<frozen runpy>", line 203, in _run_module_as_main
+E           File "<frozen runpy>", line 88, in _run_code
+E           File "/tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/swu_proof/mut_v2/mutants/M3_sigint_handler_not_installed/apps/worker/src/nquiry_worker/__main__.py", line 137, in <module>
+E             raise SystemExit(main())
+E                              ~~~~^^
+E           File "/tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/swu_proof/mut_v2/mutants/M3_sigint_handler_not_installed/apps/worker/src/nquiry_worker/__main__.py", line 120, in main
+E             _one_pass(args.retry_backoff)
+E             ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+E           File "/tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/swu_proof/mut_v2/mutants/M3_sigint_handler_not_installed/apps/worker/src/nquiry_worker/__main__.py", line 75, in _one_pass
+E             with open_delivery() as ports:
+E                  ~~~~~~~~~~~~~^^
+E           File "/home/codi/.local/share/uv/python/cpython-3.13.15-linux-x86_64-gnu/lib/python3.13/contextlib.py", line 141, in __enter__
+E             return next(self.gen)
+E           File "/tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/swu_proof/mut_v2/mutants/M3_sigint_handler_not_installed/packages/projection/delivery.py", line 98, in open_delivery
+E             with connect() as connection:
+E                  ~~~~~~~^^
+E           File "/home/codi/.local/share/uv/python/cpython-3.13.15-linux-x86_64-gnu/lib/python3.13/contextlib.py", line 141, in __enter__
+E             return next(self.gen)
+E           File "/tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/swu_proof/mut_v2/mutants/M3_sigint_handler_not_installed/packages/persistence/engine.py", line 84, in connect
+E             engine = _get_engine()
+E           File "/tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/swu_proof/mut_v2/mutants/M3_sigint_handler_not_installed/packages/persistence/engine.py", line 45, in _get_engine
+E             _engine = sa.create_engine(database_url, pool_pre_ping=True)
+E           File "<sqlalchemy generated warned() wrapper for sqlalchemy.engine.create.create_engine>", line 2, in create_engine
+E             return target(fn, url, **kwargs)
+E           File "/home/codi/Entwicklung/nquiry/.venv-swu-px-03/lib/python3.13/site-packages/sqlalchemy/util/deprecations.py", line 281, in warned
+E             return fn(*args, **kwargs)  # type: ignore[no-any-return]
+E           File "/home/codi/Entwicklung/nquiry/.venv-swu-px-03/lib/python3.13/site-packages/sqlalchemy/engine/create.py", line 553, in create_engine
+E             entrypoint = u._get_entrypoint()
+E           File "/home/codi/Entwicklung/nquiry/.venv-swu-px-03/lib/python3.13/site-packages/sqlalchemy/engine/url.py", line 772, in _get_entrypoint
+E             cls = registry.load(name)
+E           File "/home/codi/Entwicklung/nquiry/.venv-swu-px-03/lib/python3.13/site-packages/sqlalchemy/util/langhelpers.py", line 491, in load
+E             loader = self.auto_fn(name)
+E           File "/home/codi/Entwicklung/nquiry/.venv-swu-px-03/lib/python3.13/site-packages/sqlalchemy/dialects/__init__.py", line 48, in _auto_fn
+E             module = __import__("sqlalchemy.dialects.%s" % (dialect,)).dialects
+E                      ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E         KeyboardInterrupt
+E       assert -2 == 0
+
+tests/e2e/test_swu_px_03_worker_readiness.py:175: AssertionError
+=========================== short test summary info ============================
+FAILED tests/e2e/test_swu_px_03_worker_readiness.py::test_readiness_is_announced_only_after_both_stop_handlers_are_installed
+FAILED tests/e2e/test_swu_px_03_worker_readiness.py::test_a_stop_right_after_readiness_is_graceful[SIGINT]
+2 failed, 1 passed in 3.52s

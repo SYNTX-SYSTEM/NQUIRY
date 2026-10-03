@@ -1,0 +1,8 @@
+successor_nodes=2252 pcpg5_nodes=2239 pcpg5_outcomes_preserved=2239 delta_nodes=13 violations=[]
+FALSIFIER_DETECTS[undocumented_outcome_change]::PASS
+FALSIFIER_DETECTS[sf_px_03_change_not_exempt]::PASS
+FALSIFIER_DETECTS[missing_node]::PASS
+FALSIFIER_DETECTS[undeclared_extra_node]::PASS
+FALSIFIER_DETECTS[failing_delta_node]::PASS
+SF_PX_03_NODE: pcpg5_reference=passed successor=passed (no exemption)
+SUCCESSOR_PRESERVES_PCPG5_SERIAL_OUTCOMES::PASS

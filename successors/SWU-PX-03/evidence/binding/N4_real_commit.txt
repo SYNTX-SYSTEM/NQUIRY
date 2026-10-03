@@ -1,0 +1,51 @@
+bringing up nodes...
+bringing up nodes...
+
+
+==================================== ERRORS ====================================
+______________________________ ERROR collecting . ______________________________
+../../.venv-proof313-orange-swu/lib/python3.13/site-packages/pluggy/_hooks.py:512: in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../.venv-proof313-orange-swu/lib/python3.13/site-packages/pluggy/_manager.py:120: in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../.venv-proof313-orange-swu/lib/python3.13/site-packages/nquiry_orange_workerdb.py:147: in pytest_collect_file
+    raise WorkerBindingRefused(_REFUSAL[0])
+E   nquiry_orange_workerdb.WorkerBindingRefused: ORANGE worker-DB binding REFUSED (gw0): NQUIRY_RUN_REAL_COMMIT_TESTS is set (would commit durable rows into a worker DB)
+______________________________ ERROR collecting . ______________________________
+../../.venv-proof313-orange-swu/lib/python3.13/site-packages/pluggy/_hooks.py:512: in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../.venv-proof313-orange-swu/lib/python3.13/site-packages/pluggy/_manager.py:120: in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../.venv-proof313-orange-swu/lib/python3.13/site-packages/nquiry_orange_workerdb.py:147: in pytest_collect_file
+    raise WorkerBindingRefused(_REFUSAL[0])
+E   nquiry_orange_workerdb.WorkerBindingRefused: ORANGE worker-DB binding REFUSED (gw1): NQUIRY_RUN_REAL_COMMIT_TESTS is set (would commit durable rows into a worker DB)
+______________________________ ERROR collecting . ______________________________
+../../.venv-proof313-orange-swu/lib/python3.13/site-packages/pluggy/_hooks.py:512: in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../.venv-proof313-orange-swu/lib/python3.13/site-packages/pluggy/_manager.py:120: in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../.venv-proof313-orange-swu/lib/python3.13/site-packages/nquiry_orange_workerdb.py:147: in pytest_collect_file
+    raise WorkerBindingRefused(_REFUSAL[0])
+E   nquiry_orange_workerdb.WorkerBindingRefused: ORANGE worker-DB binding REFUSED (gw2): NQUIRY_RUN_REAL_COMMIT_TESTS is set (would commit durable rows into a worker DB)
+______________________________ ERROR collecting . ______________________________
+../../.venv-proof313-orange-swu/lib/python3.13/site-packages/pluggy/_hooks.py:512: in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../.venv-proof313-orange-swu/lib/python3.13/site-packages/pluggy/_manager.py:120: in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../.venv-proof313-orange-swu/lib/python3.13/site-packages/nquiry_orange_workerdb.py:147: in pytest_collect_file
+    raise WorkerBindingRefused(_REFUSAL[0])
+E   nquiry_orange_workerdb.WorkerBindingRefused: ORANGE worker-DB binding REFUSED (gw3): NQUIRY_RUN_REAL_COMMIT_TESTS is set (would commit durable rows into a worker DB)
+=========================== short test summary info ============================
+ERROR . - nquiry_orange_workerdb.WorkerBindingRefused: ORANGE worker-DB bindi...
+ERROR . - nquiry_orange_workerdb.WorkerBindingRefused: ORANGE worker-DB bindi...
+ERROR . - nquiry_orange_workerdb.WorkerBindingRefused: ORANGE worker-DB bindi...
+ERROR . - nquiry_orange_workerdb.WorkerBindingRefused: ORANGE worker-DB bindi...
+4 errors in 3.99s

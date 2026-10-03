@@ -1,0 +1,8 @@
+# SWU-PX-03 successor working-tree identity (uncommitted), 2026-10-01T13:07:20+02:00
+base checkpoint-PFC-PCPG-5 e0a6b3b25d4309d16d6e3db3ee0958183a279dfd
+d463f8589ad1719aab75e4d207db4bc1b5516c88aeb8aa75f5d9dc7acbb85905  apps/worker/src/nquiry_worker/__main__.py
+4437e29ac7424e0a5024e104337f6df157b680352d18bd08c8c67eafcc4ed198  tests/e2e/test_pfc_f09_1_technical_failure.py
+80865342c1d1fe0a343762cb9a3f1f8ef607ac7064060c1616f879c9ee1cbe7f  tests/e2e/worker_readiness_support.py
+4496a0cb318e2c903a02bd359549dc789bf27a88837757af1751ea6a580ad998  tests/e2e/test_swu_px_03_worker_readiness.py
+20c34fae32e1f91089f67b41b31b1ddbafd1bbca41b05c96e1eb56e0880c6256  docs/implementation/field-reports/PX/WU-SWU-PX-03.md
+tree_content_sha256 f247dc324fa8dc34a2c74194493c931d3b49c66312004f147744666e81247bf3

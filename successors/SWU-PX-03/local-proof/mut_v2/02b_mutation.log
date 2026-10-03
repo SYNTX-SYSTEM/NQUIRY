@@ -1,0 +1,23 @@
+== M1_readiness_before_handler_installation: exit=1 -> KILLED
+    FAILED tests/e2e/test_swu_px_03_worker_readiness.py::test_readiness_is_announced_only_after_both_stop_handlers_are_installed
+    1 failed in 2.76s
+    residue_swept_after_mutant=[]
+== M2_readiness_signal_removed: exit=1 -> KILLED
+    FAILED tests/e2e/test_pfc_f09_1_technical_failure.py::test_worker_loop_survives_a_database_outage_and_stops_gracefully
+    FAILED tests/e2e/test_swu_px_03_worker_readiness.py::test_a_stop_right_after_readiness_is_graceful[SIGTERM]
+    FAILED tests/e2e/test_swu_px_03_worker_readiness.py::test_a_stop_right_after_readiness_is_graceful[SIGINT]
+    3 failed, 1 warning in 182.86s (0:03:02)
+    residue_swept_after_mutant=[]
+== M3_sigint_handler_not_installed: exit=1 -> KILLED
+    FAILED tests/e2e/test_swu_px_03_worker_readiness.py::test_readiness_is_announced_only_after_both_stop_handlers_are_installed
+    FAILED tests/e2e/test_swu_px_03_worker_readiness.py::test_a_stop_right_after_readiness_is_graceful[SIGINT]
+    2 failed, 1 passed in 3.52s
+    residue_swept_after_mutant=[]
+== M4_wait_ignores_early_exit: exit=1 -> KILLED
+    FAILED tests/e2e/test_swu_px_03_worker_readiness.py::test_a_worker_that_exits_before_readiness_fails_at_once
+    1 failed in 60.90s (0:01:00)
+    residue_swept_after_mutant=[]
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/swu_proof/mut_v2/mutate.py", line 26, in <module>
+    p = dst / rel; s = p.read_text(); assert s.count(old) == 1, name
+AssertionError: M5_cleanup_does_not_kill

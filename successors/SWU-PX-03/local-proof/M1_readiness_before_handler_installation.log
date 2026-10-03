@@ -1,0 +1,50 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___ test_readiness_is_announced_only_after_both_stop_handlers_are_installed ____
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7089f211afd0>
+
+    def test_readiness_is_announced_only_after_both_stop_handlers_are_installed(
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """Deterministic, in-process: the ready line follows the installation of
+        BOTH handlers, and both handlers request a graceful stop."""
+        import nquiry_worker.__main__ as worker
+    
+        events: list[tuple[str, Any]] = []
+    
+        def install(signum: int, handler: Any) -> None:
+            events.append(("handler", signum))
+            assert handler is worker._request_stop
+    
+        class _Stderr:
+            def write(self, text: str) -> int:
+                if text.strip():
+                    events.append(("stderr", text.strip()))
+                return len(text)
+    
+            def flush(self) -> None:
+                return None
+    
+        monkeypatch.setenv("DATABASE_URL", _UNREACHABLE)
+        monkeypatch.setattr(
+            worker,
+            "signal",
+            SimpleNamespace(signal=install, SIGTERM=signal.SIGTERM, SIGINT=signal.SIGINT),
+        )
+        monkeypatch.setattr(worker, "_one_pass", lambda _backoff: None)
+        monkeypatch.setattr(worker.sys, "stderr", _Stderr())
+    
+        assert worker.main(["--once"]) == 0
+    
+        ready = events.index(("stderr", READY_LINE))
+        term = events.index(("handler", signal.SIGTERM))
+        intr = events.index(("handler", signal.SIGINT))
+>       assert term < ready and intr < ready, events
+E       AssertionError: [('stderr', 'nquiry_worker: ready.'), ('handler', <Signals.SIGTERM: 15>), ('handler', <Signals.SIGINT: 2>)]
+E       assert (1 < 0)
+
+tests/e2e/test_swu_px_03_worker_readiness.py:131: AssertionError
+=========================== short test summary info ============================
+FAILED tests/e2e/test_swu_px_03_worker_readiness.py::test_readiness_is_announced_only_after_both_stop_handlers_are_installed
+1 failed in 2.82s

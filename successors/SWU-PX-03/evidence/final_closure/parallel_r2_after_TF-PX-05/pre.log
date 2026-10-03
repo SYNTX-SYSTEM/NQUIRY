@@ -1,0 +1,15 @@
+pre race_dbs=0 zz_roles=0 proof_conns=[]
+HEAD=944f1ae94f027b400f07dbdb07a6b9f018395a33
+status_entries_incl_ignored=0
+diff_vs_tag=none
+content_sha256=f247dc324fa8dc34a2c74194493c931d3b49c66312004f147744666e81247bf3
+ENV_MANIFEST pre_env_manifest.json: 49 dists, 3872 files, content cb2682fa3b3e6ab9, manifest sha256 9b0bc9a9b1b97a5d
+ORANGE_IMPORT_ORIGIN::PASS (44 first-party names under /home/codi/Entwicklung/nquiry/worktrees/swu-px-03)
+ALLOWLIST_SET::PASS (cluster proof DBs == allowlist, exactly 5)
+SCHEMA_FINGERPRINT_EQUIVALENCE::PASS (3c899691e52cef9fbd65d4ea9e9489a86d05e199c068c49e556e9e2d987c27a6)
+DB_METADATA_EQUIVALENCE::PASS
+PROOF_DB_PRECONDITIONS::PASS
+full: 2252 selected | 2252 tests collected in 3.82s
+serial: 4 selected | 4 tests collected in 1.36s
+xdist: 2248 selected | 2248/2252 tests collected (4 deselected) in 4.06s
+declared skips: 2

@@ -1,0 +1,36 @@
+........................................................................ [ 16%]
+........................................................................ [ 33%]
+.....................................................s.................. [ 50%]
+........................................................................ [ 66%]
+...........................s............................................ [ 83%]
+......................................................................   [100%]
+=============================== warnings summary ===============================
+../../.venv-swu-px-03/lib/python3.13/site-packages/starlette/testclient.py:45
+  /home/codi/Entwicklung/nquiry/.venv-swu-px-03/lib/python3.13/site-packages/starlette/testclient.py:45: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+tests/e2e/test_pfc_b0_fixture_session.py::test_a_fixture_session_is_declared_at_creation_and_projected_as_non_proof
+tests/e2e/test_pfc_b0_fixture_session.py::test_a_normal_session_is_governed_by_default
+tests/e2e/test_pfc_b0_fixture_session.py::test_a_normal_session_is_governed_by_default
+tests/e2e/test_pfc_b0_fixture_session.py::test_a_normal_session_is_governed_by_default
+tests/e2e/test_pfc_b0_fixture_session.py::test_no_command_converts_a_session[True]
+tests/e2e/test_pfc_b0_fixture_session.py::test_no_command_converts_a_session[True]
+tests/e2e/test_pfc_b0_fixture_session.py::test_no_command_converts_a_session[False]
+tests/e2e/test_pfc_b0_fixture_session.py::test_no_command_converts_a_session[False]
+  /home/codi/Entwicklung/nquiry/worktrees/swu-px-03/packages/persistence/inquiry_directory.py:282: SADeprecationWarning: The ARRAY.Comparator.any() and ARRAY.Comparator.all() methods for arrays are deprecated for removal, along with the PG-specific Any() and All() functions. See any_() and all_() functions for modern use. (deprecated since: 2.1)
+    a.c.target_refs.any(target),
+
+tests/e2e/test_pfc_f08_2_delivery.py: 16 warnings
+  /home/codi/Entwicklung/nquiry/worktrees/swu-px-03/packages/persistence/command_repository.py:310: SADeprecationWarning: The ARRAY.Comparator.any() and ARRAY.Comparator.all() methods for arrays are deprecated for removal, along with the PG-specific Any() and All() functions. See any_() and all_() functions for modern use. (deprecated since: 2.1)
+    c.c.target_refs.any(target_ref),
+
+tests/e2e/test_proof_bundle_paths.py::test_recovery_path_deterministic_reconciliation_produces_a_resolved_record
+tests/e2e/test_proof_bundle_paths.py::test_recovery_counter_attack_manufactured_clean_facts_do_not_override_a_real_blocking_record
+  /home/codi/Entwicklung/nquiry/worktrees/swu-px-03/packages/persistence/recovery_repository.py:180: SADeprecationWarning: The ARRAY.Comparator.any() and ARRAY.Comparator.all() methods for arrays are deprecated for removal, along with the PG-specific Any() and All() functions. See any_() and all_() functions for modern use. (deprecated since: 2.1)
+    recovery_records_table.c.blocked_target_refs.any(target_ref),
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+SKIPPED [1] tests/security/test_direct_write.py:22: P-18 NOT_APPLICABLE at PKG-00: no canonical writer or DB principal separation exists yet (lands PKG-13/PKG-25). Exercise once packages/commit and packages/security/workspace.py exist.
+SKIPPED [1] tests/e2e/test_http_dispatch_real_connection_lifecycle.py:107: permanently commits one real, un-deletable Workspace/Decision/audit trail per run (append-only audit_events, see module docstring) -- excluded from the default collected suite the same way scripts/verify_migrations.py's own live-DB check and PKG-31's scripts/run_mutation_harness.py are real but not pytest-collected by default. Run explicitly with NQUIRY_RUN_REAL_COMMIT_TESTS=1 pytest tests/e2e/test_http_dispatch_real_connection_lifecycle.py
+428 passed, 2 skipped, 12 deselected, 27 warnings in 373.28s (0:06:13)
