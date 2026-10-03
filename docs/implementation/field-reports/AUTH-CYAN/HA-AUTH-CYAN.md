@@ -313,6 +313,48 @@ mounts and the API mount); `next.config.ts` derives `basePath` from it; the asse
 non-success projection `/login?auth=<word>` is PURPLE-owned and root-bound, so under `/cy-review` a failed or cancelled
 provider login lands on the live `/login` (CY-01 web) — not changed (BOUNDARY_01).
 
+## HA-CYAN-IDENTITY-PRESENTATION-CONSUMPTION-01 — consume the live NQUIRY identity presentation (2026-10-04, verbatim essentials)
+
+> MODE = FIELD_ENGINEERING · FIELD = NQUIRY_IDENTITY_PRESENTATION_CONSUMPTION_FIELD · WORK_UNIT =
+> CYAN_IDENTITY_PRESENTATION_CONSUMPTION_01. PURPOSE: consume the now-live authoritative PURPLE human identity
+> presentation (`GET /api/auth/identity` → `{kind, userId, displayName, canonicalEmail}`, canonical NQUIRY identity
+> truth, independent of authentication method) and compose it with the proven current authentication/session/provider
+> truth into ONE coherent CYAN identity field, visible coherently in the top-right identity/logout organism and in the
+> "Identity and access" body chamber. Observed real state: NQUIRY identity displayName `tobi`, canonicalEmail
+> `tobias@thescaleforge.com`; Google provider account `syntxsystem@protonmail.com` — intentionally different; CYAN must
+> make the distinction visible. CORE LAW: WHO I AM != HOW I LOGGED IN; NQUIRY_CANONICAL_EMAIL != PROVIDER_EMAIL;
+> DISPLAY_NAME != PROVIDER_DISPLAY_NAME; GOOGLE_ACCOUNT != NQUIRY_IDENTITY; AUTHENTICATION != AUTHORIZATION; IDENTITY
+> != ROLE/AUTHORITY. UUID: displayName primary, canonicalEmail secondary, userId technical identity evidence at
+> inspection depth (not deleted). FIRST BROKEN RELATION: PURPLE_HUMAN_IDENTITY_PRESENTATION → CYAN_IDENTITY_PROJECTION
+> (CYAN ended at the userId). SECOND: IDENTITY_TRUTH + AUTH_SESSION_TRUTH + PROVIDER_TRUTH → COMPOSED_HUMAN_PRESENTATION
+> (repair through composition, not duplication). AUTHORITATIVE HOMES: `/auth/identity` (human identity),
+> `/auth/sessions` (current session), `session.methodType` (current method), `/auth/methods` (provider account),
+> `/auth/providers` (label), `/auth/me` (verdict); no frontend source may override them. COMPOSITION LAW: CYAN may
+> compose, never create truth; pure and deterministic. SEMANTIC ERRORS 01–15, VALID STATES A–E (incl. D: identity
+> unavailable → "Authenticated", technical userId may remain; E: identity present, method unavailable → no guessed
+> method). BOUNDARIES: no PURPLE/identity/provider/authentication mutation, no authorization projection, no invented
+> fallback identity, denied/malformed identity → presentation unavailable, never the provider email. HUMAN AUTHORITY:
+> consuming the live presentation, composing, projecting, updating both organisms, relegating the raw userId; NOT:
+> identity mutation, profile editing, provider mutation, role/authority projection, production cutover from
+> `/cy-review` to `/`. FORBIDDEN: hard-coded `tobi`, `tobias@thescaleforge.com`, `syntxsystem@protonmail.com`,
+> `Google` (unless derived from provider truth); no name inference; no email fallback. FALSIFIERS F1–F15, MUTATIONS
+> M1–M15, PROOF RADIUS to the local staged candidate against live PURPLE read-only contacts; no cutover of `/`. STAGED
+> REAL E2E after technical green on `/cy-review/`; Human Review must then prove CASE LOCAL and CASE GOOGLE; only then
+> Human Frontend Acceptance. NEXT: CYAN_PRODUCTION_ROOT_CUTOVER — not performed here.
+
+**Grounding by the executing agent (SFE::FIELD_GROUNDING_HARDLOCK).** Canonical documents: PURPLE
+`docs/implementation/field-reports/AUTH/WU-PURPLE-IDENTITY-PRESENTATION-01.md` + `HUMAN_DECISIONS.md` HD-AUTH-07 +
+`evidence/identity_presentation_01_proof.txt` (628 passed / 1 skipped) on `auth-identity` @
+`2ec05c03f55ee1b0dfc08a952fa508edae0c983a`; the serializer `packages/application/http_identity.py` and the derivation
+`identity_presentation.py` (users.name / users.email, method-invariant, nothing derived). Live PURPLE = assembly
+`auth-2ec05c0-20261003T223212Z` (read-only probe: `/api/auth/identity` → 401 NO_SESSION without a session). CYAN base
+`27f344c` (docs over `checkpoint-CYAN-MOUNT-01` `09f5f0e`). Runtime states: LOCAL mocked lanes (:3301 / :3302),
+REVIEW fixture runtime :13500 (FIXTURE_NON_PROOF, no identity contact), STAGED `/cy-review/` (built from `09f5f0e`,
+pre-delta), PRODUCTION `/` (CY-01 web). The human-reported real values (tobi / tobias@thescaleforge.com /
+syntxsystem@protonmail.com) are production evidence used only as test fixtures; the agent holds no session and cannot
+read them. The uncommitted assembly records of CYAN_REAL_E2E_ASSEMBLY_01 remain pending the human's decision and are
+not part of this field's commit.
+
 ## Open for Human Authority
 - STAGED_SAME_ORIGIN_E2E_ASSEMBLY (candidate web beneath `/cy-review/` on the production origin; one nginx location;
   no PURPLE, Google or live-root change) — not authorized, not entered.

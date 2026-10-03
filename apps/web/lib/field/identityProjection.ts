@@ -1,8 +1,10 @@
 /**
- * AUTH/CYAN-IDENTITY-01: the human's current authentication relation, derived ONLY from the typed PURPLE read truth
- * of AUTH/CYAN-01 (`/auth/me`, `/auth/sessions`, `/auth/methods`, `/auth/providers`). Pure: no React, no fetch.
+ * AUTH/CYAN-IDENTITY-01 + CYAN_IDENTITY_PRESENTATION_CONSUMPTION_01: the human's identity and current authentication
+ * relation, composed ONLY from the typed PURPLE read truth (`/auth/me`, `/auth/identity`, `/auth/sessions`,
+ * `/auth/methods`, `/auth/providers`). Pure: no React, no fetch. WHO I AM != HOW I LOGGED IN.
  *
  *   AUTHENTICATED PRINCIPAL (/auth/me ok)                 → identity.authenticated(userId)      else: everything none
+ *   + NQUIRY IDENTITY (/auth/identity ok, same userId)    → identity.presentation(displayName, canonicalEmail) else none
  *   → CURRENT SESSION  (exactly one session.current)      → session.current(...)                else: none
  *   → AUTHENTICATION METHOD (exactly one ACTIVE method of the current session's methodType)
  *                                                         → authentication.via(...)             else: none
@@ -17,6 +19,7 @@ import type {
   AuthMethodStatus,
   AuthMethodType,
   CurrentSessionResult,
+  IdentityPresentationResult,
   MethodListResult,
   MethodSummary,
   ProviderListResult,
@@ -26,6 +29,8 @@ import type {
 /** Each read as the typed client returned it, or null when the read threw (malformed, non-JSON, network). */
 export type IdentityReads = {
   readonly me: CurrentSessionResult | null;
+  /** `GET /auth/identity` — the human-facing NQUIRY identity (CYAN_IDENTITY_PRESENTATION_CONSUMPTION_01). */
+  readonly identity: IdentityPresentationResult | null;
   readonly sessions: SessionListResult | null;
   readonly methods: MethodListResult | null;
   readonly providers: ProviderListResult | null;
@@ -35,8 +40,15 @@ export type AuthenticationLabel =
   | { readonly kind: "local" }
   | { readonly kind: "provider"; readonly providerId: string; readonly label: string | null };
 
+/**
+ * WHO I AM: the NQUIRY identity. `presentation` is the human-facing identity (displayName primary, canonicalEmail
+ * secondary) ONLY from `/auth/identity` for the SAME principal `/auth/me` verified; otherwise none (STATE D: the
+ * technical userId stays the only identity evidence; a provider account is never substituted).
+ */
+export type IdentityPresentationProjection = { readonly kind: "none" } | { readonly kind: "presented"; readonly displayName: string; readonly canonicalEmail: string };
+
 export type IdentityProjection = {
-  readonly identity: { readonly kind: "none" } | { readonly kind: "authenticated"; readonly userId: string };
+  readonly identity: { readonly kind: "none" } | { readonly kind: "authenticated"; readonly userId: string; readonly presentation: IdentityPresentationProjection };
   readonly session:
     | { readonly kind: "none" }
     | { readonly kind: "current"; readonly sessionId: string; readonly issuedAt: string; readonly expiresAt: string; readonly methodType: AuthMethodType | null };
@@ -65,7 +77,11 @@ function methodOfSession(methods: readonly MethodSummary[], methodType: AuthMeth
 
 export function identityProjectionFrom(reads: IdentityReads): IdentityProjection {
   if (reads.me === null || reads.me.kind !== "ok") return NO_IDENTITY_PROJECTION;
-  const identity = { kind: "authenticated", userId: reads.me.userId } as const;
+  const presentation: IdentityPresentationProjection =
+    reads.identity !== null && reads.identity.kind === "ok" && reads.identity.userId === reads.me.userId
+      ? { kind: "presented", displayName: reads.identity.displayName, canonicalEmail: reads.identity.canonicalEmail }
+      : { kind: "none" };
+  const identity = { kind: "authenticated", userId: reads.me.userId, presentation } as const;
 
   const currents = reads.sessions !== null && reads.sessions.kind === "ok" ? reads.sessions.sessions.filter((s) => s.current) : [];
   const session: IdentityProjection["session"] =

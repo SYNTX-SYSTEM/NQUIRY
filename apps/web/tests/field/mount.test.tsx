@@ -117,6 +117,7 @@ describe("the mount changes nothing but CYAN-owned locations (FALSIFIER_11–16)
   it("identity projection semantics are mount-independent: the same reads give the same projection under both mounts", async () => {
     const reads = {
       me: { kind: "ok", userId: "7dd6e767-1111-4111-8111-111111111111" } as const,
+      identity: null,
       sessions: { kind: "ok", sessions: [{ sessionId: "aaaaaaaa-1111-4111-8111-111111111111", issuedAt: "2026-10-03T08:00:00+00:00", expiresAt: "2026-10-05T08:00:00+00:00", current: true, methodType: "GOOGLE_OIDC" as const }] } as const,
       methods: { kind: "ok", methods: [{ methodId: "dddddddd-1111-4111-8111-111111111111", methodType: "GOOGLE_OIDC" as const, status: "ACTIVE" as const, createdAt: "2026-10-03T08:00:00+00:00", lastAuthenticatedAt: null, provider: { providerId: "google", email: "person@example.test" } }] } as const,
       providers: null,

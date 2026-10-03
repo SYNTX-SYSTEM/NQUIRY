@@ -146,6 +146,7 @@ export type LinkProjection = (typeof LINK_PROJECTIONS)[number];
 
 /** Reason codes per contact, exactly as the PURPLE dispatchers emit them. */
 export const SESSION_DENIED_REASONS = ["NO_SESSION"] as const;
+export const IDENTITY_DENIED_REASONS = ["NO_SESSION"] as const;
 export const REVOKE_DENIED_REASONS = ["NO_SESSION", "SESSION_NOT_FOUND"] as const;
 export const REVOKE_REJECTED_REASONS = ["MALFORMED_SESSION_ID"] as const;
 export const UNLINK_DENIED_REASONS = ["NO_SESSION", "UNLINK_DENIED", "LAST_METHOD"] as const;
@@ -646,4 +647,45 @@ export async function unlinkMethod(methodId: string, fetchImpl: typeof fetch = f
     credentials: "include",
   });
   return parseUnlink(await authBody(response, "unlink"));
+}
+
+// --- identity presentation (`GET /auth/identity`, PURPLE_IDENTITY_PRESENTATION_01 @ auth-identity 2ec05c0) -----------
+//
+// The authenticated self's human-facing NQUIRY identity: `{kind:"ok", userId, displayName, canonicalEmail}` — a
+// function of the canonical identity row alone, method-independent (the same for a LOCAL_PASSWORD and a GOOGLE_OIDC
+// session), never derived from a credential, a provider profile or an email local part. `/auth/me` stays the
+// authentication VERDICT. NQUIRY_CANONICAL_EMAIL != PROVIDER_EMAIL · DISPLAY_NAME != PROVIDER_DISPLAY_NAME.
+// `denied NO_SESSION` is the one class for a missing/expired/revoked session and for a principal without an identity row.
+
+export type IdentityPresentation = { readonly userId: string; readonly displayName: string; readonly canonicalEmail: string };
+export type IdentityPresentationResult =
+  | ({ readonly kind: "ok" } & IdentityPresentation)
+  | { readonly kind: "denied"; readonly reasonCode: (typeof IDENTITY_DENIED_REASONS)[number] };
+
+function authNonEmpty(rec: Record<string, unknown>, key: string, path: string): string {
+  const v = authStr(rec, key, path);
+  if (v.trim().length === 0) failAuth(`${path}.${key}`, "empty value (nothing is defaulted or derived)");
+  return v;
+}
+
+export function parseIdentityPresentation(body: unknown): IdentityPresentationResult {
+  const path = "identity";
+  const rec = authKind(body, path);
+  switch (rec.kind) {
+    case "ok":
+      authExactKeys(rec, path, ["kind", "userId", "displayName", "canonicalEmail"]);
+      return { kind: "ok", userId: authId(rec, "userId", path), displayName: authNonEmpty(rec, "displayName", path), canonicalEmail: authNonEmpty(rec, "canonicalEmail", path) };
+    case "denied":
+      return reasonBody(rec, path, "denied", IDENTITY_DENIED_REASONS);
+    default:
+      failAuth(`${path}.kind`, `unknown kind ${JSON.stringify(rec.kind)}`);
+  }
+}
+
+export async function fetchIdentityPresentation(fetchImpl: typeof fetch = fetch): Promise<IdentityPresentationResult> {
+  const response = await fetchImpl(`${apiBaseUrl()}/auth/identity`, {
+    headers: { Accept: "application/json" },
+    credentials: "include",
+  });
+  return parseIdentityPresentation(await authBody(response, "identity"));
 }

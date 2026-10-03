@@ -13,7 +13,7 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: () => undefined, push: () => undefined }) }));
 import { IdentityPanel } from "../../components/field/IdentityPanel";
 import { IdentityProjection } from "../../components/field/IdentityProjection";
-import { parseMethodList, parseProviderList, parseSessionList } from "../../lib/api/authClient";
+import { parseIdentityPresentation, parseMethodList, parseProviderList, parseSessionList } from "../../lib/api/authClient";
 import { authenticationWords, identityProjectionFrom, LOCAL_PASSWORD_LABEL, NO_IDENTITY_PROJECTION, type IdentityReads } from "../../lib/field/identityProjection";
 
 const WEB = join(__dirname, "..", "..");
@@ -43,7 +43,8 @@ const METHODS = parseMethodList({
 });
 const sessions = (list: ReadonlyArray<{ id: string; current: boolean; methodType: string | null; issuedAt?: string }>) =>
   parseSessionList({ kind: "ok", sessions: list.map((s) => ({ sessionId: s.id, issuedAt: s.issuedAt ?? T1, expiresAt: T2, current: s.current, methodType: s.methodType })) });
-const GOOGLE_READS: IdentityReads = { me: { kind: "ok", userId: USER }, sessions: sessions([{ id: S_OLD, current: false, methodType: "LOCAL_PASSWORD", issuedAt: T0 }, { id: S_CUR, current: true, methodType: "GOOGLE_OIDC" }]), methods: METHODS, providers: PROVIDERS };
+const IDENTITY = parseIdentityPresentation({ kind: "ok", userId: USER, displayName: "tobi", canonicalEmail: "tobias@thescaleforge.com" });
+const GOOGLE_READS: IdentityReads = { me: { kind: "ok", userId: USER }, identity: IDENTITY, sessions: sessions([{ id: S_OLD, current: false, methodType: "LOCAL_PASSWORD", issuedAt: T0 }, { id: S_CUR, current: true, methodType: "GOOGLE_OIDC" }]), methods: METHODS, providers: PROVIDERS };
 const LOCAL_READS: IdentityReads = { ...GOOGLE_READS, sessions: sessions([{ id: S_CUR, current: true, methodType: "LOCAL_PASSWORD" }]) };
 const render = (reads: IdentityReads) => renderToStaticMarkup(<IdentityProjection projection={identityProjectionFrom(reads)} />);
 const renderPanel = (reads: IdentityReads) => renderToStaticMarkup(<IdentityPanel projection={identityProjectionFrom(reads)} />);
@@ -51,7 +52,7 @@ const renderPanel = (reads: IdentityReads) => renderToStaticMarkup(<IdentityPane
 describe("proofs 1–7: the relation from authoritative reads", () => {
   it("a Google session: identity, current session, GOOGLE_OIDC via the server-owned label Google, provider email as attribute", () => {
     const p = identityProjectionFrom(GOOGLE_READS);
-    expect(p.identity).toEqual({ kind: "authenticated", userId: USER });
+    expect(p.identity).toEqual({ kind: "authenticated", userId: USER, presentation: { kind: "presented", displayName: "tobi", canonicalEmail: "tobias@thescaleforge.com" } });
     expect(p.session).toEqual({ kind: "current", sessionId: S_CUR, issuedAt: T1, expiresAt: T2, methodType: "GOOGLE_OIDC" });
     expect(p.authentication).toEqual({ kind: "via", methodType: "GOOGLE_OIDC", status: "ACTIVE", lastAuthenticatedAt: T1, label: { kind: "provider", providerId: "google", label: "Google" } });
     expect(p.providerAccount).toEqual({ kind: "email", providerId: "google", email: "person@example.test" });
@@ -65,7 +66,7 @@ describe("proofs 1–7: the relation from authoritative reads", () => {
     expect(authenticationWords({ kind: "local" })).toBe(LOCAL_PASSWORD_LABEL);
     expect(render(LOCAL_READS)).toContain(">Local password<");
     expect(render(LOCAL_READS)).not.toContain("auth-provider-account");
-    expect(render(LOCAL_READS)).not.toContain("@");
+    expect(render(LOCAL_READS)).not.toContain("person@example.test");
   });
   it("/auth/me is the only source of identity: without it nothing is projected, whatever the other reads say", () => {
     for (const me of [null, { kind: "denied", reasonCode: "NO_SESSION" } as const]) {
@@ -126,7 +127,7 @@ describe("proofs 4, 10, 11: the provider label only from parsed provider truth; 
     for (const [name, src] of [["derivation", DERIVATION], ["hook", HOOK], ["component", COMPONENT], ["panel", PANEL]] as const) {
       expect(src, name).not.toMatch(/["'`]Google["'`]|["'`]google["'`]|gmail|@google|googlemail/i);
       expect(src, name).not.toMatch(/split\("@"\)|\.endsWith\(|domain/i);
-      expect(src, name).not.toMatch(/displayName|avatar|initials|fullName|firstName/);
+      expect(src, name).not.toMatch(/avatar|initials|fullName|firstName|profile ?(name|photo)/);
     }
     expect(DERIVATION).not.toMatch(/GOOGLE_OIDC["']?\s*:\s*["']/);
   });
@@ -135,7 +136,7 @@ describe("proofs 4, 10, 11: the provider label only from parsed provider truth; 
 describe("proofs 8–9: malformed or unavailable reads fail closed", () => {
   it("sessions null → no session, no authentication, no provider account; identity stays", () => {
     const p = identityProjectionFrom({ ...GOOGLE_READS, sessions: null });
-    expect(p).toEqual({ ...NO_IDENTITY_PROJECTION, identity: { kind: "authenticated", userId: USER } });
+    expect(p).toEqual({ ...NO_IDENTITY_PROJECTION, identity: { kind: "authenticated", userId: USER, presentation: { kind: "presented", displayName: "tobi", canonicalEmail: "tobias@thescaleforge.com" } } });
   });
   it("sessions denied → the same", () => {
     expect(identityProjectionFrom({ ...GOOGLE_READS, sessions: { kind: "denied", reasonCode: "NO_SESSION" } }).session).toEqual({ kind: "none" });
@@ -147,7 +148,7 @@ describe("proofs 8–9: malformed or unavailable reads fail closed", () => {
       expect(p.authentication).toEqual({ kind: "none" });
       expect(p.providerAccount).toEqual({ kind: "none" });
       expect(render({ ...GOOGLE_READS, methods })).not.toContain("Current authentication");
-      expect(render({ ...GOOGLE_READS, methods })).not.toContain("@");
+      expect(render({ ...GOOGLE_READS, methods })).not.toContain("person@example.test");
     }
   });
   it("the typed parsers refuse malformed sessions and methods before the derivation sees them", () => {
@@ -161,7 +162,11 @@ describe("proofs 8–9: malformed or unavailable reads fail closed", () => {
 describe("proofs 5, 12–14: markup — attribute, not canonical identity; no role, authority, permission, name", () => {
   it("renders the four lines for a Google session with the canonical id as the only identity token", () => {
     const html = render(GOOGLE_READS);
-    expect(html).toContain('data-testid="identity-projection"');
+    expect(html).toContain('data-testid="identity-projection" data-identity="presented"');
+    expect(html).toMatch(/<dt>nquiry identity<\/dt>/);
+    expect(html).toContain('data-testid="identity-display-name">tobi<');
+    expect(html).toContain('data-testid="identity-canonical-email">tobias@thescaleforge.com<');
+    expect(html).toMatch(/<details><summary><dt>Technical identity<\/dt><\/summary>/);
     expect(html).toMatch(/<dt>Authenticated identity<\/dt>/);
     expect(html).toContain(`data-testid="identity-user-id"`);
     // the identity token carries the canonical id and never an email (PROVIDER_EMAIL != CANONICAL_IDENTITY)
@@ -180,8 +185,9 @@ describe("proofs 5, 12–14: markup — attribute, not canonical identity; no ro
     expect(html).not.toMatch(/<dt>Provider account<\/dt>/);
     expect(html).toContain(`data-testid="auth-session" data-session-id="${S_CUR}" data-issued-at="${T1}" data-expires-at="${T2}"`);
     expect(html).toContain("<dt>Session</dt><dd>current · authenticated</dd>");
-    // the email never stands where the identity stands
-    expect(html.indexOf("Authenticated identity")).toBeLessThan(html.indexOf("person@example.test"));
+    // WHO → HOW → PROVIDER → SESSION: the identity stands first, the provider email after the authentication
+    expect(html.indexOf("nquiry identity")).toBeLessThan(html.indexOf("Current authentication"));
+    expect(html.indexOf("tobias@thescaleforge.com")).toBeLessThan(html.indexOf("person@example.test"));
     expect(html).not.toMatch(/<dt>Authenticated identity<\/dt><dd>[^<]*person@example/);
   });
   it("exposes no role, authority, permission, membership, capability, name or avatar", () => {
@@ -232,7 +238,8 @@ describe("Human Review delta: the rail identity / logout panel from the ONE proj
     expect(html).toContain('data-method-type="LOCAL_PASSWORD"');
     expect(html).toContain(">Local password<");
     expect(html).not.toContain("identity-panel-account");
-    expect(html).not.toContain("@");
+    expect(html).not.toContain("person@example.test");
+    expect(html).toContain('data-testid="identity-panel-email">tobias@thescaleforge.com<');
     expect(html).not.toMatch(/Google/);
     expect(html).toContain('data-testid="logout-button"');
   });
@@ -250,8 +257,10 @@ describe("Human Review delta: the rail identity / logout panel from the ONE proj
       const html = renderPanel({ ...GOOGLE_READS, methods });
       expect(html).not.toContain("Signed in with");
       expect(html).toContain(">Authenticated</span>");
-      expect(html).toContain(`data-testid="identity-panel-identity">${USER.slice(0, 8)}…<`);
-      expect(html).not.toContain("@");
+      expect(html).not.toContain("identity-panel-identity");
+      // identity presentation present but no method truth (STATE E): name and email stay, no method, no provider email
+      expect(html).toContain('data-testid="identity-panel-name">tobi<');
+      expect(html).not.toContain("person@example.test");
       expect(html).toContain('data-testid="logout-button"');
     }
   });
@@ -260,12 +269,121 @@ describe("Human Review delta: the rail identity / logout panel from the ONE proj
       expect(html).not.toMatch(/Ottavio|Braun|avatar|<img|initials|display ?name|profile/i);
       expect(html).toContain('class="identity-panel-orbit" aria-hidden="true"');
     }
-    expect(PANEL).not.toMatch(/displayName|avatar|initials|fullName|firstName|<img/);
+    expect(PANEL).not.toMatch(/avatar|initials|fullName|firstName|<img/);
     expect(PANEL).toMatch(/import \{ LogoutButton \} from "\.\.\/LogoutButton"/);
     expect(PANEL).toMatch(/<LogoutButton \/>/);
     expect(PANEL).not.toMatch(/logout\(|\/auth\/logout|router/);
   });
   it("renders nothing for an unauthenticated projection", () => {
     expect(renderToStaticMarkup(<IdentityPanel projection={NO_IDENTITY_PROJECTION} />)).toBe("");
+  });
+});
+
+describe("CYAN_IDENTITY_PRESENTATION_CONSUMPTION_01 — WHO I AM != HOW I LOGGED IN", () => {
+  const PROVIDER_EMAIL_READS: IdentityReads = { ...GOOGLE_READS, methods: parseMethodList({ kind: "ok", methods: [
+    { methodId: M_LOCAL, methodType: "LOCAL_PASSWORD", status: "ACTIVE", createdAt: T0, lastAuthenticatedAt: T0, provider: null },
+    { methodId: M_GOOGLE, methodType: "GOOGLE_OIDC", status: "ACTIVE", createdAt: T1, lastAuthenticatedAt: T1, provider: { providerId: "google", email: "syntxsystem@protonmail.com" } },
+  ] }) };
+  it("STATE A / F1: local current → name, canonical email, Local password; no Google, no provider email", () => {
+    const html = render(LOCAL_READS) + renderPanel(LOCAL_READS);
+    expect(html).toContain(">tobi<");
+    expect((html.match(/tobias@thescaleforge\.com/g) ?? []).length).toBe(2);
+    expect(html).toMatch(/Local password/);
+    expect(html).not.toMatch(/Google|person@example|protonmail/);
+  });
+  it("STATE B / F2 / F6: Google current → the SAME name and canonical email, Google, the provider email in its own position", () => {
+    const chamber = render(PROVIDER_EMAIL_READS);
+    const panel = renderPanel(PROVIDER_EMAIL_READS);
+    for (const html of [chamber, panel]) {
+      expect(html).toContain(">tobi<");
+      expect(html).toContain("tobias@thescaleforge.com");
+      expect(html).toContain("syntxsystem@protonmail.com");
+      expect(html.indexOf("tobias@thescaleforge.com")).toBeLessThan(html.indexOf("syntxsystem@protonmail.com"));
+    }
+    expect(chamber).toContain('data-testid="identity-canonical-email">tobias@thescaleforge.com<');
+    expect(chamber).toContain('<span class="auth-account-label">Google account</span><span class="mono auth-account-email">syntxsystem@protonmail.com</span>');
+    expect(panel).toContain('data-testid="identity-panel-email">tobias@thescaleforge.com<');
+    expect(panel).toContain('<span class="identity-panel-account-label">Google account</span><span class="mono">syntxsystem@protonmail.com</span>');
+  });
+  it("F3 / F4: switching the current method changes only the authentication relation; the identity is identical", () => {
+    const a = identityProjectionFrom(LOCAL_READS);
+    const b = identityProjectionFrom(PROVIDER_EMAIL_READS);
+    expect(a.identity).toEqual(b.identity);
+    expect(a.providerAccount).toEqual({ kind: "none" });
+    expect(b.providerAccount).toEqual({ kind: "email", providerId: "google", email: "syntxsystem@protonmail.com" });
+  });
+  it("STATE C / F5: Google linked, local current → no provider account anywhere", () => {
+    const reads = { ...PROVIDER_EMAIL_READS, sessions: LOCAL_READS.sessions };
+    expect(identityProjectionFrom(reads).providerAccount).toEqual({ kind: "none" });
+    expect(render(reads) + renderPanel(reads)).not.toMatch(/protonmail|Google/);
+  });
+  it("F7: canonical email equal to the provider email by string → both relations stay separately labelled", () => {
+    const same = { ...GOOGLE_READS, identity: parseIdentityPresentation({ kind: "ok", userId: USER, displayName: "tobi", canonicalEmail: "person@example.test" }) };
+    const chamber = render(same);
+    expect(chamber).toContain('data-testid="identity-canonical-email">person@example.test<');
+    expect(chamber).toContain('<span class="auth-account-label">Google account</span><span class="mono auth-account-email">person@example.test</span>');
+    expect(chamber).toContain("not your nquiry identity");
+  });
+  it("STATE D / F8 / BOUNDARY_07: identity read denied, malformed (null) or for another principal → no presentation; the provider email never becomes the identity", () => {
+    for (const identity of [null, { kind: "denied", reasonCode: "NO_SESSION" } as const, parseIdentityPresentation({ kind: "ok", userId: S_OLD, displayName: "someone", canonicalEmail: "other@example.test" })]) {
+      const reads = { ...PROVIDER_EMAIL_READS, identity };
+      const p = identityProjectionFrom(reads);
+      expect(p.identity).toEqual({ kind: "authenticated", userId: USER, presentation: { kind: "none" } });
+      const chamber = render(reads); const panel = renderPanel(reads);
+      expect(chamber).toContain('data-identity="technical"');
+      expect(chamber).toContain('data-testid="identity-unpresented">Authenticated<');
+      expect(chamber).toMatch(/<details open=""><summary><dt>Technical identity/);
+      expect(panel).toContain(`data-testid="identity-panel-identity">${USER.slice(0, 8)}…<`);
+      expect(panel).not.toContain("identity-panel-email");
+      expect(panel).not.toContain("someone");
+      // the provider email is still ONLY the provider account, in both organisms
+      expect(chamber).toContain('class="mono auth-account-email">syntxsystem@protonmail.com<');
+      expect(panel).toContain('<span class="identity-panel-account-label">Google account</span><span class="mono">syntxsystem@protonmail.com</span>');
+      expect(panel).not.toMatch(/identity-panel-(name|email)/);
+    }
+  });
+  it("STATE E / F9: identity presented, method unavailable → name and email visible, no method, no provider email", () => {
+    const reads = { ...PROVIDER_EMAIL_READS, methods: null };
+    const panel = renderPanel(reads);
+    expect(panel).toContain('data-testid="identity-panel-name">tobi<');
+    expect(panel).toContain(">Authenticated</span>");
+    expect(panel).not.toMatch(/Signed in with|Google|protonmail|Local password/);
+    const chamber = render(reads);
+    expect(chamber).toContain(">tobi<");
+    expect(chamber).not.toMatch(/Current authentication|protonmail/);
+  });
+  it("F10: the rail organism and the body chamber are the ONE composition (same name, email, method, provider)", () => {
+    for (const reads of [LOCAL_READS, PROVIDER_EMAIL_READS, { ...PROVIDER_EMAIL_READS, methods: null }]) {
+      const p = identityProjectionFrom(reads);
+      const chamber = render(reads); const panel = renderPanel(reads);
+      const name = p.identity.kind === "authenticated" && p.identity.presentation.kind === "presented" ? p.identity.presentation.displayName : null;
+      if (name) { expect(chamber).toContain(`>${name}<`); expect(panel).toContain(`>${name}<`); }
+      const words = p.authentication.kind === "via" ? authenticationWords(p.authentication.label) : null;
+      expect(chamber.includes("Current authentication")).toBe(words !== null);
+      expect(panel.includes("Signed in with")).toBe(words !== null);
+      if (words) { expect(chamber).toContain(`>${words}<`); expect(panel).toContain(`>${words}<`); }
+      const email = p.providerAccount.kind === "email" ? p.providerAccount.email : null;
+      expect(chamber.includes("auth-provider-account")).toBe(email !== null);
+      expect(panel.includes("identity-panel-account")).toBe(email !== null);
+    }
+    // the hook feeds both from one projection; neither component reads the client
+    for (const src of [COMPONENT, PANEL]) expect(src).not.toMatch(/fetchIdentityPresentation|listMethods|listSessions|listProviders|fetchCurrentSession|authClient/);
+    expect(HOOK).toMatch(/quiet\(fetchIdentityPresentation\(\)\), quiet\(listSessions\(\)\), quiet\(listMethods\(\)\), quiet\(listProviders\(\)\)/);
+  });
+  it("F11: the userId stays available as technical identity evidence, not the primary label", () => {
+    const chamber = render(PROVIDER_EMAIL_READS);
+    expect(chamber).toContain(`data-testid="identity-user-id"`);
+    expect(chamber).toMatch(/<details><summary><dt>Technical identity<\/dt><\/summary>/); // collapsed when a presentation exists
+    expect(chamber.indexOf("nquiry identity")).toBeLessThan(chamber.indexOf("Technical identity"));
+    expect(renderPanel(PROVIDER_EMAIL_READS)).not.toContain(USER.slice(0, 8));
+  });
+  it("F12 / SEMANTIC_ERROR_15 and 07–09: no role/authority; no derivation of a name or an email in the sources; no literal identity values", () => {
+    for (const src of [DERIVATION, HOOK, COMPONENT, PANEL]) {
+      expect(src).not.toMatch(/\brole\b|authority|membership|owner|facilitator|permission|capabilit/i);
+      expect(src).not.toMatch(/split\("@"\)|\.split\('@'\)|localPart|initials|toUpperCase\(\)\[0\]|\[0\]\.toUpperCase/);
+      expect(src).not.toMatch(/tobi|thescaleforge|protonmail|["'`]Google["'`]/i);
+      expect(src).not.toMatch(/canonicalEmail:\s*[a-zA-Z.]*(provider|email|login)/);
+    }
+    expect(DERIVATION).toMatch(/reads\.identity\.userId === reads\.me\.userId/);
   });
 });

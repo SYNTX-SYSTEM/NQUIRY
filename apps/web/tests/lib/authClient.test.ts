@@ -11,6 +11,7 @@ import {
   UnsafeNextTarget,
   availableProvider,
   fetchCurrentSession,
+  fetchIdentityPresentation,
   googleLoginStart,
   isLocalNextTarget,
   linkStartAction,
@@ -21,6 +22,7 @@ import {
   loginStartUrl,
   logout,
   logoutAll,
+  parseIdentityPresentation,
   parseLogoutAll,
   parseMethodList,
   parseProviderList,
@@ -539,5 +541,47 @@ describe("preservation: the F02 contacts are untouched by AUTH/CYAN-01", () => {
     const unknown = vi.fn().mockResolvedValue(jsonResponse({ kind: "ok", userId: "u-1", role: "Owner" }));
     // The F02 parser reads its fields and ignores the rest; it never surfaces a role.
     expect(await login("a@b.test", "pw", unknown)).toEqual({ kind: "ok", userId: "u-1" });
+  });
+});
+
+// ===========================================================================
+// CYAN_IDENTITY_PRESENTATION_CONSUMPTION_01 — GET /auth/identity (PURPLE_IDENTITY_PRESENTATION_01 @ 2ec05c0)
+// ===========================================================================
+describe("identity presentation (GET /auth/identity)", () => {
+  /** Live-shaped fixture (values evidence-derived from the production proof, never product code). */
+  const LIVE_IDENTITY = { kind: "ok", userId: "7dd6e767-1111-4111-8111-111111111111", displayName: "tobi", canonicalEmail: "tobias@thescaleforge.com" };
+  it("accepts the exact production shape and nothing beyond it", () => {
+    expect(parseIdentityPresentation(LIVE_IDENTITY)).toEqual(LIVE_IDENTITY);
+    expect(Object.keys(parseIdentityPresentation(LIVE_IDENTITY)).sort()).toEqual(["canonicalEmail", "displayName", "kind", "userId"]);
+  });
+  it("parses denied NO_SESSION (the one class for no session and no identity row)", () => {
+    expect(parseIdentityPresentation({ kind: "denied", reasonCode: "NO_SESSION" })).toEqual({ kind: "denied", reasonCode: "NO_SESSION" });
+  });
+  const falsifiers: ReadonlyArray<[string, unknown]> = [
+    ["missing displayName", { kind: "ok", userId: LIVE_IDENTITY.userId, canonicalEmail: "a@b.test" }],
+    ["missing canonicalEmail", { kind: "ok", userId: LIVE_IDENTITY.userId, displayName: "x" }],
+    ["empty displayName (nothing is defaulted)", { ...LIVE_IDENTITY, displayName: "" }],
+    ["blank canonicalEmail", { ...LIVE_IDENTITY, canonicalEmail: "   " }],
+    ["null displayName", { ...LIVE_IDENTITY, displayName: null }],
+    ["extra field (providerEmail)", { ...LIVE_IDENTITY, providerEmail: "x@y.test" }],
+    ["extra field (role)", { ...LIVE_IDENTITY, role: "Owner" }],
+    ["non-UUID userId", { ...LIVE_IDENTITY, userId: "u-1" }],
+    ["unknown reason", { kind: "denied", reasonCode: "IDENTITY_NOT_FOUND" }],
+    ["unknown kind", { kind: "unavailable", reasonCode: "X" }],
+    ["forbidden key", { ...LIVE_IDENTITY, sub: "google-subject" }],
+    ["null body", null],
+  ];
+  for (const [name, body] of falsifiers) {
+    it(`fails closed on ${name}`, () => {
+      expect(() => parseIdentityPresentation(body)).toThrow(MalformedAuthResponse);
+    });
+  }
+  it("GETs /auth/identity with credentials; the API mount is never prefixed", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(jsonResponse(LIVE_IDENTITY));
+    expect(await fetchIdentityPresentation(fetchImpl)).toEqual(LIVE_IDENTITY);
+    expect(fetchImpl).toHaveBeenCalledWith("http://localhost:8000/auth/identity", expect.objectContaining({ credentials: "include", headers: { Accept: "application/json" } }));
+  });
+  it("a non-JSON body fails closed", async () => {
+    await expect(fetchIdentityPresentation(vi.fn().mockResolvedValue(new Response("<html>", { status: 502 })))).rejects.toThrow(MalformedAuthResponse);
   });
 });

@@ -6563,3 +6563,65 @@ h3.chamber-title {
     font-size: 0.72rem;
   }
 }
+
+/* ============================================================ CYAN_IDENTITY_PRESENTATION_CONSUMPTION_01 · WHO → HOW → PROVIDER → SESSION */
+.identity-who dd {
+  display: grid;
+  gap: 1px;
+}
+.identity-name {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  letter-spacing: 0.01em;
+}
+.identity-email {
+  color: var(--ink-soft);
+  overflow-wrap: anywhere;
+}
+.identity-technical details > summary {
+  list-style: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.identity-technical details > summary::-webkit-details-marker {
+  display: none;
+}
+.identity-technical details > summary::after {
+  content: "›";
+  color: var(--ink-soft);
+  transition: transform var(--motion-hover-out) var(--ease-resonance);
+}
+.identity-technical details[open] > summary::after {
+  transform: rotate(90deg);
+}
+.identity-technical dd {
+  margin-top: var(--space-2);
+}
+.identity-panel-body {
+  gap: 3px;
+}
+.identity-panel-who,
+.identity-panel-how {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+.identity-panel-name {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  line-height: 1.15;
+}
+.identity-panel-email {
+  font-size: 0.74rem;
+  color: var(--ink-soft);
+  overflow-wrap: anywhere;
+}
+.identity-panel-how {
+  padding-top: 3px;
+  border-top: 1px solid rgba(52, 72, 107, 0.6);
+}
+.identity-panel {
+  border-radius: 22px;
+}
