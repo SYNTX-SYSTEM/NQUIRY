@@ -31,4 +31,19 @@ MATERIALIZED_POLICIES: frozenset[AccountCreationPolicy] = frozenset(
     {AccountCreationPolicy.DENIED, AccountCreationPolicy.SELF_REGISTRATION_ALLOWED}
 )
 
-__all__ = ["MATERIALIZED_POLICIES", "AccountCreationPolicy"]
+# PROVIDER_BOOTSTRAP provenance (generic provider-driven identity; 24 §11.14
+# SELF_REGISTRATION_ALLOWED): what an identity created from a verified provider
+# credential is, and where each of its two human-facing attributes came from.
+# Recorded in the IDENTITY_CREATED SecurityEvent so the system can answer
+# "why is this person called this" and "where did this email come from".
+IDENTITY_CLASS_PROVIDER_BOOTSTRAP = "PROVIDER_BOOTSTRAP_IDENTITY"
+NAME_SOURCE_PROVIDER_DISPLAY_NAME_CLAIM = "PROVIDER_DISPLAY_NAME_CLAIM"
+EMAIL_SOURCE_PROVIDER_VERIFIED_CLAIM = "PROVIDER_VERIFIED_EMAIL_CLAIM"
+
+__all__ = [
+    "EMAIL_SOURCE_PROVIDER_VERIFIED_CLAIM",
+    "IDENTITY_CLASS_PROVIDER_BOOTSTRAP",
+    "MATERIALIZED_POLICIES",
+    "NAME_SOURCE_PROVIDER_DISPLAY_NAME_CLAIM",
+    "AccountCreationPolicy",
+]

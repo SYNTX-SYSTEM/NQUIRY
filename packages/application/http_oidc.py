@@ -104,6 +104,7 @@ _UNAVAILABLE_REASONS = frozenset(
         OidcFailureReason.PROVIDER_EMAIL_MISSING,
         OidcFailureReason.PROVIDER_EMAIL_UNVERIFIED,
         OidcFailureReason.EMAIL_COLLISION,
+        OidcFailureReason.PROVIDER_PROFILE_INCOMPLETE,
     }
 )
 _NO_SESSION_BODY: dict[str, object] = {"kind": "denied", "reasonCode": "NO_SESSION"}

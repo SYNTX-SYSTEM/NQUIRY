@@ -209,6 +209,22 @@ state that the link makes that local identity the permanent owner of the
 Google login; a future link surface (CYAN) must say which identity will own
 the provider account before the start.
 
+## HA-AUTH-01 — refined by PROVIDER_BOOTSTRAP_01 (2026-10-04), still OPEN
+
+The generic provider-driven identity relation of 24 §11.14
+(`SELF_REGISTRATION_ALLOWED`, provenance class PROVIDER_BOOTSTRAP_IDENTITY) is
+now materialized and proven in TEST with these semantics: display name and
+canonical email are copied from the provider's claims at creation (display
+name required — never invented; email verified — never promoted), owned by
+NQUIRY afterwards (provider drift refreshes the binding only); an email
+collision is refused (the owner's own LINK is the path); an unlinked subject
+bootstraps a NEW identity; no authority of any kind is created. The decision
+remaining is unchanged: whether PRODUCTION / STAGING admit this class (and for
+which production-enabled provider, §36 #1/#6). Default DENIED in force.
+Consequence for HA-AUTH-07: option (b) "new identity for the Google account"
+can be realized by bootstrap only after this decision; until then only via
+HD-28 operator creation + the new identity's own LINK.
+
 ## Open boundaries (OPEN, awaiting the operator)
 
 | # | Boundary | Home | What it blocks | Default in force | Status |

@@ -1506,6 +1506,7 @@ OIDC_FAILURE_REASONS: tuple[str, ...] = (
     "PROVIDER_EMAIL_UNVERIFIED",
     "EMAIL_COLLISION",
     "ACCOUNT_DISABLED",  # WU-AUTH-13 (migration b9d2f4a6c8e1)
+    "PROVIDER_PROFILE_INCOMPLETE",  # PROVIDER_BOOTSTRAP (migration d2f4a6b8c1e3)
 )
 
 # WU-AUTH-05: each transaction state requires exactly its timestamps (24 §11.4).

@@ -57,6 +57,7 @@ class _Authorization:
     redirect_uri: str
     subject: str
     email: str | None
+    display_name: str | None
     defect: str | None
     issued_at: float
 
@@ -143,10 +144,13 @@ class LocalTestIssuer:
         subject: str,
         email: str | None = None,
         defect: str | None = None,
+        display_name: str | None = "Test Subject",
     ) -> str:
         """The provider-side authorization: the human (or the test) approves
         the request `params` (as sent by the adapter) for `subject`. Returns
-        the authorization code the provider would send back."""
+        the authorization code the provider would send back. `display_name`
+        is the provider's `name` claim (every real provider with the `profile`
+        scope sends one; None simulates a profile without it)."""
         if params.get("response_type") != "code" or params.get("code_challenge_method") != "S256":
             raise ValueError("the request is not Authorization Code + PKCE S256")
         if params.get("client_id") != TEST_CLIENT_ID:
@@ -160,6 +164,7 @@ class LocalTestIssuer:
             redirect_uri=params["redirect_uri"],
             subject=subject,
             email=email,
+            display_name=display_name,
             defect=defect,
             issued_at=time.time(),
         )
@@ -188,6 +193,8 @@ class LocalTestIssuer:
         if authorization.email is not None:
             claims["email"] = authorization.email
             claims["email_verified"] = True
+        if authorization.display_name is not None:
+            claims["name"] = authorization.display_name
         key = self._key
         defect = authorization.defect
         if defect in ("wrong_signature", "wrong_signature_and_nonce"):

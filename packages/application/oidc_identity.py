@@ -37,7 +37,12 @@ from persistence.authentication_method_repository import (
 from persistence.identity_repository import SqlAlchemyIdentityRepository
 from persistence.provider_identity_repository import SqlAlchemyProviderIdentityRepository
 from persistence.security_event_repository import SqlAlchemySecurityEventRepository
-from security.account_creation import AccountCreationPolicy
+from security.account_creation import (
+    EMAIL_SOURCE_PROVIDER_VERIFIED_CLAIM,
+    IDENTITY_CLASS_PROVIDER_BOOTSTRAP,
+    NAME_SOURCE_PROVIDER_DISPLAY_NAME_CLAIM,
+    AccountCreationPolicy,
+)
 from security.auth_methods import AuthenticationMethodStatus, AuthenticationMethodType
 from security.events import Environment, SecurityEvent, TrustBoundary
 from security.local_auth import LocalSessionRepository
@@ -83,13 +88,24 @@ def resolve_provider_identity(
     repository = SqlAlchemyProviderIdentityRepository(connection)
     binding = repository.find(credential.issuer, credential.subject)
     if binding is None:
-        # WU-AUTH-13 (24 §18.2 "provider login denied"): an unlinked subject
-        # stays known; it is denied, never re-created as a fresh identity.
-        if repository.was_bound(credential.issuer, credential.subject):
+        # PROVIDER_BOOTSTRAP: an unbound subject (never bound, or unlinked by
+        # its former owner, 24 §18.2) is decided by the account creation
+        # policy alone. Under the bootstrap policy it becomes its own, new
+        # identity (provenance records whether it was bound before); under
+        # any other policy it is refused — an unlinked subject with its own
+        # audit class, an unknown one as the policy boundary.
+        previously_bound = repository.was_bound(credential.issuer, credential.subject)
+        if policy is AccountCreationPolicy.SELF_REGISTRATION_ALLOWED:
+            return _bootstrap_identity(
+                connection,
+                credential,
+                now=now,
+                environment=environment,
+                previously_bound=previously_bound,
+            )
+        if previously_bound:
             raise ProviderIdentityUnresolved(OidcFailureReason.AUTHENTICATION_METHOD_REVOKED)
-        if policy is not AccountCreationPolicy.SELF_REGISTRATION_ALLOWED:
-            raise ProviderIdentityUnresolved(OidcFailureReason.ACCOUNT_CREATION_POLICY_UNRESOLVED)
-        return _create_identity(connection, credential, now=now, environment=environment)
+        raise ProviderIdentityUnresolved(OidcFailureReason.ACCOUNT_CREATION_POLICY_UNRESOLVED)
     authenticated = repository.authenticate(
         credential.issuer,
         credential.subject,
@@ -107,13 +123,23 @@ def resolve_provider_identity(
     )
 
 
-def _create_identity(
+def _bootstrap_identity(
     connection: Any,
     credential: VerifiedProviderCredential,
     *,
     now: datetime,
     environment: Environment | None,
+    previously_bound: bool,
 ) -> ResolvedProviderIdentity:
+    """PROVIDER_BOOTSTRAP (24 §11.14 SELF_REGISTRATION_ALLOWED), generic over
+    providers: a verified provider credential becomes a new NQUIRY identity.
+    Its two human-facing attributes are COPIED from provider claims at this
+    moment and owned by NQUIRY afterwards (24 §14.7: later provider changes
+    refresh the binding's attributes only): `displayName` := the provider's
+    display-name claim, verbatim — never derived from an email, never a
+    placeholder (an absent claim refuses the bootstrap); `canonicalEmail` :=
+    the provider's VERIFIED email, lower-cased. The IDENTITY_CREATED fact
+    records the identity class and both sources."""
     if environment is None:
         # AC-11-017: the audit record declares its environment; none declared,
         # no creation (the runtime only admits this policy in DEVELOPMENT / TEST).
@@ -130,8 +156,10 @@ def _create_identity(
     if identities.email_exists(email):
         raise ProviderIdentityUnresolved(OidcFailureReason.EMAIL_COLLISION)
 
+    name = (credential.display_name or "").strip()
+    if not name:
+        raise ProviderIdentityUnresolved(OidcFailureReason.PROVIDER_PROFILE_INCOMPLETE)
     user_id = UserId(uuid.uuid4())
-    name = credential.display_name or email.split("@", 1)[0]
     try:
         identities.create(user_id=user_id, email=email, name=name, now=now)
         method = SqlAlchemyAuthenticationMethodRepository(connection).create(
@@ -165,7 +193,10 @@ def _create_identity(
                 observed_facts=json.dumps(
                     {
                         "authority": "24 section 11.14 SELF_REGISTRATION_ALLOWED",
-                        "identityClass": "PROVIDER_IDENTITY",
+                        "identityClass": IDENTITY_CLASS_PROVIDER_BOOTSTRAP,
+                        "nameSource": NAME_SOURCE_PROVIDER_DISPLAY_NAME_CLAIM,
+                        "emailSource": EMAIL_SOURCE_PROVIDER_VERIFIED_CLAIM,
+                        "previouslyBound": previously_bound,
                         "providerIssuer": credential.issuer,
                         "providerSubjectHash": hashlib.sha256(
                             credential.subject.encode("utf-8")

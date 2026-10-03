@@ -1,0 +1,11 @@
+473 files already formatted
+All checks passed!
+Success: no issues found in 263 source files
+ARCHITECTURE_DEPENDENCY_CHECK::PASS
+TEST_ONLY_IMPORT_CHECK::PASS
+MIGRATION_STATIC_CHECK::PASS (43 revision(s), single head ['d2f4a6b8c1e3'])
+MIGRATION_LIVE_CHECK::PASS (db head matches {'d2f4a6b8c1e3'})
+INFO  [alembic.runtime.migration] Running downgrade d2f4a6b8c1e3 -> c1e3a5b7d9f2, AUTH PROVIDER_BOOTSTRAP: PROVIDER_PROFILE_INCOMPLETE failure class (24 §11.14, §13.10)
+INFO  [alembic.runtime.migration] Running upgrade c1e3a5b7d9f2 -> d2f4a6b8c1e3, AUTH PROVIDER_BOOTSTRAP: PROVIDER_PROFILE_INCOMPLETE failure class (24 §11.14, §13.10)
+..                                                                       [100%]
+649 passed, 1 skipped in 409.16s (0:06:49)
