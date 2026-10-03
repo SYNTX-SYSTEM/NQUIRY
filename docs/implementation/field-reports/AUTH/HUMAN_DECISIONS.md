@@ -173,6 +173,42 @@ identity after the provider display name or the email local-part
 When HA-AUTH-01 is decided, the name a policy-created identity receives is
 part of that decision.
 
+## HA-AUTH-07 — OPEN: the live Google binding of identity `tobi` vs the human's intent (2026-10-04)
+
+**Reconstructed from production (read-only, redacted):** exactly one provider
+binding exists: Google subject `689df8a6…` (provider email domain
+protonmail.com, email hash `35362e41…`, display name hash `28b2cf5b…`) →
+identity `7dd6e767` (`tobi`, canonical email at thescaleforge.com). It was
+created at 2026-10-03T16:48:42Z by the ACCOUNT_LINK transaction initiated by
+that identity's own live LOCAL_PASSWORD session (the human's browser-console
+link step of the authorized REAL GOOGLE LINK proof), audited as
+`AUTH_METHOD_LINKED` with `actor_id = 7dd6e767`. Every later Google login
+resolved to `tobi` through this binding and nothing else (the login callback
+reads no session cookie, no previous identity, no email). No identity carries
+the protonmail address; production account creation is DENIED (HA-AUTH-01).
+
+**Human intent (2026-10-04):** this Google account is NOT meant to represent
+`tobi`. The binding is legitimate under 24 §14.2 (a link binds the provider
+subject to the authenticated identity that initiates it) but contradicts the
+intended identity separation. Changing it mutates production identity
+ownership → Human Authority.
+
+Options (no preference implied):
+(a) UNLINK from `tobi` (allowed by existing law: own-session action, LOCAL
+    method remains, ends the Google-produced sessions; the subject then stays
+    known and its login is denied — `failed`); nothing else.
+(b) (a) + create a new NQUIRY identity for that human by the HD-28
+    host-operator command (name, email, password chosen by the operator), then
+    that identity links the Google account from its own session.
+(c) (a) + link the Google account to an existing other identity (e.g. `62c8bb79`
+    `otti`) from that identity's own session.
+(d) KEEP the binding (status quo). Default while undecided: (d).
+
+Process finding: the proof instruction "log in locally, then link" did not
+state that the link makes that local identity the permanent owner of the
+Google login; a future link surface (CYAN) must say which identity will own
+the provider account before the start.
+
 ## Open boundaries (OPEN, awaiting the operator)
 
 | # | Boundary | Home | What it blocks | Default in force | Status |
@@ -182,6 +218,7 @@ part of that decision.
 | HA-AUTH-03 | **Unlinking the last authentication method** (24 §36 #12; §14.6). Options: NEVER; ALLOWED WITH RECOVERY AUTHORITY (needs HA-AUTH-02 ≠ DENIED). (ALLOWED AS SELF-DISABLE excluded by HD-AUTH-05.) Full block: `WU-AUTH-13.md`. | 24 §14.6, §36 #12 | Nothing (the default is complete) | NEVER (`409 LAST_METHOD`) | OPEN |
 | HA-AUTH-04 | **Who may disable an identity in PRODUCTION / STAGING** | 24 §18, §36 #13; HD-28 | — | HOST_OPERATOR (HD-AUTH-05) | **RESOLVED** by HD-AUTH-05 (2026-10-01): HOST_OPERATOR; no HTTP route, no self-disable, no derived authority; re-enable separate |
 | HA-AUTH-05 | **Deployment switch to the scoped authentication principal** (24 §21.18; = PFC HA-10) | 24 §21.18, §25.2; 14 §8; PFC HA-09 / HA-10 | — | SWITCH AUTH ONLY (HD-AUTH-06) | **RESOLVED** by HD-AUTH-06 (2026-10-01): SWITCH AUTH ONLY; compose configured; deployment procedure recorded, not executed |
+| HA-AUTH-07 | **Google binding of `tobi` vs stated intent** (24 §14.2 link ownership; HA-AUTH-01; HD-28). Options: UNLINK; UNLINK + HD-28 new identity + re-link; UNLINK + link to another existing identity; KEEP. | 24 §14.2, §14.4, §18.2; HA-AUTH-01; HD-28 | The human's desired identity separation | KEEP (status quo) | OPEN |
 
 Touched and left undecided, not blocking any Work Unit: 24 §36 #1 / #6
 (Google as an official, production-enabled method), #9 (provider-verified
