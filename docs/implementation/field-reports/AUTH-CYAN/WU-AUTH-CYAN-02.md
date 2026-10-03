@@ -74,4 +74,9 @@ Access Field as a boundary (known word → safe sentence; `unknown` → nothing)
 does not return to a silent page.
 
 ## Checkpoint
-(recorded after commit)
+| | Value |
+|---|---|
+| Field commit | `b8e7b2110422d9c9d93b86d85e6284e4b4eb1887` (tree `412aa5f2f734a856f8b47f7f28ec1192f59599b0`) |
+| Tag | `checkpoint-AUTH-CYAN-02` → tag object `7ecf17c708c4620246a4692621499ab4127c61c8` → `b8e7b21` |
+| Remote | `origin/frontend-symbiotic` = `b8e7b21` (+ this docs commit); tag pushed |
+| Producer | PURPLE `auth-identity` @ `aa32c4d4faad23eea0bd3290641e7a66adcf26a9` (unchanged) |
