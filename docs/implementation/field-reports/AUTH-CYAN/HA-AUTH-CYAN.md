@@ -160,6 +160,7 @@ only while the local form is idle: a local request (pending) or a local verdict 
 stack. The URL is not rewritten. The review runtime presents the boundary by opening `/login?auth=<word>` directly;
 no callback produces it there (the pinned RED producer has no PURPLE routes).
 
+**Human Frontend Acceptance (2026-10-03): ACCEPTED** — `HUMAN_REVIEW_RESULT_AUTH_CYAN_03.md`.
+
 ## Open for Human Authority
-- Human Frontend Review of AUTH/CYAN-03 (see `HUMAN_REVIEW_GUIDE_AUTH_CYAN_03.md`).
 - AUTH/CYAN-04 — not defined, not authorized.
