@@ -78,4 +78,10 @@ NOT REAL-GOOGLE-CALLBACK-PROVEN. GOOGLE_AVAILABLE != GOOGLE_LOGIN_PROVEN.
 field (a Google control only when `googleLoginStart` is `available`, the `?auth=` reading as a safe projection) —
 AUTH/CYAN-02, which would be the first login-page change and therefore needs Human Visual Authority.
 
-**Checkpoint:** see the final section of this file after commit.
+## Checkpoint
+| | Value |
+|---|---|
+| Field commit | `5877c138439582504ec746a3f8669a1ba771ac22` (tree `48bafbeeb765284d10d924e73b045af24d5e8a63`) |
+| Tag | `checkpoint-AUTH-CYAN-01` → tag object `873f2f7f39af9088c6438b7d135d17593ef09ce9` → `5877c13` |
+| Remote | `origin/frontend-symbiotic` = `5877c13`; tag pushed |
+| Producer pinned for CYAN AUTH consumption | PURPLE `auth-identity` @ `aa32c4d4faad23eea0bd3290641e7a66adcf26a9` (live assembly `auth-aa32c4d-20261001T081014Z`) |
