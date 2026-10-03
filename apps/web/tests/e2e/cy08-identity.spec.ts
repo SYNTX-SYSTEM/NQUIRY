@@ -52,8 +52,27 @@ test("a Google session: identity · Current authentication Google · Provider ac
   await expect(chamber.getByTestId("identity-projection")).toBeVisible();
   await expect(chamber.getByTestId("auth-method")).toHaveAttribute("data-method-type", "GOOGLE_OIDC");
   await expect(chamber.getByTestId("auth-method").locator(".auth-words")).toHaveText("Google");
+  await expect(chamber.getByTestId("auth-method").getByTestId("auth-provider-account")).toContainText("Google account");
   await expect(chamber.getByTestId("auth-provider-account")).toContainText("person@example.test");
   await expect(chamber.getByTestId("auth-provider-account")).toContainText("not your nquiry identity");
+  // the rail panel: Signed in with Google · Google account email · Log out; no menu
+  const panel = page.getByTestId("identity-panel");
+  await expect(panel).toBeVisible();
+  await expect(panel).toHaveAttribute("data-method-type", "GOOGLE_OIDC");
+  await expect(panel).toContainText("Signed in with");
+  await expect(panel.getByTestId("identity-panel-method")).toHaveText("Google");
+  await expect(panel.getByTestId("identity-panel-account")).toContainText("Google account");
+  await expect(panel.getByTestId("identity-panel-account")).toContainText("person@example.test");
+  await expect(panel.getByTestId("logout-button")).toBeVisible();
+  expect(await panel.locator("a, form, select, input, [role=menu], [aria-haspopup]").count()).toBe(0);
+  expect(await page.locator("header.shell-header").innerText()).not.toMatch(/Ottavio|Braun|avatar|profile|settings/i);
+  const header = await page.locator("header.shell-header").boundingBox();
+  const panelBox = await panel.boundingBox();
+  expect(header && panelBox && panelBox.x >= header.x && panelBox.x + panelBox.width <= header.x + header.width + 1).toBe(true);
+  // the panel never covers the product mark (SF-03 rail: trace · identity · exit), on any width
+  const mark = await page.getByTestId("identity").boundingBox();
+  expect(mark && panelBox && (panelBox.x >= mark.x + mark.width - 1 || panelBox.y >= mark.y + mark.height - 1 || panelBox.x + panelBox.width <= mark.x + 1)).toBe(true);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(0);
   await expect(chamber.getByTestId("auth-session")).toHaveAttribute("data-session-id", S_CUR);
   await expect(chamber.getByTestId("auth-session")).toContainText("current · authenticated");
   await expectOrganismIntact(page);
@@ -73,6 +92,13 @@ test("a local-password session: Current authentication Local password, no provid
   await expect(page.getByTestId("auth-method").locator(".auth-words")).toHaveText("Local password");
   await expect(page.getByTestId("auth-provider-account")).toHaveCount(0);
   await expect(page.getByTestId("auth-session")).toBeVisible();
+  // the rail panel: a linked Google method is NOT the current authentication → no Google, no email
+  const panel = page.getByTestId("identity-panel");
+  await expect(panel).toHaveAttribute("data-method-type", "LOCAL_PASSWORD");
+  await expect(panel.getByTestId("identity-panel-method")).toHaveText("Local password");
+  await expect(panel.getByTestId("identity-panel-account")).toHaveCount(0);
+  expect(await panel.innerText()).not.toMatch(/google|@/i);
+  await expect(panel.getByTestId("logout-button")).toBeVisible();
   await expectOrganismIntact(page);
 });
 
@@ -101,9 +127,17 @@ for (const [name, routes, counts] of closed) {
     await expect(page.getByTestId("identity-user-id")).toHaveText(USER);
     for (const [id, n] of counts) await expect(page.getByTestId(id)).toHaveCount(n);
     if (name.startsWith("providers")) {
-      // the label is the raw provider id, never an invented Google
+      // the label is the raw provider id, never an invented Google — in the chamber and in the rail panel
       await expect(page.getByTestId("auth-method").locator(".auth-words")).toHaveText("google");
       await expect(page.getByTestId("auth-method").locator(".auth-words")).toHaveAttribute("data-label-kind", "provider");
+      await expect(page.getByTestId("identity-panel-method")).toHaveText("google");
+      expect(await page.getByTestId("identity-panel").innerText()).not.toMatch(/Google/);
+    }
+    if (name.startsWith("methods") || name.startsWith("sessions")) {
+      // no method truth → no "Signed in with" claim in the rail; Logout stays
+      expect(await page.getByTestId("identity-panel").innerText()).not.toMatch(/Signed in with|@/);
+      await expect(page.getByTestId("identity-panel-identity")).toHaveText(`${USER.slice(0, 8)}…`);
+      await expect(page.getByTestId("identity-panel").getByTestId("logout-button")).toBeVisible();
     }
     await expectOrganismIntact(page);
   });
@@ -122,7 +156,7 @@ test("Logout is unchanged: it posts to /auth/logout and returns to /login", asyn
   await auth(page, json(sessionsBody("GOOGLE_OIDC")), json(METHODS), json(PROVIDERS));
   await page.route(`${API}/auth/logout`, (route) => route.fulfill({ json: { kind: "ok" } }));
   await page.goto("/workspaces");
-  await expect(page.getByTestId("auth-method")).toBeVisible();
+  await expect(page.getByTestId("identity-panel").getByTestId("logout-button")).toBeVisible();
   const logoutRequest = page.waitForRequest((r) => r.url() === `${API}/auth/logout` && r.method() === "POST");
   await page.getByTestId("logout-button").click();
   await logoutRequest;

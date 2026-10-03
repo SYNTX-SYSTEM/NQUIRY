@@ -63,8 +63,35 @@ Not touched: `authClient.ts`, the login page, provider contact, auth boundary, t
 | Review runtime `127.0.0.1:13500` | relation presented on both devices (`browser-evidence/identity-01/SUMMARY.md`) |
 | Not run, by authorization | live relation read, production login, deployment |
 
+## Human Review delta (2026-10-03, CHANGES_REQUESTED → applied under the same gate)
+| File | Change |
+|---|---|
+| `apps/web/components/field/IdentityPanel.tsx` (new) | the rail identity / logout panel: ornamental orbital mark · "Signed in with" + `authenticationWords` (or "Authenticated" + the short canonical id when no method truth) · "<label> account <email>" only beside the provider method that IS the current authentication · the unchanged `LogoutButton`. Same projection, no own fetch, no menu |
+| `apps/web/components/field/IdentityProjection.tsx` | the provider account is nested under "Current authentication" as one object ("Google account" / "Provider account" label from the server-owned label, the email, the attribute sentence) |
+| `apps/web/app/workspaces/page.tsx` | `exit={identity ? <IdentityPanel projection={identityProjection} /> : null}` (the plain `LogoutButton` import is gone from this page only) |
+| `apps/web/app/globals.css` | `.auth-account*` (nested object), `.identity-panel*` (pill surface, glow, orbit mark, body, account line, compact button); ≤ 860 px: `.shell-header:has(.identity-panel)` gives the mark its intrinsic column and stretches the exit so the panel never covers the mark |
+| `tests/field/identityProjection.test.tsx` | 24 tests (+6 panel falsifiers; `next/navigation` mocked for the unchanged `LogoutButton`); chamber expectations follow the nested object |
+| `tests/e2e/cy08-identity.spec.ts` | panel laws in the Google, local, linked-but-local, provider-failure, method/session-failure and Logout cases; no menu/profile words in the rail; panel inside the header and never over the mark; no horizontal overflow |
+| `scripts/auth-identity01-mutation-proof.mjs` | +5: M8 Google shown when LOCAL_PASSWORD is current · M9 email shown when missing · M10 invented display name · M11 Logout disconnected from the existing effect · M12 panel email without its account label |
+Surfaces: the panel is the exit of the Workspaces field only. The Workspace field passes no exit in its normal state
+(unchanged); the Session view keeps the plain Log out (it holds no `/auth/me` verdict; a self-fetching panel would be a
+second auth truth, which the review forbids) — disclosed, not changed.
+
+### Proof (delta)
+| Lane | Result |
+|---|---|
+| Focused unit falsifiers `tests/field/identityProjection.test.tsx` | **24 / 24** |
+| Full unit suite | **612 / 612** (35 files) |
+| Mutation proof `scripts/auth-identity01-mutation-proof.mjs` | **12 / 12 killed**, byte-identical restore |
+| Browser lane `cy08-identity` (desktop + Pixel 7) | **24 / 24** |
+| Preservation in the same run (`workspaces`, `auth`, `cy06-provider`, `cy07-auth-boundary`, SF-05 login laws) | 111 passed, 3 skipped (pre-existing `test.skip`), 0 failed before the two spec repairs below; cy08 re-run 24 / 24 after them |
+| `tsc --noEmit`, `eslint .` | clean |
+| Review runtime `127.0.0.1:13500` | rebuilt; Google case on both devices; local case captured from the mocked lane (`browser-evidence/identity-01/SUMMARY.md`) |
+Spec repairs during the delta (tests only): the header locator had to be scoped to `header.shell-header` (two
+`<header>` elements exist); the Pixel 7 run exposed the panel covering the mark, fixed in CSS and now a law.
+
 ## Status
-FBR AUTH/CYAN-IDENTITY-01: TECHNICALLY CLOSED. **READY_FOR_HUMAN_FRONTEND_REVIEW** (`HUMAN_REVIEW_GUIDE_AUTH_CYAN_IDENTITY_01.md`).
+FBR AUTH/CYAN-IDENTITY-01: TECHNICALLY CLOSED (incl. the Human Review delta). **READY_FOR_HUMAN_FRONTEND_REVIEW** (`HUMAN_REVIEW_GUIDE_AUTH_CYAN_IDENTITY_01.md`).
 Not FIELD_GREEN, not REVIEWED_FIELD, not PUBLISHED_FIELD, not merged, not deployed.
 
 **Claim ceiling:** AUTHENTICATED IDENTITY = PRESENTED BY CYAN · CURRENT AUTHENTICATION METHOD = PRESENTED BY CYAN ·
@@ -78,6 +105,6 @@ THIS WORK UNIT.
 | | Value |
 |---|---|
 | Field commit | `bf66e4588b338f849b205f84acd3fc559110c8a7` (tree `f6953bd55df8f1d2123c9c270289f367fe71c7ad`) |
-| Tag | `checkpoint-AUTH-CYAN-IDENTITY-01` → tag object `aab7fbe371478875747d769f63242ca335a97ddb` → `bf66e45` |
+| Tag (first pass) | `checkpoint-AUTH-CYAN-IDENTITY-01` → tag object `aab7fbe371478875747d769f63242ca335a97ddb` → `bf66e45` |
 | Remote | `origin/frontend-symbiotic` = `bf66e45` (+ this docs commit); tag pushed |
 | Producer | PURPLE `auth-identity` @ `aa32c4d4faad23eea0bd3290641e7a66adcf26a9` (unchanged) |

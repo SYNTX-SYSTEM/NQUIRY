@@ -7,7 +7,11 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+// the existing LogoutButton (unchanged) uses next/navigation; static markup needs no real router
+vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: () => undefined, push: () => undefined }) }));
+import { IdentityPanel } from "../../components/field/IdentityPanel";
 import { IdentityProjection } from "../../components/field/IdentityProjection";
 import { parseMethodList, parseProviderList, parseSessionList } from "../../lib/api/authClient";
 import { authenticationWords, identityProjectionFrom, LOCAL_PASSWORD_LABEL, NO_IDENTITY_PROJECTION, type IdentityReads } from "../../lib/field/identityProjection";
@@ -17,6 +21,7 @@ const code = (p: string) => readFileSync(join(WEB, p), "utf8").replace(/\/\*[\s\
 const DERIVATION = code("lib/field/identityProjection.ts");
 const HOOK = code("lib/field/useIdentityProjection.ts");
 const COMPONENT = code("components/field/IdentityProjection.tsx");
+const PANEL = code("components/field/IdentityPanel.tsx");
 const PAGE = code("app/workspaces/page.tsx");
 
 const USER = "7dd6e767-1111-4111-8111-111111111111";
@@ -41,6 +46,7 @@ const sessions = (list: ReadonlyArray<{ id: string; current: boolean; methodType
 const GOOGLE_READS: IdentityReads = { me: { kind: "ok", userId: USER }, sessions: sessions([{ id: S_OLD, current: false, methodType: "LOCAL_PASSWORD", issuedAt: T0 }, { id: S_CUR, current: true, methodType: "GOOGLE_OIDC" }]), methods: METHODS, providers: PROVIDERS };
 const LOCAL_READS: IdentityReads = { ...GOOGLE_READS, sessions: sessions([{ id: S_CUR, current: true, methodType: "LOCAL_PASSWORD" }]) };
 const render = (reads: IdentityReads) => renderToStaticMarkup(<IdentityProjection projection={identityProjectionFrom(reads)} />);
+const renderPanel = (reads: IdentityReads) => renderToStaticMarkup(<IdentityPanel projection={identityProjectionFrom(reads)} />);
 
 describe("proofs 1–7: the relation from authoritative reads", () => {
   it("a Google session: identity, current session, GOOGLE_OIDC via the server-owned label Google, provider email as attribute", () => {
@@ -58,7 +64,8 @@ describe("proofs 1–7: the relation from authoritative reads", () => {
     expect(p.providerAccount).toEqual({ kind: "none" });
     expect(authenticationWords({ kind: "local" })).toBe(LOCAL_PASSWORD_LABEL);
     expect(render(LOCAL_READS)).toContain(">Local password<");
-    expect(render(LOCAL_READS)).not.toContain("Provider account");
+    expect(render(LOCAL_READS)).not.toContain("auth-provider-account");
+    expect(render(LOCAL_READS)).not.toContain("@");
   });
   it("/auth/me is the only source of identity: without it nothing is projected, whatever the other reads say", () => {
     for (const me of [null, { kind: "denied", reasonCode: "NO_SESSION" } as const]) {
@@ -99,6 +106,9 @@ describe("proofs 4, 10, 11: the provider label only from parsed provider truth; 
       expect(p.authentication.kind === "via" && p.authentication.label).toEqual({ kind: "provider", providerId: "google", label: null });
       expect(render({ ...GOOGLE_READS, providers })).not.toMatch(/>Google</);
       expect(render({ ...GOOGLE_READS, providers })).toContain('data-label-kind="provider" data-provider-id="google">google<');
+      expect(render({ ...GOOGLE_READS, providers })).toContain('<span class="auth-account-label">Provider account</span>');
+      expect(renderPanel({ ...GOOGLE_READS, providers })).not.toMatch(/Google/);
+      expect(renderPanel({ ...GOOGLE_READS, providers })).toContain(">Provider account</span>");
     }
   });
   it("the label joins on providerId, not on methodType or email domain", () => {
@@ -113,7 +123,7 @@ describe("proofs 4, 10, 11: the provider label only from parsed provider truth; 
     expect(identityProjectionFrom({ ...GOOGLE_READS, methods: broken }).authentication).toEqual({ kind: "none" });
   });
   it("the sources carry no provider literal, no friendly fallback table and no email-domain inference", () => {
-    for (const [name, src] of [["derivation", DERIVATION], ["hook", HOOK], ["component", COMPONENT]] as const) {
+    for (const [name, src] of [["derivation", DERIVATION], ["hook", HOOK], ["component", COMPONENT], ["panel", PANEL]] as const) {
       expect(src, name).not.toMatch(/["'`]Google["'`]|["'`]google["'`]|gmail|@google|googlemail/i);
       expect(src, name).not.toMatch(/split\("@"\)|\.endsWith\(|domain/i);
       expect(src, name).not.toMatch(/displayName|avatar|initials|fullName|firstName/);
@@ -137,6 +147,7 @@ describe("proofs 8–9: malformed or unavailable reads fail closed", () => {
       expect(p.authentication).toEqual({ kind: "none" });
       expect(p.providerAccount).toEqual({ kind: "none" });
       expect(render({ ...GOOGLE_READS, methods })).not.toContain("Current authentication");
+      expect(render({ ...GOOGLE_READS, methods })).not.toContain("@");
     }
   });
   it("the typed parsers refuse malformed sessions and methods before the derivation sees them", () => {
@@ -160,10 +171,13 @@ describe("proofs 5, 12–14: markup — attribute, not canonical identity; no ro
     expect(html).toContain('data-testid="auth-method" data-method-type="GOOGLE_OIDC" data-method-status="ACTIVE"');
     expect(html).toContain("<dt>Current authentication</dt>");
     expect(html).toContain('data-label-kind="provider" data-provider-id="google">Google<');
-    expect(html).toContain('data-testid="auth-provider-account" data-provider-id="google"');
-    expect(html).toContain("<dt>Provider account</dt>");
-    expect(html).toContain("person@example.test");
-    expect(html).toContain("not your nquiry identity");
+    // the provider account is ONE object with its authentication: nested under "Current authentication"
+    const method = /<div class="auth-line" data-testid="auth-method"[\s\S]*?<\/div>/.exec(html)?.[0] ?? "";
+    expect(method).toContain('data-testid="auth-provider-account" data-provider-id="google"');
+    expect(method).toContain('<span class="auth-account-label">Google account</span>');
+    expect(method).toContain("person@example.test");
+    expect(method).toContain("not your nquiry identity");
+    expect(html).not.toMatch(/<dt>Provider account<\/dt>/);
     expect(html).toContain(`data-testid="auth-session" data-session-id="${S_CUR}" data-issued-at="${T1}" data-expires-at="${T2}"`);
     expect(html).toContain("<dt>Session</dt><dd>current · authenticated</dd>");
     // the email never stands where the identity stands
@@ -176,7 +190,7 @@ describe("proofs 5, 12–14: markup — attribute, not canonical identity; no ro
       expect(html).not.toMatch(/\brole\b|owner|facilitator|contributor|authority|permission|capabilit|governance|member|controller|avatar|display ?name/i);
       expect(html).not.toMatch(/<a |<button(?![^>]*copy-token)|<form|<input|<select/);
     }
-    for (const src of [DERIVATION, HOOK, COMPONENT]) {
+    for (const src of [DERIVATION, HOOK, COMPONENT, PANEL]) {
       expect(src).not.toMatch(/\brole\b|isGovernanceRoot|isSessionController|authority|permission|capabilit|membership/i);
     }
     expect(DERIVATION).not.toMatch(/sort\(|\[\s*[a-z]+\.length\s*-\s*1\s*\]|lastAuthenticatedAt\s*[<>]/);
@@ -192,10 +206,66 @@ describe("proofs 15–16: the Workspaces page keeps its access projection, the e
     expect(PAGE).toMatch(/router\.replace\("\/login"\)/);
     expect(PAGE).toMatch(/testId="workspaces-list"/);
     expect(PAGE).toMatch(/data-testid="create-workspace-form"/);
-    expect(PAGE).toMatch(/exit=\{identity \? <LogoutButton \/> : null\}/);
+    expect(PAGE).toMatch(/exit=\{identity \? <IdentityPanel projection=\{identityProjection\} \/> : null\}/);
     expect(PAGE).toMatch(/useIdentityProjection\(identity\)/);
     expect(PAGE).toMatch(/title="Identity and access"/);
     expect(PAGE).toMatch(/<IdentityProjection projection=\{identityProjection\} \/>/);
     expect(PAGE).not.toMatch(/listSessions|listMethods|listProviders/);
+  });
+});
+
+describe("Human Review delta: the rail identity / logout panel from the ONE projection", () => {
+  it("Google current session: Signed in with Google · Google account email · the existing Logout control", () => {
+    const html = renderPanel(GOOGLE_READS);
+    expect(html).toContain('data-testid="identity-panel" data-method-type="GOOGLE_OIDC"');
+    expect(html).toContain(">Signed in with</span>");
+    expect(html).toContain('data-testid="identity-panel-method" data-label-kind="provider">Google<');
+    expect(html).toContain('data-testid="identity-panel-account"');
+    expect(html).toContain('<span class="identity-panel-account-label">Google account</span><span class="mono">person@example.test</span>');
+    expect(html).toContain('data-testid="logout-button"');
+    expect(html).toContain(">Log out</button>");
+    expect((html.match(/<button/g) ?? []).length).toBe(1);
+    expect(html).not.toMatch(/<a |<form|<select|<input|<menu|role="menu"|aria-haspopup/);
+  });
+  it("Local-password current session: Signed in with Local password, no provider email, Logout", () => {
+    const html = renderPanel(LOCAL_READS);
+    expect(html).toContain('data-method-type="LOCAL_PASSWORD"');
+    expect(html).toContain(">Local password<");
+    expect(html).not.toContain("identity-panel-account");
+    expect(html).not.toContain("@");
+    expect(html).not.toMatch(/Google/);
+    expect(html).toContain('data-testid="logout-button"');
+  });
+  it("a linked Google method with LOCAL_PASSWORD current never claims Google (CURRENT METHOD != ANY LINKED METHOD)", () => {
+    const p = identityProjectionFrom(LOCAL_READS);
+    expect(p.providerAccount).toEqual({ kind: "none" });
+    expect(renderPanel(LOCAL_READS)).not.toMatch(/google/i);
+    expect(render(LOCAL_READS)).not.toMatch(/google/i);
+  });
+  it("provider failure removes the Google label and the account line; method failure removes the 'Signed in with' claim", () => {
+    const noProviders = renderPanel({ ...GOOGLE_READS, providers: null });
+    expect(noProviders).not.toMatch(/Google/);
+    expect(noProviders).toContain(">google<");
+    for (const methods of [null, { kind: "denied", reasonCode: "NO_SESSION" } as const]) {
+      const html = renderPanel({ ...GOOGLE_READS, methods });
+      expect(html).not.toContain("Signed in with");
+      expect(html).toContain(">Authenticated</span>");
+      expect(html).toContain(`data-testid="identity-panel-identity">${USER.slice(0, 8)}…<`);
+      expect(html).not.toContain("@");
+      expect(html).toContain('data-testid="logout-button"');
+    }
+  });
+  it("no human name, avatar, initials or friendly label; the mark is ornamental", () => {
+    for (const html of [renderPanel(GOOGLE_READS), renderPanel(LOCAL_READS)]) {
+      expect(html).not.toMatch(/Ottavio|Braun|avatar|<img|initials|display ?name|profile/i);
+      expect(html).toContain('class="identity-panel-orbit" aria-hidden="true"');
+    }
+    expect(PANEL).not.toMatch(/displayName|avatar|initials|fullName|firstName|<img/);
+    expect(PANEL).toMatch(/import \{ LogoutButton \} from "\.\.\/LogoutButton"/);
+    expect(PANEL).toMatch(/<LogoutButton \/>/);
+    expect(PANEL).not.toMatch(/logout\(|\/auth\/logout|router/);
+  });
+  it("renders nothing for an unauthenticated projection", () => {
+    expect(renderToStaticMarkup(<IdentityPanel projection={NO_IDENTITY_PROJECTION} />)).toBe("");
   });
 });

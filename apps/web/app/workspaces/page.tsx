@@ -21,9 +21,9 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { EffectIntent, EffectOutcome, ReconstructionNote } from "../../components/field/EffectSurface";
 import { ChamberHead } from "../../components/field/chambers";
+import { IdentityPanel } from "../../components/field/IdentityPanel";
 import { IdentityProjection } from "../../components/field/IdentityProjection";
 import { FieldFrame } from "../../components/field/FieldFrame";
-import { LogoutButton } from "../../components/LogoutButton";
 import { ReadBoundary } from "../../components/field/ReadBoundary";
 import { FieldCore } from "../../components/field/topology/FieldCore";
 import { FieldStage, Plane, Planes, Topology } from "../../components/field/topology/FieldStage";
@@ -167,7 +167,7 @@ export default function WorkspacesPage() {
   const overviewCore = { title: "Workspaces", stateText, meta: identity ?? undefined };
 
   return (
-    <FieldFrame trace={accessTrace("current")} regime="workspace-access" exit={identity ? <LogoutButton /> : null}>
+    <FieldFrame trace={accessTrace("current")} regime="workspace-access" exit={identity ? <IdentityPanel projection={identityProjection} /> : null}>
       <FieldStage layout={state.kind === "ready" ? { core: overviewCore, rings } : undefined} mode={state.kind === "ready" ? undefined : "stack"} surface="workspace-access">
         <Topology layout={{ core: overviewCore, rings }}>
           <FieldCore kind="access" state={coreState} eyebrow="Your access" title={<span id="ws-title">Workspaces</span>} stateText={stateText} meta={identity ? <span className="mono">{identity}</span> : null}>

@@ -11,16 +11,26 @@ Whether the human's current authentication relation reads as part of the organis
 profile dashboard), whether "current authentication" is understandable, whether the provider email cannot be mistaken
 for the nquiry identity, and whether nothing implies authority.
 
+## Second pass (after CHANGES_REQUESTED) — what changed
+- Upper-right rail: the isolated "Log out" is now the identity / logout panel: an ornamental orbital mark · SIGNED IN
+  WITH · Google · GOOGLE ACCOUNT `review-fixture@cy01.local.test` · Log out — one pill in the organism's surface and
+  glow, no menu, nothing to open. With local-password authentication it reads SIGNED IN WITH · Local password · Log out
+  (mocked-lane evidence; the runtime fixture is the Google case).
+- "Identity and access": the provider account now sits beneath "Current authentication" as one object: CURRENT
+  AUTHENTICATION · Google · [GOOGLE ACCOUNT · email · "a provider-method attribute · not your nquiry identity"].
+- The Session view still shows the plain "Log out" (disclosed in the WU report; it holds no identity verdict).
+
 ## Steps
 1. Log in and arrive on `/workspaces`. The Workspaces core, the orbit and "Found a Workspace" are unchanged and
    primary. The "Identity and access" chamber (right column on desktop, below on a phone) now reads, in this order:
-   AUTHENTICATED IDENTITY (the id token with copy) · CURRENT AUTHENTICATION "Google" · PROVIDER ACCOUNT
-   `review-fixture@cy01.local.test` with the words "an attribute of the provider method, not your nquiry identity" ·
-   SESSION "current · authenticated".
+   AUTHENTICATED IDENTITY (the id token with copy) · CURRENT AUTHENTICATION "Google" with, beneath it as one object,
+   GOOGLE ACCOUNT `review-fixture@cy01.local.test` and the words "a provider-method attribute · not your nquiry
+   identity" · SESSION "current · authenticated". In the rail: the identity / logout panel described above.
 2. Confirm nothing else appeared: no avatar, no name, no menu, no settings, no account-security panel, no role or
-   authority word in that chamber. The rail is unchanged (trace · nquiry mark · Log out).
-3. Narrow to a phone width (or Pixel 7): the chamber stacks under the organism; no sideways scrolling; lines wrap
-   inside the chamber.
+   authority word in the chamber or the panel. The rail keeps trace · nquiry mark · (panel with) Log out; the panel
+   opens nothing on hover or click except Log out.
+3. Narrow to a phone width (or Pixel 7): the panel sits beside the mark on the first rail row (never over it), the
+   email wraps inside the pill; the chamber stacks under the organism; no sideways scrolling.
 4. Log out and log in again: the same chamber (the runtime's fixture is static; on the live system a local login
    would read "Local password" and show no provider account — proven in the mocked lane, not visible here).
 5. Optional fail-closed check: block `/api/auth/methods` in devtools and reload — "Current authentication" and
@@ -29,6 +39,8 @@ for the nquiry identity, and whether nothing implies authority.
 ## Falsifiers for the eye
 - The chamber reads like a profile page, settings page or account dashboard → FAIL.
 - The provider email stands where the identity stands, or is not marked as a provider attribute → FAIL.
+- The rail panel reads like a SaaS account menu / profile dropdown, or shows Google while local password is the
+  current authentication → FAIL.
 - Any wording of role, ownership, authority, permission or control inside the chamber → FAIL.
 - A human name, initials or avatar → FAIL (no producer provides one).
 - The organism (core, orbit, founding form) no longer primary → FAIL.

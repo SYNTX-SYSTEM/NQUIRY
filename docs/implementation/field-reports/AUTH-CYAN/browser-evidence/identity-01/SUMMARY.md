@@ -14,3 +14,19 @@ verdict for the local review identity; `/auth/providers` is the AUTH/CYAN-02 fix
 
 Screenshots (untracked by convention): `screenshots/workspaces-identity-{desktop-1280,pixel-7}.png` (whole field),
 `identity-chamber-{desktop-1280,pixel-7}.png` (the chamber alone).
+
+## Second pass (Human Review delta, 2026-10-03)
+
+Review runtime, Google fixture case, after the panel and the nested account object:
+
+| Device | Rail panel (innerText) | Panel box | Header box | Chamber "Current authentication" | scrollX |
+|---|---|---|---|---|---|
+| desktop 1280×860 | SIGNED IN WITH · Google · GOOGLE ACCOUNT · review-fixture@cy01.local.test · Log out | x 754, w 420, h 73 | w 1280, h 90 | Google → GOOGLE ACCOUNT review-fixture@cy01.local.test "a provider-method attribute · not your nquiry identity" | 0 |
+| Pixel 7 | same | x 130, w 270 (beside the mark, not over it; first capture before the CSS repair was x 28, w 372 and covered the mark) | w 412, h 144 | same | 0 |
+
+Mocked lane (`:3301`, routes), local-password current session with a linked Google method: panel SIGNED IN WITH ·
+Local password · Log out, no email, no "Google"; chamber Current authentication "Local password", no account object.
+
+Screenshots (untracked by convention): `screenshots/r2-workspaces-identity-{desktop-1280,pixel-7}.png`,
+`r2-identity-chamber-*.png`, `r2-identity-panel-*.png` (runtime, Google case); `r2-local-workspaces-*.png`,
+`r2-local-identity-panel-*.png` (mocked lane, local case).

@@ -1,10 +1,10 @@
 /**
  * AUTH/CYAN-IDENTITY-01: the current authentication relation inside the existing "Identity and access" proof
- * chamber. Four lines at most, each present only when its authoritative read legitimately produced it:
- * Authenticated identity (the canonical id, a token) · Current authentication (local password, or the server-owned
- * provider label / raw provider id) · Provider account (a provider-method attribute, said so in words) · Session
- * (current · authenticated, with the canonical instants as data). No role, authority, membership, capability, name,
- * avatar or control. The human-facing NQUIRY display name is NOT_MATERIALIZED.
+ * chamber. Authenticated identity (the canonical id, a token) · Current authentication (local password, or the
+ * server-owned provider label / raw provider id) carrying, as ONE object, the provider account beneath it
+ * ("<label> account <email>", a provider-method attribute, said so in words) · Session (current · authenticated,
+ * the canonical instants as data). Each line only when its authoritative read produced it. No role, authority,
+ * membership, capability, name, avatar or control. The human-facing NQUIRY display name is NOT_MATERIALIZED.
  */
 import { authenticationWords, type IdentityProjection as IdentityProjectionValue } from "../../lib/field/identityProjection";
 import { Identifiers } from "./chambers";
@@ -12,10 +12,14 @@ import { Identifiers } from "./chambers";
 export function IdentityProjection({ projection }: { readonly projection: IdentityProjectionValue }) {
   if (projection.identity.kind !== "authenticated") return null;
   const { session, authentication, providerAccount } = projection;
+  const account =
+    authentication.kind === "via" && authentication.label.kind === "provider" && providerAccount.kind === "email" && providerAccount.providerId === authentication.label.providerId
+      ? { providerId: providerAccount.providerId, label: authentication.label.label, email: providerAccount.email }
+      : null;
   return (
     <div className="identity-projection" data-testid="identity-projection">
       <Identifiers items={[{ label: "Authenticated identity", value: projection.identity.userId, testId: "identity-user-id" }]} />
-      {authentication.kind === "via" || providerAccount.kind === "email" || session.kind === "current" ? (
+      {authentication.kind === "via" || session.kind === "current" ? (
         <dl className="auth-relation" data-testid="auth-relation">
           {authentication.kind === "via" ? (
             <div className="auth-line" data-testid="auth-method" data-method-type={authentication.methodType} data-method-status={authentication.status}>
@@ -24,15 +28,13 @@ export function IdentityProjection({ projection }: { readonly projection: Identi
                 <span className="auth-words" data-label-kind={authentication.label.kind} data-provider-id={authentication.label.kind === "provider" ? authentication.label.providerId : undefined}>
                   {authenticationWords(authentication.label)}
                 </span>
-              </dd>
-            </div>
-          ) : null}
-          {providerAccount.kind === "email" ? (
-            <div className="auth-line" data-testid="auth-provider-account" data-provider-id={providerAccount.providerId}>
-              <dt>Provider account</dt>
-              <dd>
-                <span className="mono">{providerAccount.email}</span>
-                <span className="auth-note"> · an attribute of the provider method, not your nquiry identity</span>
+                {account ? (
+                  <span className="auth-account" data-testid="auth-provider-account" data-provider-id={account.providerId}>
+                    <span className="auth-account-label">{account.label === null ? "Provider" : account.label} account</span>
+                    <span className="mono auth-account-email">{account.email}</span>
+                    <span className="auth-note">a provider-method attribute · not your nquiry identity</span>
+                  </span>
+                ) : null}
               </dd>
             </div>
           ) : null}

@@ -6444,5 +6444,122 @@ h3.chamber-title {
 }
 .auth-note {
   color: var(--ink-soft);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
+}
+/* the provider account beneath its authentication: one object, the attribute visibly subordinate */
+.auth-account {
+  display: grid;
+  gap: 2px;
+  margin-top: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-left: 2px solid var(--line-strong);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: rgba(134, 171, 255, 0.06);
+}
+.auth-account-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.auth-account-email {
+  overflow-wrap: anywhere;
+}
+
+/* ============================================================ AUTH/CYAN-IDENTITY-01 · identity / logout panel in the rail */
+.identity-panel {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  max-width: min(100%, 420px);
+  padding: 6px var(--space-2) 6px var(--space-3);
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: linear-gradient(135deg, rgba(19, 28, 48, 0.78), rgba(10, 16, 28, 0.86));
+  backdrop-filter: blur(6px);
+  box-shadow:
+    0 0 0 1px rgba(134, 171, 255, 0.08),
+    0 0 28px var(--blue-glow);
+}
+.identity-panel-orbit {
+  position: relative;
+  width: 26px;
+  height: 26px;
+  flex: none;
+}
+.identity-panel-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(88, 220, 255, 0.45);
+  transform: rotate(-24deg) scaleY(0.62);
+}
+.identity-panel-ring-2 {
+  inset: 3px;
+  border-color: rgba(134, 171, 255, 0.5);
+  transform: rotate(38deg) scaleY(0.7);
+}
+.identity-panel-nucleus {
+  position: absolute;
+  inset: 9px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #cfe9ff, var(--cyan) 55%, rgba(88, 220, 255, 0.2) 100%);
+  box-shadow: 0 0 10px var(--cyan-glow);
+}
+.identity-panel-body {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  line-height: 1.2;
+}
+.identity-panel-eyebrow {
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.identity-panel-method {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+.identity-panel-account {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-2);
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  min-width: 0;
+}
+.identity-panel-account .mono {
+  overflow-wrap: anywhere;
+}
+.identity-panel-account-label {
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 0.66rem;
+}
+.identity-panel .button {
+  min-height: 36px;
+  padding: 6px 14px;
+}
+@media (max-width: 860px) {
+  /* with a panel in the exit slot the mark keeps its intrinsic width and the panel takes the rest, never overlapping */
+  .shell-header:has(.identity-panel) {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .shell-header:has(.identity-panel) .rail-exit {
+    min-width: 0;
+    justify-self: stretch;
+  }
+  .identity-panel {
+    width: 100%;
+    max-width: 100%;
+    gap: var(--space-2);
+    padding: 6px var(--space-2) 6px var(--space-2);
+  }
+  .identity-panel-account .mono {
+    font-size: 0.72rem;
+  }
 }

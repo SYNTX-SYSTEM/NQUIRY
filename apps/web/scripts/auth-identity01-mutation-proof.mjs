@@ -26,6 +26,21 @@ const MUTATIONS = [
   { name: "M7 unknown methodType mapped to a friendly known value", file: "lib/api/authClient.ts",
     from: '    methodType: authClosed(rec, "methodType", path, AUTH_METHOD_TYPES),\n    status: authClosed(rec, "status", path, AUTH_METHOD_STATUSES),',
     to: '    methodType: ((AUTH_METHOD_TYPES as readonly string[]).includes(String(rec.methodType)) ? rec.methodType : "GOOGLE_OIDC") as AuthMethodType,\n    status: authClosed(rec, "status", path, AUTH_METHOD_STATUSES),' },
+  { name: "M8 Google shown when LOCAL_PASSWORD is current (panel reads any linked provider method)", file: "components/field/IdentityPanel.tsx",
+    from: '    via && authentication.label.kind === "provider" && providerAccount.kind === "email" && providerAccount.providerId === authentication.label.providerId\n      ? { label: authentication.label.label, email: providerAccount.email }\n      : null;',
+    to: '    providerAccount.kind === "email" ? { label: "Google", email: providerAccount.email } : via && authentication.label.kind === "local" ? { label: "Google", email: "linked@example.test" } : null;' },
+  { name: "M9 provider email shown when missing (placeholder)", file: "components/field/IdentityPanel.tsx",
+    from: '        {account ? (\n          <span className="identity-panel-account" data-testid="identity-panel-account">',
+    to: '        {account || via ? (\n          <span className="identity-panel-account" data-testid="identity-panel-account">' },
+  { name: "M10 invented human display name", file: "components/field/IdentityPanel.tsx",
+    from: '        <span className="identity-panel-eyebrow">{via ? "Signed in with" : "Authenticated"}</span>',
+    to: '        <span className="identity-panel-eyebrow">Ottavio Braun · {via ? "Signed in with" : "Authenticated"}</span>' },
+  { name: "M11 Logout disconnected from the existing legitimate effect", file: "components/field/IdentityPanel.tsx",
+    from: '      <LogoutButton />',
+    to: '      <button type="button" className="button secondary" data-testid="logout-button">Log out</button>' },
+  { name: "M12 panel email presented as the identity (no account label)", file: "components/field/IdentityPanel.tsx",
+    from: '            <span className="identity-panel-account-label">{account.label === null ? "Provider" : account.label} account</span>',
+    to: '' },
 ];
 const sha = (b) => createHash("sha256").update(b).digest("hex");
 const rows = [];

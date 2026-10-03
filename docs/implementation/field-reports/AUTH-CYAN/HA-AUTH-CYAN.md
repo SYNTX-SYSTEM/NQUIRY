@@ -220,6 +220,26 @@ sessions wire carries no methodId, so this is the only authoritative join. The r
 through labelled FIXTURE_NON_PROOF sessions/methods answers (the pinned RED producer has no PURPLE routes); the live
 system's real relation was not read by this unit.
 
+**Human Frontend Review (2026-10-03, first pass): CHANGES_REQUESTED** — technical semantics accepted; one symbiotic
+integration pass required under the same gate (verbatim essentials): (1) the Google provider email must be visibly
+attached to the Google authentication (CURRENT AUTHENTICATION · Google · Google account <email>), staying a PROVIDER
+METHOD ATTRIBUTE, never canonical identity / display name / role / authority; (2) replace the isolated "Log out" in the
+upper-right rail with a compact SYMBIOTIC IDENTITY / LOGOUT PANEL in the organism's language (dark translucent
+surface, blue/cyan/lilac glow, subtle orbital cues; no SaaS account dropdown), conceptually SIGNED IN WITH · Google ·
+Google account <email> · [Log out]; local case SIGNED IN WITH · Local password · [Log out], no email; a linked Google
+method that is not the current authentication is never shown (CURRENT AUTHENTICATION METHOD != ANY LINKED METHOD);
+everything from the ONE proven projection (no second auth truth); no invented name/avatar/initials (an ornamental
+glyph allowed); no dropdown, settings, provider/methods/sessions management, unlink or authority control; fail closed
+on provider/method truth; Logout = the existing legitimate effect; preserve all AUTH/CYAN-IDENTITY-01 laws and
+AUTH/CYAN-01..03; proof 1–15 and mutations (Google when LOCAL_PASSWORD current; email as identity; invented name;
+Google hard-coded; email shown when missing; Logout disconnected); rebuild the review runtime; acceptance PENDING.
+
+**Delta applied (same Work Unit, 2026-10-03):** `components/field/IdentityPanel.tsx` (rail panel, consumes the same
+projection, embeds the unchanged `LogoutButton`) as the Workspaces exit; the chamber nests "<label> account <email>"
+under "Current authentication". The panel exists on the Workspaces field only (the Workspace field already shows no
+exit; the Session view keeps the plain Log out — it holds no `/auth/me` verdict and a self-fetching panel would be a
+second auth truth). Narrow screens: the header grid gives the mark its intrinsic width when a panel is present.
+
 ## Open for Human Authority
-- Human Frontend Review of AUTH/CYAN-IDENTITY-01 (see `HUMAN_REVIEW_GUIDE_AUTH_CYAN_IDENTITY_01.md`).
+- Human Frontend Review of AUTH/CYAN-IDENTITY-01, second pass (see `HUMAN_REVIEW_GUIDE_AUTH_CYAN_IDENTITY_01.md`). PENDING.
 - No further AUTH/CYAN Work Unit is defined or authorized.
