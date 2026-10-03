@@ -64,4 +64,8 @@ PRODUCTION STAGED REVIEW = NOT YET DEPLOYED.
 Next Field boundary (not entered): STAGED_SAME_ORIGIN_E2E_ASSEMBLY.
 
 ## Checkpoint
-(recorded after commit)
+| | Value |
+|---|---|
+| Field commit | `09f5f0e8eb3c99bf01b147ae0befdd90feee04b2` (tree `82ad5edd464947ebab9eac6d4c01aacd89d4d0fe`) |
+| Tag | `checkpoint-CYAN-MOUNT-01` → tag object `7330d63c6d9c6d2bcf0c5217d220622ebf2d98b7` → `09f5f0e`; pushed |
+| Remote | `origin/frontend-symbiotic` = `09f5f0e` (+ this docs commit) |
