@@ -1,0 +1,94 @@
+== final closure started 2026-10-03T17:41:03+02:00; load 3.15 3.65 3.94
+pre race_dbs=0 zz_roles=0 proof_conns=[]
+HEAD=e0a6b3b25d4309d16d6e3db3ee0958183a279dfd
+status_entries_incl_ignored=0
+diff_vs_tag=none
+content_sha256=ba25b56f293b4e7f4d74860a128c2f97ad93ac044781dec6dc1a11b1fa5c5603
+ENV_MANIFEST pre_env_manifest.json: 49 dists, 3872 files, content 7a833a0c93829604, manifest sha256 82f6c73aab6f7d2e
+ORANGE_IMPORT_ORIGIN::PASS (44 first-party names under /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra)
+ALLOWLIST_SET::PASS (cluster proof DBs == allowlist, exactly 5)
+SCHEMA_FINGERPRINT_EQUIVALENCE::PASS (3c899691e52cef9fbd65d4ea9e9489a86d05e199c068c49e556e9e2d987c27a6)
+DB_METADATA_EQUIVALENCE::PASS
+PROOF_DB_PRECONDITIONS::PASS
+collected: 2239 (2239 tests collected in 3.82s)
+exit=0
+========== 2237 passed, 2 skipped, 756 warnings in 1363.18s (0:22:43) ==========
+post race_dbs=0 zz_roles=0 proof_conns=[]
+HEAD=e0a6b3b25d4309d16d6e3db3ee0958183a279dfd
+status_entries_incl_ignored=0
+diff_vs_tag=none
+content_sha256=ba25b56f293b4e7f4d74860a128c2f97ad93ac044781dec6dc1a11b1fa5c5603
+ENV_MANIFEST post_env_manifest.json: 49 dists, 3872 files, content 7a833a0c93829604, manifest sha256 82f6c73aab6f7d2e
+ORANGE_IMPORT_ORIGIN::PASS (44 first-party names under /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra)
+ALLOWLIST_SET::PASS (cluster proof DBs == allowlist, exactly 5)
+SCHEMA_FINGERPRINT_EQUIVALENCE::PASS (3c899691e52cef9fbd65d4ea9e9489a86d05e199c068c49e556e9e2d987c27a6)
+DB_METADATA_EQUIVALENCE::PASS
+PROOF_DB_PRECONDITIONS::PASS
+COLLECTED_2239::PASS
+EXECUTED_SET_EQUALS_COLLECTION::PASS
+SKIP_SET_EQUALS_DECLARED_2::PASS
+ZERO_FAILURES_ERRORS::PASS
+CONCURRENCY_13_EXECUTED::PASS
+EXIT_CODE_0::PASS
+TREE_UNCHANGED::PASS
+ENV_MANIFEST_UNCHANGED::PASS
+GUARD_GREEN_BEFORE_AND_AFTER::PASS
+PROOF_DBS_SAME_HEAD_FINGERPRINT::PASS
+PROOF_DBS_CLEAN_AFTER::PASS
+PROOF_DBS_NO_CONNECTIONS_AFTER::PASS
+NO_RESIDUAL_RACE_DB::PASS
+NO_RESIDUAL_ZZ_PKG25_ROLE::PASS
+SERIAL_BASELINE::PASS
+pre race_dbs=0 zz_roles=0 proof_conns=[]
+HEAD=e0a6b3b25d4309d16d6e3db3ee0958183a279dfd
+status_entries_incl_ignored=0
+diff_vs_tag=none
+content_sha256=ba25b56f293b4e7f4d74860a128c2f97ad93ac044781dec6dc1a11b1fa5c5603
+ENV_MANIFEST pre_env_manifest.json: 49 dists, 3872 files, content 7a833a0c93829604, manifest sha256 82f6c73aab6f7d2e
+ORANGE_IMPORT_ORIGIN::PASS (44 first-party names under /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra)
+ALLOWLIST_SET::PASS (cluster proof DBs == allowlist, exactly 5)
+SCHEMA_FINGERPRINT_EQUIVALENCE::PASS (3c899691e52cef9fbd65d4ea9e9489a86d05e199c068c49e556e9e2d987c27a6)
+DB_METADATA_EQUIVALENCE::PASS
+PROOF_DB_PRECONDITIONS::PASS
+full: 2239 selected | 2239 tests collected in 3.57s
+serial: 4 selected | 4 tests collected in 2.22s
+xdist: 2235 selected | 2235/2239 tests collected (4 deselected) in 5.10s
+declared skips: 2
+PARTITION_PROOF::PASS (24/24)
+xdist exit=0 wall=608.178124696 s
+========== 2233 passed, 2 skipped, 759 warnings in 607.08s (0:10:07) ===========
+serial exit=0 wall=5.274236896 s
+========================= 4 passed, 1 warning in 4.28s =========================
+post race_dbs=0 zz_roles=0 proof_conns=[]
+HEAD=e0a6b3b25d4309d16d6e3db3ee0958183a279dfd
+status_entries_incl_ignored=0
+diff_vs_tag=none
+content_sha256=ba25b56f293b4e7f4d74860a128c2f97ad93ac044781dec6dc1a11b1fa5c5603
+ENV_MANIFEST post_env_manifest.json: 49 dists, 3872 files, content 7a833a0c93829604, manifest sha256 82f6c73aab6f7d2e
+ORANGE_IMPORT_ORIGIN::PASS (44 first-party names under /home/codi/Entwicklung/nquiry/worktrees/orange-proof-infra)
+ALLOWLIST_SET::PASS (cluster proof DBs == allowlist, exactly 5)
+SCHEMA_FINGERPRINT_EQUIVALENCE::PASS (3c899691e52cef9fbd65d4ea9e9489a86d05e199c068c49e556e9e2d987c27a6)
+DB_METADATA_EQUIVALENCE::PASS
+PROOF_DB_PRECONDITIONS::PASS
+aggregated nodes=2239 per partition={'xdist': {'passed': 2233, 'skipped': 2}, 'serial': {'passed': 4}} xdist_exit=0 serial_exit=0
+AGGREGATION_AND_EQUIVALENCE::PASS
+AGGREGATION_AND_EQUIVALENCE::PASS
+TREE_UNCHANGED::PASS
+ENV_MANIFEST_UNCHANGED::PASS
+IMPORT_ORIGIN_GUARD_VALID::PASS
+MIGRATION_HEADS_AND_FINGERPRINT_UNCHANGED::PASS
+PROOF_DBS_CLEAN_AND_UNCONNECTED_AFTER::PASS
+NO_RESIDUAL_RACE_DB::PASS
+NO_RESIDUAL_ZZ_PKG25_ROLE::PASS
+OBSERVED_OBJECTS_ATTRIBUTABLE::PASS
+observed proof-created objects: 13 (race dbs 13, roles 0)
+DURATION xdist_partition=608.2s serial_partition=5.3s governed_total=613.5s accepted_serial_baseline=1363.2s speedup=2.22x
+RESULT: 2235 nodes executed under governed 4-worker parallelism + 4 nodes executed under governed serial execution (3 volatile-identity nodes + 1 fixed-time-window node, SF-PX-03) = complete 2239-node frozen-field coverage
+PARALLEL_PROOF::PASS
+ORDER_PROOF::PASS
+nodes=2239 identical_outcomes=2239 documented_SF-PX-03_differences=[] undocumented_differences=[]
+FALSIFIER_DETECTS[undocumented_outcome_change]::PASS
+FALSIFIER_DETECTS[missing_node]::PASS
+SF_PX_03_NODE: accepted=passed new=passed (documented, never normalized)
+INSTRUMENTATION_INERT_FOR_SERIAL_OUTCOMES::PASS
+== final closure finished 2026-10-03T18:14:37+02:00; load 5.86 8.72 7.73

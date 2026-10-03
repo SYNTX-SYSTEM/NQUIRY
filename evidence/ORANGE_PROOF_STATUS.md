@@ -159,3 +159,30 @@ The repairs are code-identical to the SWU-PX-03 successor binding. Falsifiers 12
 existing lineage proofs are still green. No product code, no product test, no checkpoint and no historical
 evidence changed. All claims above (PCPG-5 2238/2239; SWU-PX-03 2252/2252) are unchanged by this repair.
 Details: SUCCESSOR_FINDINGS.md, `evidence/tf_px_04_05/`.
+
+## 12. First complete canonical ORANGE chain after the TF-PX-04/05 repair (2026-10-03 17:41–18:14)
+
+`final_closure.sh` at `347ed5d`, unmodified, against the frozen `checkpoint-PFC-PCPG-5` (`e0a6b3b`), PCPG-5 proof
+environment. Evidence: `evidence/final_closure_20261003T174103/` (hash manifest `EVIDENCE_MANIFEST.tsv`; run stdout
+`closure.log`; directory-level before/after snapshots). Nothing was re-run for this record.
+
+| Phase | Result |
+|---|---|
+| Pre phases (TF-PX-04) | not refused; serial collection 2239; PARTITION_PROOF 24/24 |
+| Serial reference | 2237 passed / 2 declared skips / 0 failed; SERIAL_BASELINE::PASS; instrumentation inert 2239/2239 vs `final_closure/serial_ref` |
+| Governed xdist (2235) | 2233 passed + 2 declared skips, exit 0 |
+| Governed serial (4) | 4 / 4 passed, exit 0 |
+| Aggregation / order | AGGREGATION_AND_EQUIVALENCE::PASS (2239 nodes); PARALLEL_PROOF::PASS; ORDER_PROOF::PASS |
+| Tree / env / DBs | frozen tree 0 entries before and after, content `ba25b56f…`, directory-level snapshot identical; env manifest `82f6c73a…` unchanged; heads and fingerprint unchanged, proof DBs clean and unconnected, 13 race DBs observed and dropped, 0 residue |
+| Bytecode (TF-PX-05) | no bytecode in the tree; the authorized prefix was used (already warm: 0 new `.pyc` needed) |
+| Processes | none left |
+
+Canonical chain = PASS end to end. NEW_FBR = none.
+
+Claim ceiling (unchanged by this run):
+- historical `checkpoint-PFC-PCPG-5` remains **2238 / 2239, SF-PX-03 OPEN**. This run's 2239 / 2239 (the SF-PX-03
+  node passed once in the governed serial partition) is an OBSERVATION, not a historical closure. The node is
+  load-coupled, and the partitions now really use bytecode caching (before TF-PX-05 they ran fully cold);
+- `checkpoint-SWU-PX-03` remains the legitimate successor closure at 2252 / 2252;
+- performance remains provisional: serial 1363.2 s vs governed 613.5 s (608.2 + 5.3) = 2.22x, for this single
+  measurement only.

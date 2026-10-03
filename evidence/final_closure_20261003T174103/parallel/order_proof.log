@@ -1,0 +1,10 @@
+workers=['gw0', 'gw1', 'gw2', 'gw3'] nodes_started=2235 per_worker={'gw0': 389, 'gw1': 473, 'gw2': 714, 'gw3': 659}
+  gw0: race tests at [208, 209, 210]... (9), leakers at []
+  gw1: race tests at [295, 296, 297]... (4), leakers at []
+  gw2: race tests at [] (0), leakers at [374, 375, 376]
+  gw3: race tests at [] (0), leakers at []
+ORDER_MONOTONE_AND_LEAK_AFTER_RACE::PASS
+FALSIFIER_DETECTS[reversed_worker_order]::PASS
+FALSIFIER_DETECTS[leaker_before_race]::PASS ['gwX: not strictly increasing collection order', 'gwX: a connection-leaking real_engine test precedes a race test']
+FALSIFIER_DETECTS[node_on_two_workers]::PASS
+ORDER_PROOF::PASS
