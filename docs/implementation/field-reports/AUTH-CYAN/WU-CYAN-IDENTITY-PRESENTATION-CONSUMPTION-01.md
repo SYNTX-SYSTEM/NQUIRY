@@ -79,3 +79,17 @@ ACCEPTANCE = PENDING UNTIL REAL E2E (CASE LOCAL, CASE GOOGLE on `/cy-review/`).
 | Field commit | `bfd530016e4e25e761ecb0e3a04c0b8817e95f93` (tree `96bc4ec750cd58ff3fc15f96393de9ae9b7acf07`) |
 | Tag | `checkpoint-CYAN-IDENTITY-PRESENTATION-01` → tag object `b02e6934280c57e5fc1dd30094c49f538fbdc2b2` → `bfd5300`; pushed |
 | PURPLE producer | `auth-identity` @ `2ec05c03f55ee1b0dfc08a952fa508edae0c983a` (live assembly `auth-2ec05c0-20261003T223212Z`) |
+
+## Staged real E2E — assembled, not yet human-proven (2026-10-04)
+The review mount `https://nquiry.condyn.eu/cy-review/` was rebuilt from this checkpoint (`bfd5300`) as assembly
+`cyreview-bfd5300-20261003T231217Z` (web only, loopback 3402, same compose project as CYAN_REAL_E2E_ASSEMBLY_01; the
+Dockerfile and manifest pattern unchanged). Proof without any login, desktop + Pixel 7, headless browser from the
+author's machine: `/cy-review/workspaces` → `/cy-review/login`; start href `…/api/auth/oidc/google/start?next=%2Fcy-review%2F`;
+brand asset beneath the mount; zero `/cy-review/api/` requests; no cookie set; live `/` body hash unchanged
+(`e4a9860c…`); the candidate bundle carries the `/auth/identity` contact (4 chunks). The identity, session, method and
+provider reads happen only after a real login and were therefore NOT observed by the agent.
+
+**Open for the human (REAL_SAME_ORIGIN_AUTH_E2E):** CASE LOCAL — real local login on `/cy-review/login` →
+`/cy-review/workspaces` must read the real name, the real canonical NQUIRY email, "Local password", no Google account.
+CASE GOOGLE — real Google login → the SAME name and canonical email, "Google", the actual provider account email.
+Only then Human Frontend Acceptance. Production root cutover is a separate Field (CYAN_PRODUCTION_ROOT_CUTOVER).
