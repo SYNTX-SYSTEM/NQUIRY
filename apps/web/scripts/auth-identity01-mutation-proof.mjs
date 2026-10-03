@@ -41,6 +41,18 @@ const MUTATIONS = [
   { name: "M12 panel email presented as the identity (no account label)", file: "components/field/IdentityPanel.tsx",
     from: '            <span className="identity-panel-account-label">{account.label === null ? "Provider" : account.label} account</span>',
     to: '' },
+  { name: "M13 unknown methodType mapped to Local password (parser)", file: "lib/api/authClient.ts",
+    from: '    methodType: authClosed(rec, "methodType", path, AUTH_METHOD_TYPES),\n    status: authClosed(rec, "status", path, AUTH_METHOD_STATUSES),',
+    to: '    methodType: ((AUTH_METHOD_TYPES as readonly string[]).includes(String(rec.methodType)) ? rec.methodType : "LOCAL_PASSWORD") as AuthMethodType,\n    status: authClosed(rec, "status", path, AUTH_METHOD_STATUSES),' },
+  { name: "M14 frontend caches the previous current method across transitions", file: "lib/field/useIdentityProjection.ts", browser: "RECONSTRUCTION",
+    from: 'export function useIdentityProjection(userId: string | null): IdentityProjection {\n  const [reads, setReads] = useState<Reads>(PENDING);',
+    to: 'let CACHE: Reads | null = null;\nexport function useIdentityProjection(userId: string | null): IdentityProjection {\n  const [reads, setReadsRaw] = useState<Reads>(CACHE ?? PENDING);\n  const setReads = (r: Reads) => { if (CACHE === null) { CACHE = r; setReadsRaw(r); } };' },
+  { name: "M15 available Google provider determines the current authentication", file: "lib/field/identityProjection.ts",
+    from: '  const currents = reads.sessions !== null && reads.sessions.kind === "ok" ? reads.sessions.sessions.filter((s) => s.current) : [];',
+    to: '  const googleAvailable = reads.providers !== null && reads.providers.kind === "ok" && reads.providers.providers.some((p) => p.providerId === "google");\n  const currents = reads.sessions !== null && reads.sessions.kind === "ok" ? reads.sessions.sessions.filter((s) => s.current).map((s) => (googleAvailable ? { ...s, methodType: "GOOGLE_OIDC" as const } : s)) : [];' },
+  { name: "M16 provider email forces the Google projection", file: "lib/field/identityProjection.ts",
+    from: '    const method = methodOfSession(reads.methods.methods, session.methodType);',
+    to: '    const withEmail = reads.methods.methods.find((m) => m.provider !== null && m.provider.email !== null && m.status === "ACTIVE");\n    const method = withEmail ?? methodOfSession(reads.methods.methods, session.methodType);' },
 ];
 const sha = (b) => createHash("sha256").update(b).digest("hex");
 const rows = [];
@@ -48,9 +60,11 @@ for (const m of MUTATIONS) {
   const file = F(m.file); const original = readFileSync(file); const baseline = sha(original); const text = original.toString("utf8");
   if (!text.includes(m.from)) { rows.push({ name: m.name, result: "ANCHOR MISSING (mutation not applied)", restored: true }); continue; }
   writeFileSync(file, text.replace(m.from, m.to));
-  const run = spawnSync("npx", ["vitest", "run", "tests/field/identityProjection.test.tsx", "tests/lib/authClient.test.ts", "--reporter=dot"], { encoding: "utf8" });
+  const run = m.browser
+    ? spawnSync("npx", ["playwright", "test", "-c", "playwright.sf01.config.ts", "tests/e2e/cy08-identity.spec.ts", "--project=desktop", "--grep", m.browser, "--output=/tmp/pw-mutation", "--reporter=line"], { encoding: "utf8" })
+    : spawnSync("npx", ["vitest", "run", "tests/field/identityProjection.test.tsx", "tests/lib/authClient.test.ts", "--reporter=dot"], { encoding: "utf8" });
   writeFileSync(file, original);
-  const failed = /Tests\s+(\d+) failed/.exec(run.stdout + run.stderr)?.[1] ?? "0";
+  const failed = (m.browser ? /(\d+) failed/ : /Tests\s+(\d+) failed/).exec(run.stdout + run.stderr)?.[1] ?? "0";
   rows.push({ name: m.name, result: run.status !== 0 ? `KILLED (${failed} test(s) failed)` : "SURVIVED", restored: sha(readFileSync(file)) === baseline });
 }
 for (const r of rows) console.log(`${r.name}: ${r.result}; restored byte-identical: ${r.restored}`);

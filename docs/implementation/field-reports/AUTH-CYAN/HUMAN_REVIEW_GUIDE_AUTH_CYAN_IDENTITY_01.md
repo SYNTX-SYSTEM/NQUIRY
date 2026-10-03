@@ -20,19 +20,29 @@ for the nquiry identity, and whether nothing implies authority.
   AUTHENTICATION · Google · [GOOGLE ACCOUNT · email · "a provider-method attribute · not your nquiry identity"].
 - The Session view still shows the plain "Log out" (disclosed in the WU report; it holds no identity verdict).
 
+## The runtime follows your transitions (field repair)
+- A local login records the local transition: the rail reads SIGNED IN WITH · Local password, the chamber "Local
+  password", no Google, no email — although a Google method is linked (LINKED != CURRENT).
+- To review the Google state: click **Continue with Google** on the Access Field → on the Review Boundary page press
+  **Enter the Google review state** (labelled FIXTURE_NON_PROOF; no Google is contacted) → the rail reads SIGNED IN
+  WITH · Google · GOOGLE ACCOUNT · `review-fixture@cy01.local.test`.
+- Log out, log in locally again: Local password again. Nothing survives a transition.
+- While the three reads are still landing (a fraction of a second) the rail reads "Authenticated · <short id>": the
+  fail-closed state, never a guessed method.
+
 ## Steps
 1. Log in and arrive on `/workspaces`. The Workspaces core, the orbit and "Found a Workspace" are unchanged and
    primary. The "Identity and access" chamber (right column on desktop, below on a phone) now reads, in this order:
-   AUTHENTICATED IDENTITY (the id token with copy) · CURRENT AUTHENTICATION "Google" with, beneath it as one object,
-   GOOGLE ACCOUNT `review-fixture@cy01.local.test` and the words "a provider-method attribute · not your nquiry
-   identity" · SESSION "current · authenticated". In the rail: the identity / logout panel described above.
+   AUTHENTICATED IDENTITY (the id token with copy) · CURRENT AUTHENTICATION "Local password" (after a local login) or
+   "Google" with, beneath it as one object, GOOGLE ACCOUNT `review-fixture@cy01.local.test` and the words "a
+   provider-method attribute · not your nquiry identity" (after the Google review transition) · SESSION "current ·
+   authenticated". In the rail: the identity / logout panel described above.
 2. Confirm nothing else appeared: no avatar, no name, no menu, no settings, no account-security panel, no role or
    authority word in the chamber or the panel. The rail keeps trace · nquiry mark · (panel with) Log out; the panel
    opens nothing on hover or click except Log out.
 3. Narrow to a phone width (or Pixel 7): the panel sits beside the mark on the first rail row (never over it), the
    email wraps inside the pill; the chamber stacks under the organism; no sideways scrolling.
-4. Log out and log in again: the same chamber (the runtime's fixture is static; on the live system a local login
-   would read "Local password" and show no provider account — proven in the mocked lane, not visible here).
+4. Log out and log in locally again: the chamber and the rail read "Local password" (the Google state is gone).
 5. Optional fail-closed check: block `/api/auth/methods` in devtools and reload — "Current authentication" and
    "Provider account" disappear, the identity and the session line stay.
 

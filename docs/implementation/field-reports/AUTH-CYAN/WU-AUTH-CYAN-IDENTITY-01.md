@@ -90,8 +90,44 @@ second auth truth, which the review forbids) — disclosed, not changed.
 Spec repairs during the delta (tests only): the header locator had to be scoped to `header.shell-header` (two
 `<header>` elements exist); the Pixel 7 run exposed the panel covering the mark, fixed in CSS and now a law.
 
+## Field reconstruction and repair (2026-10-03, HA-AUTH-CYAN-IDENTITY-01/F)
+**First broken relation:** LOGIN TRANSITION → CURRENT SESSION PRODUCER, in the review runtime: after a LOCAL login the
+proxy answered `/api/auth/sessions` with a fixed GOOGLE_OIDC current session, so CYAN (correctly consuming the producer)
+projected Google. CYAN's derivation was not broken: the current method is derived from the one `current` session and
+nothing else (mocked lane CASE 1/3 already green). **Repair target:** the authoritative state producer of the review
+runtime, not the label.
+
+| Transition | Review-runtime producer (runtime-only `review-auth-fixture.mjs`) | CYAN |
+|---|---|---|
+| local login (`POST /api/auth/login` → 200 through the proxy) | records "local" → one current session `LOCAL_PASSWORD` | Signed in with · Local password; no Google, no email |
+| Google review transition (explicit, labelled form on the review boundary page; no Google contacted) | records "google" → local session (not current) + current session `GOOGLE_OIDC` | Signed in with · Google · Google account · email |
+| logout | clears the record | — |
+| no recorded transition | one current session with `methodType: null` (UNKNOWN) | Authenticated · short id; no method, no email |
+| every state | methods = the linked pair LOCAL_PASSWORD + GOOGLE_OIDC, both ACTIVE | never the source of the current method |
+
+Runtime proof (`browser-evidence/identity-01/review-runtime/PROOF_OUTPUT.txt`): node tests 6 / 6; fixture mutation
+proof **7 / 7 killed** (R1 local login still Google · R2 Google state produces local · R3 unknown → Google · R4
+unknown → Local password · R5 newest issuedAt decides · R6 bogus cookie accepted · R7 linked Google forces google).
+Walk on the runtime, both devices (`SUMMARY.md`): local login → Local password; Google transition → Google + account;
+logout → local login → Local password (nothing survived).
+
+Repository delta of this repair (tests only, no product change): `tests/e2e/cy08-identity.spec.ts` + CASE 1 through
+the real login form, CASE 5 (`methodType: null` → Authenticated only), CASE 6 (Google current, email null → no account
+row), RECONSTRUCTION (Google → logout → local login → Local password, nothing cached); `scripts/auth-identity01-mutation-proof.mjs`
++ M13 unknown → Local password at the parser · M14 frontend caches the previous current method (killed through the
+browser lane) · M15 available Google provider determines the current authentication · M16 provider email forces the
+Google projection. Cases: CASE 2 (Google current → Google + email), CASE 3 (local current + Google linked → Local
+password), CASE 4 (Google current + local linked → Google), CASE 7 (providers unavailable → raw id) were already proven.
+
+| Lane | Result |
+|---|---|
+| `cy08-identity` (desktop + Pixel 7) | **32 / 32** |
+| Full unit suite · `tsc` · `eslint` | 612 / 612 · clean · clean |
+| Mutation proof (product) | **16 / 16 killed**, byte-identical restore |
+| Mutation proof (review-runtime fixture) | **7 / 7 killed**, byte-identical restore |
+
 ## Status
-FBR AUTH/CYAN-IDENTITY-01: TECHNICALLY CLOSED (incl. the Human Review delta). **READY_FOR_HUMAN_FRONTEND_REVIEW** (`HUMAN_REVIEW_GUIDE_AUTH_CYAN_IDENTITY_01.md`).
+FBR AUTH/CYAN-IDENTITY-01: TECHNICALLY CLOSED (incl. the Human Review delta and the field repair of the review producer). **READY_FOR_HUMAN_FRONTEND_REVIEW** (`HUMAN_REVIEW_GUIDE_AUTH_CYAN_IDENTITY_01.md`).
 Not FIELD_GREEN, not REVIEWED_FIELD, not PUBLISHED_FIELD, not merged, not deployed.
 
 **Claim ceiling:** AUTHENTICATED IDENTITY = PRESENTED BY CYAN · CURRENT AUTHENTICATION METHOD = PRESENTED BY CYAN ·

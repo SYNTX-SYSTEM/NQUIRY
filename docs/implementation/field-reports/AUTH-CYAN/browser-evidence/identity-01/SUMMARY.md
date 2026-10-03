@@ -30,3 +30,18 @@ Local password · Log out, no email, no "Google"; chamber Current authentication
 Screenshots (untracked by convention): `screenshots/r2-workspaces-identity-{desktop-1280,pixel-7}.png`,
 `r2-identity-chamber-*.png`, `r2-identity-panel-*.png` (runtime, Google case); `r2-local-workspaces-*.png`,
 `r2-local-identity-panel-*.png` (mocked lane, local case).
+
+## Third pass (field repair of the review producer, 2026-10-03)
+
+The proxy's sessions answer now follows the transition that produced the state (`review-runtime/review-auth-fixture.mjs`,
+`proxy.mjs`, tests and mutation proof in `review-runtime/PROOF_OUTPUT.txt`). Walk on the runtime after the reads landed:
+
+| Device | 1 · local login | 2 · Google review transition | 3 · logout → local login |
+|---|---|---|---|
+| desktop 1280×860 | rail: SIGNED IN WITH · Local password · Log out; chamber: Local password, no account | rail: SIGNED IN WITH · Google · GOOGLE ACCOUNT · review-fixture@cy01.local.test · Log out; chamber: Google + account object | rail: SIGNED IN WITH · Local password · Log out; chamber: Local password |
+| Pixel 7 | same | same | same |
+
+`x-nquiry-review-fixture` on `/api/auth/sessions`: `transition=local` / `transition=google` / `transition=local`.
+Screenshots (untracked): `screenshots/r3-{1-local-login,2-google-transition,3-local-again}-{desktop-1280,pixel-7}.png`.
+A first walk snapshotted before the reads landed and showed the fail-closed "Authenticated · e239b0e4…" rail in step 3
+on desktop; the script now waits for the session line (the state itself was `transition=local`).

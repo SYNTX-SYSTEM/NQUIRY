@@ -164,3 +164,80 @@ test("Logout is unchanged: it posts to /auth/logout and returns to /login", asyn
   await page.route(`${API}/auth/me`, (route) => route.fulfill({ status: 401, json: { kind: "denied", reasonCode: "NO_SESSION" } }));
   await expect(page).toHaveURL(/\/login$/);
 });
+
+// --- Field reconstruction cases (the CURRENT method is the method that produced the CURRENT session) -----------------
+
+test("CASE 1 · the local login transition itself: form → local session → projection Local password, no Google, no email", async ({ page }) => {
+  let authenticated = false;
+  await page.route(`${API}/auth/me`, (route) => route.fulfill(authenticated ? { json: { kind: "ok", userId: USER } } : { status: 401, json: { kind: "denied", reasonCode: "NO_SESSION" } }));
+  await page.route(`${API}/auth/login`, async (route) => {
+    authenticated = true;
+    await route.fulfill({ json: { kind: "ok", userId: USER } });
+  });
+  await page.route(`${API}/workspaces`, (route) => route.fulfill({ json: { kind: "ok", workspaces: [] } }));
+  await auth(page, json(sessionsBody("LOCAL_PASSWORD")), json(METHODS), json(PROVIDERS));
+  await page.goto("/login");
+  await page.getByTestId("login-email").fill("person@nonproof.test");
+  await page.getByTestId("login-password").fill("pw");
+  await page.getByTestId("login-submit").click();
+  await expect(page).toHaveURL(/\/workspaces$/);
+  await expect(page.getByTestId("identity-panel-method")).toHaveText("Local password");
+  await expect(page.getByTestId("auth-method").locator(".auth-words")).toHaveText("Local password");
+  await expect(page.getByTestId("identity-panel-account")).toHaveCount(0);
+  await expect(page.getByTestId("auth-provider-account")).toHaveCount(0);
+  expect(await page.locator("main, header.shell-header").allInnerTexts()).not.toContainEqual(expect.stringMatching(/google|@/i));
+});
+
+test("CASE 5 · the current session names no method: Authenticated only, no friendly method invented, Logout stays", async ({ page }) => {
+  await base(page);
+  await auth(page, json({ kind: "ok", sessions: [{ sessionId: S_CUR, issuedAt: "2026-10-03T08:00:00+00:00", expiresAt: "2026-10-05T08:00:00+00:00", current: true, methodType: null }] }), json(METHODS), json(PROVIDERS));
+  await page.goto("/workspaces");
+  await expect(page.getByTestId("auth-session")).toBeVisible();
+  await expect(page.getByTestId("auth-method")).toHaveCount(0);
+  await expect(page.getByTestId("identity-panel-identity")).toHaveText(`${USER.slice(0, 8)}…`);
+  expect(await page.getByTestId("identity-panel").innerText()).not.toMatch(/Signed in with|Google|Local password|@/);
+  await expect(page.getByTestId("identity-panel").getByTestId("logout-button")).toBeVisible();
+});
+
+test("CASE 6 · Google current with no provider email: Google stays the current method, the account row is absent", async ({ page }) => {
+  await base(page);
+  const noEmail = { kind: "ok", methods: [METHODS.methods[0], { ...METHODS.methods[1], provider: { providerId: "google", email: null } }] };
+  await auth(page, json(sessionsBody("GOOGLE_OIDC")), json(noEmail), json(PROVIDERS));
+  await page.goto("/workspaces");
+  await expect(page.getByTestId("identity-panel-method")).toHaveText("Google");
+  await expect(page.getByTestId("identity-panel-account")).toHaveCount(0);
+  await expect(page.getByTestId("auth-provider-account")).toHaveCount(0);
+  expect(await page.getByTestId("identity-panel").innerText()).not.toContain("@");
+});
+
+test("RECONSTRUCTION · no projection survives a transition: Google session → logout → local login → Local password (nothing cached)", async ({ page }) => {
+  let authenticated = true;
+  let currentType = "GOOGLE_OIDC";
+  await page.route(`${API}/auth/me`, (route) => route.fulfill(authenticated ? { json: { kind: "ok", userId: USER } } : { status: 401, json: { kind: "denied", reasonCode: "NO_SESSION" } }));
+  await page.route(`${API}/auth/logout`, async (route) => {
+    authenticated = false;
+    await route.fulfill({ json: { kind: "ok" } });
+  });
+  await page.route(`${API}/auth/login`, async (route) => {
+    authenticated = true;
+    currentType = "LOCAL_PASSWORD";
+    await route.fulfill({ json: { kind: "ok", userId: USER } });
+  });
+  await page.route(`${API}/workspaces`, (route) => route.fulfill({ json: { kind: "ok", workspaces: [] } }));
+  await page.route(`${API}/auth/sessions`, (route) => route.fulfill({ json: sessionsBody(currentType) }));
+  await page.route(`${API}/auth/methods`, (route) => route.fulfill({ json: METHODS }));
+  await page.route(`${API}/auth/providers`, (route) => route.fulfill({ json: PROVIDERS }));
+  await page.goto("/workspaces");
+  await expect(page.getByTestId("identity-panel-method")).toHaveText("Google");
+  await expect(page.getByTestId("identity-panel-account")).toContainText("person@example.test");
+  await page.getByTestId("logout-button").click();
+  await expect(page).toHaveURL(/\/login$/);
+  await page.getByTestId("login-email").fill("person@nonproof.test");
+  await page.getByTestId("login-password").fill("pw");
+  await page.getByTestId("login-submit").click();
+  await expect(page).toHaveURL(/\/workspaces$/);
+  await expect(page.getByTestId("identity-panel-method")).toHaveText("Local password");
+  await expect(page.getByTestId("identity-panel-account")).toHaveCount(0);
+  await expect(page.getByTestId("auth-method").locator(".auth-words")).toHaveText("Local password");
+  await expect(page.getByTestId("auth-provider-account")).toHaveCount(0);
+});

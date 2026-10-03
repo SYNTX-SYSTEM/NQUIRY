@@ -240,6 +240,40 @@ under "Current authentication". The panel exists on the Workspaces field only (t
 exit; the Session view keeps the plain Log out — it holds no `/auth/me` verdict and a self-fetching panel would be a
 second auth truth). Narrow screens: the header grid gives the mark its intrinsic width when a panel is present.
 
+## HA-AUTH-CYAN-IDENTITY-01/F — NQUIRY identity/authentication field reconstruction and repair (2026-10-03, verbatim essentials)
+
+> MODE = FIELD_RECONSTRUCTION_AND_IMPLEMENTATION · FIELD = NQUIRY_IDENTITY_AUTHENTICATION_FIELD · SCOPE =
+> CURRENT_AUTHENTICATION_RELATION_TO_CYAN_PROJECTION. The field is NQUIRY-owned; Google is only an external producer:
+> GOOGLE != IDENTITY FIELD / AUTHORITY / CURRENT SESSION TRUTH; PROVIDER AVAILABILITY != CURRENT AUTHENTICATION;
+> LINKED PROVIDER != CURRENT AUTHENTICATION. The field answers: WHO is authenticated; BY WHICH method the CURRENT
+> session was produced; WHICH provider relation belongs to that method; WHAT CYAN may project. CRITICAL LAW: CURRENT
+> AUTHENTICATION METHOD = METHOD THAT PRODUCED THE CURRENT SESSION — never from available providers, linked methods,
+> list order, timestamps, provider email, provider availability, a previous session, a review fixture default or
+> frontend memory. REVIEW RUNTIME LAW: the runtime is part of the proof field; it must not contain a globally fixed
+> Google truth; LOCAL LOGIN TRANSITION → local current session; GOOGLE REVIEW TRANSITION → Google current session; a
+> fixture may not contradict the transition that produced the state (LOCAL LOGIN + GOOGLE CURRENT SESSION FIXTURE =
+> INVALID FIELD STATE). FIRST BROKEN RELATION observed: local login → CYAN projection Google ⇒ LOGIN TRANSITION →
+> CURRENT SESSION PRODUCER (the review producer). Repair the authoritative state producer, not the label. BOUNDARY:
+> unknown producer → CURRENT_AUTHENTICATION_METHOD = UNKNOWN → CYAN shows "Authenticated" only. ALLOWED DELTA: make
+> review-runtime current-session truth causally follow the login transition; NOT allowed: hard-coding either method,
+> deriving the method from linked methods / provider availability / email, changing production PURPLE semantics, a
+> second frontend auth truth. Proof CASES 1–7, mutations (linked Google forces Google; email forces Google; newest
+> method; available provider; local login still Google fixture; Google state produces local; unknown → Google; unknown
+> → Local password; frontend caches), RECONSTRUCTION RULE after every transition. No production deployment.
+
+**Reconstruction by the executing agent.** CYAN's derivation (`identityProjectionFrom`) already obeys the law: the
+method is the producer of the one `current` session; the mocked lane had proven the local case. The broken relation
+was the review-runtime producer: the proxy served one fixed GOOGLE_OIDC current session regardless of the transition.
+**Repair (runtime-only, `cy01-inspect/review-auth-fixture.mjs` + `proxy.mjs`, copies in
+`browser-evidence/identity-01/review-runtime/`):** a successful local login (`POST /api/auth/login` → 200) records the
+transition "local"; the review boundary page offers an explicit, labelled "Enter the Google review state" transition
+(records "google"; no Google contacted); logout clears it; no recorded transition → one current session with
+`methodType: null` (UNKNOWN → CYAN shows "Authenticated" + short id). The linked methods are the same pair in every
+state and never decide. Product code: unchanged; tests and the mutation script extended (CASE 1 through the real
+login form, CASE 5, CASE 6, the reconstruction sequence Google → logout → local login; mutations M13–M16 incl. a
+frontend cache killed through the browser lane).
+
 ## Open for Human Authority
-- Human Frontend Review of AUTH/CYAN-IDENTITY-01, second pass (see `HUMAN_REVIEW_GUIDE_AUTH_CYAN_IDENTITY_01.md`). PENDING.
+- Human Frontend Review of AUTH/CYAN-IDENTITY-01, second pass, on the causal review runtime (see
+  `HUMAN_REVIEW_GUIDE_AUTH_CYAN_IDENTITY_01.md`). PENDING.
 - No further AUTH/CYAN Work Unit is defined or authorized.

@@ -1,0 +1,11 @@
+# tests 6
+# pass 6
+# fail 0
+R1 LOCAL login still produces a GOOGLE_OIDC current session: KILLED (2 test(s) failed); restored byte-identical: true
+R2 GOOGLE review state produces LOCAL_PASSWORD: KILLED (2 test(s) failed); restored byte-identical: true
+R3 unknown transition maps to Google: KILLED (1 test(s) failed); restored byte-identical: true
+R4 unknown transition maps to Local password: KILLED (1 test(s) failed); restored byte-identical: true
+R5 newest issuedAt decides the current session: KILLED (2 test(s) failed); restored byte-identical: true
+R6 a bogus cookie value is accepted as a state: KILLED (1 test(s) failed); restored byte-identical: true
+R7 linked Google method forces the google state: KILLED (2 test(s) failed); restored byte-identical: true
+7/7 mutations killed; baseline sha256 47cdc66d442a25e04af6923c418524c86f5dce6b4c4b62cb97acdb68c67b7740
