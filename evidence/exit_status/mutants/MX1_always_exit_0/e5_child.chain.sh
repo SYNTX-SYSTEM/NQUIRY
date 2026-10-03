@@ -1,0 +1,1 @@
+prog_init synthetic; prog_begin failing; bash -c 'exit 3'; prog_end failing "$?"; prog_verdicts p "/home/codi/Entwicklung/nquiry/worktrees/orange-proof-lineage/evidence/exit_status/mutants/MX1_always_exit_0/ok.log" A B; prog_finish

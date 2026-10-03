@@ -1,0 +1,4 @@
+4c4
+< PROOF_END       verdict=PASS failures=1 verdicts_read=2
+---
+> PROOF_END       verdict=FAIL failures=1 verdicts_read=2

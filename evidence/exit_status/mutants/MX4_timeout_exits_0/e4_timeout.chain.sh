@@ -1,0 +1,1 @@
+prog_init synthetic; prog_begin bounded; timeout 1 sleep 5; prog_end bounded "$?"; prog_verdicts p "/home/codi/Entwicklung/nquiry/worktrees/orange-proof-lineage/evidence/exit_status/mutants/MX4_timeout_exits_0/ok.log" A B; prog_finish

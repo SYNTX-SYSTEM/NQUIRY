@@ -1,0 +1,3 @@
+# runtime bytecode written by harness runs into their own authorized prefixes (counts only; removed, never versioned)
+exit_status/regression/progress_falsifiers/xdist/pyc pyc=435
+exit_status/regression/tf_px_04_05/t05b/pyc pyc=435

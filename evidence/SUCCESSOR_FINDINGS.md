@@ -229,3 +229,17 @@ Proof (`tooling_falsifiers_tf_px_04_05.sh`, evidence `evidence/tf_px_04_05/`), n
 TF-PX-04 = CLOSED in canonical ORANGE lineage. TF-PX-05 = CLOSED in canonical ORANGE lineage.
 Not re-proven at full radius: no complete ORANGE chain was run after the repair (not required at this radius).
 The next full ORANGE run is the first end-to-end use of the repaired canonical chain.
+
+## TF-PX-06 — TOOLING DEFECT (proof-lineage infrastructure, NOT a product failure): spurious PROOF_END from a heartbeat fork race
+Found 2026-10-03 by falsifier E10 of Work Unit FINAL_VERDICT_EXIT_STATUS. Present in `progress.sh` since the
+structured verbose + heartbeat commit `64e9113`. When a stage ends right after it starts, `prog_end` kills the
+just-forked background heartbeat before bash has reset the inherited EXIT trap in that child. The child then
+ran the chain's EXIT handler and emitted a false `PROOF_END verdict=FAIL reason=chain_exited_before_final_verdict`
+mid-run. Reproduced with the base helper: 1 of 10 zero-duration stages; 1–2 of 30 two-stage zero-duration
+chains (evidence `exit_status_v1_FAIL_*`, `exit_status/canonical.log` info line). It never changed the chain
+process's own exit status (only the child's), but it broke "PROOF_END once and last" in the event stream. The real
+chain's stages all run real commands, so it was unlikely there, but possible.
+Repair (same relation as the exit-status contract): `prog_init` records the chain's own `BASHPID`, and the EXIT
+handler returns at once in any other process: no event, no exit-status change. Falsifier E10b (100 zero-duration
+two-stage chains, PROOF_END exactly once) and mutant MX7 (guard removed: killed) prove it.
+TF-PX-06 = CLOSED in canonical ORANGE lineage.

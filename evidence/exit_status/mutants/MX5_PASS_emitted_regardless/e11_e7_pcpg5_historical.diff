@@ -1,0 +1,4 @@
+97c97
+< PROOF_END       verdict=PASS failures=4 verdicts_read=69
+---
+> PROOF_END       verdict=FAIL failures=4 verdicts_read=69

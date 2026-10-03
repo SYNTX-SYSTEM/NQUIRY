@@ -53,3 +53,9 @@ observer.stop
 /evidence/verbose_heartbeat_v1_SUPERSEDED_harness_pkill_selfkill/canonical/integration/closure/serial_ref/pre_collect_raw.txt
 /evidence/verbose_heartbeat_v1_SUPERSEDED_harness_pkill_selfkill/mutants/MV1_heartbeat_prints_PASS/integration/closure/serial_ref/collected_nodeids.txt
 /evidence/verbose_heartbeat_v1_SUPERSEDED_harness_pkill_selfkill/mutants/MV1_heartbeat_prints_PASS/integration/closure/serial_ref/pre_collect_raw.txt
+
+# exit_status raw outputs > 100 KB (hash-recorded in evidence/exit_status/RAW_EXCLUDED.tsv; kept locally)
+/evidence/exit_status/regression/progress_falsifiers/integration/closure/serial_ref/collected_nodeids.txt
+/evidence/exit_status/regression/progress_falsifiers/integration/closure/serial_ref/pre_collect_raw.txt
+/evidence/exit_status/regression/tf_px_04_05/t04a/serial_ref/collected_nodeids.txt
+/evidence/exit_status/regression/tf_px_04_05/t04a/serial_ref/pre_collect_raw.txt

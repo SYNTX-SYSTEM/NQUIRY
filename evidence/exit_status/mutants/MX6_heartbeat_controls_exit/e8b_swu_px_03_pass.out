@@ -1,0 +1,100 @@
+[00:00:00] PROOF_START     chain=canonical-orange lineage=unknown run=final_closure
+[00:00:00] STAGE_START     stage=serial_pre
+[00:00:00] STAGE_END       stage=serial_pre rc=0 elapsed=0s
+[00:00:00] VERDICT         phase=serial_pre name=ORANGE_IMPORT_ORIGIN value=PASS
+[00:00:00] VERDICT         phase=serial_pre name=ALLOWLIST_SET value=PASS
+[00:00:00] VERDICT         phase=serial_pre name=SCHEMA_FINGERPRINT_EQUIVALENCE value=PASS
+[00:00:00] VERDICT         phase=serial_pre name=DB_METADATA_EQUIVALENCE value=PASS
+[00:00:00] VERDICT         phase=serial_pre name=PROOF_DB_PRECONDITIONS value=PASS
+[00:00:00] STAGE_START     stage=serial_reference
+[00:00:00] STAGE_END       stage=serial_reference rc=0 elapsed=0s
+[00:00:00] CLEANUP         phase=serial observer=stopped
+[00:00:00] STAGE_START     stage=serial_post
+[00:00:00] STAGE_END       stage=serial_post rc=unobserved elapsed=0s
+[00:00:00] STAGE_START     stage=serial_analysis
+[00:00:00] STAGE_END       stage=serial_analysis rc=unobserved elapsed=0s
+[00:00:00] VERDICT         phase=serial_analysis name=COLLECTED_2252 value=PASS
+[00:00:00] VERDICT         phase=serial_analysis name=EXECUTED_SET_EQUALS_COLLECTION value=PASS
+[00:00:00] VERDICT         phase=serial_analysis name=SKIP_SET_EQUALS_DECLARED_2 value=PASS
+[00:00:00] VERDICT         phase=serial_analysis name=ZERO_FAILURES_ERRORS value=PASS
+[00:00:00] VERDICT         phase=serial_analysis name=CONCURRENCY_13_EXECUTED value=PASS
+[00:00:00] VERDICT         phase=serial_analysis name=EXIT_CODE_0 value=PASS
+[00:00:00] VERDICT         phase=serial_analysis name=TREE_UNCHANGED value=PASS
+[00:00:00] VERDICT         phase=serial_analysis name=ENV_MANIFEST_UNCHANGED value=PASS
+[00:00:00] VERDICT         phase=serial_analysis name=GUARD_GREEN_BEFORE_AND_AFTER value=PASS
+[00:00:00] VERDICT         phase=serial_analysis name=PROOF_DBS_SAME_HEAD_FINGERPRINT value=PASS
+[00:00:00] VERDICT         phase=serial_analysis name=PROOF_DBS_CLEAN_AFTER value=PASS
+[00:00:00] VERDICT         phase=serial_analysis name=PROOF_DBS_NO_CONNECTIONS_AFTER value=PASS
+[00:00:00] VERDICT         phase=serial_analysis name=NO_RESIDUAL_RACE_DB value=PASS
+[00:00:00] VERDICT         phase=serial_analysis name=NO_RESIDUAL_ZZ_PKG25_ROLE value=PASS
+[00:00:00] VERDICT         phase=serial_analysis name=SERIAL_BASELINE value=PASS
+[00:00:00] STAGE_START     stage=parallel_pre
+[00:00:00] STAGE_END       stage=parallel_pre rc=0 elapsed=0s
+[00:00:00] VERDICT         phase=parallel_pre name=ORANGE_IMPORT_ORIGIN value=PASS
+[00:00:00] VERDICT         phase=parallel_pre name=ALLOWLIST_SET value=PASS
+[00:00:00] VERDICT         phase=parallel_pre name=SCHEMA_FINGERPRINT_EQUIVALENCE value=PASS
+[00:00:00] VERDICT         phase=parallel_pre name=DB_METADATA_EQUIVALENCE value=PASS
+[00:00:00] VERDICT         phase=parallel_pre name=PROOF_DB_PRECONDITIONS value=PASS
+[00:00:00] STAGE_START     stage=partition_proof
+[00:00:00] STAGE_END       stage=partition_proof rc=unobserved elapsed=0s
+[00:00:00] VERDICT         phase=partition_proof name=SELECTORS_ARE_THE_DECLARED_TWO value=PASS
+[00:00:00] VERDICT         phase=partition_proof name=SELECTOR_PREFIX_UNAMBIGUOUS[...] value=PASS
+[00:00:00] VERDICT         phase=partition_proof name=SELECTOR_PREFIX_UNAMBIGUOUS[...] value=PASS
+[00:00:00] VERDICT         phase=partition_proof name=I_SELECTOR_SERIAL_EXACTLY_4 value=PASS
+[00:00:00] VERDICT         phase=partition_proof name=I_SELECTOR_COMPLEMENT_EXACTLY_2248 value=PASS
+[00:00:00] VERDICT         phase=partition_proof name=I_DISJOINT_RAW value=PASS
+[00:00:00] VERDICT         phase=partition_proof name=I_RAW_UNION_EQUALS_FULL_NO_OMISSION value=PASS
+[00:00:00] VERDICT         phase=partition_proof name=I_SERIAL_CONTAINS_BOTH_VOLATILE_IDS value=PASS
+[00:00:00] VERDICT         phase=partition_proof name=I_MOVED_NODE_ONLY_IN_SERIAL value=PASS
+[00:00:00] VERDICT         phase=partition_proof name=II_ACTUAL_PARTITION_PROVEN value=PASS
+[00:00:00] VERDICT         phase=partition_proof name=II_CANONICAL_INJECTIVE_PER_PARTITION_AND_UNION value=PASS
+[00:00:00] VERDICT         phase=partition_proof name=II_STABLE_RAW_IDS_IDENTICAL value=PASS
+[00:00:00] VERDICT         phase=partition_proof name=FALSIFIER_DETECTS[...] value=PASS
+[00:00:00] VERDICT         phase=partition_proof name=FALSIFIER_DETECTS[...] value=PASS
+[00:00:00] VERDICT         phase=partition_proof name=FALSIFIER_DETECTS[...] value=PASS
+[00:00:00] VERDICT         phase=partition_proof name=FALSIFIER_DETECTS[...] value=PASS
+[00:00:00] VERDICT         phase=partition_proof name=FALSIFIER_DETECTS[...] value=PASS
+[00:00:00] VERDICT         phase=partition_proof name=FALSIFIER_DETECTS[...] value=PASS
+[00:00:00] VERDICT         phase=partition_proof name=FALSIFIER_DETECTS[...] value=PASS
+[00:00:00] VERDICT         phase=partition_proof name=FALSIFIER_DETECTS[...] value=PASS
+[00:00:00] VERDICT         phase=partition_proof name=FALSIFIER_DETECTS[...] value=PASS
+[00:00:00] VERDICT         phase=partition_proof name=FALSIFIER_DETECTS[...] value=PASS
+[00:00:00] VERDICT         phase=partition_proof name=FALSIFIER_NO_CANONICAL_COLLAPSE[...] value=PASS
+[00:00:00] VERDICT         phase=partition_proof name=FALSIFIER_CANONICAL_MAP_REJECTS_MERGE value=PASS
+[00:00:00] VERDICT         phase=partition_proof name=PARTITION_PROOF value=PASS
+[00:00:00] STAGE_START     stage=xdist_partition
+[00:00:00] STAGE_END       stage=xdist_partition rc=0 elapsed=0s
+[00:00:00] STAGE_START     stage=serial_partition
+[00:00:00] STAGE_END       stage=serial_partition rc=0 elapsed=0s
+[00:00:00] CLEANUP         phase=parallel observer=stopped
+[00:00:00] STAGE_START     stage=parallel_post
+[00:00:00] STAGE_END       stage=parallel_post rc=unobserved elapsed=0s
+[00:00:00] STAGE_START     stage=aggregation
+[00:00:00] STAGE_END       stage=aggregation rc=unobserved elapsed=0s
+[00:00:00] VERDICT         phase=aggregation name=AGGREGATION_AND_EQUIVALENCE value=PASS
+[00:00:00] VERDICT         phase=aggregation name=AGGREGATION_AND_EQUIVALENCE value=PASS
+[00:00:00] VERDICT         phase=aggregation name=TREE_UNCHANGED value=PASS
+[00:00:00] VERDICT         phase=aggregation name=ENV_MANIFEST_UNCHANGED value=PASS
+[00:00:00] VERDICT         phase=aggregation name=IMPORT_ORIGIN_GUARD_VALID value=PASS
+[00:00:00] VERDICT         phase=aggregation name=MIGRATION_HEADS_AND_FINGERPRINT_UNCHANGED value=PASS
+[00:00:00] VERDICT         phase=aggregation name=PROOF_DBS_CLEAN_AND_UNCONNECTED_AFTER value=PASS
+[00:00:00] VERDICT         phase=aggregation name=NO_RESIDUAL_RACE_DB value=PASS
+[00:00:00] VERDICT         phase=aggregation name=NO_RESIDUAL_ZZ_PKG25_ROLE value=PASS
+[00:00:00] VERDICT         phase=aggregation name=OBSERVED_OBJECTS_ATTRIBUTABLE value=PASS
+[00:00:00] VERDICT         phase=aggregation name=PARALLEL_PROOF value=PASS
+[00:00:00] STAGE_START     stage=order_proof
+[00:00:00] STAGE_END       stage=order_proof rc=unobserved elapsed=0s
+[00:00:00] VERDICT         phase=order_proof name=ORDER_MONOTONE_AND_LEAK_AFTER_RACE value=PASS
+[00:00:00] VERDICT         phase=order_proof name=FALSIFIER_DETECTS[...] value=PASS
+[00:00:00] VERDICT         phase=order_proof name=FALSIFIER_DETECTS[...] value=PASS
+[00:00:00] VERDICT         phase=order_proof name=FALSIFIER_DETECTS[...] value=PASS
+[00:00:00] VERDICT         phase=order_proof name=ORDER_PROOF value=PASS
+[00:00:00] STAGE_START     stage=inertness
+[00:00:00] STAGE_END       stage=inertness rc=unobserved elapsed=0s
+[00:00:00] VERDICT         phase=inertness name=FALSIFIER_DETECTS[...] value=PASS
+[00:00:00] VERDICT         phase=inertness name=FALSIFIER_DETECTS[...] value=PASS
+[00:00:00] VERDICT         phase=inertness name=FALSIFIER_DETECTS[...] value=PASS
+[00:00:00] VERDICT         phase=inertness name=FALSIFIER_DETECTS[...] value=PASS
+[00:00:00] VERDICT         phase=inertness name=FALSIFIER_DETECTS[...] value=PASS
+[00:00:00] VERDICT         phase=inertness name=SUCCESSOR_PRESERVES_PCPG5_SERIAL_OUTCOMES value=PASS
+[00:00:00] PROOF_END       verdict=PASS failures=0 verdicts_read=72 elapsed=0s

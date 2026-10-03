@@ -1,0 +1,1 @@
+prog_init synthetic; prog_verdicts p "/home/codi/Entwicklung/nquiry/worktrees/orange-proof-lineage/evidence/exit_status/mutants/MX1_always_exit_0/fail.log" A B; prog_finish

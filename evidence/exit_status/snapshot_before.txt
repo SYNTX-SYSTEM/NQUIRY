@@ -1,0 +1,7 @@
+orange-proof-infra HEAD=e0a6b3b25d4309d16d6e3db3ee0958183a279dfd entries_incl_ignored=0 content=ba25b56f293b4e7f dirlisting=2e010a5368947976
+swu-px-03 HEAD=944f1ae94f027b400f07dbdb07a6b9f018395a33 entries_incl_ignored=0 content=f247dc324fa8dc34 dirlisting=290d4daf7ddaa255
+tag checkpoint-SWU-PX-03=b331fb1db08fc3126490f5916989878104e389a8 tag checkpoint-PFC-PCPG-5=45ee38ac342f44abfa2786c4b3e3654b71d99792
+lineage committed evidence+successors unchanged: yes
+PCPG-5 original evidence: 0 mismatches
+.venv-proof313-orange site-packages: 40a19c9290784866
+.venv-proof313-orange-swu site-packages: 85c16ecc27dcb840

@@ -237,3 +237,40 @@ Claim ceiling: LONG-RUNNING ORANGE PROOF EXECUTION = STRUCTURALLY OBSERVABLE; HE
 ONLY; PROOF SEMANTICS = UNCHANGED. Existing claims unchanged: PCPG-5 2238/2239 with SF-PX-03 OPEN; SWU-PX-03
 2252/2252 (2248 governed parallel + 4 governed serial); performance provisional. The final_closure.sh exit
 code contract is unchanged (0 unless a pre phase is refused); PROOF_END is the observable summary.
+
+## 14. Final verdict -> process exit status (Work Unit FINAL_VERDICT_EXIT_STATUS, 2026-10-03)
+
+FBR: `final_closure.sh` could emit `PROOF_END ... FAIL` while the process exited 0, so an external machine could
+observe success while the proof said FAIL. Human Authority authorized this runner-contract change.
+
+EXIT CONTRACT (`progress.sh` EXIT trap; `final_closure.sh` itself unchanged):
+- `0` = the complete canonical proof finished (final verdict step reached) with `PROOF_END verdict=PASS`;
+- `1` = `PROOF_END verdict=FAIL`: any FAIL or MISSING required verdict, any failed or timed-out stage, or no
+  verdict read. This follows the lineage convention (1 = failure / refusal, 2 = usage);
+- an exit before the final verdict keeps its own nonzero code (a refused pre phase stays `1`, an existing
+  closure directory is still refused with `1` before anything starts), and an early exit with status 0 becomes `1`.
+The heartbeat never influences the exit status. Proof semantics, verdict derivation and the event stream are
+unchanged: `PROOF_END` stays the single, final event, and only the exit status follows it.
+
+Proof (`exit_status_falsifiers.sh`, `evidence/exit_status/`), narrow radius, no product test: 18/18 (E1–E12 as
+specified, plus an early exit 0 becoming 1, the SWU-PX-03 failed first run, and the TF-PX-06 race):
+- synthetic PASS -> exit 0; FAIL, MISSING, timeout and child failure -> exit 1;
+- refused pre phase with the real canonical lines and real `serial_baseline.sh` -> 1;
+- replays of the canonical `final_closure.sh` progress lines, verbatim, over recorded evidence: historical PCPG-5
+  -> nonzero, canonical e2e PASS -> 0, SWU-PX-03 passing closure -> 0 (its preservation verdict substituted for
+  the PCPG-5 inertness verdict, documented), SWU-PX-03 failed first run -> nonzero;
+- the event stream is identical to the base helper's (normalized; the only permitted difference is a TF-PX-06
+  artifact of the base, 0 removed in this run); the base helper really exited 0 on the PCPG-5 FAIL evidence
+  (documents the FBR).
+Mutants 7/7 killed: always exit 0, inverted status, missing verdict exits 0, timeout exits 0, PASS emitted
+regardless, heartbeat controls exit, TF-PX-06 guard removed. Existing proofs green: progress falsifiers 22/22,
+TF-PX-04/05 harness, canonical ids 25/25, partition 24/24, aggregation 22/22, order PASS, bash -n 13/13.
+Snapshot identical; no leftover processes.
+Found and fixed on the way: TF-PX-06 (SUCCESSOR_FINDINGS.md). Superseded harness runs are preserved:
+`exit_status_v1_FAIL_*` (TF-PX-06 caught; the E12 check matched the harness's own command line),
+`exit_status_v2_*` (the E10 base-output skip was not applied, because a sed delimiter collided),
+`exit_status_v3_*` (E10b with 30 runs; raised to 100 so the TF-PX-06 mutant is killed reliably).
+
+Claim ceiling: CANONICAL PROOF VERDICT = REFLECTED BY PROCESS EXIT STATUS; PASS -> exit 0, non-PASS -> exit nonzero.
+Proof semantics unchanged; verbose + heartbeat remain liveness / presentation only. Product claims unchanged:
+PCPG-5 2238/2239 with SF-PX-03 OPEN; SWU-PX-03 2252/2252; performance provisional.

@@ -1,0 +1,2 @@
+bash "$P/serial_baseline.sh" pre > "$F/serial_ref.pre.log" 2>&1; rc=$?; mv "$F/serial_ref.pre.log" "$S/pre.log"; cat "$S/pre.log"
+[ $rc -eq 0 ] || { echo "CHAIN STOPPED: serial pre refused (rc=$rc)"; exit 1; }  # TF-PX-04: pre log written outside the dir the pre phase requires empty; chain stops on refusal

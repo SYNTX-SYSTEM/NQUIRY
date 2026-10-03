@@ -1,0 +1,7 @@
+[00:00:00] PROOF_START     chain=synthetic
+[00:00:00] VERDICT         phase=p name=A value=PASS
+[00:00:00] VERDICT         phase=p name=B value=FAIL
+[00:00:00] STAGE_START     stage=still_running
+[00:00:01] HEARTBEAT       stage=still_running elapsed=1s
+[00:00:02] HEARTBEAT       stage=still_running elapsed=2s
+[00:00:03] PROOF_END       verdict=FAIL failures=1 verdicts_read=2 elapsed=3s

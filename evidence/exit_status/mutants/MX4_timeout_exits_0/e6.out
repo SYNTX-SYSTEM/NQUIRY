@@ -1,0 +1,8 @@
+[00:00:00] PROOF_START     chain=canonical-orange-slice run=e6
+[00:00:00] STAGE_START     stage=serial_pre
+REFUSED: /home/codi/Entwicklung/nquiry/worktrees/orange-proof-lineage/evidence/exit_status/mutants/MX4_timeout_exits_0/e6/closure/serial_ref is not empty (evidence is never overwritten)
+[00:00:00] STAGE_FAIL      stage=serial_pre rc=1 elapsed=0s
+[00:00:00] VERDICT         phase=serial_pre name=ORANGE_IMPORT_ORIGIN value=MISSING
+[00:00:00] VERDICT         phase=serial_pre name=PROOF_DB_PRECONDITIONS value=MISSING
+CHAIN STOPPED: serial pre refused (rc=1)
+[00:00:00] PROOF_END       verdict=FAIL reason=chain_exited_before_final_verdict rc=1 stage=none

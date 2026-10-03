@@ -37,6 +37,7 @@ Full record: `evidence/ORANGE_PROOF_STATUS.md`; findings / successors: `evidence
 | `aggregate.py`, `aggregate_proof.py`, `run_aggregate.py`, `inertness_compare.py` | fail-closed aggregation, per-node equivalence, instrumentation inertness |
 | `final_closure.sh` | the complete closure chain under one environment |
 | `progress.sh`, `progress_falsifiers.sh` | structured progress + heartbeat for the chain (observability only; liveness, never verdicts) and its falsifiers |
+| `exit_status_falsifiers.sh` | falsifiers for the runner exit contract: PROOF_END PASS -> exit 0, anything else -> nonzero |
 | `tooling_falsifiers_tf_px_04_05.sh` | falsifiers for the chain's own pre phase (TF-PX-04) and the governed-subshell bytecode prefix (TF-PX-05) |
 | `timing_stress_probe.sh` | B3 timing probe (its earlier "closure" was falsified by the real run; kept as provenance) |
 | `evidence/` | curated evidence + full final-closure evidence; `EVIDENCE_MANIFEST.tsv` hashes every original file |

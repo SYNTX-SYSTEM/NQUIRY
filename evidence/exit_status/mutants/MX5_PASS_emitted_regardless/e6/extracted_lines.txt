@@ -1,0 +1,7 @@
+S=$F/serial_ref; mkdir -p "$S"
+export ORANGE_SERIAL_DIR=$S ORANGE_CATALOG_DB=nquiry_proof_gw0_test
+prog_begin serial_pre
+bash "$P/serial_baseline.sh" pre > "$F/serial_ref.pre.log" 2>&1; rc=$?; mv "$F/serial_ref.pre.log" "$S/pre.log"; cat "$S/pre.log"
+prog_end serial_pre "$rc"
+prog_verdicts serial_pre "$S/pre.log" ORANGE_IMPORT_ORIGIN PROOF_DB_PRECONDITIONS
+[ $rc -eq 0 ] || { echo "CHAIN STOPPED: serial pre refused (rc=$rc)"; exit 1; }  # TF-PX-04: pre log written outside the dir the pre phase requires empty; chain stops on refusal

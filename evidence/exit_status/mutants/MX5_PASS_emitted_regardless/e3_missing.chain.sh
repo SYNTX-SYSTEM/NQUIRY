@@ -1,0 +1,1 @@
+prog_init synthetic; prog_verdicts p "/home/codi/Entwicklung/nquiry/worktrees/orange-proof-lineage/evidence/exit_status/mutants/MX5_PASS_emitted_regardless/ok.log" A B C; prog_finish

@@ -18,6 +18,13 @@
 # - Field values are restricted to a safe character set; any value that looks like a credential, URL or
 #   connection string is replaced by <redacted>.
 # Interval: ORANGE_HEARTBEAT_SECONDS (default 30).
+#
+# EXIT CONTRACT (runner contract only; Human Authority FINAL_VERDICT_EXIT_STATUS). The EXIT trap installed by
+# prog_init maps the already-derived final proof truth to the process exit status:
+#   0 = the complete canonical proof finished (prog_finish reached) with PROOF_END verdict=PASS
+#   1 = PROOF_END verdict=FAIL (any FAIL or MISSING verdict, any failed or timed-out stage, no verdict read)
+#   an exit before the final verdict keeps its own nonzero code (e.g. 1 for a refused pre phase); an early
+#   exit with status 0 becomes 1. The heartbeat never influences the exit status.
 
 _PROG_T0=$(date +%s)
 _PROG_HB=""
@@ -26,6 +33,8 @@ _PROG_STAGE_T0=0
 _PROG_FAILS=0
 _PROG_VERDICTS=0
 _PROG_DONE=0
+_PROG_FINAL=FAIL
+_PROG_PID=""
 _PROG_HB_S=${ORANGE_HEARTBEAT_SECONDS:-30}
 
 _prog_clock() {
@@ -79,6 +88,7 @@ _prog_hb_stop() {
 
 prog_init() {  # name [key=value ...]
   local name=$1; shift
+  _PROG_PID=$BASHPID  # the chain's own process: only it may report PROOF_END or set the exit status
   trap '_prog_on_exit' EXIT
   prog_event PROOF_START "chain=$name" "$@"
 }
@@ -141,15 +151,25 @@ prog_finish() {  # the final verdict step has been reached
   _prog_hb_stop
   local el=$(( $(date +%s) - _PROG_T0 )) v=FAIL
   [ "$_PROG_FAILS" -eq 0 ] && [ "$_PROG_VERDICTS" -gt 0 ] && v=PASS
-  _PROG_DONE=1
+  _PROG_DONE=1; _PROG_FINAL=$v
   prog_event PROOF_END "verdict=$v" "failures=$_PROG_FAILS" "verdicts_read=$_PROG_VERDICTS" "elapsed=${el}s"
+  [ "$v" = PASS ]
 }
 
 _prog_on_exit() {
   local rc=$?
+  # TF-PX-06: a background heartbeat killed right after its fork can run this inherited handler before bash
+  # resets its traps; a subshell never reports PROOF_END and never changes an exit status.
+  [ "$BASHPID" = "$_PROG_PID" ] || return 0
   _prog_hb_stop
   if [ "$_PROG_DONE" -ne 1 ]; then
     prog_event PROOF_END "verdict=FAIL" "reason=chain_exited_before_final_verdict" "rc=$rc" \
       "stage=${_PROG_STAGE:-none}"
+    [ "$rc" -eq 0 ] && rc=1  # no final verdict is never success
+  elif [ "$_PROG_FINAL" = PASS ]; then
+    rc=0
+  else
+    rc=1
   fi
+  exit "$rc"
 }
