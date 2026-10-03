@@ -162,5 +162,64 @@ no callback produces it there (the pinned RED producer has no PURPLE routes).
 
 **Human Frontend Acceptance (2026-10-03): ACCEPTED** — `HUMAN_REVIEW_RESULT_AUTH_CYAN_03.md`.
 
+## HA-AUTH-CYAN-IDENTITY-01 — AUTH/CYAN-IDENTITY-01 authorized (2026-10-03, Human Authority, verbatim essentials)
+
+> SYNTX::SFE · MODE = IMPLEMENTATION · FIELD = PURPLE_AUTH ↔ CYAN_FRONTEND · WORK_UNIT = AUTH/CYAN-IDENTITY-01
+> PURPOSE = Materialize the authenticated human/session identity projection inside the existing CYAN organism using
+> only already-live PURPLE read truth. BASE = the CURRENT origin/frontend-symbiotic HEAD (expected 5feba9cce76b043c…;
+> verify from git; do NOT branch from the stale 28c485e base).
+>
+> AUTHORITATIVE PURPLE TRUTH: REAL_GOOGLE_LINK = PROVEN · REAL_GOOGLE_LOGIN = PROVEN. The successful Google login
+> authenticated the SAME pre-existing NQUIRY identity. No account was created. No authority relation changed.
+> Authentication method GOOGLE_OIDC / ACTIVE; the linked LOCAL_PASSWORD method remains ACTIVE. Read contacts:
+> GET /api/auth/me · /api/auth/sessions · /api/auth/methods · /api/auth/providers.
+>
+> EXACT RELATION: AUTHENTICATED PRINCIPAL → CURRENT SESSION → AUTHENTICATION METHOD → PROVIDER TRUTH → CYAN IDENTITY
+> PROJECTION. Materialize this relation only.
+>
+> DESIGN LAW: NOT a profile dashboard, NOT account management, NOT provider management. The existing organism remains
+> visually primary. Prefer the existing "Identity and access" proof plane / chamber. A small rail projection may be
+> reused only if subordinate.
+>
+> SEMANTIC MODEL / SAFE PROJECTION: authenticated, userId; currentSession (sessionId, issuedAt, expiresAt,
+> methodType); current method (methodType, status, lastAuthenticatedAt, provider.providerId, provider.email);
+> provider label derived ONLY by joining providerId to parsed /auth/providers truth. Do NOT label provider email as the
+> canonical NQUIRY identity. Do not hard-code provider labels.
+>
+> IMPORTANT ABSENCE: PURPLE exposes no authoritative human-facing NQUIRY display name. Do NOT invent a human name,
+> initials, avatar identity or display name. Human-facing name is NOT_MATERIALIZED.
+>
+> HARD LAWS: IDENTITY != ROLE · AUTHENTICATION != AUTHORIZATION · AUTH_METHOD != ACCESS_RIGHT · PROVIDER_EMAIL !=
+> CANONICAL_IDENTITY · SESSION != AUTHORITY · WORKSPACE_MEMBERSHIP != AUTHENTICATION · UNKNOWN != INFERRED ·
+> GOOGLE_OIDC != GOOGLE_AUTHORITY.
+>
+> FAIL CLOSED: /auth/me failure → no identity projection · /auth/sessions malformed/unavailable → no "current session"
+> claim · /auth/methods malformed/unavailable → no "signed in via" claim · /auth/providers malformed/unavailable → no
+> invented label · unknown methodType → fail closed · unknown providerId → raw id only if the typed contract permits it.
+> Never synthesize Google from an email domain. CURRENT SESSION only from session.current = true; never from the
+> newest timestamp, the last array element or lastAuthenticatedAt; at most one.
+>
+> RAIL: a minimal secondary projection MAY show a narrow authenticated-method marker; no avatar menu, account dropdown,
+> settings menu or account-security UI.
+>
+> PRESERVATION: local login, Google login contact, ?auth= boundary, Workspace organism, Logout, existing Identity and
+> access semantics, AUTH/CYAN-01..03. No PURPLE changes. No production deployment.
+>
+> PROOF 1–20 and MUTATIONS (newest-as-current, Google hard-coded, email as identity, role/authority inferred, failed
+> method fetch still "via Google", unknown methodType friendly) as listed in the authorization. HUMAN FRONTEND REVIEW
+> required. CLAIM CEILING: AUTHENTICATED IDENTITY / CURRENT AUTHENTICATION METHOD / CURRENT SESSION PROVENANCE =
+> PRESENTED BY CYAN; HUMAN-FACING NQUIRY DISPLAY NAME = NOT MATERIALIZED; AUTHENTICATION != AUTHORIZATION; IDENTITY !=
+> ROLE; IDENTITY != AUTHORITY; ACCOUNT MANAGEMENT = NOT MATERIALIZED BY THIS WORK UNIT. Commit/tag/push only if proof
+> is green. Then STOP.
+
+**Reading applied by the executing agent.** Base verified: `origin/frontend-symbiotic` = `5feba9cce76b043c8813f11c4fda25e3d51581ac`
+(the AUTH/CYAN-03 test guide). The projection lives in the existing "Identity and access" proof plane of the Workspaces
+field; the rail is left untouched (the optional marker was not needed and would have added a fourth rail item to the
+SF-03 grid). The method relation is read as "exactly one ACTIVE method of the current session's methodType"; the
+sessions wire carries no methodId, so this is the only authoritative join. The review runtime presents the relation
+through labelled FIXTURE_NON_PROOF sessions/methods answers (the pinned RED producer has no PURPLE routes); the live
+system's real relation was not read by this unit.
+
 ## Open for Human Authority
-- AUTH/CYAN-04 — not defined, not authorized.
+- Human Frontend Review of AUTH/CYAN-IDENTITY-01 (see `HUMAN_REVIEW_GUIDE_AUTH_CYAN_IDENTITY_01.md`).
+- No further AUTH/CYAN Work Unit is defined or authorized.

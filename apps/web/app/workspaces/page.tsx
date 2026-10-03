@@ -20,7 +20,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { EffectIntent, EffectOutcome, ReconstructionNote } from "../../components/field/EffectSurface";
-import { ChamberHead, Identifiers } from "../../components/field/chambers";
+import { ChamberHead } from "../../components/field/chambers";
+import { IdentityProjection } from "../../components/field/IdentityProjection";
 import { FieldFrame } from "../../components/field/FieldFrame";
 import { LogoutButton } from "../../components/LogoutButton";
 import { ReadBoundary } from "../../components/field/ReadBoundary";
@@ -30,6 +31,7 @@ import { Orbit, type OrbitNode, nodeContent } from "../../components/field/topol
 import { fetchCurrentSession } from "../../lib/api/authClient";
 import { createWorkspace, listWorkspaces, type WorkspaceSummary } from "../../lib/api/workspaceClient";
 import { accessTrace } from "../../lib/field/position";
+import { useIdentityProjection } from "../../lib/field/useIdentityProjection";
 import { normalizeWorkspaces } from "../../lib/field/workspaces";
 
 import { type Settlement, useEffectField } from "../../lib/field/useEffectField";
@@ -68,6 +70,9 @@ export default function WorkspacesPage() {
   const [identity, setIdentity] = useState<string | null>(null);
   const [name, setName] = useState("");
   const effect = useEffectField();
+  // AUTH/CYAN-IDENTITY-01: the current authentication relation (session · method · provider truth) behind the
+  // /auth/me verdict; every part is none until its own read legitimately produced it. No role or authority here.
+  const identityProjection = useIdentityProjection(identity);
 
   const load = useCallback(async (): Promise<boolean> => {
     try {
@@ -213,7 +218,7 @@ export default function WorkspacesPage() {
           <Plane kind="proof" semantic="identity" labelledBy="access-proof-title">
             <ChamberHead id="access-proof-title" semantic="identity" title="Identity and access" marker={identity ? "authenticated" : undefined} />
             <p className="chamber-lede">Accessible Workspaces are the server&apos;s projection of your current memberships; nothing is inferred here.</p>
-            {identity ? <Identifiers items={[{ label: "Authenticated identity", value: identity }]} /> : null}
+            <IdentityProjection projection={identityProjection} />
           </Plane>
         </Planes>
       </FieldStage>

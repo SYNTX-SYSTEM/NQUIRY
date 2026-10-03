@@ -6426,3 +6426,23 @@ h3.chamber-title {
 .access-auth-boundary {
   margin-top: var(--space-4);
 }
+
+/* ============================================================ AUTH/CYAN-IDENTITY-01 · authentication relation in the identity chamber */
+.auth-relation {
+  margin: var(--space-3) 0 0;
+  display: grid;
+  gap: var(--space-2);
+}
+.auth-line dt {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.auth-line dd {
+  margin: 2px 0 0;
+}
+.auth-note {
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
