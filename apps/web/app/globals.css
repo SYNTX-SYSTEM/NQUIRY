@@ -6388,3 +6388,36 @@ h3.chamber-title {
   width: 100%;
   resize: vertical;
 }
+
+/* ============================================================ AUTH/CYAN-02 · provider contact inside the Access core */
+.access-provider {
+  margin-top: var(--space-4);
+}
+.access-provider-rule {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-3);
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+.access-provider-rule::before,
+.access-provider-rule::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line-strong);
+}
+.access-provider-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
+  text-decoration: none;
+  text-align: center;
+}
+.access-provider-class {
+  color: var(--ink-soft);
+  font-weight: 400;
+}

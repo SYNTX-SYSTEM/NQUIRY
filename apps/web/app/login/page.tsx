@@ -14,15 +14,23 @@
  * Field position: a single centred identity core in a dark, quiet field with
  * no workspace topology (22 §21.3, §21.11). Pending is a request, never an
  * access claim (22 §21.12); failure is a boundary (`role=alert`, associated
- * with the form), never success motion. External providers are NOT established
- * by the repository and therefore not shown (22 §45.1). Submit and retry stay
- * reachable in every mode (22 §21.13–§21.14).
+ * with the form), never success motion. Submit and retry stay reachable in
+ * every mode (22 §21.13–§21.14).
+ *
+ * AUTH/CYAN-02: an external-provider contact appears inside this core ONLY when
+ * the server's own `GET /auth/providers` answer, parsed fail-closed
+ * (`lib/api/authClient.ts`, AUTH/CYAN-01), names the provider. Nothing here
+ * assumes a provider; an unknown, malformed, denied or failed discovery shows
+ * nothing. The contact is a navigation to the typed LOGIN start URL and proves
+ * no login (GOOGLE_AVAILABLE != GOOGLE_LOGIN_PROVEN).
  */
 import { type FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FieldBackground } from "../../components/field/FieldBackground";
 import { Identity } from "../../components/field/Identity";
+import { ProviderContact } from "../../components/field/ProviderContact";
 import { login } from "../../lib/api/authClient";
+import { useProviderContact } from "../../lib/field/useProviderContact";
 
 type SubmitState =
   | { readonly kind: "idle" }
@@ -38,6 +46,9 @@ export default function LoginPage() {
   // gathers around the Login action on hover and the local chamber responds to focus; nothing implies success
   const [attract, setAttract] = useState(false);
   const [focus, setFocus] = useState<"email" | "password" | null>(null);
+  // AUTH/CYAN-02: the provider contact exists only as the parsed server answer says; "/" re-checks the session
+  // and routes onward, the same destination the local login uses.
+  const providerContact = useProviderContact("/");
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -118,6 +129,7 @@ export default function LoginPage() {
               </button>
             </div>
           </form>
+          <ProviderContact contact={providerContact} />
           {submitting ? (
             <p className="access-status effect-intent" role="status" data-testid="login-pending">
               Requested. Not yet authenticated: the server verifies the credentials.
