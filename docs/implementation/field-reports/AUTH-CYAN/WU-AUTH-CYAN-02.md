@@ -62,8 +62,8 @@ sideways-scrollable and the core fits. The browser law of this unit measures the
 scrollability, not the clipped background.
 
 ## Status
-FBR AUTH/CYAN-02: TECHNICALLY CLOSED. **READY_FOR_HUMAN_FRONTEND_REVIEW** (`HUMAN_REVIEW_GUIDE_AUTH_CYAN_02.md`).
-Not FIELD_GREEN, not REVIEWED_FIELD, not PUBLISHED_FIELD, not merged, not deployed.
+FBR AUTH/CYAN-02: CLOSED. **Human Frontend Acceptance: ACCEPTED (2026-10-03, `HUMAN_REVIEW_RESULT_AUTH_CYAN_02.md`)** →
+FIELD_GREEN_WITH_DISCLOSED_CEILINGS (WU scope); not REVIEWED_FIELD, not PUBLISHED_FIELD, not merged, not deployed.
 
 **Claim ceiling:** PURPLE provider truth = CONSUMED AND PRESENTED BY CYAN · Google provider contact = GUI MATERIALIZED.
 Still: REAL GOOGLE LOGIN = NOT PROVEN · REAL GOOGLE CALLBACK = NOT PROVEN · ACCOUNT LINKING = NOT MATERIALIZED ·
