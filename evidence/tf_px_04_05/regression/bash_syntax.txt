@@ -1,0 +1,1 @@
+bash -n: 10 scripts OK

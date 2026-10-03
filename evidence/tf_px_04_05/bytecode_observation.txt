@@ -1,0 +1,8 @@
+# T05b bytecode observation (the .pyc themselves are runtime artifacts, never versioned; removed after this listing)
+== canonical: prefix_pyc=435 prefix_pkg_mod=pkg/mod.cpython-313.pyc  tree_pyc=0
+== mutants/M04_old_pre_redirect: prefix_pyc=435 prefix_pkg_mod=pkg/mod.cpython-313.pyc  tree_pyc=0
+== mutants/M04b_no_chain_stop: prefix_pyc=435 prefix_pkg_mod=pkg/mod.cpython-313.pyc  tree_pyc=0
+== mutants/M05_no_pyc_export: prefix_pyc=0 prefix_pkg_mod= tree_pyc=3
+   in-tree: mutants/M05_no_pyc_export/t05b/tree/pkg/__pycache__/mod.cpython-313.pyc
+   in-tree: mutants/M05_no_pyc_export/t05b/tree/pkg/__pycache__/__init__.cpython-313.pyc
+   in-tree: mutants/M05_no_pyc_export/t05b/tree/tests/__pycache__/test_double.cpython-313-pytest-9.1.1.pyc

@@ -9,6 +9,7 @@ V=$N/.venv-proof313-orange
 O=$N/worktrees/orange-proof-infra
 P="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"  # proof-infrastructure root = this script's directory (lineage)
 PYC=$V/orange-proof/pycache  # runtime bytecode cache (env-owned, never versioned)
+export PYC  # TF-PX-05: H is serialized into `bash -c` via declare -f; an unexported PYC became an EMPTY prefix there
 OUT=${ORANGE_PARALLEL_DIR:?set ORANGE_PARALLEL_DIR to a NEW evidence directory (committed evidence is never overwritten)}
 FROZEN=e0a6b3b25d4309d16d6e3db3ee0958183a279dfd
 BASE="postgresql+psycopg://nquiry:nquiry_local_dev_only@127.0.0.1:15432/"

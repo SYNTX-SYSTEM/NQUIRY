@@ -151,3 +151,11 @@ Never "2252 parallel". Tooling defects found on the way: TF-PX-04 and TF-PX-05 (
 infrastructure, repaired in the successor binding, still present in this lineage's PCPG-5-bound scripts),
 plus the historical PCPG-5 bytecode-prefix disclosure (SUCCESSOR_FINDINGS.md). Record and evidence:
 `successors/SWU-PX-03/`.
+
+## 11. Canonical tooling repair ORANGE-TF-PX-04-05 (2026-10-03)
+
+TF-PX-04 and TF-PX-05 are CLOSED in the canonical lineage tooling (`final_closure.sh`, `parallel_proof.sh`).
+The repairs are code-identical to the SWU-PX-03 successor binding. Falsifiers 12/12, mutants 3/3 killed, and the
+existing lineage proofs are still green. No product code, no product test, no checkpoint and no historical
+evidence changed. All claims above (PCPG-5 2238/2239; SWU-PX-03 2252/2252) are unchanged by this repair.
+Details: SUCCESSOR_FINDINGS.md, `evidence/tf_px_04_05/`.

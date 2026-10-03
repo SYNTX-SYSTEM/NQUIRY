@@ -203,3 +203,29 @@ the successor's serial reference and in its governed serial partition. Successor
 2252 / 2252 (2248 governed parallel + 4 governed serial). All 2239 PCPG-5 nodes preserved, plus the 13 SWU-PX-03
 falsifiers. `checkpoint-PFC-PCPG-5` remains permanently 2238 / 2239 with SF-PX-03 OPEN.
 Record: `successors/SWU-PX-03/PROOF_RECORD.md`.
+
+## TF-PX-04 / TF-PX-05 — CLOSED in the canonical ORANGE lineage (Work Unit ORANGE-TF-PX-04-05, 2026-10-03)
+Base `c4ceec2`. The discovery records above and all failed evidence are preserved unchanged. The repairs are
+the ones already proven in the SWU-PX-03 successor binding, materialized code-identically (only the trailing
+comments say "canonical"):
+- TF-PX-04 (`final_closure.sh`): each pre phase logs to a sibling file outside the directory it requires
+  empty, which is moved in afterwards; the chain STOPS when a pre phase is refused. 2 lines -> 4 lines.
+- TF-PX-05 (`parallel_proof.sh`): `export PYC` right after its definition, so the governed `bash -c` subshell
+  (H serialized via declare -f) uses the authorized proof prefix. 1 line added.
+Proof (`tooling_falsifiers_tf_px_04_05.sh`, evidence `evidence/tf_px_04_05/`), narrow radius, no product test run:
+- T04a: the chain's own serial pre invocation (lines taken verbatim from `final_closure.sh`) runs the real
+  `serial_baseline.sh pre` (read-only catalog, guard, DB-free collect-only of the frozen PCPG-5 tree, 2239) and is
+  not refused; T04b: a refused pre phase stops the chain, existing evidence untouched;
+- T05a: inside the governed subshell `PYTHONPYCACHEPREFIX` and `sys.pycache_prefix` = the authorized prefix
+  `.venv-proof313-orange/orange-proof/pycache`; T05b: real xdist workers (synthetic tree, no product code)
+  write 0 `.pyc` into the tree and their bytecode into the prefix;
+- 12/12 checks PASS on the canonical lineage; mutants killed 3/3 (M04 old redirect: refused, no collection, no
+  stop; M04b stop guard removed: chain continues; M05 export removed: empty prefix, `sys.pycache_prefix=None`, 3
+  `.pyc` in the tree);
+- existing lineage proofs still green: canonical ids 25/25, partition 24/24, aggregation 22/22, order PASS, all
+  10 scripts pass `bash -n`;
+- before/after snapshot identical: frozen PCPG-5 worktree (incl. directory listing), SWU-PX-03 worktree, both
+  checkpoint tags, the lineage's committed evidence, the PCPG-5 originals, both proof environments.
+TF-PX-04 = CLOSED in canonical ORANGE lineage. TF-PX-05 = CLOSED in canonical ORANGE lineage.
+Not re-proven at full radius: no complete ORANGE chain was run after the repair (not required at this radius).
+The next full ORANGE run is the first end-to-end use of the repaired canonical chain.

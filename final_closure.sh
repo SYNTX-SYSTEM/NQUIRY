@@ -19,7 +19,8 @@ echo "== final closure started $(date -Iseconds); load $(cut -d' ' -f1-3 /proc/l
 # ---- 1. SERIAL REFERENCE under guard 1.2.0 (race clones TEMPLATE serial db -> catalog/observer via gw0)
 S=$F/serial_ref; mkdir -p "$S"
 export ORANGE_SERIAL_DIR=$S ORANGE_CATALOG_DB=nquiry_proof_gw0_test
-bash "$P/serial_baseline.sh" pre > "$S/pre.log" 2>&1; cat "$S/pre.log"
+bash "$P/serial_baseline.sh" pre > "$F/serial_ref.pre.log" 2>&1; rc=$?; mv "$F/serial_ref.pre.log" "$S/pre.log"; cat "$S/pre.log"
+[ $rc -eq 0 ] || { echo "CHAIN STOPPED: serial pre refused (rc=$rc)"; exit 1; }  # TF-PX-04: pre log written outside the dir the pre phase requires empty; chain stops on refusal
 grep -E "test_direct_write.py|test_http_dispatch_real_connection_lifecycle.py" "$S/collected_nodeids.txt" > "$S/declared_skips.txt"
 bash "$P/observer.sh" nquiry_proof_gw0_test "$S/observed_cluster_objects.log" "$S/observer.stop" &
 OBS=$!
@@ -32,7 +33,8 @@ bash "$P/serial_baseline.sh" post > "$S/post.log" 2>&1; cat "$S/post.log"
 R=$F/parallel; mkdir -p "$R"
 export ORANGE_PARALLEL_DIR=$R ORANGE_CATALOG_DB=nquiry_proof_serial_test
 unset ORANGE_SERIAL_DIR
-bash "$P/parallel_proof.sh" pre > "$R/pre.log" 2>&1; cat "$R/pre.log"
+bash "$P/parallel_proof.sh" pre > "$F/parallel.pre.log" 2>&1; rc=$?; mv "$F/parallel.pre.log" "$R/pre.log"; cat "$R/pre.log"
+[ $rc -eq 0 ] || { echo "CHAIN STOPPED: parallel pre refused (rc=$rc)"; exit 1; }  # TF-PX-04: pre log written outside the dir the pre phase requires empty; chain stops on refusal
 (cd "$P" && ORANGE_PARTITION_DIR=$R/partition PY partition_proof.py) > "$R/partition_proof.log" 2>&1; tail -1 "$R/partition_proof.log"
 bash "$P/observer.sh" nquiry_proof_serial_test "$R/observed_cluster_objects.log" "$R/observer.stop" &
 OBS=$!
