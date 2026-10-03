@@ -146,3 +146,5 @@ THIS WORK UNIT.
 | Producer | PURPLE `auth-identity` @ `aa32c4d4faad23eea0bd3290641e7a66adcf26a9` (unchanged) |
 | **Human Review delta commit** | `841de4e694b465a68c090f4d55fb510846a471cf` (tree `58109175e65cabc35bbc6a5dba7c45d5b4e68073`) |
 | Tag (second pass) | `checkpoint-AUTH-CYAN-IDENTITY-01b` → tag object `aa9d98adf184dce4d8a08fe05df43f58a44c8bf3` → `841de4e`; pushed |
+| **Field repair commit** | `a79652625d39e85c7a92eda3eac6e4225747a6a5` (tree `f2e8dfbd7eefb49b3b203ada3ef8959d8f0f3df7`) |
+| Tag (third pass) | `checkpoint-AUTH-CYAN-IDENTITY-01c` → tag object `867536ce643b0cd077252b2d6849d6bcdfa1c2e0` → `a796526`; pushed |
