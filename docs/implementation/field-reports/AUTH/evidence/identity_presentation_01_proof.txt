@@ -1,0 +1,10 @@
+472 files already formatted
+All checks passed!
+Success: no issues found in 263 source files
+ARCHITECTURE_DEPENDENCY_CHECK::PASS
+TEST_ONLY_IMPORT_CHECK::PASS
+MIGRATION_STATIC_CHECK::PASS (42 revision(s), single head ['c1e3a5b7d9f2'])
+MIGRATION_LIVE_CHECK::PASS (db head matches {'c1e3a5b7d9f2'})
+no migration in this unit (schema unchanged)
+.....................................................                    [100%]
+628 passed, 1 skipped in 644.29s (0:10:44)

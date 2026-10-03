@@ -103,11 +103,14 @@ preceded them, so the counts are those of the pin.
 | WU-AUTH-15 Protocol Callback Semantics | PROVEN (declared contacts + write sets, measured over every table) | `5fe3cd6` |
 | WU-AUTH-16 Authorization Regression | PROVEN (6 identity kinds × the full protected route table; no code delta) | `a4c3bc3` |
 | WU-AUTH-17 Runtime DB Principal Capability Boundary | PROVEN in TEST (auth_runtime, exact capability matrix, live paths scoped, real lane scoped); HA-AUTH-05 (= PFC HA-10 deployment switch) OPEN | `b939037` |
+| PURPLE_IDENTITY_PRESENTATION_01 (post-closure Field, 2026-10-04) | PROVEN at the affected radius: `GET /auth/identity` (self, `displayName`=`users.name`, `canonicalEmail`=`users.email`, method-invariant); F-IP-1 disclosed | this commit |
 
 ### Current First Broken Relation
 
-None inside 24 §37's seventeen Work Units. Field closure (24 §46) is next:
-the one full fresh repository regression, the review bundle, FIELD_GREEN.
+None inside 24 §37's seventeen Work Units (closed). Post-closure:
+PURPLE_IDENTITY_PRESENTATION_01 materialized `GET /auth/identity`; next Field
+is CYAN's consumption of it (separate authorization); production deployment of
+the contact is a separate deployment act.
 
 ### Migrations
 

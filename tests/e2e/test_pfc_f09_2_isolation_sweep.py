@@ -62,6 +62,8 @@ _PROTECTED = (
 # Workspace A's real ids.
 ROUTES: list[tuple[str, str, dict[str, Any] | None]] = [
     ("GET", "/auth/me", None),
+    # PURPLE_IDENTITY_PRESENTATION_01: the caller's own identity presentation.
+    ("GET", "/auth/identity", None),
     # AUTH WU-AUTH-04: the caller's own authentication sessions.
     ("GET", "/auth/sessions", None),
     ("POST", "/auth/logout-all", None),
@@ -198,6 +200,7 @@ _UNAUTHENTICATED = {
 }
 _CROSS_WORKSPACE_EXEMPT = {
     ("GET", "/auth/me"),  # the caller's own identity
+    ("GET", "/auth/identity"),  # the caller's own identity presentation
     # AUTH WU-AUTH-04: these act only on the caller's own authentication
     # sessions and name no Workspace. Their own-identity scope is proven in
     # tests/e2e/test_auth_wu04_session_evolution.py.

@@ -89,6 +89,7 @@ from semantic_types.ids import CorrelationId
 from nquiry_api.http import auth as auth_router
 from nquiry_api.http import commands as commands_router
 from nquiry_api.http import email as email_router
+from nquiry_api.http import identity as identity_router
 from nquiry_api.http import inquiry as inquiry_router
 from nquiry_api.http import oidc as oidc_router
 from nquiry_api.http import queries as queries_router
@@ -157,6 +158,7 @@ configure_runtime(runtime_from_environment())
 configure_auth_runtime(auth_runtime_from_environment())
 
 app.include_router(auth_router.router)
+app.include_router(identity_router.router)
 app.include_router(oidc_router.router)
 app.include_router(email_router.router)
 app.include_router(recovery_router.router)

@@ -153,6 +153,26 @@ deployment act (PFC HA-10 external effect), not performed by PURPLE.
 wider HA-10 question); re-enable / §36 #13; anything about pushing,
 integrating or deploying the branch.
 
+## HD-AUTH-07 — PURPLE_IDENTITY_PRESENTATION_01 authorized (2026-10-04)
+
+**Decision (human operator, Field brief):** read-only reconstruction of
+existing identity truth; materialization of a safe authenticated
+identity-presentation read contract ONLY IF authoritative source relations
+already exist; minimal composition; typed tests. Not authorized: inventing
+or guessing a name, promoting provider or credential email, profile
+mutation, account settings, any change to creation / linking /
+authorization. Outcome: STATE A reconstructed (`users.name`, `users.email`
+produced by the identity creation authority, immutable by authentication,
+already human-facing to other members) → `GET /auth/identity` materialized
+(`WU-PURPLE-IDENTITY-PRESENTATION-01.md`). Deployment of the contact is a
+separate deployment act; CYAN consumption is the next Field.
+
+**Finding F-IP-1 for HA-AUTH-01:** DEV / TEST policy creation names a new
+identity after the provider display name or the email local-part
+(`oidc_identity._create_identity`). Never exercised on production (DENIED).
+When HA-AUTH-01 is decided, the name a policy-created identity receives is
+part of that decision.
+
 ## Open boundaries (OPEN, awaiting the operator)
 
 | # | Boundary | Home | What it blocks | Default in force | Status |

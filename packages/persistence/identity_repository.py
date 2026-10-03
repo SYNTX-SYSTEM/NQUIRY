@@ -44,6 +44,19 @@ class SqlAlchemyIdentityRepository:
             )
         )
 
+    # --- PURPLE_IDENTITY_PRESENTATION_01 ------------------------------------
+
+    def presentation(self, user_id: UserId) -> tuple[str, str] | None:
+        """(name, email) of the canonical identity row — the two human-facing
+        attributes the identity creation authority wrote (HD-28). None when no
+        such identity exists. Reads nothing of any authentication relation."""
+        row = self._connection.execute(
+            sa.select(users_table.c.name, users_table.c.email).where(
+                users_table.c.id == user_id.value
+            )
+        ).first()
+        return None if row is None else (row.name, row.email)
+
     # --- WU-AUTH-13 (24 §18.2 account disable) ------------------------------
 
     def find_by_email(self, normalized_email: str) -> tuple[UserId, bool] | None:
