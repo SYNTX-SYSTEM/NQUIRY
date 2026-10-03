@@ -1,0 +1,1 @@
+prog_init synthetic; prog_begin long; sleep 30 & echo $! > "/home/codi/Entwicklung/nquiry/worktrees/orange-proof-lineage/evidence/verbose_heartbeat/mutants/MV7_timeout_not_reported/k.stage"; echo $_PROG_HB > "/home/codi/Entwicklung/nquiry/worktrees/orange-proof-lineage/evidence/verbose_heartbeat/mutants/MV7_timeout_not_reported/k.hb"; wait $!; prog_end long 0

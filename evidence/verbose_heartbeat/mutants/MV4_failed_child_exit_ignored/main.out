@@ -1,0 +1,15 @@
+[00:00:00] PROOF_START     chain=synthetic run=main
+[00:00:00] STAGE_START     stage=fast
+[00:00:00] STAGE_END       stage=fast rc=0 elapsed=0s
+[00:00:00] STAGE_START     stage=slow
+[00:00:01] HEARTBEAT       stage=slow elapsed=1s pytest_progress=42%
+[00:00:02] HEARTBEAT       stage=slow elapsed=2s pytest_progress=42%
+[00:00:03] HEARTBEAT       stage=slow elapsed=3s pytest_progress=42%
+[00:00:03] STAGE_END       stage=slow rc=0 elapsed=3s
+[00:00:03] STAGE_START     stage=wait_for_hb
+[00:00:04] HEARTBEAT       stage=wait_for_hb elapsed=1s
+[00:00:05] STAGE_END       stage=wait_for_hb rc=0 elapsed=2s
+[00:00:05] NOTE            <redacted> <redacted> note=<redacted> plain=<redacted>
+[00:00:05] VERDICT         phase=phase_ok name=A value=PASS
+[00:00:05] VERDICT         phase=phase_ok name=B value=PASS
+[00:00:05] PROOF_END       verdict=PASS failures=0 verdicts_read=2 elapsed=5s

@@ -186,3 +186,54 @@ Claim ceiling (unchanged by this run):
 - `checkpoint-SWU-PX-03` remains the legitimate successor closure at 2252 / 2252;
 - performance remains provisional: serial 1363.2 s vs governed 613.5 s (608.2 + 5.3) = 2.22x, for this single
   measurement only.
+
+## 13. Structured verbose + heartbeat (Work Unit STRUCTURED_VERBOSE_HEARTBEAT, 2026-10-03)
+
+FBR: a legitimate long-running proof stayed silent for many minutes, so RUNNING and STALLED were
+indistinguishable without inspecting processes. Repair (observability only): `progress.sh`, sourced by
+`final_closure.sh`. 36 lines were inserted, none changed or removed. Stripping them gives the base
+`final_closure.sh` (6f7f831) byte-identical, so command order, partition membership, test selection,
+databases, environment and aggregation are unchanged.
+Events (stdout, `[HH:MM:SS]` = elapsed since PROOF_START, never proof truth):
+- PROOF_START;
+- STAGE_START / STAGE_END / STAGE_FAIL / STAGE_TIMEOUT with the child's real exit code (read from
+  `*_exit_code.txt`, because the stage drivers exit 0 regardless; `unobserved` where the chain discards it);
+- HEARTBEAT every ORANGE_HEARTBEAT_SECONDS (default 30): stage, elapsed and optional pytest progress %.
+  Liveness only, never a verdict;
+- VERDICT copied from the chain's own NAME::PASS|FAIL lines; required verdicts that are absent report
+  MISSING;
+- CLEANUP;
+- PROOF_END verdict=PASS only after the final verdict step, with every verdict PASS and every stage exit 0
+  or unobserved; the EXIT trap reports FAIL on early exit.
+
+Stages covered: serial_pre, serial_reference, serial_post, serial_analysis (tree / env / DB invariance
+verdicts), parallel_pre, partition_proof, xdist_partition, serial_partition, parallel_post, aggregation
+(equivalence, tree, env, DB, residue verdicts), order_proof, inertness, cleanup, final verdict. Field values
+are restricted to a safe charset, and credential-like keys and values are replaced by <redacted>. Bracket
+labels of verdict lines are never echoed.
+
+Proof (`progress_falsifiers.sh`, `evidence/verbose_heartbeat/`), narrow radius, no product test:
+- falsifiers 22/22 (F1–F15 as specified, plus progress from a real pytest-xdist log, a real canonical stage
+  (serial pre, collect 2239, heartbeats, verdicts) and no event lines inside evidence files);
+- mutants 8/8 killed (heartbeat PASS, heartbeat survives its stage, final PASS before aggregation, final
+  always PASS, failed child ignored, secret emitted, stage order altered, timeout unreported);
+- real-evidence replay: the canonical end-to-end run gives PASS (59 verdicts), and historical PCPG-5
+  `final_closure` gives FAIL (serial_partition rc=1, SF-PX-03);
+- existing tooling proofs green (TF-PX-04/05 harness, canonical ids 25/25, partition 24/24, aggregation
+  22/22, order PASS, bash -n 12/12);
+- before/after snapshot identical; no leftover processes.
+
+No full canonical chain was run: command lines are byte-identical, the mechanics are proven on a real stage
+and on real xdist, and verdict / exit-code extraction is proven on real PASS and FAIL evidence.
+
+Disclosed (own harness defect, caught before acceptance): the first harness version cleaned its synthetic
+stage with `pkill -f 'sleep 30.4321'`, which also matched (and killed) the tool shell whose command line
+contained that string. The mutation run was interrupted. The orphaned driver tree was stopped by PID, and no
+heartbeat survived (they exit when their chain disappears). The harness now kills only the recorded PID.
+That run's evidence is preserved as `evidence/verbose_heartbeat_v1_SUPERSEDED_harness_pkill_selfkill/`.
+Also fixed before acceptance: `prog_end` without `prog_begin` reports elapsed=n/a.
+
+Claim ceiling: LONG-RUNNING ORANGE PROOF EXECUTION = STRUCTURALLY OBSERVABLE; HEARTBEAT = LIVENESS SIGNAL
+ONLY; PROOF SEMANTICS = UNCHANGED. Existing claims unchanged: PCPG-5 2238/2239 with SF-PX-03 OPEN; SWU-PX-03
+2252/2252 (2248 governed parallel + 4 governed serial); performance provisional. The final_closure.sh exit
+code contract is unchanged (0 unless a pre phase is refused); PROOF_END is the observable summary.

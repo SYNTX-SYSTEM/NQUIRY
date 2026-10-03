@@ -1,0 +1,5 @@
+[00:00:00] PROOF_START     chain=synthetic
+[00:00:00] VERDICT         phase=p name=A value=PASS
+[00:00:00] VERDICT         phase=p name=B value=PASS
+[00:00:00] VERDICT         phase=p name=C value=MISSING
+[00:00:01] PROOF_END       verdict=FAIL failures=1 verdicts_read=2 elapsed=1s

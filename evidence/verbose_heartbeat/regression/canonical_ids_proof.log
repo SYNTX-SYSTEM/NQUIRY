@@ -1,0 +1,25 @@
+EVIDENCE_ONLY_NOT_IN_TREE::PASS refs=[]
+EVIDENCE_ONLY_NOT_IN_PYTEST_PLUGIN::PASS 
+RAW_COUNT_2239[closure_collection_A]::PASS 2239
+VOLATILE_ONLY_IN_SCOPE[closure_collection_A]::PASS 2
+RAW_COUNT_2239[closure_collection_B]::PASS 2239
+VOLATILE_ONLY_IN_SCOPE[closure_collection_B]::PASS 2
+RAW_VOLATILITY_IS_EXACTLY_THE_UUID_SPAN::PASS 4 raw ids differ between the two collections
+SOURCE_OF_VOLATILITY_IS_UUID4_HEX10::PASS 
+INJECTIVE_OVER_2239[closure_collection_A]::PASS 
+INJECTIVE_OVER_2239[closure_collection_B]::PASS 
+DETERMINISTIC::PASS 
+CANONICAL_SETS_EQUAL_ACROSS_COLLECTIONS::PASS 
+ONLY_2_IDS_CHANGED_BY_CANONICALIZATION::PASS 
+JUNIT_FORM_CONSISTENT::PASS 
+NO_COLLAPSE[distinct_params_same_function]::PASS 
+NO_COLLAPSE[distinct_password_only]::PASS 
+NO_COLLAPSE[hex_len_11_not_volatile]::PASS 
+NO_COLLAPSE[uppercase_hex_not_volatile]::PASS 
+NO_COLLAPSE[other_domain_not_volatile]::PASS 
+NO_COLLAPSE[out_of_scope_file]::PASS 
+NO_COLLAPSE[out_of_scope_function]::PASS 
+NO_COLLAPSE[real_two_params]::PASS 
+VOLATILE_SPAN_REMOVED[same semantic node]::PASS 
+INJECTIVITY_GUARD_DETECTS_SLOPPY_MUTANT::PASS e.g. ('tests/ai/test_burst_ai_block.py::test_every_ai_operation_category_is_denied_during_active[BurstOperationCategory.AI_CLASSIFY]', 'tests/ai/test_burst_ai_block.py::test_every_ai_operation_category_is_denied_during_active[BurstOperationCategory.AI_CLUSTER]')
+CANONICAL_IDENTITY_PROOF::PASS (24/24)

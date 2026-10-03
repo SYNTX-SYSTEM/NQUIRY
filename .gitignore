@@ -25,3 +25,31 @@ observer.stop
 /evidence/tf_px_04_05/mutants/M04b_no_chain_stop/t04a/serial_ref/pre_collect_raw.txt
 /evidence/tf_px_04_05/mutants/M05_no_pyc_export/t04a/serial_ref/collected_nodeids.txt
 /evidence/tf_px_04_05/mutants/M05_no_pyc_export/t04a/serial_ref/pre_collect_raw.txt
+
+# verbose_heartbeat raw outputs > 100 KB (hash-recorded in evidence/verbose_heartbeat/RAW_EXCLUDED.tsv; kept locally)
+/evidence/verbose_heartbeat/canonical/integration/closure/serial_ref/collected_nodeids.txt
+/evidence/verbose_heartbeat/canonical/integration/closure/serial_ref/pre_collect_raw.txt
+/evidence/verbose_heartbeat/mutants/MV1_heartbeat_prints_PASS/integration/closure/serial_ref/collected_nodeids.txt
+/evidence/verbose_heartbeat/mutants/MV1_heartbeat_prints_PASS/integration/closure/serial_ref/pre_collect_raw.txt
+/evidence/verbose_heartbeat/mutants/MV2_heartbeat_survives_stage/integration/closure/serial_ref/collected_nodeids.txt
+/evidence/verbose_heartbeat/mutants/MV2_heartbeat_survives_stage/integration/closure/serial_ref/pre_collect_raw.txt
+/evidence/verbose_heartbeat/mutants/MV3a_final_PASS_before_aggregation/integration/closure/serial_ref/collected_nodeids.txt
+/evidence/verbose_heartbeat/mutants/MV3a_final_PASS_before_aggregation/integration/closure/serial_ref/pre_collect_raw.txt
+/evidence/verbose_heartbeat/mutants/MV3b_final_verdict_always_PASS/integration/closure/serial_ref/collected_nodeids.txt
+/evidence/verbose_heartbeat/mutants/MV3b_final_verdict_always_PASS/integration/closure/serial_ref/pre_collect_raw.txt
+/evidence/verbose_heartbeat/mutants/MV4_failed_child_exit_ignored/integration/closure/serial_ref/collected_nodeids.txt
+/evidence/verbose_heartbeat/mutants/MV4_failed_child_exit_ignored/integration/closure/serial_ref/pre_collect_raw.txt
+/evidence/verbose_heartbeat/mutants/MV5_secret_emitted/integration/closure/serial_ref/collected_nodeids.txt
+/evidence/verbose_heartbeat/mutants/MV5_secret_emitted/integration/closure/serial_ref/pre_collect_raw.txt
+/evidence/verbose_heartbeat/mutants/MV6_stage_order_altered/integration/closure/serial_ref/collected_nodeids.txt
+/evidence/verbose_heartbeat/mutants/MV6_stage_order_altered/integration/closure/serial_ref/pre_collect_raw.txt
+/evidence/verbose_heartbeat/mutants/MV7_timeout_not_reported/integration/closure/serial_ref/collected_nodeids.txt
+/evidence/verbose_heartbeat/mutants/MV7_timeout_not_reported/integration/closure/serial_ref/pre_collect_raw.txt
+/evidence/verbose_heartbeat/regression/tf_px_04_05/t04a/serial_ref/collected_nodeids.txt
+/evidence/verbose_heartbeat/regression/tf_px_04_05/t04a/serial_ref/pre_collect_raw.txt
+
+# verbose_heartbeat_v1_SUPERSEDED_harness_pkill_selfkill raw outputs > 100 KB (hash-recorded in evidence/verbose_heartbeat_v1_SUPERSEDED_harness_pkill_selfkill/RAW_EXCLUDED.tsv; kept locally)
+/evidence/verbose_heartbeat_v1_SUPERSEDED_harness_pkill_selfkill/canonical/integration/closure/serial_ref/collected_nodeids.txt
+/evidence/verbose_heartbeat_v1_SUPERSEDED_harness_pkill_selfkill/canonical/integration/closure/serial_ref/pre_collect_raw.txt
+/evidence/verbose_heartbeat_v1_SUPERSEDED_harness_pkill_selfkill/mutants/MV1_heartbeat_prints_PASS/integration/closure/serial_ref/collected_nodeids.txt
+/evidence/verbose_heartbeat_v1_SUPERSEDED_harness_pkill_selfkill/mutants/MV1_heartbeat_prints_PASS/integration/closure/serial_ref/pre_collect_raw.txt

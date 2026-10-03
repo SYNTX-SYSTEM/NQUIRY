@@ -1,0 +1,11 @@
+# runtime bytecode written by the harness's synthetic xdist runs into their own authorized prefix (xdist/pyc): counts only, removed (never versioned)
+verbose_heartbeat/canonical/xdist/pyc pyc=435
+verbose_heartbeat/mutants/MV1_heartbeat_prints_PASS/xdist/pyc pyc=435
+verbose_heartbeat/mutants/MV2_heartbeat_survives_stage/xdist/pyc pyc=435
+verbose_heartbeat/mutants/MV3a_final_PASS_before_aggregation/xdist/pyc pyc=435
+verbose_heartbeat/mutants/MV3b_final_verdict_always_PASS/xdist/pyc pyc=435
+verbose_heartbeat/mutants/MV4_failed_child_exit_ignored/xdist/pyc pyc=435
+verbose_heartbeat/mutants/MV5_secret_emitted/xdist/pyc pyc=435
+verbose_heartbeat/mutants/MV6_stage_order_altered/xdist/pyc pyc=435
+verbose_heartbeat/mutants/MV7_timeout_not_reported/xdist/pyc pyc=435
+in-tree pyc under any xdist/tree: 9

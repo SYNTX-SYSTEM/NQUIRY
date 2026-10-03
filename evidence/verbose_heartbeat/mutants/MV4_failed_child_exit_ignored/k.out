@@ -1,0 +1,3 @@
+[00:00:00] PROOF_START     chain=synthetic
+[00:00:00] STAGE_START     stage=long
+[00:00:01] HEARTBEAT       stage=long elapsed=1s

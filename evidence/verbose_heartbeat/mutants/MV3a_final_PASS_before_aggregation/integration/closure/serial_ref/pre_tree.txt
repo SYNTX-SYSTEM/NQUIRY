@@ -1,0 +1,4 @@
+HEAD=e0a6b3b25d4309d16d6e3db3ee0958183a279dfd
+status_entries_incl_ignored=0
+diff_vs_tag=none
+content_sha256=ba25b56f293b4e7f4d74860a128c2f97ad93ac044781dec6dc1a11b1fa5c5603

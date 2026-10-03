@@ -1,0 +1,13 @@
+[00:00:00] PROOF_START     chain=canonical-orange-slice run=integration
+[00:00:00] STAGE_START     stage=serial_pre
+[00:00:05] HEARTBEAT       stage=serial_pre elapsed=5s
+[00:00:10] HEARTBEAT       stage=serial_pre elapsed=10s
+[00:00:15] HEARTBEAT       stage=serial_pre elapsed=15s
+[00:00:20] HEARTBEAT       stage=serial_pre elapsed=20s
+[00:00:21] STAGE_END       stage=serial_pre rc=0 elapsed=21s
+[00:00:21] VERDICT         phase=serial_pre name=ORANGE_IMPORT_ORIGIN value=PASS
+[00:00:21] VERDICT         phase=serial_pre name=ALLOWLIST_SET value=PASS
+[00:00:21] VERDICT         phase=serial_pre name=SCHEMA_FINGERPRINT_EQUIVALENCE value=PASS
+[00:00:21] VERDICT         phase=serial_pre name=DB_METADATA_EQUIVALENCE value=PASS
+[00:00:21] VERDICT         phase=serial_pre name=PROOF_DB_PRECONDITIONS value=PASS
+[00:00:21] PROOF_END       verdict=PASS failures=0 verdicts_read=5 elapsed=21s

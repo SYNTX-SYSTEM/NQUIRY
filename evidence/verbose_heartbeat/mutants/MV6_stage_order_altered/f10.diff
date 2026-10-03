@@ -1,0 +1,4 @@
+41d40
+< bash "$P/parallel_proof.sh" serial
+42a42
+> bash "$P/parallel_proof.sh" serial

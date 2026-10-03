@@ -1,0 +1,6 @@
+[00:00:00] PROOF_START     chain=synthetic
+[00:00:00] STAGE_START     stage=bounded
+[00:00:01] STAGE_TIMEOUT   stage=bounded rc=124 elapsed=1s
+[00:00:01] VERDICT         phase=p name=A value=PASS
+[00:00:01] VERDICT         phase=p name=B value=PASS
+[00:00:01] PROOF_END       verdict=FAIL failures=1 verdicts_read=2 elapsed=1s

@@ -1,0 +1,14 @@
+[00:00:00] PROOF_START     chain=synthetic-xdist
+[00:00:00] STAGE_START     stage=xdist_partition
+[00:00:01] HEARTBEAT       stage=xdist_partition elapsed=1s status=PASS
+[00:00:02] HEARTBEAT       stage=xdist_partition elapsed=2s status=PASS
+[00:00:03] HEARTBEAT       stage=xdist_partition elapsed=3s status=PASS
+[00:00:04] HEARTBEAT       stage=xdist_partition elapsed=4s pytest_progress=18%
+[00:00:05] HEARTBEAT       stage=xdist_partition elapsed=5s pytest_progress=36%
+[00:00:06] HEARTBEAT       stage=xdist_partition elapsed=6s pytest_progress=54%
+[00:00:07] HEARTBEAT       stage=xdist_partition elapsed=7s pytest_progress=72%
+[00:00:08] HEARTBEAT       stage=xdist_partition elapsed=8s pytest_progress=72%
+[00:00:09] HEARTBEAT       stage=xdist_partition elapsed=9s pytest_progress=100%
+[00:00:10] HEARTBEAT       stage=xdist_partition elapsed=10s pytest_progress=100%
+[00:00:11] STAGE_END       stage=xdist_partition rc=0 elapsed=11s
+[00:00:11] PROOF_END       verdict=FAIL failures=0 verdicts_read=0 elapsed=11s

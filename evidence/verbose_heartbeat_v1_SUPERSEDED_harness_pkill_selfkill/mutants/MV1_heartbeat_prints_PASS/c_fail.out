@@ -1,0 +1,9 @@
+[00:00:00] PROOF_START     chain=synthetic
+[00:00:00] STAGE_START     stage=failing
+[00:00:00] STAGE_FAIL      stage=failing rc=3 elapsed=0s
+[00:00:00] STAGE_START     stage=nofile
+/tmp/claude-1000/-home-codi-Entwicklung-nquiry-worktrees-f04-implementation/f778c2b3-09aa-4bc7-816c-b911cb710804/scratchpad/vh_mutants/MV1_heartbeat_prints_PASS/progress.sh: line 114: /home/codi/Entwicklung/nquiry/worktrees/orange-proof-lineage/evidence/verbose_heartbeat/mutants/MV1_heartbeat_prints_PASS/does_not_exist.txt: No such file or directory
+[00:00:00] STAGE_FAIL      stage=nofile rc=255 elapsed=0s
+[00:00:00] VERDICT         phase=p name=A value=PASS
+[00:00:00] VERDICT         phase=p name=B value=PASS
+[00:00:00] PROOF_END       verdict=FAIL failures=2 verdicts_read=2 elapsed=0s

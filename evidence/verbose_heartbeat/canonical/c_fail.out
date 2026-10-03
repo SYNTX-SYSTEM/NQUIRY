@@ -1,0 +1,9 @@
+[00:00:00] PROOF_START     chain=synthetic
+[00:00:00] STAGE_START     stage=failing
+[00:00:00] STAGE_FAIL      stage=failing rc=3 elapsed=0s
+[00:00:00] STAGE_START     stage=nofile
+/home/codi/Entwicklung/nquiry/worktrees/orange-proof-lineage/progress.sh: line 115: /home/codi/Entwicklung/nquiry/worktrees/orange-proof-lineage/evidence/verbose_heartbeat/canonical/does_not_exist.txt: No such file or directory
+[00:00:00] STAGE_FAIL      stage=nofile rc=255 elapsed=0s
+[00:00:00] VERDICT         phase=p name=A value=PASS
+[00:00:00] VERDICT         phase=p name=B value=PASS
+[00:00:00] PROOF_END       verdict=FAIL failures=2 verdicts_read=2 elapsed=0s

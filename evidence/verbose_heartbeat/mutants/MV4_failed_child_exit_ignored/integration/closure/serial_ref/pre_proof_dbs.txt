@@ -1,0 +1,10 @@
+proof databases on cluster: ['nquiry_proof_gw0_test', 'nquiry_proof_gw1_test', 'nquiry_proof_gw2_test', 'nquiry_proof_gw3_test', 'nquiry_proof_serial_test']
+ALLOWLIST_SET::PASS (cluster proof DBs == allowlist, exactly 5)
+nquiry_proof_serial_test   head=['e8c2a5f1b7d4'] tables=42 nonempty={} foreign_conns=0 fp=3c899691e52cef9f meta=['UTF8', 'en_US.utf8', 'en_US.utf8', 'nquiry'] -> PASS
+nquiry_proof_gw0_test      head=['e8c2a5f1b7d4'] tables=42 nonempty={} foreign_conns=0 fp=3c899691e52cef9f meta=['UTF8', 'en_US.utf8', 'en_US.utf8', 'nquiry'] -> PASS
+nquiry_proof_gw1_test      head=['e8c2a5f1b7d4'] tables=42 nonempty={} foreign_conns=0 fp=3c899691e52cef9f meta=['UTF8', 'en_US.utf8', 'en_US.utf8', 'nquiry'] -> PASS
+nquiry_proof_gw2_test      head=['e8c2a5f1b7d4'] tables=42 nonempty={} foreign_conns=0 fp=3c899691e52cef9f meta=['UTF8', 'en_US.utf8', 'en_US.utf8', 'nquiry'] -> PASS
+nquiry_proof_gw3_test      head=['e8c2a5f1b7d4'] tables=42 nonempty={} foreign_conns=0 fp=3c899691e52cef9f meta=['UTF8', 'en_US.utf8', 'en_US.utf8', 'nquiry'] -> PASS
+SCHEMA_FINGERPRINT_EQUIVALENCE::PASS (3c899691e52cef9fbd65d4ea9e9489a86d05e199c068c49e556e9e2d987c27a6)
+DB_METADATA_EQUIVALENCE::PASS
+PROOF_DB_PRECONDITIONS::PASS
