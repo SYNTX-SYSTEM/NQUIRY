@@ -78,4 +78,9 @@ presentation (methods, sessions, link); any of them is a new surface and needs i
 callback remains unproven everywhere except on the live system, where it is not exercised.
 
 ## Checkpoint
-(recorded after commit)
+| | Value |
+|---|---|
+| Field commit | `bd6534c424fa2efae77b152d6783dfd45feb8c55` (tree `5d0e2e9023a38b2ae32ae8e2088a264eb4bb82ae`) |
+| Tag | `checkpoint-AUTH-CYAN-03` → tag object `cc323572e29d051c3ceaea4b1d537a042b8effea` → `bd6534c` |
+| Remote | `origin/frontend-symbiotic` = `bd6534c` (+ this docs commit); tag pushed |
+| Producer | PURPLE `auth-identity` @ `aa32c4d4faad23eea0bd3290641e7a66adcf26a9` (unchanged) |
