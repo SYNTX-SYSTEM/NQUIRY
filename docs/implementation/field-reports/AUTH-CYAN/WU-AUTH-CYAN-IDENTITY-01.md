@@ -75,4 +75,9 @@ THIS WORK UNIT.
 **Next FBR:** none defined by this unit; no further AUTH/CYAN Work Unit is authorized.
 
 ## Checkpoint
-(recorded after commit)
+| | Value |
+|---|---|
+| Field commit | `bf66e4588b338f849b205f84acd3fc559110c8a7` (tree `f6953bd55df8f1d2123c9c270289f367fe71c7ad`) |
+| Tag | `checkpoint-AUTH-CYAN-IDENTITY-01` → tag object `aab7fbe371478875747d769f63242ca335a97ddb` → `bf66e45` |
+| Remote | `origin/frontend-symbiotic` = `bf66e45` (+ this docs commit); tag pushed |
+| Producer | PURPLE `auth-identity` @ `aa32c4d4faad23eea0bd3290641e7a66adcf26a9` (unchanged) |
