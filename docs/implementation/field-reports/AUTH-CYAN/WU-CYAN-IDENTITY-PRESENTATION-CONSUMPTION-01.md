@@ -74,4 +74,8 @@ BY CYAN · CURRENT PROVIDER ACCOUNT = PRESENTED WHEN APPLICABLE · USER ID = TEC
 ACCEPTANCE = PENDING UNTIL REAL E2E (CASE LOCAL, CASE GOOGLE on `/cy-review/`).
 
 ## Checkpoint
-(recorded after commit)
+| | Value |
+|---|---|
+| Field commit | `bfd530016e4e25e761ecb0e3a04c0b8817e95f93` (tree `96bc4ec750cd58ff3fc15f96393de9ae9b7acf07`) |
+| Tag | `checkpoint-CYAN-IDENTITY-PRESENTATION-01` → tag object `b02e6934280c57e5fc1dd30094c49f538fbdc2b2` → `bfd5300`; pushed |
+| PURPLE producer | `auth-identity` @ `2ec05c03f55ee1b0dfc08a952fa508edae0c983a` (live assembly `auth-2ec05c0-20261003T223212Z`) |
