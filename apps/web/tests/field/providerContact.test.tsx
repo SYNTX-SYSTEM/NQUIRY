@@ -72,7 +72,7 @@ describe("proof 2 + 10: no hard-coded availability, no inference, no authority",
   it("the login page carries no provider literal either: the server answer is the only source", () => {
     expect(PAGE).not.toMatch(/google/i);
     expect(PAGE).not.toMatch(/PRODUCTION_PROVIDER|TEST_PROVIDER|proofClass/);
-    expect(PAGE).toMatch(/useProviderContact\("\/"\)/);
+    expect(PAGE).toMatch(/useProviderContact\(mountPath\("\/"\)\)/); // the mount root (CYAN_REAL_E2E_FIELD_MOUNT_01)
     expect(PAGE).toMatch(/<ProviderContact contact=\{providerContact\} \/>/);
   });
   it("the only path to a contact is googleLoginStart on a parsed list (no URL is hand-built)", () => {

@@ -273,7 +273,48 @@ state and never decide. Product code: unchanged; tests and the mutation script e
 login form, CASE 5, CASE 6, the reconstruction sequence Google → logout → local login; mutations M13–M16 incl. a
 frontend cache killed through the browser lane).
 
+**Human Review decision (2026-10-03):** the local fixture review is insufficient for final acceptance; a REAL
+end-to-end proof of the current CYAN build against the real PURPLE Google authentication field is required
+("Enter the Google review state" proves CYAN projection semantics under FIXTURE_NON_PROOF only). The reconstruction
+answered: same origin, path-prefixed candidate mount `/cy-review/` beside the live `/`, both on `/api/`; a separate
+host is excluded by the host-scoped session and binding cookies, the single allowed origin and the registered callback.
+Acceptance of AUTH/CYAN-IDENTITY-01 stays PENDING until that proof.
+
+## HA-CYAN-REAL-E2E-FIELD-MOUNT-01 — CYAN same-origin review mount (2026-10-03, verbatim essentials)
+
+> MODE = FIELD_ENGINEERING · FIELD = NQUIRY_CYAN_SAME_ORIGIN_REVIEW_MOUNT_FIELD · WORK_UNIT = CYAN_REAL_E2E_FIELD_MOUNT_01.
+> PURPOSE: the narrowest legitimate Field that lets the CURRENT CYAN assembly coexist beside the live CYAN on the SAME
+> origin while consuming the SAME real PURPLE authentication Field — preparation for the later real E2E proof, which
+> this Work Unit does NOT perform. Begin from the relations, not from "add a basePath". TARGET: `/` → live CYAN
+> unchanged; `/cy-review/` → candidate CYAN; both → `/api/` → production PURPLE. FRONTEND_MOUNT (M) owns CYAN page
+> routes, static assets, internal navigation and MAY define the auth return target; FRONTEND_MOUNT != API_MOUNT; the
+> Google callback stays `/api/auth/oidc/google/callback`; the host session is shared across same-host paths; one
+> authentication Field, multiple frontend projections. FIRST BROKEN RELATION: CYAN_OWNED_LOCATION → IMPLICIT_ROOT
+> instead of → EXPLICIT_FRONTEND_MOUNT; repair at the authoritative home, never patch visible URLs one by one.
+> SEMANTIC ERRORS 01–12 (mount prefixes API; localhost consuming the production session; new callback URI; review
+> changes live root; changes PURPLE session semantics; changes Google credentials; navigation escapes the mount; asset
+> hard-coded to root; auth return lands on live root when candidate continuation is meant; review config forced into
+> default builds; auth truth from the mount; independent identities). VALID: STATE A (M=/, api=/api), STATE B
+> (M=/cy-review, api=/api). BOUNDARIES: no PURPLE change, no Google change, no deployment or nginx change, live root
+> unchanged, auth semantics unchanged, unknown route ownership → STOP. HUMAN AUTHORITY: only making CYAN's own mount
+> relation explicit and configurable. ALLOWED DELTA: mount configuration, routing/navigation/asset/auth-return
+> reconstruction, build configuration expressing the mount. FALSIFIERS 01–16, MUTATIONS M1–M12, progressive proof
+> radius (reconstruction → semantic falsifiers → mount unit tests → affected suites → browser proof for both mounts →
+> mutation proof); no real production E2E, no deployment. NEXT FIELD BOUNDARY: STAGED_SAME_ORIGIN_E2E_ASSEMBLY — not
+> entered automatically.
+
+**Reconstruction by the executing agent.** Root-bound CYAN-owned locations found: the brand asset reference in
+`components/field/Identity.tsx`, the auth return target `"/"` in `app/login/page.tsx`, and the absent mount expression
+in `next.config.ts`. Page routes, `next/link` and the app router (22 call sites) are prefixed by Next's own mount
+mechanism (`basePath`), so they need no change. No CSS `url()`, no raw root anchors, no `location` writes. Authoritative
+home materialized: `lib/field/mount.ts` (`NEXT_PUBLIC_FRONTEND_MOUNT` → `FRONTEND_MOUNT`, `mountPath`; refuses malformed
+mounts and the API mount); `next.config.ts` derives `basePath` from it; the asset and the return target derive from
+`mountPath`. Nothing under `lib/api` or in the identity/auth modules reads the mount. Disclosed: PURPLE's own login
+non-success projection `/login?auth=<word>` is PURPLE-owned and root-bound, so under `/cy-review` a failed or cancelled
+provider login lands on the live `/login` (CY-01 web) — not changed (BOUNDARY_01).
+
 ## Open for Human Authority
-- Human Frontend Review of AUTH/CYAN-IDENTITY-01, second pass, on the causal review runtime (see
-  `HUMAN_REVIEW_GUIDE_AUTH_CYAN_IDENTITY_01.md`). PENDING.
+- STAGED_SAME_ORIGIN_E2E_ASSEMBLY (candidate web beneath `/cy-review/` on the production origin; one nginx location;
+  no PURPLE, Google or live-root change) — not authorized, not entered.
+- Human Frontend Acceptance of AUTH/CYAN-IDENTITY-01 — PENDING the real E2E proof.
 - No further AUTH/CYAN Work Unit is defined or authorized.

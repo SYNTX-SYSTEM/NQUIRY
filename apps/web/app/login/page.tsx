@@ -37,6 +37,7 @@ import { Identity } from "../../components/field/Identity";
 import { AuthBoundary } from "../../components/field/AuthBoundary";
 import { ProviderContact } from "../../components/field/ProviderContact";
 import { login } from "../../lib/api/authClient";
+import { mountPath } from "../../lib/field/mount";
 import { useAuthBoundary } from "../../lib/field/useAuthBoundary";
 import { useProviderContact } from "../../lib/field/useProviderContact";
 
@@ -54,9 +55,10 @@ export default function LoginPage() {
   // gathers around the Login action on hover and the local chamber responds to focus; nothing implies success
   const [attract, setAttract] = useState(false);
   const [focus, setFocus] = useState<"email" | "password" | null>(null);
-  // AUTH/CYAN-02: the provider contact exists only as the parsed server answer says; "/" re-checks the session
-  // and routes onward, the same destination the local login uses.
-  const providerContact = useProviderContact("/");
+  // AUTH/CYAN-02: the provider contact exists only as the parsed server answer says. The return target is the
+  // CYAN-owned mount root (CYAN_REAL_E2E_FIELD_MOUNT_01): it re-checks the session and routes onward inside the
+  // mount that started the login, the same destination the local login uses.
+  const providerContact = useProviderContact(mountPath("/"));
   // AUTH/CYAN-03: the provider-login result boundary from `?auth=`; shown only while the local form is idle, so a
   // new local request or verdict replaces it rather than stacking two boundaries.
   const authBoundary = useAuthBoundary();

@@ -108,7 +108,7 @@ describe("proofs 6–7: local password login and the provider contact remain unc
     expect(PAGE).toMatch(/data-testid="login-submit"/);
     expect(PAGE).toMatch(/login\(email, password\)/);
     expect(PAGE).toMatch(/router\.replace\("\/"\)/);
-    expect(PAGE).toMatch(/useProviderContact\("\/"\)/);
+    expect(PAGE).toMatch(/useProviderContact\(mountPath\("\/"\)\)/); // the mount root (CYAN_REAL_E2E_FIELD_MOUNT_01)
     expect(PAGE).toMatch(/<ProviderContact contact=\{providerContact\} \/>/);
     expect(PAGE).toMatch(/const providerBoundary = state\.kind === "idle" \? authBoundary : \{ kind: "none" as const \}/);
     expect(PAGE).toMatch(/<AuthBoundary boundary=\{providerBoundary\} \/>/);

@@ -7,13 +7,14 @@
  * The glyph is decorative (`aria-hidden`); the wordmark carries the name.
  */
 import Link from "next/link";
+import { mountPath } from "../../lib/field/mount";
 
 function Mark() {
   return (
     <>
       {/* the designed wordmark (assets/logo, transparent): decorative — the link / figure carries the name "nquiry" */}
       <span className="identity-glow" aria-hidden="true" />
-      <img className="identity-logo" src="/brand/nquiry-logo.png" srcSet="/brand/nquiry-logo.png 1x, /brand/nquiry-logo@2x.png 2x" alt="" width="640" height="234" decoding="async" />
+      <img className="identity-logo" src={mountPath("/brand/nquiry-logo.png")} srcSet={`${mountPath("/brand/nquiry-logo.png")} 1x, ${mountPath("/brand/nquiry-logo@2x.png")} 2x`} alt="" width="640" height="234" decoding="async" />
       <span className="identity-word visually-hidden" aria-hidden="true">
         nquiry
       </span>
