@@ -6421,3 +6421,8 @@ h3.chamber-title {
   color: var(--ink-soft);
   font-weight: 400;
 }
+
+/* ============================================================ AUTH/CYAN-03 · provider-login result boundary inside the Access core */
+.access-auth-boundary {
+  margin-top: var(--space-4);
+}

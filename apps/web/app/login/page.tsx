@@ -23,13 +23,21 @@
  * assumes a provider; an unknown, malformed, denied or failed discovery shows
  * nothing. The contact is a navigation to the typed LOGIN start URL and proves
  * no login (GOOGLE_AVAILABLE != GOOGLE_LOGIN_PROVEN).
+ *
+ * AUTH/CYAN-03: a provider login's non-success returns here as `?auth=<word>`
+ * (closed vocabulary of AUTH/CYAN-01). A known word is presented as a boundary
+ * inside this core while the form is idle; a missing, unknown, repeated or
+ * malformed value presents nothing (UNKNOWN != FAILURE, UNKNOWN != SUCCESS).
+ * No word is a success, an authority or a role.
  */
 import { type FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FieldBackground } from "../../components/field/FieldBackground";
 import { Identity } from "../../components/field/Identity";
+import { AuthBoundary } from "../../components/field/AuthBoundary";
 import { ProviderContact } from "../../components/field/ProviderContact";
 import { login } from "../../lib/api/authClient";
+import { useAuthBoundary } from "../../lib/field/useAuthBoundary";
 import { useProviderContact } from "../../lib/field/useProviderContact";
 
 type SubmitState =
@@ -49,6 +57,10 @@ export default function LoginPage() {
   // AUTH/CYAN-02: the provider contact exists only as the parsed server answer says; "/" re-checks the session
   // and routes onward, the same destination the local login uses.
   const providerContact = useProviderContact("/");
+  // AUTH/CYAN-03: the provider-login result boundary from `?auth=`; shown only while the local form is idle, so a
+  // new local request or verdict replaces it rather than stacking two boundaries.
+  const authBoundary = useAuthBoundary();
+  const providerBoundary = state.kind === "idle" ? authBoundary : { kind: "none" as const };
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -80,12 +92,12 @@ export default function LoginPage() {
         <Identity link={false} />
       </header>
       <main className="access-field" data-field-regime="access" data-attract={attract ? "login" : undefined} data-focus={focus ?? undefined}>
-        <section className="access-core" aria-labelledby="access-title" data-testid="access-core" data-core-state={submitting ? "loading" : state.kind === "error" ? "boundary" : "current"}>
+        <section className="access-core" aria-labelledby="access-title" data-testid="access-core" data-core-state={submitting ? "loading" : state.kind === "error" || providerBoundary.kind === "boundary" ? "boundary" : "current"}>
           <span className="access-membrane" aria-hidden="true" />
           <p className="eyebrow">Access</p>
           <h1 id="access-title">Log in to nquiry</h1>
           <p className="lede">Identity opens the Field. It grants no Workspace, Challenge or Session authority by itself.</p>
-          <form onSubmit={handleSubmit} data-testid="login-form" aria-describedby={state.kind === "error" ? "login-error" : undefined}>
+          <form onSubmit={handleSubmit} data-testid="login-form" aria-describedby={state.kind === "error" ? "login-error" : providerBoundary.kind === "boundary" ? "auth-boundary" : undefined}>
             <div className="field">
               <label htmlFor="login-email">Email</label>
               <input
@@ -130,6 +142,7 @@ export default function LoginPage() {
             </div>
           </form>
           <ProviderContact contact={providerContact} />
+          <AuthBoundary boundary={providerBoundary} />
           {submitting ? (
             <p className="access-status effect-intent" role="status" data-testid="login-pending">
               Requested. Not yet authenticated: the server verifies the credentials.

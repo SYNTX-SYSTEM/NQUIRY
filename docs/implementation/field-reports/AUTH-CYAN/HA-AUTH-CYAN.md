@@ -116,5 +116,50 @@ for the start route — review infrastructure, not product code.
 
 **Human Frontend Acceptance (2026-10-03): ACCEPTED** — `HUMAN_REVIEW_RESULT_AUTH_CYAN_02.md`.
 
+## HA-AUTH-CYAN-03 — AUTH/CYAN-03 authorized (2026-10-03, Human Authority, verbatim)
+
+> SYNTX::SFE · MODE = IMPLEMENTATION · FIELD = PURPLE_AUTH ↔ CYAN_FRONTEND · WORK_UNIT = AUTH/CYAN-03
+> BASE = origin/frontend-symbiotic 71515fd4837fbbe51d081da8a875c1cb93dae1f4 · PURPOSE = Present the already-defined
+> ?auth= provider-login result projection on the existing CYAN Access Field as a fail-closed authentication boundary.
+>
+> EXACT FIRST BROKEN RELATION: ?auth= projection → known provider-login boundary → Access Field presentation.
+> Materialize ONLY this relation.
+>
+> KNOWN AUTH PROJECTIONS: Use ONLY the closed AUTH projection vocabulary already defined by AUTH/CYAN-01 (such as
+> unavailable, failed, cancelled, provider_unavailable, provider_error). Verify the exact vocabulary from authClient.ts
+> before implementation. Do not invent values. UNKNOWN → render nothing. MISSING → render nothing.
+>
+> SEMANTICS: The projection represents an authentication boundary/result only. It does NOT represent successful Google
+> login, authorization, role, authority, account creation, account linking, recovery. AUTHENTICATION != AUTHORIZATION ·
+> FAILED_LOGIN != DENIED_AUTHORITY · UNKNOWN != FAILURE · UNKNOWN != SUCCESS
+>
+> SURFACE: Render the boundary inside the existing Access Field. Do not create a second auth surface, a modal, an
+> account-security panel, a provider-management panel, a new route. The existing email/password form and Google
+> provider contact remain visually primary.
+>
+> FAIL CLOSED: Known projection → render the exact legitimate boundary presentation. Unknown projection → render
+> nothing. Malformed query → render nothing. Duplicate/conflicting projection → fail closed. Do not infer intent from
+> arbitrary query text.
+>
+> PROOF (1–15): every known AUTH projection renders its legitimate boundary; unknown renders nothing; missing renders
+> nothing; malformed renders nothing; conflicting/duplicate fails closed; local password login unchanged; Continue with
+> Google unchanged; no success state synthesized; no authority/role semantics inferred; no PURPLE source change; no
+> account-linking behavior; no production deployment; Desktop browser proof; Pixel 7 browser proof; no visual overflow
+> caused by the boundary. Run: focused unit/component tests; authClient preservation; existing auth lane;
+> provider-contact preservation; browser proof Desktop + Pixel 7; TypeScript; ESLint; mutation proof for
+> unknown→visible, failed→success, malformed→visible, and bypass of typed vocabulary.
+>
+> CLAIM CEILING (after closure only): KNOWN ?auth= PROJECTION = PRESENTED BY CYAN · Still: REAL GOOGLE LOGIN = NOT
+> PROVEN · REAL GOOGLE CALLBACK = NOT PROVEN · ACCOUNT LINKING = NOT MATERIALIZED · AUTHORIZATION = UNCHANGED
+>
+> Commit/tag/push only if proof is green. Then STOP. Do not continue into AUTH/CYAN-04 automatically.
+
+**Reading applied by the executing agent.** Vocabulary verified from `authClient.ts` at the base:
+`cancelled, provider_unavailable, provider_error, failed, unavailable` (exactly the five named). The boundary is shown
+only while the local form is idle: a local request (pending) or a local verdict replaces it, so two boundaries never
+stack. The URL is not rewritten. The review runtime presents the boundary by opening `/login?auth=<word>` directly;
+no callback produces it there (the pinned RED producer has no PURPLE routes).
+
 ## Open for Human Authority
-- AUTH/CYAN-03 (presenting the `?auth=` projection on the Access Field) — not authorized.
+- Human Frontend Review of AUTH/CYAN-03 (see `HUMAN_REVIEW_GUIDE_AUTH_CYAN_03.md`).
+- AUTH/CYAN-04 — not defined, not authorized.
