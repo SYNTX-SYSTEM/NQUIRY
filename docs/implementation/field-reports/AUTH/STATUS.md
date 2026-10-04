@@ -23,8 +23,8 @@ skipped (0:42:54), no-DB 1020, tree hash unchanged, migration head
 HEAD `b939037`): live 2456 passed / 2 skipped, no-DB 1020 passed,
 42 migrations single head `c1e3a5b7d9f2`, tree hash unchanged during the
 run; vitest 181; mocked lanes 33 / 66; real stack 8 / 8 (authentication
-persistence scoped). Open Human Authority: HA-AUTH-01, -02, -03
-(HA-AUTH-04 / -05 resolved by HD-AUTH-05 / -06).
+persistence scoped). Open Human Authority: HA-AUTH-02 (recovery), HA-AUTH-03 (last method)
+(HA-AUTH-01 / -07 resolved by HD-AUTH-08; -04 / -05 by HD-AUTH-05 / -06).
 
 - Worktree `worktrees/auth-identity`, branch `auth-identity`. Local commits
   only; not pushed, not tagged (HD-AUTH-03).
@@ -32,9 +32,9 @@ persistence scoped). Open Human Authority: HA-AUTH-01, -02, -03
 - Human decisions: `HUMAN_DECISIONS.md` (HD-AUTH-01..03). Consumed from
   predecessors: HD-28 / NQ-DEC-056 (host-operator account creation), F02 HD-3
   (dev-only identity), F02 HD-6 (no own commit boundary in application modules).
-- **HA-AUTH-01 OPEN** (WU-AUTH-09): production account creation policy for
-  unknown provider subjects; DENIED in force. Block in `WU-AUTH-09.md`,
-  queue in `HUMAN_DECISIONS.md`.
+- **HA-AUTH-01 RESOLVED** by HD-AUTH-08 (2026-10-04): generic provider
+  bootstrap (`SELF_REGISTRATION_ALLOWED`, PROVIDER_BOOTSTRAP class) admitted
+  in every declared environment incl. PRODUCTION; default DENIED unchanged.
 - **HA-AUTH-02 OPEN** (WU-AUTH-12): production recovery policy and proof
   level (24 §36 #11); DENIED in force, the verified-email self-service
   mechanism is refused outside DEVELOPMENT / TEST. Block in `WU-AUTH-12.md`.

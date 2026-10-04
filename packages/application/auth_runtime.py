@@ -63,7 +63,10 @@ class UnknownAuthProvider(RuntimeError):
 
 
 class AccountCreationPolicyForbidden(RuntimeError):
-    """SELF_REGISTRATION_ALLOWED outside DEVELOPMENT / TEST (HD-28; 24 §36 #3)."""
+    """SELF_REGISTRATION_ALLOWED (PROVIDER_BOOTSTRAP) without a declared
+    environment: the IDENTITY_CREATED provenance must name its environment
+    (AC-11-017). Admitted in every declared environment since HD-AUTH-08
+    (2026-10-04), which resolved HA-AUTH-01 for the generic bootstrap class."""
 
 
 class AccountCreationPolicyNotMaterialized(RuntimeError):
@@ -151,12 +154,12 @@ def auth_runtime_from_environment(
         raise AccountCreationPolicyNotMaterialized(
             f"{policy.value} names a relation that is not materialized; nothing is substituted"
         )
-    if (
-        policy is AccountCreationPolicy.SELF_REGISTRATION_ALLOWED
-        and environment not in _DEV_ENVIRONMENTS
-    ):
+    if policy is AccountCreationPolicy.SELF_REGISTRATION_ALLOWED and environment is None:
+        # HD-AUTH-08: provider bootstrap is admitted in every DECLARED
+        # environment; without one the creation provenance could not state
+        # where the identity was created (AC-11-017), so nothing is admitted.
         raise AccountCreationPolicyForbidden(
-            "SELF_REGISTRATION_ALLOWED is DEVELOPMENT / TEST only (HD-28; 24 section 36 #3); "
+            "SELF_REGISTRATION_ALLOWED needs a declared NQUIRY_ENVIRONMENT; "
             f"refused for NQUIRY_ENVIRONMENT={raw_environment!r}"
         )
     delivery_mode = source.get("NQUIRY_EMAIL_DELIVERY_MODE", "").strip().lower()

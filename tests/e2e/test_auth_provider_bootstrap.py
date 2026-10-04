@@ -632,14 +632,26 @@ def test_bootstrap_login_and_link_remain_three_relations(
     assert len(client.get("/auth/methods").json()["methods"]) == 2  # no third method appeared
 
 
-def test_the_bootstrap_policy_is_refused_outside_development_and_test() -> None:
+def test_the_bootstrap_policy_is_admitted_in_production_and_refused_without_an_environment() -> (
+    None
+):
+    """HD-AUTH-08: generic provider bootstrap is a production capability; the
+    default stays DENIED and an undeclared environment is refused."""
     from application.auth_runtime import AccountCreationPolicyForbidden
 
     for environment in ("PRODUCTION", "STAGING"):
-        with pytest.raises(AccountCreationPolicyForbidden):
-            auth_runtime_from_environment(
-                {
-                    "NQUIRY_ENVIRONMENT": environment,
-                    "NQUIRY_ACCOUNT_CREATION_POLICY": "SELF_REGISTRATION_ALLOWED",
-                }
-            )
+        runtime = auth_runtime_from_environment(
+            {
+                "NQUIRY_ENVIRONMENT": environment,
+                "NQUIRY_ACCOUNT_CREATION_POLICY": "SELF_REGISTRATION_ALLOWED",
+            }
+        )
+        assert runtime.account_creation_policy is AccountCreationPolicy.SELF_REGISTRATION_ALLOWED
+    assert (
+        auth_runtime_from_environment({"NQUIRY_ENVIRONMENT": "PRODUCTION"}).account_creation_policy
+        is AccountCreationPolicy.DENIED
+    )
+    with pytest.raises(AccountCreationPolicyForbidden):
+        auth_runtime_from_environment(
+            {"NQUIRY_ACCOUNT_CREATION_POLICY": "SELF_REGISTRATION_ALLOWED"}
+        )

@@ -159,13 +159,27 @@ def test_the_default_policy_is_denied(issuer: LocalTestIssuer) -> None:
     assert auth_runtime_from_environment({}).account_creation_policy is AccountCreationPolicy.DENIED
 
 
-@pytest.mark.parametrize("environment", ["PRODUCTION", "STAGING", None, "development"])
-def test_self_registration_is_refused_outside_development_and_test(environment: str | None) -> None:
+@pytest.mark.parametrize("environment", [None, "development"])
+def test_self_registration_needs_a_declared_environment(environment: str | None) -> None:
+    """HD-AUTH-08 (2026-10-04, resolving HA-AUTH-01): the generic provider
+    bootstrap is admitted in every DECLARED environment; an undeclared or
+    unknown one is refused because the creation provenance must name it."""
     env = {"NQUIRY_ACCOUNT_CREATION_POLICY": "SELF_REGISTRATION_ALLOWED"}
     if environment is not None:
         env["NQUIRY_ENVIRONMENT"] = environment
-    with pytest.raises(AccountCreationPolicyForbidden):
+    with pytest.raises((AccountCreationPolicyForbidden, ValueError)):
         auth_runtime_from_environment(env)
+
+
+@pytest.mark.parametrize("environment", ["PRODUCTION", "STAGING", "DEVELOPMENT", "TEST"])
+def test_self_registration_is_admitted_in_every_declared_environment(environment: str) -> None:
+    runtime = auth_runtime_from_environment(
+        {
+            "NQUIRY_ACCOUNT_CREATION_POLICY": "SELF_REGISTRATION_ALLOWED",
+            "NQUIRY_ENVIRONMENT": environment,
+        }
+    )
+    assert runtime.account_creation_policy is AccountCreationPolicy.SELF_REGISTRATION_ALLOWED
 
 
 @pytest.mark.parametrize(

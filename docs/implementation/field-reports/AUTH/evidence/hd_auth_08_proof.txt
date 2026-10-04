@@ -1,0 +1,6 @@
+473 files already formatted
+All checks passed!
+Success: no issues found in 263 source files
+ARCHITECTURE_DEPENDENCY_CHECK::PASS
+MIGRATION_LIVE_CHECK::PASS (db head matches {'d2f4a6b8c1e3'})
+651 passed, 1 skipped in 524.72s (0:08:44)

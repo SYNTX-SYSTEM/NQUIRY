@@ -225,16 +225,45 @@ Consequence for HA-AUTH-07: option (b) "new identity for the Google account"
 can be realized by bootstrap only after this decision; until then only via
 HD-28 operator creation + the new identity's own LINK.
 
+## HD-AUTH-08 — HA-AUTH-01 and HA-AUTH-07 resolved (2026-10-04)
+
+**Decision 1 (human operator):** generic external-provider identity bootstrap
+is authorized for PRODUCTION. Semantic and provider-generic. It does NOT
+authorize email-string or display-name merging, reuse of a previous local /
+browser identity, silent role / membership / authority creation, weakening
+provider verification, or Google-specific hard-coding.
+**Materialization:** `SELF_REGISTRATION_ALLOWED` (= PROVIDER_BOOTSTRAP class,
+24 §11.14) is admitted in every DECLARED environment; undeclared refuses
+(AC-11-017). Default remains DENIED; the policy must be set explicitly
+(`NQUIRY_ACCOUNT_CREATION_POLICY`). Semantics as proven in
+`WU-PROVIDER-BOOTSTRAP-01.md`: verified email + display-name claim required,
+copied once, provenance recorded, collision refused, no authority. The
+production switch of the policy is the deployment effect of this decision.
+
+**Decision 2 (human operator):** the external Google identity presently bound
+to `tobi` (HA-AUTH-07) is not intended to remain owned by that identity; the
+ownership may be transitioned away from `tobi`; `tobi` and every unrelated
+relation are preserved.
+**Legitimate transition (derived):** (1) production admits bootstrap (Decision
+1) — BEFORE the unlink, otherwise the unlinked subject would be denied at its
+next login; (2) the owner identity unlinks the Google method through its own
+live session (`POST /api/auth/methods/{id}/unlink`; LOCAL stays, so not
+LAST_METHOD; the Google-produced sessions end; the binding becomes revoked
+evidence); (3) the next Google login of that subject bootstraps its OWN NQUIRY
+identity from the provider claims (`previouslyBound: true`). Steps 2 and 3 are
+human browser actions (the owner's session; Google consent) and are not
+performed by PURPLE.
+
 ## Open boundaries (OPEN, awaiting the operator)
 
 | # | Boundary | Home | What it blocks | Default in force | Status |
 |---|---|---|---|---|---|
-| HA-AUTH-01 | **Production account creation policy for an unknown, verified external-provider subject** (24 §36 #3–#5). Options: DENIED; SELF_REGISTRATION_ALLOWED; INVITATION_REQUIRED; PRE_PROVISIONED_IDENTITY_REQUIRED; GOVERNANCE_MEDIATED_CREATION (the last three need relations that do not exist). Full block: `WU-AUTH-09.md`. | 24 §11.14, §36; HD-28 (external-provider policy left fail-closed) | First-time provider login of a brand-new identity in PRODUCTION / STAGING | DENIED | OPEN |
+| HA-AUTH-01 | **Production account creation policy for an unknown, verified external-provider subject** | 24 §11.14, §36 #3–#5; HD-28 | — | SELF_REGISTRATION_ALLOWED = PROVIDER_BOOTSTRAP (HD-AUTH-08) | **RESOLVED** by HD-AUTH-08 (2026-10-04): generic provider bootstrap admitted in PRODUCTION with the stated exclusions |
 | HA-AUTH-02 | **Production recovery policy and proof level** (24 §36 #11; §17.6–17.7). Options: DENIED; VERIFIED_EMAIL_SELF_SERVICE (materialized, DEVELOPMENT / TEST only); VERIFIED_EMAIL_SELF_SERVICE plus a second factor; OPERATOR_MEDIATED (§36 #13; not materialized). Full block: `WU-AUTH-12.md`. | 24 §17, §36 #11 / #13; HD-28 (host-operator provisioning) | Self-service password recovery in PRODUCTION / STAGING | DENIED | OPEN |
 | HA-AUTH-03 | **Unlinking the last authentication method** (24 §36 #12; §14.6). Options: NEVER; ALLOWED WITH RECOVERY AUTHORITY (needs HA-AUTH-02 ≠ DENIED). (ALLOWED AS SELF-DISABLE excluded by HD-AUTH-05.) Full block: `WU-AUTH-13.md`. | 24 §14.6, §36 #12 | Nothing (the default is complete) | NEVER (`409 LAST_METHOD`) | OPEN |
 | HA-AUTH-04 | **Who may disable an identity in PRODUCTION / STAGING** | 24 §18, §36 #13; HD-28 | — | HOST_OPERATOR (HD-AUTH-05) | **RESOLVED** by HD-AUTH-05 (2026-10-01): HOST_OPERATOR; no HTTP route, no self-disable, no derived authority; re-enable separate |
 | HA-AUTH-05 | **Deployment switch to the scoped authentication principal** (24 §21.18; = PFC HA-10) | 24 §21.18, §25.2; 14 §8; PFC HA-09 / HA-10 | — | SWITCH AUTH ONLY (HD-AUTH-06) | **RESOLVED** by HD-AUTH-06 (2026-10-01): SWITCH AUTH ONLY; compose configured; deployment procedure recorded, not executed |
-| HA-AUTH-07 | **Google binding of `tobi` vs stated intent** (24 §14.2 link ownership; HA-AUTH-01; HD-28). Options: UNLINK; UNLINK + HD-28 new identity + re-link; UNLINK + link to another existing identity; KEEP. | 24 §14.2, §14.4, §18.2; HA-AUTH-01; HD-28 | The human's desired identity separation | KEEP (status quo) | OPEN |
+| HA-AUTH-07 | **Google binding of `tobi` vs stated intent** | 24 §14.2, §18.2; HD-AUTH-08 | — | transition away from `tobi` (HD-AUTH-08 Decision 2) | **RESOLVED** by HD-AUTH-08: owner unlinks after production admits bootstrap; the subject then bootstraps its own identity |
 
 Touched and left undecided, not blocking any Work Unit: 24 §36 #1 / #6
 (Google as an official, production-enabled method), #9 (provider-verified
