@@ -202,7 +202,10 @@ test("CASE 1 · the local login transition itself: form → local session → pr
   await expect(page.getByTestId("auth-method").locator(".auth-words")).toHaveText("Local password");
   await expect(page.getByTestId("identity-panel-account")).toHaveCount(0);
   await expect(page.getByTestId("auth-provider-account")).toHaveCount(0);
-  expect(await page.locator("main, header.shell-header").allInnerTexts()).not.toContainEqual(expect.stringMatching(/google|person@/i));
+  // CURRENT METHOD != ANY LINKED METHOD holds in both identity organisms; the linked Google method is listed only
+  // where held methods are the relation (the Access security chamber, AUTH/CYAN-ACCOUNT-01), never as the sign-in
+  expect(await page.locator('[data-testid="identity-panel"], [data-testid="identity-projection"]').allInnerTexts()).not.toContainEqual(expect.stringMatching(/google|person@/i));
+  await expect(page.getByTestId("access-security-plane").locator('[data-testid="account-method"][data-current="true"]')).toHaveAttribute("data-method-type", "LOCAL_PASSWORD");
 });
 
 test("CASE 5 · the current session names no method: Authenticated only, no friendly method invented, Logout stays", async ({ page }) => {
@@ -275,7 +278,7 @@ test("F2/F6 · Google current with a DIFFERENT provider email: nquiry identity a
   expect(panel).toMatch(/nquiry identity[\s\S]*tobi[\s\S]*Signed in with[\s\S]*Google[\s\S]*Google account[\s\S]*syntxsystem@protonmail\.com[\s\S]*Log out/i);
 });
 
-test("F3/F4 · switching Google → local keeps the identity identical and removes only the provider relation", async ({ page }) => {
+test("F3/F4 · GOOGLE_LINKED: switching Google → local for ONE identity keeps the identity identical and removes only the provider relation", async ({ page }) => {
   let authenticated = true;
   let currentType = "GOOGLE_OIDC";
   await page.route(`${API}/auth/me`, (route) => route.fulfill(authenticated ? { json: { kind: "ok", userId: USER } } : { status: 401, json: { kind: "denied", reasonCode: "NO_SESSION" } }));

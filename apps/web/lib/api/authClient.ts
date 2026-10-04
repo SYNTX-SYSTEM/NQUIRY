@@ -123,8 +123,10 @@ function parseAuthResult(body: unknown): LoginResult {
 export const AUTH_CONTRACT_PRODUCER = {
   field: "PURPLE_AUTH",
   branch: "auth-identity",
-  commit: "aa32c4d4faad23eea0bd3290641e7a66adcf26a9",
-  liveAssembly: "auth-aa32c4d-20261001T081014Z",
+  // HD-AUTH-08 (generic provider bootstrap admitted in production); every shape consumed here is unchanged since
+  // aa32c4d / 2ec05c0 — see PURPLE `docs/implementation/field-reports/AUTH/CONSUMER_CONTRACT.md`.
+  commit: "e069fc19f5e39bfcc69dff358314d0527bd57f30",
+  liveAssembly: "auth-e069fc1-20261004T140533Z",
 } as const;
 
 /** `oidc_provider.proof_class` (24 §27): closed; shown, never hidden, never upgraded. */
@@ -652,9 +654,14 @@ export async function unlinkMethod(methodId: string, fetchImpl: typeof fetch = f
 // --- identity presentation (`GET /auth/identity`, PURPLE_IDENTITY_PRESENTATION_01 @ auth-identity 2ec05c0) -----------
 //
 // The authenticated self's human-facing NQUIRY identity: `{kind:"ok", userId, displayName, canonicalEmail}` — a
-// function of the canonical identity row alone, method-independent (the same for a LOCAL_PASSWORD and a GOOGLE_OIDC
-// session), never derived from a credential, a provider profile or an email local part. `/auth/me` stays the
-// authentication VERDICT. NQUIRY_CANONICAL_EMAIL != PROVIDER_EMAIL · DISPLAY_NAME != PROVIDER_DISPLAY_NAME.
+// function of the canonical identity row alone, i.e. of `userId`: identical across every session of ONE identity
+// whatever its method, never derived at read time from a credential, a provider profile or an email local part.
+// WHICH identity a provider login reaches is PURPLE's resolution, not a law of this read (CONSUMER_CONTRACT.md §1):
+// a LINKED subject reaches the identity that linked it (GOOGLE_LINKED: the same presentation as its local login);
+// an unbound subject under SELF_REGISTRATION_ALLOWED reaches its OWN bootstrapped identity (GOOGLE_BOOTSTRAP: a
+// different userId whose name and canonical email were copied once from the provider's claims at creation).
+// `/auth/me` stays the authentication VERDICT. NQUIRY_CANONICAL_EMAIL != PROVIDER_EMAIL (two relations, even when
+// equal by value) · DISPLAY_NAME != PROVIDER_DISPLAY_NAME (even when a bootstrap copied it).
 // `denied NO_SESSION` is the one class for a missing/expired/revoked session and for a principal without an identity row.
 
 export type IdentityPresentation = { readonly userId: string; readonly displayName: string; readonly canonicalEmail: string };
