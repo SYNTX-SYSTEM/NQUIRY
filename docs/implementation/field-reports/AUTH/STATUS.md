@@ -121,6 +121,68 @@ PURPLE_IDENTITY_PRESENTATION_01 materialized `GET /auth/identity`; next Field
 is CYAN's consumption of it (separate authorization); production deployment of
 the contact is a separate deployment act.
 
+### Whole-software reconstruction (2026-10-04, mandate "authentication and authorization complete across the entire software")
+
+Reconstructed from source (this branch, `frontend-symbiotic` HEAD `618d7a6`
+read-only), production runtime (api `e069fc1`, web root = CYAN `field-CY-01`
+`54f8b4f`, staged `/cy-review/` = CYAN `bfd5300`), persistence and the
+proof lineage of both lines.
+
+| Layer | State | Evidence |
+|---|---|---|
+| Authentication, API | 24 §37 closed; LOGIN / LINK / UNLINK / PROVIDER_BOOTSTRAP proven live | this file, `evidence/` |
+| Authorization, API | server-resolved `ActorIdentity` on every business route; boundary chain BND-001→005→014 per handler; sweep covers 43 + 11 of 54 routes; six identity kinds denied everywhere (WU-16) | `tests/e2e/test_pfc_f09_2_isolation_sweep.py`, `test_auth_wu16_authorization_regression.py` |
+| Authentication, product web (CYAN HEAD, staged) | login, provider button, identity presentation, read-only methods / sessions, logout | CYAN `WU-AUTH-CYAN-01..03`, `WU-AUTH-CYAN-IDENTITY-01`, `WU-CYAN-IDENTITY-PRESENTATION-CONSUMPTION-01` |
+| Authentication, product web (live root) | local login + logout only — no provider button, no identity, no method / session surface | `WU-CYAN-REAL-E2E-ASSEMBLY-01.md:29` (CYAN) |
+| Authorization, product web | role = label, every control gated by a server capability | CYAN `lib/field/humanPosition.ts` |
+
+First Broken Relations, in dependency order:
+
+1. **PURPLE → CYAN contract (CLOSED by `CONSUMER_CONTRACT.md`):** CYAN's
+   FIELD_RECONSTRUCTION_HOLD waited for PURPLE's reconstructed identity
+   contract. Stated: shapes unchanged; presentation is a function of
+   `userId`; LOCAL / GOOGLE_LINKED / GOOGLE_BOOTSTRAP are the three cases;
+   live proof of each relation.
+2. **CYAN stale expectation** ("CASE GOOGLE → same identity" as a law;
+   `authClient.ts` "method-independent"; F3/F4 fixtures) → repair in the
+   CYAN lineage against case GOOGLE_LINKED / GOOGLE_BOOTSTRAP.
+3. **24 §24.5 account-security contacts missing in the product web:** link
+   (add Google), unlink (remove method), revoke session, logout-all have
+   typed clients in CYAN but no surface; the API serves all four.
+4. **Live root web = `field-CY-01`:** the authentication Field is not
+   reachable by a human through the deployed UI (provider login only via a
+   typed URL). Root cutover of the CYAN candidate = CYAN_PRODUCTION_ROOT_CUTOVER
+   → Human Frontend Acceptance (human boundary) after 2 and 3 and the real
+   same-origin E2E on `/cy-review/`.
+
+Authorization findings (recorded, not repaired here; none is an
+authentication relation and none grants authority by side effect):
+
+- F-AZ-1 (checked, no defect): `GET /auth/oidc/{p}/link/callback` sits with
+  the protocol callbacks in the sweep's `_UNAUTHENTICATED` set; it needs a
+  session for the link effect but answers a missing one with the
+  `303 /login?auth=failed` projection, not a 401 — a protocol contact (24
+  §11.19), proven in WU-AUTH-10 / 15, not a self route.
+- F-AZ-2 existence oracle before membership on two routes: legacy
+  `GET /workspaces/{ws}/sessions/{s}` (`SESSION_NOT_FOUND`) and
+  `POST /decisions/{d}/decide` (`DECISION_NOT_FOUND`); random UUIDs, low.
+- F-AZ-3 FastAPI `/docs`, `/redoc`, `/openapi.json` are served
+  unauthenticated in PRODUCTION (live probe 2026-10-04: 200). 09 §172 allows
+  generated API descriptions (shapes, operation ids, no authority semantics);
+  no architecture rule hides them — disclosed as a hardening preference, not
+  a broken relation.
+- F-AZ-4 DB-level isolation: RLS is defined but not in force at runtime
+  (business path on the bootstrap owner; PFC HA-10 undecided; HD-AUTH-06
+  switched AUTH only).
+- F-AZ-5 governance successors not built: remove member, change / revoke
+  role, owner succession (GAP-05-001), FacilitatorScopeBinding (NQ-GAP-080),
+  GAP-05-002; account-creation policies INVITATION_REQUIRED /
+  PRE_PROVISIONED / GOVERNANCE_MEDIATED not materialized (24 §11.14).
+- F-AZ-6 24 §6.4 text "governance root open and blocked" is stale against
+  HARD-DEP-001 RESOLVED (16 §41 REC-001, founder self-service); the runtime
+  is coherent with 16: identity creation never founds (`workspaceAuthority
+  NONE`), founding is a separate authenticated act.
+
 ### Migrations
 
 Head `d2f4a6b8c1e3`. Chain from the pin head `e8c2a5f1b7d4`: `f1a7c3d9b2e4`
