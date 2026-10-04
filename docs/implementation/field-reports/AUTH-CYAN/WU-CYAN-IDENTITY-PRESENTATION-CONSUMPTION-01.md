@@ -93,3 +93,10 @@ provider reads happen only after a real login and were therefore NOT observed by
 `/cy-review/workspaces` must read the real name, the real canonical NQUIRY email, "Local password", no Google account.
 CASE GOOGLE — real Google login → the SAME name and canonical email, "Google", the actual provider account email.
 Only then Human Frontend Acceptance. Production root cutover is a separate Field (CYAN_PRODUCTION_ROOT_CUTOVER).
+
+## HOLD (2026-10-04) — upstream reconstruction
+Status: TECHNICALLY_PROVEN_AGAINST_PREVIOUS_PURPLE_FIELD (`auth-identity` @ `2ec05c0`) +
+HUMAN_ACCEPTANCE_SUSPENDED_PENDING_UPSTREAM_RECONSTRUCTION. PURPLE is materializing a generic provider-driven identity
+model; the assumption LOCAL_PASSWORD identity = GOOGLE_OIDC identity is no longer an authoritative target. The real
+staged E2E (CASE LOCAL / CASE GOOGLE with "SAME name, SAME canonical email") is suspended, not performed. No product
+change under the hold. See the HOLD entry in `HA-AUTH-CYAN.md` for the valid/stale partition.

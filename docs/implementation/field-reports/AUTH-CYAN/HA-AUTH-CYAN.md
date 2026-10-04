@@ -355,6 +355,27 @@ syntxsystem@protonmail.com) are production evidence used only as test fixtures; 
 read them. The uncommitted assembly records of CYAN_REAL_E2E_ASSEMBLY_01 remain pending the human's decision and are
 not part of this field's commit.
 
+## HOLD — FIELD_RECONSTRUCTION_HOLD (2026-10-04): upstream PURPLE identity model changed
+
+**Human Authority (verbatim essentials):** PURPLE is reconstructing and materializing a generic provider-driven
+identity model (`auth-identity` now carries `af9916d` HA-AUTH-07 and `6395114` PROVIDER_BOOTSTRAP_01, not consumed by
+CYAN). The previous CYAN expectation "LOCAL_PASSWORD identity = GOOGLE_OIDC identity" is no longer an authoritative
+target assumption. No product change, no deployment, no cutover of `/cy-review` to `/`, no further Human Frontend
+Acceptance against the old Google expectation. Do not invent the new PURPLE contract; wait for PURPLE's reconstructed
+production Field, provider-bootstrap behaviour, identity presentation contract and real runtime proof.
+
+**CYAN status under the hold.** `checkpoint-CYAN-IDENTITY-PRESENTATION-01` (`bfd5300`) and the staged candidate
+`cyreview-bfd5300-20261003T231217Z` on `/cy-review/` are TECHNICALLY_PROVEN_AGAINST_PREVIOUS_PURPLE_FIELD
+(`auth-identity` @ `2ec05c0`, HD-AUTH-07 identity-row presentation) + HUMAN_ACCEPTANCE_SUSPENDED_PENDING_UPSTREAM_RECONSTRUCTION.
+Still valid independently of identity ownership: the typed fail-closed contracts (shapes, exact keys, closed
+vocabularies), the current-session → current-method → provider-relation derivation, the same-principal guard, the
+one-composition law for both organisms, fail-closed rendering (STATES D/E), the frontend mount, the staged topology.
+Stale: every expectation that the identity presentation is identical across a LOCAL_PASSWORD and a GOOGLE_OIDC
+session of one principal (unit "F3 / F4 … identity identical", browser "F3/F4 … keeps the identity identical",
+the STATE A/B/C fixtures sharing one `/auth/identity` body, the `authClient.ts` comment "method-independent", the
+review guide's CASE LOCAL / CASE GOOGLE "SAME name, SAME canonical email"). These are not repaired here: the
+replacement truth belongs to PURPLE.
+
 ## Open for Human Authority
 - STAGED_SAME_ORIGIN_E2E_ASSEMBLY (candidate web beneath `/cy-review/` on the production origin; one nginx location;
   no PURPLE, Google or live-root change) — not authorized, not entered.
