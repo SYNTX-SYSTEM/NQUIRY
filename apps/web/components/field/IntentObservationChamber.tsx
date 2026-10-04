@@ -14,6 +14,8 @@ import type { ObservationState } from "../../lib/field/observation";
 import type { ObservationPresence } from "../../lib/field/pcpgPresentation";
 import { ChamberHead } from "./chambers";
 import { Plane } from "./topology/FieldStage";
+import { GovernancePanel } from "./GovernancePanel";
+import type { PanelModel } from "../../lib/field/pcpgRendering";
 
 export const RAW_INTENT_MAX_CHARS = 8000;
 export const DECLARED_PURPOSE_MAX_CHARS = 2000;
@@ -33,11 +35,14 @@ export function IntentObservationChamber({
   state,
   presence,
   onObserve,
+  panel,
 }: {
   readonly state: ObservationState;
   /** The presence the membrane consumes (with supersession), so the chamber says the same thing. */
   readonly presence: ObservationPresence;
   readonly onObserve: (rawIntent: string, declaredPurpose: string | undefined) => void;
+  /** CYAN-PCPG-06: the same object's governance panel (levels 1–2), derived from the same presence; words only. */
+  readonly panel?: PanelModel;
 }) {
   const [text, setText] = useState("");
   const [purpose, setPurpose] = useState("");
@@ -116,6 +121,7 @@ export function IntentObservationChamber({
           ) : null}
         </dl>
       ) : null}
+      {panel ? <GovernancePanel panel={panel} /> : null}
     </Plane>
   );
 }

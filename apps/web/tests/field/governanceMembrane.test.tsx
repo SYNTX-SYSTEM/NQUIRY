@@ -147,6 +147,7 @@ describe("membrane laws in the source (falsifiers 11–14, 17–19)", () => {
   });
   it("19. attachment targets remain unrendered: no component or page imports the attachment relation", () => {
     expect(PAGE_SRC).not.toMatch(/pcpgAttachment|attachPresentation/);
+    // successor truth (CYAN-PCPG-06): the membrane itself still never attaches; placement lives in GovernanceAttachment
     expect(COMPONENT_SRC).not.toMatch(/pcpgAttachment|attachPresentation|data-governance-attachment/);
   });
 });

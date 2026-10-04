@@ -165,8 +165,15 @@ describe("no governance change, no new relation (falsifiers 12–19)", () => {
   });
 });
 
-describe("no attachment rendering (falsifier 20; successor truth after CYAN-PCPG-04)", () => {
-  it("20. no component or page imports the attachment relation: targets stay unrendered until CYAN-PCPG-05 (the membrane of CYAN-PCPG-04 consumes presentationOf only)", () => {
-    expect(SOURCES).not.toMatch(/pcpgAttachment|attachPresentation|data-governance-attachment/);
+describe("attachment rendering is derived, never guessed (falsifier 20; successor truth after CYAN-PCPG-06)", () => {
+  it("20. the relation reaches the UI only through the rendering derivation: components never import the attachment map directly, the membrane never attaches", () => {
+    const membrane = readFileSync(join(WEB, "components", "field", "GovernanceMembrane.tsx"), "utf8");
+    expect(membrane).not.toMatch(/pcpgAttachment|attachPresentation|data-governance-attachment/);
+    const components = ["GovernanceAttachment.tsx", "GovernancePanel.tsx", "IntentObservationChamber.tsx"].map((f) => readFileSync(join(WEB, "components", "field", f), "utf8")).join("\n");
+    expect(components).not.toMatch(/attachPresentation|CYAN_ATTACHMENT_TARGETS|PRESENTATION_ATTACHMENT_MAP/);
+    const page = readFileSync(join(WEB, "app", "workspaces", "[workspaceId]", "sessions", "[sessionId]", "page.tsx"), "utf8");
+    expect(page).toMatch(/governanceRendering\(observationPresence, governance\)/);
+    expect(page).not.toMatch(/attachPresentation\(/);
   });
 });
+

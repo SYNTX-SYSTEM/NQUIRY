@@ -6625,3 +6625,111 @@ h3.chamber-title {
 .identity-panel {
   border-radius: 22px;
 }
+
+/* ============================================================ CYAN-PCPG-06 · attachments (level 0.5) and the governance panel (levels 1–2) */
+.governance-attachment {
+  margin: var(--space-3) 0 0;
+  padding: var(--space-2) var(--space-3);
+  border-left: 2px solid color-mix(in srgb, var(--blue) 35%, transparent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: color-mix(in srgb, var(--blue-deep) 40%, transparent);
+  font-size: 0.82rem;
+}
+.governance-attachment[data-prominence="prominent"] {
+  border-left-color: color-mix(in srgb, var(--attention) 70%, transparent);
+  background: color-mix(in srgb, var(--attention) 8%, transparent);
+}
+.governance-attachment[data-prominence="explicit"] {
+  border-left-color: color-mix(in srgb, var(--ai) 60%, transparent);
+}
+.governance-attachment[data-superseded="true"] {
+  opacity: 0.8;
+}
+.governance-attachment .attachment-head {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-2);
+  align-items: baseline;
+  color: var(--ink-soft);
+}
+.governance-attachment .attachment-field {
+  font-family: var(--type-system);
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  opacity: 0.75;
+}
+.governance-attachment .attachment-field::after {
+  content: " ·";
+}
+.governance-attachment .attachment-superseded {
+  font-size: 0.74rem;
+}
+.governance-attachment .attachment-deltas {
+  list-style: none;
+  margin: var(--space-1) 0 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+.governance-attachment .attachment-line {
+  color: var(--ink);
+}
+.governance-attachment .attachment-mark {
+  margin-left: var(--space-2);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.governance-attachment [data-first-broken="true"] .attachment-mark:first-of-type,
+.governance-attachment [data-human-authority="true"] .attachment-mark {
+  color: var(--attention);
+}
+.governance-attachment .attachment-provider {
+  margin: var(--space-1) 0 0;
+  color: var(--ink);
+}
+.governance-panel {
+  margin-top: var(--space-3);
+}
+.governance-panel .governance-panel-label {
+  color: var(--ink-soft);
+  font-weight: 400;
+}
+.governance-panel .governance-h {
+  margin: var(--space-3) 0 var(--space-1);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.governance-panel .governance-axes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--space-2) var(--space-4);
+}
+.governance-panel .governance-delta-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: grid;
+  gap: var(--space-2);
+}
+.governance-panel .governance-delta-list p {
+  margin: 0;
+}
+.governance-panel .governance-delta-line {
+  font-weight: 600;
+}
+.governance-panel .governance-delta-meta,
+.governance-panel .governance-delta-place {
+  font-size: 0.8rem;
+}
+.governance-panel .boundary-card {
+  margin-top: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid color-mix(in srgb, var(--attention) 50%, transparent);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--attention) 7%, transparent);
+}

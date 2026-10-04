@@ -55,12 +55,14 @@ import {
   type SessionPosition,
 } from "../../../../../lib/api/inquiryClient";
 import type { FieldEventDescription } from "../../../../../lib/field/fieldEvent";
+import { GovernanceAttachment } from "../../../../../components/field/GovernanceAttachment";
 import { GovernanceMembrane } from "../../../../../components/field/GovernanceMembrane";
 import { IntentObservationChamber } from "../../../../../components/field/IntentObservationChamber";
 import { OriginMark } from "../../../../../components/field/Origin";
 import { analysisFacts, proofModeOf } from "../../../../../lib/field/analysis";
 import { presenceFor } from "../../../../../lib/field/observation";
 import { presentationOf } from "../../../../../lib/field/pcpgPresentation";
+import { governanceRendering } from "../../../../../lib/field/pcpgRendering";
 import { useObservation } from "../../../../../lib/field/useObservation";
 import { humanPosition } from "../../../../../lib/field/humanPosition";
 import { accessTrace, sessionTrace } from "../../../../../lib/field/position";
@@ -241,6 +243,9 @@ export default function SessionPage() {
   const objectVersions = { session: p.session.version, burst: p.burst?.version ?? null };
   const observationPresence = presenceFor(observation.state, objectVersions);
   const governance = presentationOf(observationPresence);
+  // CYAN-PCPG-06: the crossed steps placed at the existing object areas (level 0.5), the boundary card and the panel
+  // (levels 1–2) — words and placements derived from the same presence; never a consequence, never a control
+  const rendering = governanceRendering(observationPresence, governance);
   const describeEvent = (relation: string): FieldEventDescription | null => {
     if (relation.startsWith(STEP_RELATION)) return STEP_EVENTS[relation.slice(STEP_RELATION.length) as StepAction] ?? null;
     if (relation.startsWith("session:capture:")) return { title: "QUESTION CAPTURED", text: "Your question is stored exactly as you typed it. Only you can see it while the Burst is open." };
@@ -427,10 +432,14 @@ export default function SessionPage() {
               </dl>
             )}
             <BurstCapturePanel workspaceId={workspaceId} sessionId={sessionId} position={p} effect={effect} reload={load} />
+            <GovernanceAttachment rendering={rendering.byArea["active-phase-chamber"]} />
+            <GovernanceAttachment rendering={rendering.byArea["burst-panel"]} />
+            <GovernanceAttachment rendering={rendering.byArea["question-set"]} />
           </Plane>
 
           <Plane kind="governance" semantic="authority" labelledBy="authority-title">
             <ChamberHead id="authority-title" semantic="authority" title="Session control" marker="SESSION scope" />
+            <GovernanceAttachment rendering={rendering.byArea["authority-chamber"]} />
             <div data-testid="session-authority-provenance" className="authority-body">
               {p.sessionControllers.length === 0 ? (
                 <p className="muted">Nobody holds SESSION_CONTROL_RIGHT for this Session yet.</p>
@@ -531,6 +540,7 @@ export default function SessionPage() {
 
           <Plane kind="proof" labelledBy="proof-title">
             <ChamberHead id="proof-title" semantic="proof" title="Proof" marker={p.establishedBy ? "governed commit" : "fixture-seeded"} />
+            <GovernanceAttachment rendering={rendering.byArea["proof-chamber"]} />
             {p.establishedBy ? (
               <ProvenanceSpine
                 testId="session-last-transition"
@@ -584,7 +594,7 @@ export default function SessionPage() {
             </ProofDepth>
           </Plane>
 
-          <IntentObservationChamber state={observation.state} presence={observationPresence} onObserve={(rawIntent, declaredPurpose) => void observation.observe(rawIntent, declaredPurpose, objectVersions)} />
+          <IntentObservationChamber state={observation.state} presence={observationPresence} panel={rendering.panel} onObserve={(rawIntent, declaredPurpose) => void observation.observe(rawIntent, declaredPurpose, objectVersions)} />
 
           {derived ? (
             <Plane kind="context" semantic="derived" labelledBy="analysis-title" testId="analysis-chamber" tone={derived.tone}>
@@ -598,6 +608,7 @@ export default function SessionPage() {
                 }
                 marker={<span data-testid="analysis-status">{derived.words}</span>}
               />
+              <GovernanceAttachment rendering={rendering.byArea["derived-chamber"]} />
               <p className="chamber-lede">
                 AI-derived from the frozen human question set. A proposal, never a question, never a human decision, never evidence. Its content is not
                 shown here.
@@ -658,6 +669,7 @@ export default function SessionPage() {
 
           <Plane kind="context" semantic="decision-entry" labelledBy="decision-entry-title">
             <ChamberHead id="decision-entry-title" semantic="decision-entry" title="Decision surface" marker="NON_PROOF" />
+            <GovernanceAttachment rendering={rendering.byArea["decision-entry-chamber"]} />
             <p className="chamber-lede">
               <Link href={`/workspaces/${workspaceId}/sessions/${sessionId}/decision`}>Enter the Decision surface</Link> — PKG-29 prototype view; it records
               a human Decision under its own authority check and proves nothing about this Session beyond what the server returns.
