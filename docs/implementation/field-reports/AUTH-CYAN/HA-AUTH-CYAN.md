@@ -418,4 +418,8 @@ replacement truth belongs to PURPLE.
 - Lifecycle of the staged review mount after the proof (SEMANTIC_ERROR_12) and of the older `nquiry-cy01-candidate`
   stack on 3401/8401 — a human decision.
 - Human Frontend Acceptance of AUTH/CYAN-IDENTITY-01 — PENDING the real E2E proof.
-- No further AUTH/CYAN Work Unit is defined or authorized.
+- No further AUTH/CYAN Work Unit is defined or authorized on this line.
+- **2026-10-04 (later) — reconstruction on this line:** the hold was lifted and the identity projection accepted on
+  production on the second CYAN line `auth-cyan-reconstruction` (`94759cd`, HD-AUTH-09, unpushed); this line and that
+  line diverge from `618d7a6`. The :13500 review cannot cover authentication / identity (FIXTURE_NON_PROOF, superseded
+  projection). Integration of the two heads = Human Authority (`CY-03/REVIEW_COVERAGE_RECONSTRUCTION_2026-10-04.md`).

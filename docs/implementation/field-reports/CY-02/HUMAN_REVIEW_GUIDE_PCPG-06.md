@@ -5,6 +5,14 @@ with the local review identity of CY-01 (`facilitator@cy01.local.test`; the loca
 Open a Workspace → a Challenge → a Session (the review Sessions of CY-01), e.g.
 `/workspaces/2c8b7729-868c-46e2-af9a-8ef40ba4afee/sessions/58ed8f33-7074-5593-ad20-2e0382c45941`.
 
+## Coverage of this runtime (2026-10-04 reconstruction)
+This runtime proves the organism and the governance placement against the real RED producer. Every AUTH relation on
+it (`/api/auth/providers`, `/sessions`, `/methods`, the Google login start) is a labelled FIXTURE_NON_PROOF of the
+review proxy; the Google path ends at the review boundary page by design. The identity organisms shown here are
+fixture displays of a superseded projection and are **not under review**: the authentication / identity projection
+was accepted on production (HD-AUTH-09, `auth-cyan-reconstruction` `94759cd`). See
+`CY-03/REVIEW_COVERAGE_RECONSTRUCTION_2026-10-04.md`.
+
 ## What you are judging
 Whether the crossed governance facts now live on the organism itself without turning it into a governance app: quiet
 strips inside the chambers the observation concerns, a disclosure that inspects the same object more deeply, and a
