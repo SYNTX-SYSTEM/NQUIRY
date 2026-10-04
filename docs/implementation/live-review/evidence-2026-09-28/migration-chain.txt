@@ -1,0 +1,7 @@
+migrations/versions/a8d3f1c6e902_f04_system_operation_ai_integrity.py
+migrations/versions/c2e7b9a4f513_f04_question_clusters.py
+migrations/versions/e7c1d4a9b206_f04_accepted_output_binding.py
+migrations/versions/a9f3c2e81d57_pfc_f08_committed_events.py
+migrations/versions/c3b8e5a1f7d2_pfc_f08_projection_aggregate_version.py
+migrations/versions/d4f7b2c9e6a1_pfc_b0_fixture_session.py
+migrations/versions/e8c2a5f1b7d4_pfc_b4_impact_chains.py

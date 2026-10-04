@@ -313,6 +313,42 @@ mounts and the API mount); `next.config.ts` derives `basePath` from it; the asse
 non-success projection `/login?auth=<word>` is PURPLE-owned and root-bound, so under `/cy-review` a failed or cancelled
 provider login lands on the live `/login` (CY-01 web) — not changed (BOUNDARY_01).
 
+## HA-CYAN-REAL-E2E-ASSEMBLY-01 — staged same-origin review assembly (2026-10-03, verbatim essentials)
+
+> MODE = FIELD_ENGINEERING · FIELD = STAGED_SAME_ORIGIN_E2E_ASSEMBLY · WORK_UNIT = CYAN_REAL_E2E_ASSEMBLY_01.
+> PURPOSE: the smallest reversible production-adjacent review topology that lets the CURRENT CYAN candidate consume
+> the EXISTING production PURPLE authentication Field under the SAME origin without replacing the live frontend; this
+> Work Unit assembles the Field and does NOT perform the human Google E2E interaction. TARGET: one host, three
+> relations — `/` live CYAN unchanged, `/cy-review/` current candidate (staged review only), `/api/` production
+> PURPLE unchanged; callback unchanged; one session, one identity, one authentication Field; mounts differ only in
+> frontend ownership. EXPECTED PHYSICAL EFFECT (only if derived): 3400 live web, 3401 candidate web, 8400 PURPLE;
+> nginx `/`→3400, `/cy-review/`→3401, `/api/`→8400; no other topology change. FIRST BROKEN RELATION:
+> REVIEW_FRONTEND_MOUNT → NO RUNTIME PRODUCER. SEMANTIC ERRORS 01–12 (replace `/`; different API; own DB; own API;
+> separate cookies; new Google credentials; new callback; `/cy-review/` shadows `/api/`; another hostname; candidate
+> changes live assets; unnecessary production secrets; staged review surviving without lifecycle authority).
+> BOUNDARIES: live root byte/functionally unchanged; no PURPLE source or configuration change; no database mutation;
+> no Google change; no cookie change; candidate web only (no candidate API/DB/worker); unknown server state → STOP.
+> HUMAN AUTHORITY: ONLY materializing the candidate CYAN web under `https://nquiry.condyn.eu/cy-review/` on the
+> existing origin and existing production PURPLE API; NOT: real Google or local login interaction, Human Frontend
+> Acceptance, cutover, live replacement, PURPLE/Google/DB changes. ALLOWED DELTA: assemble the candidate build
+> (mount `/cy-review`, API base `/api`), run candidate WEB only on an unused loopback port (expected 3401, else derive
+> and report), the narrowest nginx relation `/cy-review/` → candidate web, reload only after validation, reversible
+> backups and hashes. Server reconstruction before the delta; prove 3401 free or derive another port; reversibility
+> (remove the relation, reload, stop the candidate web; `/` and `/api/` untouched). FALSIFIERS 01–16, MUTATIONS
+> M1–M12, progressive proof radius. NO HUMAN E2E YET: REAL_PURPLE_E2E / REAL_GOOGLE_E2E = READY, NOT EXECUTED. NEXT
+> FIELD BOUNDARY: REAL_SAME_ORIGIN_AUTH_E2E — not entered automatically.
+
+**Reconstruction and reading by the executing agent.** Loopback 3401 was NOT free: it is held by the earlier
+cutover candidate stack (compose project `nquiry-cy01-candidate`: web 3401, api 8401, postgres; up since 2026-09-28).
+Per the authorization a free loopback port was derived: **3402**. That older stack predates this Field, was not
+touched (no authority over its lifecycle), and is disclosed as an open lifecycle question. The CYAN tree's own
+`infra/local/web.Dockerfile` is the PKG-00 dev skeleton; the live web image was built from the deployment-field
+Dockerfile inside the live assembly, so the review image uses that Dockerfile plus `ARG/ENV NEXT_PUBLIC_FRONTEND_MOUNT`
+(a deployment-field artifact, recorded with its diff; no product checkpoint change). The nginx relation is two
+locations (`= /cy-review`, `^~ /cy-review/`) because the candidate's basePath root is `/cy-review` without a trailing
+slash. A first backup made with `cp -a` preserved the sites-enabled symlink and therefore mirrored the live file; it
+was replaced by the byte-exact pre-change copy (baseline hash verified) before anything depended on it.
+
 ## HA-CYAN-IDENTITY-PRESENTATION-CONSUMPTION-01 — consume the live NQUIRY identity presentation (2026-10-04, verbatim essentials)
 
 > MODE = FIELD_ENGINEERING · FIELD = NQUIRY_IDENTITY_PRESENTATION_CONSUMPTION_FIELD · WORK_UNIT =
@@ -377,7 +413,9 @@ review guide's CASE LOCAL / CASE GOOGLE "SAME name, SAME canonical email"). Thes
 replacement truth belongs to PURPLE.
 
 ## Open for Human Authority
-- STAGED_SAME_ORIGIN_E2E_ASSEMBLY (candidate web beneath `/cy-review/` on the production origin; one nginx location;
-  no PURPLE, Google or live-root change) — not authorized, not entered.
+- REAL_SAME_ORIGIN_AUTH_E2E on `https://nquiry.condyn.eu/cy-review/login` (local password, then Google) — not
+  authorized, not entered.
+- Lifecycle of the staged review mount after the proof (SEMANTIC_ERROR_12) and of the older `nquiry-cy01-candidate`
+  stack on 3401/8401 — a human decision.
 - Human Frontend Acceptance of AUTH/CYAN-IDENTITY-01 — PENDING the real E2E proof.
 - No further AUTH/CYAN Work Unit is defined or authorized.

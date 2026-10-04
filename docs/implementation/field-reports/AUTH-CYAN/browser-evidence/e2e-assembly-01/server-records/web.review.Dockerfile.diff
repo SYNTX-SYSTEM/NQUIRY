@@ -1,0 +1,4 @@
+7a8,10
+> # CYAN_REAL_E2E_ASSEMBLY_01 (review mount only): the frontend mount is a build-time value like the API base.
+> ARG NEXT_PUBLIC_FRONTEND_MOUNT=
+> ENV NEXT_PUBLIC_FRONTEND_MOUNT=$NEXT_PUBLIC_FRONTEND_MOUNT

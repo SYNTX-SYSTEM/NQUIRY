@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# PRODUCTION CUTOVER of compose project nquiry to assembly cy01-b5-20260928T031904Z (RED checkpoint-PFC-B5 @
+# 7d3f74e4685b821cc948f45e413c1e0c207259d4 + CYAN field-CY-01 @ 54f8b4f91b12f7c05c10eb98d6281bbe1ba19859).
+# Authorized 2026-09-28 (PRODUCTION MATERIALIZATION AUTHORITY). Delta: /opt/nquiry/compose.yaml (build contexts ->
+# assembly; api env NQUIRY_ENVIRONMENT), /opt/nquiry/.env (+NQUIRY_ENVIRONMENT=PRODUCTION), 7 additive migrations,
+# images + containers api/web. Untouched: postgres container/volume, nginx, TLS, everything outside /opt/nquiry.
+set -euo pipefail
+ID=cy01-b5-20260928T031904Z; A=/opt/nquiry/assembly/$ID; B=$(cat /opt/nquiry/_baseline-pre-CY01-CURRENT)
+CO="docker compose -p nquiry --env-file /opt/nquiry/.env -f /opt/nquiry/compose.yaml"
+U=$(grep ^POSTGRES_USER= /opt/nquiry/.env | cut -d= -f2); D=$(grep ^POSTGRES_DB= /opt/nquiry/.env | cut -d= -f2)
+cd /opt/nquiry
+echo "== 0. guards =="
+[ "$(sha256sum compose.yaml | cut -c1-64)" = "6a34bd92a2212a82303938e6bc72ba9b6f997575fd187972d42dcdd4a8de98b3" ] || { echo "ABORT: compose.yaml is not the recorded predecessor"; exit 3; }
+[ "$(sha256sum .env | cut -c1-64)" = "d7f203775d5c0a5a2c6607d4214c996e6e53c36f1fc3e7772b99af8cfa4e8351" ] || { echo "ABORT: .env is not the recorded predecessor"; exit 3; }
+(cd $A && grep -v ' ./SHA256SUMS\| ./DEPLOYMENT_MANIFEST.json' SHA256SUMS | sha256sum -c --quiet) || { echo "ABORT: assembly checksum mismatch"; exit 3; }
+python3 -c "import json; m=json.load(open('$A/DEPLOYMENT_MANIFEST.json')); assert m['red']['commit']=='7d3f74e4685b821cc948f45e413c1e0c207259d4' and m['cyan']['commit']=='54f8b4f91b12f7c05c10eb98d6281bbe1ba19859' and m['assembly']=='$ID'; print('manifest identities OK')"
+[ "$(docker exec nquiry-postgres-1 psql -U $U -d $D -tAc 'select version_num from alembic_version')" = "f6b2c4d9a318" ] || { echo "ABORT: live migration head is not f6b2c4d9a318"; exit 3; }
+[ -f $B/nquiry-db-pre-CY01-20260928T031930Z.dump ] || { echo "ABORT: backup missing"; exit 3; }
+echo "guards passed"
+echo "== 1. .env: NQUIRY_ENVIRONMENT=PRODUCTION (HD-LIVE-1); compose.yaml: contexts -> assembly, api env passthrough =="
+cp .env $B/.env.pre.sha_$(sha256sum .env | cut -c1-16)   # predecessor copy, 0600, stays inside /opt/nquiry
+chmod 600 $B/.env.pre.sha_*
+echo "NQUIRY_ENVIRONMENT=PRODUCTION" >> .env
+sed "s#context: ./repo#context: ./assembly/$ID#" compose.yaml > compose.yaml.new
+python3 - <<PY
+p='compose.yaml.new'; s=open(p).read()
+old="      NQUIRY_COOKIE_SECURE: \${NQUIRY_COOKIE_SECURE}\n"
+assert s.count(old)==1
+s=s.replace(old, old+"      NQUIRY_ENVIRONMENT: \${NQUIRY_ENVIRONMENT}\n")
+s="# Deployed pair (NQUIRY PRODUCTION MATERIALIZATION FIELD, 2026-09-28): RED checkpoint-PFC-B5 @ 7d3f74e4685b821cc948f45e413c1e0c207259d4 + CYAN field-CY-01 @ 54f8b4f91b12f7c05c10eb98d6281bbe1ba19859, assembled as ./assembly/$ID (DEPLOYMENT_MANIFEST.json). Predecessor compose: _baseline-pre-CY01-*/compose.yaml.pre. HD-LIVE-1: NQUIRY_ENVIRONMENT=PRODUCTION, no AI provider.\n"+s
+open(p,'w').write(s)
+PY
+diff -u compose.yaml compose.yaml.new || true
+mv compose.yaml.new compose.yaml
+$CO config -q && echo "compose config OK"
+echo "== 2. images from the assembly =="
+$CO build api web 2>&1 | grep -E "naming to|ERROR|error" | tail -4
+echo "== 3. migrations f6b2c4d9a318 -> e8c2a5f1b7d4 (one-off api, assembly bind-mounted read-only) =="
+$CO run --rm --no-deps -T -v $A:/src:ro -w /src -e PYTHONPATH=/src/packages api python scripts/verify_migrations.py 2>&1 | tail -2
+HEAD_AFTER=$(docker exec nquiry-postgres-1 psql -U $U -d $D -tAc 'select version_num from alembic_version')
+echo "live head after: $HEAD_AFTER tables: $(docker exec nquiry-postgres-1 psql -U $U -d $D -tAc "select count(*) from information_schema.tables where table_schema='public'")"
+[ "$HEAD_AFTER" = "e8c2a5f1b7d4" ] || { echo "FALSIFIER: migration head $HEAD_AFTER"; exit 4; }
+echo "== 4. recreate api + web (postgres untouched) =="
+T0=$(date +%s); $CO up -d --no-build api web 2>&1 | tail -3
+for i in $(seq 1 60); do a=$(curl -s -m 3 http://127.0.0.1:8400/healthz 2>/dev/null); w=$(curl -s -m 3 -o /dev/null -w '%{http_code}' http://127.0.0.1:3400/login); [ "$w" = 200 ] && [ -n "$a" ] && break; sleep 2; done
+echo "recreated in $(( $(date +%s) - T0 ))s: api=$a web=$w"
+echo "== 5. probes =="
+PUB_H=$(curl -s -m 8 https://nquiry.condyn.eu/api/healthz); PUB_L=$(curl -s -m 8 -o /dev/null -w '%{http_code}' https://nquiry.condyn.eu/login)
+PUB_BA=$(curl -s -m 8 -o /dev/null -w '%{http_code}' -X POST -H 'content-type: application/json' -d '{"expectedVersion":1}' https://nquiry.condyn.eu/api/workspaces/00000000-0000-4000-8000-000000000000/sessions/00000000-0000-4000-8000-000000000000/transitions/begin-analysis)
+echo "public: healthz=$PUB_H login=$PUB_L begin-analysis=$PUB_BA"
+MARK=$(docker exec nquiry-web-1 sh -c 'grep -rl analysis-chamber .next/ 2>/dev/null | wc -l'); echo "bundle markers: analysis-chamber=$MARK FIXTURE_NON_PROOF=$(docker exec nquiry-web-1 sh -c 'grep -rl FIXTURE_NON_PROOF .next/ 2>/dev/null | wc -l')"
+echo "api env: $(docker exec nquiry-api-1 sh -c 'echo NQUIRY_ENVIRONMENT=$NQUIRY_ENVIRONMENT provider=${NQUIRY_AI_PROVIDER:-unset}')"
+echo "db counts: $(docker exec nquiry-postgres-1 psql -U $U -d $D -tAc "select (select count(*) from users)||' users '||(select count(*) from workspaces)||' workspaces '||(select count(*) from sessions)||' sessions '||(select count(*) from audit_events)||' audit_events'")"
+{ echo "LIVE_AFTER_RECORD $(date -u +%Y-%m-%dT%H:%M:%SZ)"; echo "DEPLOYED_ASSEMBLY=$ID"; echo "DEPLOYED_RED=checkpoint-PFC-B5 7d3f74e4685b821cc948f45e413c1e0c207259d4"; echo "DEPLOYED_CYAN=field-CY-01 54f8b4f91b12f7c05c10eb98d6281bbe1ba19859"; echo "MIGRATION_HEAD_AFTER=$HEAD_AFTER"; docker ps --no-trunc --filter name=nquiry- --format "CONTAINER_AFTER {{.Names}} id={{.ID}} image={{.Image}} {{.Status}}"; for c in nquiry-api-1 nquiry-web-1 nquiry-postgres-1; do echo "IMAGE_AFTER $c $(docker inspect --format '{{.Image}}' $c)"; done; echo "COMPOSE_HASH_AFTER=$(sha256sum compose.yaml | cut -c1-64)"; echo "ENV_FILE_HASH_AFTER=$(sha256sum .env | cut -c1-64)"; echo "NGINX_HASH_AFTER=$(sha256sum /etc/nginx/sites-available/nquiry.condyn.eu | cut -c1-64) (untouched)"; echo "PUBLIC healthz=$PUB_H login=$PUB_L begin_analysis=$PUB_BA"; } | tee $B/live-after-record.txt
+if [ "$PUB_L" != 200 ] || [ "$PUB_BA" != 401 ] || [ "$MARK" = 0 ] || [ -z "$PUB_H" ]; then echo "FALSIFIER FIRED: login=$PUB_L begin-analysis=$PUB_BA markers=$MARK healthz=$PUB_H"; exit 4; fi
+echo "== CUTOVER DONE =="

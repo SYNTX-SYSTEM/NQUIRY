@@ -1,0 +1,24 @@
+STATE_BEFORE 20261003T213429Z
+vhost sha256: 2317708ca475fc6f7e6ead3843d553d8b70562ffdf70eefd844714e532ba1cf2
+compose.yaml sha256: d6153538f38b779f27b76559808ffaed3e7854f39f58594cab752c21741487ec
+.env sha256: 415a02073fae0c35786f1e6b81a5c3de99806ebb4c97685791a5987d156c08ab
+live web image: sha256:a27642a30b7e1d7840aa9e683a4964577f3b8e84f47d46668268a1eb090f7ada
+live api image: sha256:84023ccdb805c61e3df612e9295c22a104c5114bb011e79326a69116dc3628cd
+--- containers
+nquiry-api-1|nquiry-api|127.0.0.1:8400->8000/tcp|Up 2 hours
+nquiry-web-1|nquiry-web|127.0.0.1:3400->3000/tcp|Up 5 days
+nquiry-cy01-candidate-api-1|nquiry-cy01-candidate-api|127.0.0.1:8401->8000/tcp|Up 5 days
+nquiry-cy01-candidate-web-1|nquiry-cy01-candidate-web|127.0.0.1:3401->3000/tcp|Up 5 days
+nquiry-cy01-candidate-postgres-1|postgres:17|5432/tcp|Up 5 days (healthy)
+nquiry-postgres-1|postgres:17|5432/tcp|Up 7 days (healthy)
+--- listeners
+LISTEN 0      4096       127.0.0.1:8401       0.0.0.0:*          
+LISTEN 0      4096       127.0.0.1:8400       0.0.0.0:*          
+LISTEN 0      4096       127.0.0.1:3401       0.0.0.0:*          
+LISTEN 0      4096       127.0.0.1:3400       0.0.0.0:*          
+--- live / (https) sha256 of body: e4a9860ca4a2574593b436b4825e1795ac30fe4346d4af2cbae37abb1a66180e http 200
+--- live /login sha256: d5e9aa20ccc0331fd515b4cfb085444e8370699d6392483d2cd71ea01a55e74a
+--- /api/auth/providers: {"kind":"ok","providers":[{"providerId":"google","label":"Google","proofClass":"PRODUCTION_PROVIDER"}]}
+--- /cy-review/login before: http 404
+--- nginx -t
+nginx: configuration file /etc/nginx/nginx.conf test is successful

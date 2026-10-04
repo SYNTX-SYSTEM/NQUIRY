@@ -1,0 +1,80 @@
+# nquiry.condyn.eu — NQUIRY prototype (deployment field FELD_NQUIRY_DEPLOYMENT_f5). Own file, own certificate.
+# AUTH log hygiene (2026-10-03, authorized): request lines without the query string — OIDC callbacks carry
+# protocol material (code, state) in the URL (24 section 21.17). $uri is the normalized path without arguments.
+log_format nquiry_noquery '$remote_addr - $remote_user [$time_local] "$request_method $uri $server_protocol" '
+                          '$status $body_bytes_sent "$http_referer" "$http_user_agent"';
+
+server {
+    listen 80;
+    server_name nquiry.condyn.eu;
+    access_log /var/log/nginx/access.log nquiry_noquery;
+
+    # ACME http-01 challenge (certbot certonly --webroot); issuance only, never an installer here
+    location /.well-known/acme-challenge/ {
+        root /opt/nquiry/acme-webroot;
+    }
+
+    location / {
+        return 301 https://$server_name$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl http2;
+    server_name nquiry.condyn.eu;
+    access_log /var/log/nginx/access.log nquiry_noquery;
+
+    ssl_certificate /etc/letsencrypt/live/nquiry.condyn.eu/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/nquiry.condyn.eu/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    # API of this project - REMOVE /api/ prefix (same topology as condyn.eu)
+    location /api/ {
+        rewrite ^/api/(.*)$ /$1 break;
+        proxy_pass http://127.0.0.1:8400;
+        # AUTH cutover 2026-10-01: the OIDC initiating-browser binding cookie is set with Path=/auth by the API;
+        # under this /api/ prefix it must reach /api/auth/.../callback (deployment FBR, no product change).
+        proxy_cookie_path /auth /api/auth;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        client_max_body_size 20M;
+    }
+
+    # CYAN_REAL_E2E_ASSEMBLY_01 (2026-10-03, authorized): staged review mount of the current CYAN candidate beside the
+    # live root. Same origin, same /api/ (production PURPLE), same host session; candidate web only on loopback 3402.
+    # Reversible: remove these two locations and reload; / and /api/ are untouched (/api/ keeps its own prefix match).
+    location = /cy-review {
+        proxy_pass http://127.0.0.1:3402;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+    location ^~ /cy-review/ {
+        proxy_pass http://127.0.0.1:3402;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Web of this project (Next.js production server)
+    location / {
+        proxy_pass http://127.0.0.1:3400;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}

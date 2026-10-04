@@ -1,0 +1,58 @@
+CANDIDATE_GUARD: nquiry-ac1-candidate, loopback-only, NQUIRY_ENVIRONMENT=PRODUCTION
+== build api ==
+#13 naming to docker.io/library/nquiry-ac1-candidate-api:latest done
+ Network nquiry-ac1-candidate_default  Creating
+ Network nquiry-ac1-candidate_default  Created
+ Volume nquiry-ac1-candidate_candidate_pgdata  Creating
+ Volume nquiry-ac1-candidate_candidate_pgdata  Created
+ Container nquiry-ac1-candidate-postgres-1  Creating
+ Container nquiry-ac1-candidate-postgres-1  Created
+ Container nquiry-ac1-candidate-postgres-1  Starting
+ Container nquiry-ac1-candidate-postgres-1  Started
+candidate head: e8c2a5f1b7d4
+digests equal to live BEFORE: yes
+ Container nquiry-ac1-candidate-postgres-1  Running
+ Container nquiry-ac1-candidate-api-1  Creating
+ Container nquiry-ac1-candidate-api-1  Created
+ Container nquiry-ac1-candidate-postgres-1  Waiting
+ Container nquiry-ac1-candidate-postgres-1  Healthy
+ Container nquiry-ac1-candidate-api-1  Starting
+ Container nquiry-ac1-candidate-api-1  Started
+health: 200
+== P1 create (PRODUCTION, operator) ==
+exit 0 out {"userId": "caf2a7fb-445e-49fd-adda-30c79d10e2f2", "email": "probe@ac1-candidate.nquiry.invalid", "identityClass": "LOCAL_PASSWORD_IDENTITY", "createdBy": "otti@condyn.eu", "environment": "PRODUCTION", "securityEventId": "dc8294a9-15f2-43e6-91d9-ea2cb8f23207"} err 
+== P2 duplicate (case variant) ==
+REFUSED: IDENTITY_ALREADY_EXISTS
+exit 3
+== P3 password on argv refused ==
+python -m nquiry_api.operator.create_identity: error: unrecognized arguments: --password nope
+exit 2
+== P4 undeclared environment ==
+REFUSED: ENVIRONMENT_NOT_DECLARED
+exit 3
+== P5 missing operator ==
+REFUSED: OPERATOR_REQUIRED
+exit 3
+== P6 dev provisioning refused under PRODUCTION ==
+REFUSED: NQUIRY_ENVIRONMENT='PRODUCTION': dev provisioning is refused outside DEVELOPMENT / TEST; production identities come only from the host-operator command (HD-28)
+dev script present in image: 0
+== P7 login / me / workspaces with the created identity ==
+wrong password: 401
+login: 200
+me: (200, {'kind': 'ok', 'userId': 'caf2a7fb-445e-49fd-adda-30c79d10e2f2'})
+workspaces: (200, {'kind': 'ok', 'workspaces': []})
+logout: 200 me after logout: 401
+no registration route: [404, 404, 404, 404]
+== P8 records ==
+probe@ac1-candidate.nquiry.invalid | 1 | pbkdf2_sha256$ | 0 | 0 | 0
+IDENTITY_CREATED | HOST_OPERATOR | otti@condyn.eu | TB-17 | PRODUCTION | user:caf2a7fb-445e-49fd-adda-30c79d10e2f2 | {"authority": "HD-28 HOST_OPERATOR", "credential": "LOCAL_PASSWORD_PBKDF2_SHA256", "host": "43cf60d5d995", "identityClass": "LOCAL_PASSWORD_IDENTITY", "osUser": "root", "workspaceAuthority": "NONE"}
+real-data digests after (users/credentials change by the probe only):
+1,2c1,2
+< users 911004a134b099abb5dcfb0c2cc9b5a7
+< credentials 0ee1a7e64fbe375d65859ab74992e3ea
+---
+> users b23f6666849c1d333664c6028b16c0b2
+> credentials 55bf0654d17ae4f2e83ebb3287ac20a7
+== P9 password never in output, logs or DB ==
+api logs: 0  outputs: 0  db dump: 0
+== CANDIDATE AC1 DONE ==

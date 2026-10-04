@@ -1,0 +1,10 @@
+{
+ "assembly": "cyreview-09f5f0e-20261003T213502Z",
+ "purpose": "CYAN_REAL_E2E_ASSEMBLY_01: staged same-origin review mount /cy-review/ for the current CYAN candidate; web only",
+ "authority": "HA-CYAN-REAL-E2E-ASSEMBLY-01 (human operator, 2026-10-03): candidate web under https://nquiry.condyn.eu/cy-review/ on the existing origin and existing production PURPLE API; no PURPLE/Google/DB/live-root change",
+ "source": {"branch": "frontend-symbiotic", "commit": "09f5f0e8eb3c99bf01b147ae0befdd90feee04b2", "tag": "checkpoint-CYAN-MOUNT-01", "tree": "82ad5edd464947ebab9eac6d4c01aacd89d4d0fe", "paths": ["apps/web"]},
+ "dockerfile": "web.review.Dockerfile = live assembly cy01-b5-20260928T031904Z/infra/local/web.Dockerfile + ARG/ENV NEXT_PUBLIC_FRONTEND_MOUNT (deployment-field delta)",
+ "build": {"NEXT_PUBLIC_API_BASE_URL": "https://nquiry.condyn.eu/api", "NEXT_PUBLIC_FRONTEND_MOUNT": "/cy-review"},
+ "runtime": {"service": "web only", "listen": "127.0.0.1:3402", "env": ["NEXT_PUBLIC_API_BASE_URL", "NEXT_PUBLIC_FRONTEND_MOUNT", "NEXT_TELEMETRY_DISABLED"], "secrets": "none", "api": "none (production /api/)", "database": "none"},
+ "claimCeiling": "STAGED, not live; REAL PURPLE/GOOGLE E2E with current CYAN NOT YET HUMAN-PROVEN; AUTH/CYAN-IDENTITY-01 acceptance PENDING"
+}

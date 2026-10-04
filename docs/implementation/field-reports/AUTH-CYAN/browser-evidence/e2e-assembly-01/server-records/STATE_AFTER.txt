@@ -1,0 +1,30 @@
+STATE_AFTER 20261003T214123Z
+live /: http 200 sha256 e4a9860ca4a2574593b436b4825e1795ac30fe4346d4af2cbae37abb1a66180e
+live /login: http 200 sha256 d5e9aa20ccc0331fd515b4cfb085444e8370699d6392483d2cd71ea01a55e74a
+/cy-review: http 200 
+/cy-review/: http 308 https://nquiry.condyn.eu/cy-review
+/cy-review/login: http 200 
+/cy-review/workspaces: http 200 
+/cy-review/brand/nquiry-logo.png: http 200 
+/cy-review/api/auth/providers: http 404 
+/cy-reviewx: http 404 
+/cy-review/_next/static/x: http 404 
+/api/auth/providers: {"kind":"ok","providers":[{"providerId":"google","label":"Google","proofClass":"PRODUCTION_PROVIDER"}]}
+/api/auth/methods: http 401
+/api/auth/oidc/google/start (no follow): http 303
+cy-review/login html: _next-under-mount 24 root-_next 0 login-form 1 brand src="/cy-review/brand/nquiry-logo.png" cy-review/api 0
+set-cookie on /cy-review/login response: 0
+--- containers
+nquiry-cy-review-web-1|127.0.0.1:3402->3000/tcp|Up 2 minutes
+nquiry-api-1|127.0.0.1:8400->8000/tcp|Up 2 hours
+nquiry-web-1|127.0.0.1:3400->3000/tcp|Up 5 days
+nquiry-cy01-candidate-api-1|127.0.0.1:8401->8000/tcp|Up 5 days
+nquiry-cy01-candidate-web-1|127.0.0.1:3401->3000/tcp|Up 5 days
+nquiry-cy01-candidate-postgres-1|5432/tcp|Up 5 days (healthy)
+nquiry-postgres-1|5432/tcp|Up 7 days (healthy)
+--- listeners
+LISTEN 0      4096       127.0.0.1:8401       0.0.0.0:*          
+LISTEN 0      4096       127.0.0.1:8400       0.0.0.0:*          
+LISTEN 0      4096       127.0.0.1:3401       0.0.0.0:*          
+LISTEN 0      4096       127.0.0.1:3400       0.0.0.0:*          
+LISTEN 0      4096       127.0.0.1:3402       0.0.0.0:*          

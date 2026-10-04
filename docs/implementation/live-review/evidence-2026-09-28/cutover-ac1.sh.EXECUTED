@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# PRODUCTION CUTOVER of the api service of compose project nquiry to assembly ac11-cy01-20260928T182206Z
+# (RED checkpoint-PFC-AC1.1 @ e91961e4a66ab21d9edf45d74bb43b8fbd324737 = checkpoint-PFC-B5 + WU-PFC-AC1 + AC1.1;
+# CYAN field-CY-01 unchanged). Authorized by the NQUIRY PRODUCTION ACCOUNT CREATION FIELD + HD-28 (2026-09-28).
+# Delta: /opt/nquiry/compose.yaml (api build context + header line), the api image and container. Untouched: web
+# container and image, postgres container and volume, .env, DB schema and data, nginx, TLS, everything outside /opt/nquiry.
+set -uo pipefail
+ID=ac11-cy01-20260928T182206Z; A=/opt/nquiry/assembly/$ID; B=$(cat /opt/nquiry/_baseline-pre-AC1-CURRENT)
+CO="docker compose -p nquiry --env-file /opt/nquiry/.env -f /opt/nquiry/compose.yaml"
+U=$(grep ^POSTGRES_USER= /opt/nquiry/.env | cut -d= -f2); D=$(grep ^POSTGRES_DB= /opt/nquiry/.env | cut -d= -f2)
+cd /opt/nquiry
+fail() { echo "ABORT: $1"; exit 3; }
+echo "== 0. guards =="
+[ "$(sha256sum compose.yaml | cut -c1-64)" = "3bcad9ebe2fa180838cbd42eded6b12d9a146a112af7c5866ea7ad5d6a2cb802" ] || fail "compose.yaml is not the recorded predecessor"
+[ "$(sha256sum .env | cut -c1-64)" = "f2b696449f35148f93549a0a49bec1e102d0ceb92508a873c57f12d3d243bebd" ] || fail ".env is not the recorded predecessor"
+(cd $A && grep -v ' ./SHA256SUMS$' SHA256SUMS | sha256sum -c --quiet) || fail "assembly checksum mismatch"
+python3 -c "import json; m=json.load(open('$A/DEPLOYMENT_MANIFEST.json')); assert m['red']['commit']=='e91961e4a66ab21d9edf45d74bb43b8fbd324737' and m['cyan']['commit']=='54f8b4f91b12f7c05c10eb98d6281bbe1ba19859' and m['assembly']=='$ID'; print('manifest identities OK')" || fail "manifest"
+[ "$(docker exec nquiry-postgres-1 psql -U $U -d $D -tAc 'select version_num from alembic_version')" = "e8c2a5f1b7d4" ] || fail "live head is not e8c2a5f1b7d4"
+[ "$(docker inspect -f {{.Id}} nquiry-api-1)" = "0c82d0123be2880ebb5145a5b546fe81a734ef92886abfaf255d6af43c5df312" ] || fail "api container is not the recorded predecessor"
+ls $B/nquiry-db-pre-AC1-*.dump >/dev/null || fail "backup missing"
+WEB_BEFORE=$(docker inspect -f {{.Id}} nquiry-web-1); PG_BEFORE=$(docker inspect -f {{.Id}} nquiry-postgres-1)
+echo "guards passed"
+docker tag ccb65d7944c865e31fa338c2256558f686a1b16b759ad7abc33506469e5c4c7b nquiry-api:pre-ac1 && echo "rollback anchor: nquiry-api:pre-ac1 -> ccb65d79 (predecessor api image)"
+echo "== 1. compose.yaml: api build context -> $ID (web untouched) =="
+python3 - <<PY
+p='compose.yaml'; s=open(p).read()
+old_api="  api:\n    build:\n      context: ./assembly/cy01-b5-20260928T031904Z\n"
+assert s.count(old_api)==1
+s=s.replace(old_api,"  api:\n    build:\n      context: ./assembly/$ID\n")
+s="# Account creation delta (NQUIRY PRODUCTION ACCOUNT CREATION FIELD + HD-28, 2026-09-28): api from ./assembly/$ID (RED checkpoint-PFC-AC1.1 @ e91961e4a66ab21d9edf45d74bb43b8fbd324737 = B5 + AC1); web unchanged. Predecessor compose: _baseline-pre-AC1-*/compose.yaml.pre.\n"+s
+open(p,'w').write(s)
+PY
+echo "compose sha after $(sha256sum compose.yaml | cut -c1-64)"
+$CO config --format json | python3 -c 'import json,sys; c=json.load(sys.stdin); s=c["services"]; assert s["api"]["build"]["context"].endswith("'$ID'"), s["api"]["build"]; assert s["web"]["build"]["context"].endswith("cy01-b5-20260928T031904Z"); assert s["api"]["environment"]["NQUIRY_ENVIRONMENT"]=="PRODUCTION"; print("config OK: api->new assembly, web->predecessor, PRODUCTION")' || { cp $B/compose.yaml.pre compose.yaml; fail "config check (compose restored)"; }
+echo "== 2. build api image =="
+$CO build api 2>&1 | grep -E "naming to|ERROR" | tail -2
+echo "== 3. recreate api only =="
+$CO up -d --no-build --no-deps api 2>&1 | tail -2
+for i in $(seq 1 40); do [ "$(curl -s -m 3 -o /dev/null -w '%{http_code}' http://127.0.0.1:8400/healthz)" = 200 ] && break; sleep 2; done
+echo "== 4. live proof =="
+echo "api local health $(curl -s -m 5 -o /dev/null -w '%{http_code}' http://127.0.0.1:8400/healthz)  public $(curl -s -m 10 -o /dev/null -w '%{http_code}' https://nquiry.condyn.eu/api/healthz)  web public $(curl -s -m 10 -o /dev/null -w '%{http_code}' https://nquiry.condyn.eu/login)"
+echo "login bad creds (expect 401): $(curl -s -m 10 -o /dev/null -w '%{http_code}' -X POST -H 'content-type: application/json' -d '{\"email\":\"nobody@x.invalid\",\"password\":\"wrong-password-000\"}' https://nquiry.condyn.eu/api/auth/login)"
+echo "begin-analysis (expect 401): $(curl -s -m 10 -o /dev/null -w '%{http_code}' -X POST -H 'content-type: application/json' -d '{\"expectedVersion\":1}' https://nquiry.condyn.eu/api/workspaces/00000000-0000-4000-8000-000000000000/sessions/00000000-0000-4000-8000-000000000000/transitions/begin-analysis)"
+echo "registration routes (expect 404): $(for p in auth/register auth/signup users identities; do printf '%s ' $(curl -s -m 10 -o /dev/null -w '%{http_code}' -X POST -H 'content-type: application/json' -d '{}' https://nquiry.condyn.eu/api/$p); done)"
+echo "operator command present: $($CO exec -T api python -m nquiry_api.operator.create_identity --help >/dev/null 2>&1 && echo yes || echo NO)"
+echo "refusal smoke (no operator; nothing written): $(echo placeholder-not-used-000 | $CO exec -T api python -m nquiry_api.operator.create_identity --email smoke@ac1.nquiry.invalid --name smoke 2>&1)"
+echo "env in api: $($CO exec -T api sh -c 'echo NQUIRY_ENVIRONMENT=$NQUIRY_ENVIRONMENT NQUIRY_AI_PROVIDER=${NQUIRY_AI_PROVIDER:-unset}')"
+echo "containers: api $(docker inspect -f {{.Id}} nquiry-api-1) image $(docker inspect -f {{.Image}} nquiry-api-1)"
+echo "web unchanged: $([ "$(docker inspect -f {{.Id}} nquiry-web-1)" = "$WEB_BEFORE" ] && echo yes || echo NO)  postgres unchanged: $([ "$(docker inspect -f {{.Id}} nquiry-postgres-1)" = "$PG_BEFORE" ] && echo yes || echo NO)"
+docker exec -i nquiry-postgres-1 psql -U $U -d $D -tA -F" " < $B/digest.sql > $B/digests-AFTER-CUTOVER.txt
+echo "real data digests unchanged: $(diff -q $B/digests-BEFORE.txt $B/digests-AFTER-CUTOVER.txt >/dev/null && echo yes || echo NO)  security_events $(docker exec nquiry-postgres-1 psql -U $U -d $D -tAc 'select count(*) from security_events')"
+echo "nginx vhost sha $(sha256sum /etc/nginx/sites-available/nquiry.condyn.eu | cut -c1-64)"
+bash /opt/nquiry/snapshot-preservation.sh $B AFTER-CUTOVER
+echo "== CUTOVER AC1 DONE =="

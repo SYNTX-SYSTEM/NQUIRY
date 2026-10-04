@@ -1,0 +1,14 @@
+relations: 14/14 hold
+M1 review location routes to the live web: KILLED
+M2 review location rewrites /api through the candidate: KILLED
+M3 candidate API base becomes /cy-review/api: KILLED
+M4 candidate starts its own API: KILLED
+M5 candidate starts its own DB: KILLED
+M6 live root routes to the candidate: KILLED
+M7 Google callback rewritten beneath /cy-review: KILLED
+M8 candidate requires a separate cookie scope: KILLED
+M9 candidate receives an unnecessary provider/auth secret: KILLED
+M10 rollback removes or alters the live root: KILLED
+M11 rollback removes or alters /api: KILLED
+M12 candidate exposed on another host / port: KILLED
+12/12 mutations killed

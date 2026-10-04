@@ -1,0 +1,23 @@
+46a47,68
+>     # CYAN_REAL_E2E_ASSEMBLY_01 (2026-10-03, authorized): staged review mount of the current CYAN candidate beside the
+>     # live root. Same origin, same /api/ (production PURPLE), same host session; candidate web only on loopback 3402.
+>     # Reversible: remove these two locations and reload; / and /api/ are untouched (/api/ keeps its own prefix match).
+>     location = /cy-review {
+>         proxy_pass http://127.0.0.1:3402;
+>         proxy_http_version 1.1;
+>         proxy_set_header Host $host;
+>         proxy_set_header X-Real-IP $remote_addr;
+>         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+>         proxy_set_header X-Forwarded-Proto $scheme;
+>     }
+>     location ^~ /cy-review/ {
+>         proxy_pass http://127.0.0.1:3402;
+>         proxy_http_version 1.1;
+>         proxy_set_header Upgrade $http_upgrade;
+>         proxy_set_header Connection "upgrade";
+>         proxy_set_header Host $host;
+>         proxy_set_header X-Real-IP $remote_addr;
+>         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+>         proxy_set_header X-Forwarded-Proto $scheme;
+>     }
+> 

@@ -1,0 +1,26 @@
+== 0. guards ==
+manifest identities OK
+guards passed
+rollback anchor: nquiry-api:pre-ac1 -> ccb65d79 (predecessor api image)
+== 1. compose.yaml: api build context -> ac11-cy01-20260928T182206Z (web untouched) ==
+compose sha after d3319a8330a4fcf03bab8e507232af3d98e9c70c5398770ce68ed8ebcade13de
+config OK: api->new assembly, web->predecessor, PRODUCTION
+== 2. build api image ==
+#13 naming to docker.io/library/nquiry-api:latest done
+== 3. recreate api only ==
+ Container nquiry-api-1  Starting
+ Container nquiry-api-1  Started
+== 4. live proof ==
+api local health 200  public 200  web public 200
+login bad creds (expect 401): 400
+begin-analysis (expect 401): 400
+registration routes (expect 404): 404 404 404 404 
+operator command present: yes
+refusal smoke (no operator; nothing written): REFUSED: OPERATOR_REQUIRED
+env in api: NQUIRY_ENVIRONMENT=PRODUCTION NQUIRY_AI_PROVIDER=unset
+containers: api 521dac0a4420dc8c3abe6f153f5906cb828d276bc1114d7923d006dfe2d05dfa image sha256:a81b3f475959e6ca80be20e12042fa3b462f693cfa9a9e026c4bd2525406da33
+web unchanged: yes  postgres unchanged: yes
+real data digests unchanged: yes  security_events 0
+nginx vhost sha 7e2f7e73c4d618262948eab8cceb2ecc00ca4eafa1fc862c654587a9e01c1570
+wrote /opt/nquiry/_baseline-pre-AC1-20260928T181736Z/preservation-AFTER-CUTOVER.txt (226 lines)
+== CUTOVER AC1 DONE ==

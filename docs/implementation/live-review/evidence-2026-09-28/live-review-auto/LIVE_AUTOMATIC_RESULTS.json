@@ -1,0 +1,111 @@
+[
+ {
+  "name": "unauthenticated direct Session URL lands on /login",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "wrong password: boundary, no session, no alert storm",
+  "ok": true,
+  "detail": "re-verified: exactly one application alert element, p#login-error 'Incorrect email or password.'; the second getByRole('alert') match was the Next.js route announcer (shadow DOM, empty). /auth/me 401; stayed on /login. First run FAILED on an over-coarse assertion (<=1 role=alert incl. the framework announcer), not on the product.",
+  "firstRun": {
+   "ok": false,
+   "detail": "alerts 2"
+  }
+ },
+ {
+  "name": "Ravi logs in; exactly the review Workspace is listed",
+  "ok": true,
+  "detail": "1 Workspace (8311d170-2f30-461f-9085-7a0b9e0e34ac)"
+ },
+ {
+  "name": "Session A as Ravi: QUESTION_CAPTURE, 3 frozen, no Begin analysis, MISSING_AUTHORITY, not begun, GOVERNED",
+  "ok": true,
+  "detail": "direct URL"
+ },
+ {
+  "name": "Session A as Ravi after refresh: identical",
+  "ok": true,
+  "detail": "reload"
+ },
+ {
+  "name": "Ravi logout and relogin: identical",
+  "ok": true,
+  "detail": "relogin"
+ },
+ {
+  "name": "API: Ravi's begin-analysis on A is denied, A unchanged",
+  "ok": true,
+  "detail": "403 denied DENIED_NO_MATCHING_BINDING"
+ },
+ {
+  "name": "Session C as Ravi: ANALYSIS, derived field visible (frozen-set audience), authorized not yet executed, no affordance",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "axe Session A (QUESTION_CAPTURE) as Ravi",
+  "ok": true,
+  "detail": "A/QUESTION_CAPTURE: 0 violation types, 0 serious/critical"
+ },
+ {
+  "name": "desktop 1280 no horizontal scroll",
+  "ok": true,
+  "detail": "scrollWidth 1280 <= 1280"
+ },
+ {
+  "name": "desktop 1600 no horizontal scroll",
+  "ok": true,
+  "detail": "scrollWidth 1600 <= 1600"
+ },
+ {
+  "name": "Session A as Maya: Begin analysis available (not pressed; kept for the Human Live Review)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "Session D as Maya: press Begin analysis -> committed, canonical re-read, ANALYSIS, authorized not yet executed, no proof, no mock",
+  "ok": true,
+  "detail": "canonical: ANALYSIS, PENDING / AUTHORIZATION_NOT_EXECUTED, version 5 -> 6"
+ },
+ {
+  "name": "Session D reload: the same canonical state re-read",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "API: Maya repeating begin-analysis with the old version is stale/blocked, never a second transition",
+  "ok": true,
+  "detail": "409 stale"
+ },
+ {
+  "name": "axe Session D (ANALYSIS) as Maya",
+  "ok": true,
+  "detail": "D/ANALYSIS: 0 violation types, 0 serious/critical"
+ },
+ {
+  "name": "Session B as Maya: FIXTURE_NON_PROOF at the core and in the proof chamber; Begin analysis available (not pressed)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "Owner: Workspace listed; Session A shows no Begin analysis (no Session control)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "Pixel 7: Session A readable, no horizontal scroll",
+  "ok": true,
+  "detail": "scrollWidth 412 <= 412"
+ },
+ {
+  "name": "Pixel 7: login page no horizontal scroll",
+  "ok": true,
+  "detail": "scrollWidth 465 <= 465"
+ },
+ {
+  "name": "reduced motion: no running animations on Session C; meaning intact",
+  "ok": true,
+  "detail": "0 finite / 0 infinite running animations"
+ }
+]

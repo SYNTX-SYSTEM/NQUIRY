@@ -1,0 +1,58 @@
+{
+ "assembly": "ac11-cy01-20260928T182206Z",
+ "assembledAt": "20260928T182206Z",
+ "authority": "NQUIRY PRODUCTION ACCOUNT CREATION FIELD (human operator, 2026-09-28) + HD-28 / NQ-DEC-056 (Option A, host operator otti@condyn.eu); minimum production-account-creation delta on top of the deployed pair",
+ "predecessorAssembly": "cy01-b5-20260928T031904Z",
+ "red": {
+  "tag": "checkpoint-PFC-AC1.1 (set after proof)",
+  "commit": "e91961e4a66ab21d9edf45d74bb43b8fbd324737",
+  "tree": "af6da710a9c5d81c48f3e84ecadc310e7edabd50",
+  "base": {
+   "tag": "checkpoint-PFC-B5",
+   "commit": "7d3f74e4685b821cc948f45e413c1e0c207259d4"
+  },
+  "workUnits": [
+   "WU-PFC-AC1 checkpoint-PFC-AC1 @ 1a94a586df3400fab08c444d650ab33032894339",
+   "WU-PFC-AC1.1 packaging of nquiry_api.operator"
+  ],
+  "deltaVsBase": [
+   "packages/application/identity_provisioning.py (new)",
+   "packages/persistence/identity_repository.py (new)",
+   "apps/api/src/nquiry_api/operator/ (new)",
+   "packages/test_support/dev_identity.py (environment guard)",
+   "scripts/dev_provision_local_identity.py (passes the environment)",
+   "pyproject.toml (+ nquiry_api.operator)"
+  ],
+  "paths": [
+   "pyproject.toml",
+   "README.md",
+   "packages/",
+   "apps/api/",
+   "apps/worker/",
+   "migrations/",
+   "scripts/ (mutation-proof scripts removed: not runtime)",
+   "infra/local/ (api.Dockerfile, db_roles.sql; base-identical on both lines)"
+  ],
+  "status": "TECHNICALLY_CLOSED, CHECKPOINTED; not REVIEWED_FIELD, not PUBLISHED_FIELD"
+ },
+ "cyan": {
+  "tag": "field-CY-01",
+  "tagObject": "cf9372c7b695769239d657229ead19b9f7578f87",
+  "commit": "54f8b4f91b12f7c05c10eb98d6281bbe1ba19859",
+  "tree": "f980bde0b07e9d54e82fa460c1bf81ae55844b8a",
+  "paths": [
+   "apps/web/",
+   "package.json",
+   "package-lock.json"
+  ],
+  "status": "TECHNICALLY_CLOSED, HUMAN_VISUAL_REVIEW_PASS, CHECKPOINTED; FIELD_GREEN_WITH_DISCLOSED_CEILINGS (WU scope); not REVIEWED_FIELD, not PUBLISHED_FIELD"
+ },
+ "localDelta": {
+  "infra/local/web.Dockerfile": "the A8 production-build Dockerfile of the live predecessor clone (npm run build at build time, npm run start, NEXT_PUBLIC_API_BASE_URL build arg)"
+ },
+ "targetMigrationHead": "e8c2a5f1b7d4",
+ "fromMigrationHead": "e8c2a5f1b7d4",
+ "proofCeiling": "unchanged: PRODUCTION, no AI provider (HD-LIVE-1); FIXTURE_NON_PROOF and MOCK / NON_PROOF remain ceilings (HD-27)",
+ "serviceDelta": "api image only; web image and container unchanged (web build context stays at the predecessor assembly); no nginx, .env or DB schema change",
+ "worker": "not deployed: no HTTP route at B5 reads the F08 projection read models; identical to the predecessor deployment"
+}

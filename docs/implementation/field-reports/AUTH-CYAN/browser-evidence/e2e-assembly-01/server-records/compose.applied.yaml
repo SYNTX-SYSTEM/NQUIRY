@@ -1,0 +1,16 @@
+# CYAN_REAL_E2E_ASSEMBLY_01 — staged review web ONLY (no api, no postgres, no worker, no env_file, no secrets).
+services:
+  web:
+    build:
+      context: /opt/nquiry/assembly/cyreview-09f5f0e-20261003T213502Z
+      dockerfile: web.review.Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: https://nquiry.condyn.eu/api
+        NEXT_PUBLIC_FRONTEND_MOUNT: /cy-review
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: https://nquiry.condyn.eu/api
+      NEXT_PUBLIC_FRONTEND_MOUNT: /cy-review
+      NEXT_TELEMETRY_DISABLED: '1'
+    ports:
+      - '127.0.0.1:3402:3000'
+    restart: unless-stopped

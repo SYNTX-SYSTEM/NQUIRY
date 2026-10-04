@@ -28,3 +28,12 @@ apps/web/test-results/
 
 # Claude Code session-local runtime state (not part of the architecture)
 .claude/*.lock
+
+# CYAN field evidence convention (baseline 2026-10-04): browser screenshots stay on the authoring machine; the
+# textual evidence (summaries, lane results, manifests, proof outputs) is tracked next to the Work Unit reports.
+docs/implementation/field-reports/**/screenshots/
+docs/implementation/field-reports/SF-02/review/browser-evidence-2026-09-25/run-4/
+docs/implementation/field-reports/SF-02/review/browser-evidence-2026-09-25/run-5/
+docs/implementation/field-reports/SF-05/browser-evidence/run-1/
+docs/implementation/field-reports/SF-05/browser-evidence/run-2/
+docs/implementation/live-review/evidence-2026-09-28/**/*.png

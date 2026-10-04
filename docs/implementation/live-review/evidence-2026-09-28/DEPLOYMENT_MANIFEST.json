@@ -1,0 +1,43 @@
+{
+ "assembly": "cy01-b5-20260928T031904Z",
+ "assembledAt": "20260928T031904Z",
+ "authority": "NQUIRY PRODUCTION MATERIALIZATION FIELD (human operator, 2026-09-28) \u2014 exact pair; HD-27 / HA-03 Option B",
+ "red": {
+  "tag": "checkpoint-PFC-B5",
+  "tagObject": "fd3d5600132e4dcb9203702d500daccf4c6d0439",
+  "commit": "7d3f74e4685b821cc948f45e413c1e0c207259d4",
+  "tree": "bc77cc8bb6414e6104aabdd5bd2fb1874f63f750",
+  "paths": [
+   "pyproject.toml",
+   "README.md",
+   "packages/",
+   "apps/api/",
+   "apps/worker/",
+   "migrations/",
+   "scripts/ (mutation-proof scripts removed: not runtime)",
+   "infra/local/ (api.Dockerfile, db_roles.sql; base-identical on both lines)"
+  ],
+  "status": "TECHNICALLY_CLOSED, CHECKPOINTED; not REVIEWED_FIELD, not PUBLISHED_FIELD"
+ },
+ "cyan": {
+  "tag": "field-CY-01",
+  "tagObject": "cf9372c7b695769239d657229ead19b9f7578f87",
+  "commit": "54f8b4f91b12f7c05c10eb98d6281bbe1ba19859",
+  "tree": "f980bde0b07e9d54e82fa460c1bf81ae55844b8a",
+  "paths": [
+   "apps/web/",
+   "package.json",
+   "package-lock.json"
+  ],
+  "status": "TECHNICALLY_CLOSED, HUMAN_VISUAL_REVIEW_PASS, CHECKPOINTED; FIELD_GREEN_WITH_DISCLOSED_CEILINGS (WU scope); not REVIEWED_FIELD, not PUBLISHED_FIELD"
+ },
+ "overlap": "only docs/implementation/frontend/2{1,2,3,5,6}_*.md changed on both lines since base c9d86ba, byte-identical; RED changed nothing under apps/web, package*.json, infra/; CYAN changed nothing under packages/, apps/api, apps/worker, migrations, pyproject; docs are not part of the assembly",
+ "localDelta": {
+  "infra/local/web.Dockerfile": "the A8 production-build Dockerfile of the live predecessor clone (npm run build at build time, npm run start, NEXT_PUBLIC_API_BASE_URL build arg)"
+ },
+ "targetMigrationHead": "e8c2a5f1b7d4",
+ "fromMigrationHead": "f6b2c4d9a318",
+ "proofCeiling": "RED checkpointed only; MockProvider is dev-runtime only (HD-19) \u2014 not enabled on PRODUCTION; derived output on live: NOT_EXECUTED / AI_PROVIDER_UNAVAILABLE unless Human Authority decides the runtime environment (HA-20)",
+ "worker": "not deployed: no HTTP route at B5 reads the F08 projection read models; identical to the predecessor deployment",
+ "sha256sumsDigest": "73a381943bedad0968d5d81655ff39ac6042660ddee1411261d7d88c9409f896"
+}
