@@ -406,4 +406,6 @@ Workspace until it founds one. On production today: `tobi` is CASE LOCAL (the Go
   contact) on the staged mount, rebuilt from `auth-cyan-reconstruction` — a human act.
 - REAL GOOGLE E2E with the current CYAN (CASE GOOGLE_LINKED and CASE GOOGLE_BOOTSTRAP on `/cy-review/`) — the
   human's Google account; the test-issuer chain is proven on the cross-lineage real lane.
-- CYAN_PRODUCTION_ROOT_CUTOVER — not authorized.
+- CYAN_PRODUCTION_ROOT_CUTOVER — **AUTHORIZED and EXECUTED 2026-10-04T15:59Z** after the successful Human Frontend
+  Acceptance on `/cy-review/` (human decision, verbatim: "Publish the accepted candidate to the production root");
+  root `/` = `94759cd`; record in `WU-AUTH-CYAN-ACCOUNT-01.md`. Final Human Acceptance on the production URL: PENDING.

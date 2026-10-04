@@ -83,5 +83,32 @@ CASE GOOGLE_BOOTSTRAP — Log out, "Continue with Google" → the identity "SYNT
 Every effect of the chamber (Remove, End, Sign out everywhere) is real on production; the chamber only shows what
 the API returns.
 
+## Human Frontend Acceptance on `/cy-review/` — SUCCESSFUL (human, 2026-10-04)
+
+## CYAN_PRODUCTION_ROOT_CUTOVER — EXECUTED (human-authorized and human-run, 2026-10-04T15:59:14–15:59:37Z)
+The accepted candidate (`94759cd` apps/web, byte-compared against the accepted review assembly) was published to the
+production root by `/opt/nquiry/cutover-cyanroot.sh` (web service only; run by the human because the session's
+permission layer refuses production deploys). Assembly `/opt/nquiry/assembly/cyanroot-94759cd-20261004T155914Z`
+(176 files, `SHA256SUMS`, `DEPLOYMENT_MANIFEST.json`, the live production `web.Dockerfile` byte-identical to cy01-b5);
+baseline `/opt/nquiry/_baseline-pre-CYANROOT-20261004T155914Z/` (`compose.yaml.pre`, image anchor
+`nquiry-web:pre-cyanroot`, `STATE_BEFORE/AFTER.txt`, preservation BEFORE/AFTER, `ROLLBACK.sh`, `SHA256SUMS.txt`);
+log `/opt/nquiry/cutover-cyanroot.log`.
+
+| Proof (read-only, after) | Result |
+|---|---|
+| guards (compose / `.env` / vhost SHAs, web + api container ids = recorded predecessors) | passed |
+| compose delta | exactly the `web` build context line (`cy01-b5-…` → `cyanroot-94759cd-…`) |
+| web container | `21b07c91…`, image `849337fb…`, running; `.next` chunks carry `account-security` (2) and `link/start` (4); `NEXT_PUBLIC_FRONTEND_MOUNT` empty |
+| api / postgres containers | unchanged (`f6bc8f93…`, `22530f6b…`); `.env` sha `8829c9e7…` and vhost sha `14053fb3…` unchanged; `nginx -t` ok |
+| live `/`, `/login`, `/workspaces` | 200 / 200 / 200; `/login` has 24 root `/_next/static` refs and 0 `/cy-review` refs |
+| `/api/auth/providers` | live body unchanged; `/api/auth/identity` 401 without a session |
+| `/cy-review/login` | still 200 (the review mount is untouched) |
+| headless browser, desktop + Pixel 7, no login | `/workspaces` → `/login`; local form present; one provider contact `https://nquiry.condyn.eu/api/auth/oidc/google/start?next=%2F` (`PRODUCTION_PROVIDER`); requests only `/api/auth/me`, `/api/auth/providers`; zero cookies; no Access security chamber before a session; no sideways scroll (Pixel 7 `scrollX` 0 after a scroll attempt) |
+| preservation BEFORE/AFTER diff (web lines excluded) | only the docker-proxy pid of :3400 and image/build-cache counts — nothing else on the server changed |
+
+Rollback: `bash /opt/nquiry/_baseline-pre-CYANROOT-20261004T155914Z/ROLLBACK.sh` (predecessor compose + anchor image).
+
 ## Next boundary
-Human Frontend Acceptance of this chamber and of the identity field on the staged mount (`/cy-review/`, rebuilt from this branch), then CYAN_PRODUCTION_ROOT_CUTOVER — both human acts.
+**Final Human Acceptance on the real production URL `https://nquiry.condyn.eu/`** (CASE LOCAL as `tobi`, CASE
+GOOGLE_BOOTSTRAP as the Google account, the Access security chamber). Afterwards: lifecycle of the `/cy-review/`
+mount and of the older `nquiry-cy01-candidate` stack (human decisions); the `5109e20` last-use line (not published).
