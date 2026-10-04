@@ -1,0 +1,42 @@
+HA-AUTH-07 PRODUCTION TRANSITION — read-only evidence, redacted (2026-10-04)
+Source: nquiry-postgres-1 / db nquiry on nquiry.condyn.eu, read as the compose
+database role; raw copies with timestamps on the server under
+/opt/nquiry/_baseline-pre-AUTH-20261001T080345Z/evidence-provider-bootstrap-live-*.txt
+(14:11:07Z, 14:13:44Z, 14:18:20Z = before the human acted; 14:4xZ = after).
+No secret, subject, cookie, token or e-mail address is reproduced here.
+
+Live api: assembly auth-e069fc1-20261004T140533Z (auth-identity e069fc1, head
+d2f4a6b8c1e3), NQUIRY_ACCOUNT_CREATION_POLICY=SELF_REGISTRATION_ALLOWED.
+
+== sequence (UTC, local_auth_sessions / authentication_methods / oidc_auth_transactions / security_events)
+14:18:22  tobi            LOCAL_PASSWORD login (session issued)
+14:23:22  tobi            second LOCAL_PASSWORD session
+14:25:01  tobi            POST /auth/methods/3cfa6ca7-…/unlink → GOOGLE_OIDC method REVOKED,
+                          binding revoked_at set, security_event AUTH_METHOD_UNLINKED
+                          observed_facts: authority "24 section 18 identity revokes own method",
+                          currentSessionEnded false, providerBindingRevoked true,
+                          remainingActiveMethods 1, sessionsRevoked 2
+14:26:25  tobi            logout (session revoked, reason LOGOUT)
+14:27:17  google LOGIN    oidc_auth_transaction created (initiating_user_id NULL)
+14:28:16  google LOGIN    transaction completed → users row 3f7842f6 "SYNTX System"
+                          (email = provider verified claim, redacted), GOOGLE_OIDC method ACTIVE,
+                          new binding (same provider subject as the revoked one; provenance_ref
+                          account-creation:SELF_REGISTRATION_ALLOWED), session issued,
+                          security_event IDENTITY_CREATED observed_facts:
+                          authority "24 section 11.14 SELF_REGISTRATION_ALLOWED",
+                          identityClass PROVIDER_BOOTSTRAP_IDENTITY, method GOOGLE_OIDC,
+                          nameSource PROVIDER_DISPLAY_NAME_CLAIM,
+                          emailSource PROVIDER_VERIFIED_EMAIL_CLAIM, previouslyBound true,
+                          providerIssuer https://accounts.google.com, workspaceAuthority NONE
+
+== state after
+users 7 (was 6) · authentication_methods 8 · active bindings 1 (the new one; the
+tobi binding is revoked evidence, linked_at 2026-10-03 16:48:42, revoked_at 14:25:01)
+tobi 7dd6e767: record_version 1, disabled_at NULL, memberships 2, LOCAL_PASSWORD ACTIVE —
+unchanged. SYNTX System 3f7842f6: no membership, no role, no authority (workspaceAuthority NONE).
+audit_events (business audit) today: 0 rows — authentication writes no business audit.
+
+== claim
+HA-AUTH-07 transition (HD-AUTH-08 Decision 2) EXECUTED BY THE HUMAN AND OBSERVED ON
+PRODUCTION: owner unlink → generic provider bootstrap of an own identity. Google LOGIN,
+ACCOUNT_LINK (2026-10-03) and PROVIDER_BOOTSTRAP are now each proven live once.

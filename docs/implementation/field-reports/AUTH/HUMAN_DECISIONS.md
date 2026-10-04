@@ -254,6 +254,15 @@ identity from the provider claims (`previouslyBound: true`). Steps 2 and 3 are
 human browser actions (the owner's session; Google consent) and are not
 performed by PURPLE.
 
+**Executed on production by the human, observed read-only (2026-10-04,
+14:25:01Z unlink → 14:28:16Z bootstrap):** `evidence/ha_auth_07_production_transition.txt`.
+Security events `AUTH_METHOD_UNLINKED` (remainingActiveMethods 1,
+providerBindingRevoked true) and `IDENTITY_CREATED` (identityClass
+PROVIDER_BOOTSTRAP_IDENTITY, nameSource / emailSource = provider claims,
+previouslyBound true, workspaceAuthority NONE); `tobi` unchanged
+(record_version 1, memberships 2). HA-AUTH-07 is CLOSED; the generic
+bootstrap is proven live once (24 §41 / §48 #62–63 for this relation).
+
 ## Open boundaries (OPEN, awaiting the operator)
 
 | # | Boundary | Home | What it blocks | Default in force | Status |
@@ -263,7 +272,7 @@ performed by PURPLE.
 | HA-AUTH-03 | **Unlinking the last authentication method** (24 §36 #12; §14.6). Options: NEVER; ALLOWED WITH RECOVERY AUTHORITY (needs HA-AUTH-02 ≠ DENIED). (ALLOWED AS SELF-DISABLE excluded by HD-AUTH-05.) Full block: `WU-AUTH-13.md`. | 24 §14.6, §36 #12 | Nothing (the default is complete) | NEVER (`409 LAST_METHOD`) | OPEN |
 | HA-AUTH-04 | **Who may disable an identity in PRODUCTION / STAGING** | 24 §18, §36 #13; HD-28 | — | HOST_OPERATOR (HD-AUTH-05) | **RESOLVED** by HD-AUTH-05 (2026-10-01): HOST_OPERATOR; no HTTP route, no self-disable, no derived authority; re-enable separate |
 | HA-AUTH-05 | **Deployment switch to the scoped authentication principal** (24 §21.18; = PFC HA-10) | 24 §21.18, §25.2; 14 §8; PFC HA-09 / HA-10 | — | SWITCH AUTH ONLY (HD-AUTH-06) | **RESOLVED** by HD-AUTH-06 (2026-10-01): SWITCH AUTH ONLY; compose configured; deployment procedure recorded, not executed |
-| HA-AUTH-07 | **Google binding of `tobi` vs stated intent** | 24 §14.2, §18.2; HD-AUTH-08 | — | transition away from `tobi` (HD-AUTH-08 Decision 2) | **RESOLVED** by HD-AUTH-08: owner unlinks after production admits bootstrap; the subject then bootstraps its own identity |
+| HA-AUTH-07 | **Google binding of `tobi` vs stated intent** | 24 §14.2, §18.2; HD-AUTH-08 | — | transition away from `tobi` (HD-AUTH-08 Decision 2) | **RESOLVED** by HD-AUTH-08 and **EXECUTED on production 2026-10-04** (unlink 14:25:01Z, bootstrap 14:28:16Z; `evidence/ha_auth_07_production_transition.txt`) |
 
 Touched and left undecided, not blocking any Work Unit: 24 §36 #1 / #6
 (Google as an official, production-enabled method), #9 (provider-verified

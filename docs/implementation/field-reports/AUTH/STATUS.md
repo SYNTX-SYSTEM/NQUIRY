@@ -46,8 +46,11 @@ persistence scoped). Open Human Authority: HA-AUTH-02 (recovery), HA-AUTH-03 (la
 - **HD-AUTH-08 deployed 2026-10-04:** live api = auth-identity `e069fc1`, head
   `d2f4a6b8c1e3`, `NQUIRY_ACCOUNT_CREATION_POLICY=SELF_REGISTRATION_ALLOWED`
   (generic provider bootstrap live); recovery DENIED, test provider absent;
-  `GET /auth/identity` live since the IP01 deploy. HA-AUTH-07 transition:
-  owner's unlink + Google bootstrap are human browser steps, pending.
+  `GET /auth/identity` live since the IP01 deploy. **HA-AUTH-07 transition
+  executed by the human on production 2026-10-04** (unlink 14:25:01Z →
+  generic bootstrap 14:28:16Z, identity class PROVIDER_BOOTSTRAP_IDENTITY,
+  `tobi` unchanged): `evidence/ha_auth_07_production_transition.txt`. Google
+  LOGIN, ACCOUNT_LINK and PROVIDER_BOOTSTRAP are each proven live once.
 - **HA-AUTH-05 RESOLVED** by HD-AUTH-06 (2026-10-01): SWITCH AUTH ONLY —
   local compose configured (`NQUIRY_AUTH_DATABASE_URL` → `auth_runtime`);
   the live deployment switch is recorded as a procedure for the deployment
