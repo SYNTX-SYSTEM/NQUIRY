@@ -56,5 +56,27 @@ AUTHENTICATION != AUTHORIZATION (the chamber names no role, right or capability;
 ## Status
 AUTH/CYAN-ACCOUNT-01: **TECHNICALLY CLOSED — LOCAL_GREEN + CROSS-LINEAGE REAL PROOF GREEN.** Claim ceiling: 24 §24.5 ACCOUNT SECURITY = MATERIALIZED IN THE PRODUCT FRONTEND (list methods · add provider · remove method · revoke sessions · sign out everywhere) · PURPLE CONTRACT (post HD-AUTH-08) = CONSUMED · REAL PURPLE E2E WITH CURRENT CYAN = PROVEN (test issuer) · REAL GOOGLE E2E WITH CURRENT CYAN = NOT YET PROVEN (needs the staged mount and the human's Google account) · HUMAN FRONTEND ACCEPTANCE = PENDING · PRODUCTION ROOT CUTOVER = NOT AUTHORIZED. Not materialized, by the producer's state: recovery and e-mail verification contacts (both `unavailable` in production: HA-AUTH-02 DENIED, 24 §36 #16).
 
+## Staged for the human (2026-10-04T15:31Z) — review mount rebuilt, live root untouched
+Assembly `/opt/nquiry/assembly/cyreview-94759cd-20261004T153003Z` (`git archive apps/web` of `94759cd`, tree
+`05cbda11…`, 175 files, `SHA256SUMS`, `DEPLOYMENT_MANIFEST.json`, `rebuild.sh`, `STATE_BEFORE.txt`, `STATE_AFTER.txt`,
+`compose.yaml.pre`); `web.review.Dockerfile` unchanged from the previous assembly; `/opt/nquiry/review/compose.yaml`
+context switched (the only server change); project `nquiry-cy-review` rebuilt and up on 127.0.0.1:3402.
+Proof: `/cy-review/login` 200 (loopback and same-origin), `/cy-review/workspaces` 200; live `/` and `/login` body
+hashes unchanged (`e4a9860c…`, `d5e9aa20…`); vhost sha `14053fb3…` and `.env` sha unchanged; `/api/auth/providers`
+live body unchanged; the candidate bundle carries the chamber (`account-security` in 2 chunks, `link/start` in 4);
+headless browser without login: `/cy-review/workspaces` → `/cy-review/login`, one provider contact with href
+`https://nquiry.condyn.eu/api/auth/oidc/google/start?next=%2Fcy-review%2F`, requests only to `/api/auth/me` and
+`/api/auth/providers`, zero `/cy-review/api/` requests, zero cookies, no chamber before a session.
+Rollback: `cp /opt/nquiry/assembly/cyreview-94759cd-20261004T153003Z/compose.yaml.pre /opt/nquiry/review/compose.yaml
+&& cd /opt/nquiry/review && docker compose -p nquiry-cy-review up -d --build` (previous candidate), or
+`bash /opt/nquiry/_baseline-pre-CYREVIEW-20261003T213429Z/ROLLBACK.sh` (mount removed).
+
+**Human steps on `https://nquiry.condyn.eu/cy-review/login`:** CASE LOCAL — log in as `tobi` → the rail shows the
+nquiry identity, "Local password"; Access security shows one method (not removable), "Add Google", this session.
+CASE GOOGLE_BOOTSTRAP — Log out, "Continue with Google" → the identity "SYNTX System" with the Google e-mail,
+"Google", one method, no Workspace. CASE LINK (optional) — as `tobi`, "Add Google" with a *different* Google account.
+Every effect of the chamber (Remove, End, Sign out everywhere) is real on production; the chamber only shows what
+the API returns.
+
 ## Next boundary
 Human Frontend Acceptance of this chamber and of the identity field on the staged mount (`/cy-review/`, rebuilt from this branch), then CYAN_PRODUCTION_ROOT_CUTOVER — both human acts.
