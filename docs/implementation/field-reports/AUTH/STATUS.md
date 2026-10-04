@@ -43,6 +43,11 @@ persistence scoped). Open Human Authority: HA-AUTH-02 (recovery), HA-AUTH-03 (la
 - **HA-AUTH-04 RESOLVED** by HD-AUTH-05 (2026-10-01): identity disable
   authority = HOST_OPERATOR (HD-28 extended), every declared environment;
   no HTTP route, no self-disable, no derived authority; re-enable separate.
+- **HD-AUTH-08 deployed 2026-10-04:** live api = auth-identity `e069fc1`, head
+  `d2f4a6b8c1e3`, `NQUIRY_ACCOUNT_CREATION_POLICY=SELF_REGISTRATION_ALLOWED`
+  (generic provider bootstrap live); recovery DENIED, test provider absent;
+  `GET /auth/identity` live since the IP01 deploy. HA-AUTH-07 transition:
+  owner's unlink + Google bootstrap are human browser steps, pending.
 - **HA-AUTH-05 RESOLVED** by HD-AUTH-06 (2026-10-01): SWITCH AUTH ONLY —
   local compose configured (`NQUIRY_AUTH_DATABASE_URL` → `auth_runtime`);
   the live deployment switch is recorded as a procedure for the deployment
