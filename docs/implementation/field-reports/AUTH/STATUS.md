@@ -160,7 +160,14 @@ First Broken Relations, in dependency order:
    PROVIDER_LINKED → UNLINK, SESSIONS, PROVIDER_BOOTSTRAP — 6 / 6. Staged
    on `https://nquiry.condyn.eu/cy-review/` from `94759cd` (web only; live
    root untouched).
-4. **Live root web = `field-CY-01` (OPEN — human boundary):** the authentication Field is not
+4. **Live root web — CLOSED 2026-10-04T15:59Z:** after the human's Frontend
+   Acceptance on `/cy-review/`, the accepted CYAN candidate (`94759cd`) was
+   published to the production root (human-authorized, human-run
+   `cutover-cyanroot.sh`; web only; api / DB / `.env` / vhost unchanged;
+   record and proof in CYAN `WU-AUTH-CYAN-ACCOUNT-01.md`). The authentication
+   Field is now reachable by a human through the deployed UI (local login,
+   Google login, identity presentation, account security). Final Human
+   Acceptance on `https://nquiry.condyn.eu/` pending. Previously: the authentication Field is not
    reachable by a human through the deployed UI (provider login only via a
    typed URL). Root cutover of the CYAN candidate = CYAN_PRODUCTION_ROOT_CUTOVER
    → Human Frontend Acceptance (human boundary) after 2 and 3 and the real
