@@ -3331,7 +3331,9 @@ body:has(.access-field[data-attract="login"]) .field-bg .nebula-a {
    One coherent path on desktop: route nodes share the rail's column and compress through their labels' ellipsis
    (titles keep them inspectable); the current segment keeps at least 22 characters, so a lifecycle state such as
    QUESTION_GENERATION is never cut and never wraps below the path; the identity stays centred; logout stays clear.
-   Status words of future relations stay in the accessibility tree and become visible only on wide rails. */
+   Status words of future relations stay in the accessibility tree and become visible only on wide rails.
+   Superseded by CYAN-RAIL-01 (end of file): the current station reserves exactly its label, the established stations
+   compress to their marker, and the route never crosses the centred mark. */
 @media (min-width: 768px) {
   .trace ol {
     flex-wrap: nowrap;
@@ -6732,4 +6734,57 @@ h3.chamber-title {
   border: 1px solid color-mix(in srgb, var(--attention) 50%, transparent);
   border-radius: var(--radius);
   background: color-mix(in srgb, var(--attention) 7%, transparent);
+}
+
+/* ============================================================ CYAN-RAIL-01 · the route never crosses the centred mark
+   (SF-03 rail law: trace · identity · exit, the identity centred; SF-05 law: one line, the current station complete).
+   Reconstructed defect: the current station reserved a fixed `22ch + 36px` whatever its label, and an established station
+   could not compress below 9ch, so five stations spilled under the mark at 1280 px (human-observed in the PCPG-04 review).
+   Repair at the authoritative home: the current station reserves exactly its complete label; an established station may
+   compress to its ellipsis (its name stays inspectable through `title` and the accessibility tree); the decorative
+   structure (dot padding, chevron margin) tightens only when the trace container itself is narrow. */
+@media (min-width: 768px) {
+  .shell-header .trace {
+    container-type: inline-size;
+  }
+  .trace ol {
+    max-width: 100%;
+  }
+  .trace li {
+    min-width: calc(1ch + 42px);
+  }
+  .trace li[data-status="current"] {
+    /* basis = its complete label; a negligible shrink factor: the established stations give way first and are frozen at
+       their minimum before the current station gives a pixel; only a title longer than the whole trace truncates */
+    flex-grow: 2;
+    flex-shrink: 0.001;
+    flex-basis: auto;
+    width: max-content;
+    min-width: 0;
+    max-width: 100%;
+  }
+  /* the label's box is its own text advance (a sub-pixel short box would draw an ellipsis on a complete word); a title
+     longer than the station is capped by the station (+1px of clip slack) and truncates with the ellipsis */
+  .trace li[data-status="current"] .trace-label {
+    flex: none;
+    width: max-content;
+    max-width: calc(100% + 1px);
+  }
+}
+@container (max-width: 560px) {
+  .trace li {
+    padding-left: 16px;
+    padding-right: 8px;
+    margin-left: 10px;
+    min-width: calc(1ch + 24px);
+  }
+  .trace li:first-child {
+    margin-left: 0;
+  }
+  .trace li + li::before {
+    width: 10px;
+  }
+  .trace ol {
+    gap: 0;
+  }
 }
