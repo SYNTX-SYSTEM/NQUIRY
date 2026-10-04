@@ -143,13 +143,24 @@ First Broken Relations, in dependency order:
    contract. Stated: shapes unchanged; presentation is a function of
    `userId`; LOCAL / GOOGLE_LINKED / GOOGLE_BOOTSTRAP are the three cases;
    live proof of each relation.
-2. **CYAN stale expectation** ("CASE GOOGLE → same identity" as a law;
-   `authClient.ts` "method-independent"; F3/F4 fixtures) → repair in the
-   CYAN lineage against case GOOGLE_LINKED / GOOGLE_BOOTSTRAP.
-3. **24 §24.5 account-security contacts missing in the product web:** link
-   (add Google), unlink (remove method), revoke session, logout-all have
-   typed clients in CYAN but no surface; the API serves all four.
-4. **Live root web = `field-CY-01`:** the authentication Field is not
+2. **CYAN stale expectation (CLOSED on branch `auth-cyan-reconstruction`,
+   worktree `worktrees/auth-cyan`, base `frontend-symbiotic` `618d7a6`;
+   `94759cd`..`0f24465`, not pushed):** F2/F3/F4 named as GOOGLE_LINKED,
+   GOOGLE_BOOTSTRAP falsifiers added, contract stated in `authClient.ts`,
+   producer pin → `e069fc1`, review guide split; HOLD lifted in CYAN's
+   `HA-AUTH-CYAN.md`.
+3. **24 §24.5 account-security contacts (CLOSED, same branch — AUTH/CYAN-ACCOUNT-01):**
+   the "Access security" chamber on `/workspaces` (methods with Remove,
+   "Add <provider>" link form, sessions with End, Sign out everywhere, the
+   `?link=` result, per-method last use); the login provider contact
+   generalized over the parsed provider list. Proof: vitest 672, mocked
+   lanes cy09 24 / 24 + preservation green, and the **cross-lineage real
+   lane** `scripts/run_auth_cyan_real_lane.sh` (this API from this branch +
+   the CYAN web + `nquiry_purple_real` + real Chromium): LOCAL → LINK →
+   PROVIDER_LINKED → UNLINK, SESSIONS, PROVIDER_BOOTSTRAP — 6 / 6. Staged
+   on `https://nquiry.condyn.eu/cy-review/` from `94759cd` (web only; live
+   root untouched).
+4. **Live root web = `field-CY-01` (OPEN — human boundary):** the authentication Field is not
    reachable by a human through the deployed UI (provider login only via a
    typed URL). Root cutover of the CYAN candidate = CYAN_PRODUCTION_ROOT_CUTOVER
    → Human Frontend Acceptance (human boundary) after 2 and 3 and the real
