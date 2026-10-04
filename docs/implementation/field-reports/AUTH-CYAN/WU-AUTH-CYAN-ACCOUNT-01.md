@@ -71,6 +71,11 @@ Rollback: `cp /opt/nquiry/assembly/cyreview-94759cd-20261004T153003Z/compose.yam
 && cd /opt/nquiry/review && docker compose -p nquiry-cy-review up -d --build` (previous candidate), or
 `bash /opt/nquiry/_baseline-pre-CYREVIEW-20261003T213429Z/ROLLBACK.sh` (mount removed).
 
+Disclosed: the staged mount is built from `94759cd`; the later commit `5109e20` (per-method "last used" fact, unit
+and browser lanes green: 672 / 64) is NOT staged — the second rebuild was refused by the session's permission layer
+as a production deploy and is left to the human (`git archive 5109e20 apps/web` → new assembly → the recorded
+`rebuild.sh` pattern with `ASSEMBLY`, `COMMIT`, `TREE`).
+
 **Human steps on `https://nquiry.condyn.eu/cy-review/login`:** CASE LOCAL — log in as `tobi` → the rail shows the
 nquiry identity, "Local password"; Access security shows one method (not removable), "Add Google", this session.
 CASE GOOGLE_BOOTSTRAP — Log out, "Continue with Google" → the identity "SYNTX System" with the Google e-mail,
