@@ -62,6 +62,11 @@ export function AccountSecurity({ security, link, effects }: { readonly security
                       {m.providerEmail}
                     </span>
                   ) : null}
+                  {m.lastAuthenticatedAt !== null ? (
+                    <span className="auth-note" data-testid="account-method-last-used">
+                      last used <Moment value={m.lastAuthenticatedAt} />
+                    </span>
+                  ) : null}
                   {!m.removable ? (
                     <span className="auth-note" data-testid="account-method-last">
                       your only sign-in method · it cannot be removed (24 §14.6)

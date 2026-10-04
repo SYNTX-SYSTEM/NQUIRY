@@ -63,9 +63,9 @@ const render = (reads: IdentityReads, search = "") => renderToStaticMarkup(<Acco
 describe("A1–A6: the relations from the one set of reads", () => {
   it("A1: two ACTIVE methods → both listed with words and provider account, the session's method current, both removable", () => {
     const s = accountSecurityFrom(READS, NEXT);
-    expect(s.methods.map((m) => [m.methodId, m.words, m.providerEmail, m.current, m.removable])).toEqual([
-      [M_LOCAL, "Local password", null, false, true],
-      [M_GOOGLE, "Google", "person@example.test", true, true],
+    expect(s.methods.map((m) => [m.methodId, m.words, m.providerEmail, m.current, m.removable, m.lastAuthenticatedAt])).toEqual([
+      [M_LOCAL, "Local password", null, false, true, T0],
+      [M_GOOGLE, "Google", "person@example.test", true, true, T1],
     ]);
   });
   it("A2: a REVOKED method is neither listed nor counted; one ACTIVE method is not removable", () => {
@@ -147,6 +147,8 @@ describe("C1–C7: the chamber markup", () => {
     expect(html).not.toContain('data-testid="account-link-form"');
     expect(html).toContain('data-testid="account-method-email"');
     expect(html).toContain("current session");
+    expect(html.match(/data-testid="account-method-last-used"/g)?.length).toBe(2); // the server's last-use fact, never computed here
+    expect(html).toContain("2026-10-03 08:00:00 UTC");
     expect(html.match(/data-testid="account-session"/g)?.length).toBe(2);
     expect(html.match(/data-testid="account-session-end"/g)?.length).toBe(1);
     expect(html).toContain('data-testid="account-session-current"');

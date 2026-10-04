@@ -24,6 +24,8 @@ export type MethodRelation = {
   readonly words: string;
   /** The provider-method attribute, never the identity. */
   readonly providerEmail: string | null;
+  /** The server's own last-use fact of the method (24 §24.5 "last login evidence where safe"), or null. */
+  readonly lastAuthenticatedAt: string | null;
   /** The method the current session was produced by (exactly one ACTIVE method of the session's type). */
   readonly current: boolean;
   /** 24 §14.6 mirrored: another ACTIVE method remains. The server decides; this only withholds a futile control. */
@@ -85,6 +87,7 @@ export function accountSecurityFrom(reads: IdentityReads, linkNext: string): Acc
       label,
       words: authenticationWords(label),
       providerEmail: method.provider === null ? null : method.provider.email,
+      lastAuthenticatedAt: method.lastAuthenticatedAt,
       current: ofCurrentType.length === 1 && ofCurrentType[0].methodId === method.methodId,
       removable: active.length > 1,
     });
