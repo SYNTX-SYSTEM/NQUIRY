@@ -69,7 +69,7 @@ code, state or nonce ever appears in a body.
 | `GET /auth/oidc/{p}/callback` | — | `303` to the validated `next` (+ session cookie) | `303 /login?auth=` `cancelled` \| `provider_unavailable` \| `provider_error` \| `failed` \| `unavailable` |
 | `GET /auth/methods` | required | `200 {kind: ok, methods: [{methodId, methodType, status, createdAt, lastAuthenticatedAt, provider: null \| {providerId, email}}]}` | `401` |
 | `POST /auth/oidc/{p}/link/start?next=<path>` (form POST) | required | `303` to the provider | `401`, `503` |
-| `GET /auth/oidc/{p}/link/callback` | required | `303 <next>?link=ok` | `?link=already_linked` \| `collision` \| `cancelled` \| `failed`; default `next` is `/account/security` (a RED-line path — a consumer MUST pass its own `next`) |
+| `GET /auth/oidc/{p}/link/callback` | required | `303 <next>?link=ok` | `?link=already_linked` \| `collision` \| `cancelled` \| `failed`; fallback target when no bound `next` is known = `NQUIRY_ACCOUNT_SECURITY_PATH` (default `/account/security`, production `/workspaces` once deployed) — a consumer still passes its own `next` |
 | `POST /auth/methods/{id}/unlink` | required | `200 {kind: ok, methodId, remainingActiveMethods, currentSessionEnded}` (cookie cleared when the current session ended) | `400 rejected MALFORMED_METHOD_ID`, `403 denied UNLINK_DENIED` (unknown / foreign / already revoked — one class), `409 denied LAST_METHOD` |
 | `GET /auth/sessions` | required | `200 {kind: ok, sessions: [{sessionId, issuedAt, expiresAt, current, methodType}]}` | `401` |
 | `POST /auth/sessions/{id}/revoke` | required | `200 {kind: ok}` (cookie cleared when it was the current one) | `400 rejected MALFORMED_SESSION_ID`, `404 denied SESSION_NOT_FOUND` (foreign == missing) |

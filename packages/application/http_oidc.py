@@ -154,12 +154,20 @@ def _login_projection(name: str) -> OidcDispatchResult:
     )
 
 
-def _link_location(name: str, target: str = ACCOUNT_SECURITY_DESTINATION) -> str:
+def _account_security_path() -> str:
+    """The deployed frontend's account-security location (runtime-configured,
+    default `ACCOUNT_SECURITY_DESTINATION`): the fallback target of a link
+    projection when no legitimate bound target is known."""
+    return current_auth_runtime().account_security_path
+
+
+def _link_location(name: str, target: str | None = None) -> str:
+    target = _account_security_path() if target is None else target
     joiner = "&" if "?" in target else "?"
     return f"{target}{joiner}link={name}"
 
 
-def _link_projection(name: str, target: str = ACCOUNT_SECURITY_DESTINATION) -> OidcDispatchResult:
+def _link_projection(name: str, target: str | None = None) -> OidcDispatchResult:
     return OidcDispatchResult(
         303, location=_browser_destination(_link_location(name, target)), clear_binding=True
     )
@@ -314,7 +322,7 @@ def dispatch_oidc_link_start(
         provider,
         purpose=OidcTransactionPurpose.ACCOUNT_LINK,
         initiating_user_id=user_id,
-        redirect_candidate=redirect_candidate or ACCOUNT_SECURITY_DESTINATION,
+        redirect_candidate=redirect_candidate or _account_security_path(),
         now=now,
     )
 

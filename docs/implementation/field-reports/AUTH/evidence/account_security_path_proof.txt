@@ -1,0 +1,4 @@
+ACCOUNT_SECURITY_PATH propagation proof (2026-10-04) — affected radius (HD-AUTH-04)
+part 1: test_auth_account_security_path + wu10 + wu07 + wu15 + identity_presentation + provider_bootstrap + db_principal + redirect_target + wu09 = 183 passed (0:03:37)
+part 2: wu08 + wu12 + wu13 + wu14 + wu16 + isolation sweep = 228 passed in 714.40s (0:11:54)
+ruff clean; mypy clean (auth_runtime, http_oidc); architecture + test-only import checks PASS

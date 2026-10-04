@@ -166,8 +166,12 @@ First Broken Relations, in dependency order:
    `cutover-cyanroot.sh`; web only; api / DB / `.env` / vhost unchanged;
    record and proof in CYAN `WU-AUTH-CYAN-ACCOUNT-01.md`). The authentication
    Field is now reachable by a human through the deployed UI (local login,
-   Google login, identity presentation, account security). Final Human
-   Acceptance on `https://nquiry.condyn.eu/` pending. Previously: the authentication Field is not
+   Google login, identity presentation, account security). **Final Human
+   Acceptance on `https://nquiry.condyn.eu/`: ACCEPTED (HD-AUTH-09).**
+   Propagation: `NQUIRY_ACCOUNT_SECURITY_PATH` (link-projection fallback is
+   frontend-owned; production value `/workspaces`) — source + falsifiers in
+   this branch; **pending deployment** (api assembly from this branch +
+   `.env` line; human-run). Previously: the authentication Field is not
    reachable by a human through the deployed UI (provider login only via a
    typed URL). Root cutover of the CYAN candidate = CYAN_PRODUCTION_ROOT_CUTOVER
    → Human Frontend Acceptance (human boundary) after 2 and 3 and the real

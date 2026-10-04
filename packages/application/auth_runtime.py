@@ -24,6 +24,12 @@ Settings (environment variables, read once at startup, same discipline as
 - `NQUIRY_PUBLIC_API_BASE_URL`: where a browser reaches this API (the test
   provider's authorize page and callback live under it); default
   `http://localhost:8000`.
+- `NQUIRY_ACCOUNT_SECURITY_PATH` (CYAN_PRODUCTION_ROOT_CUTOVER, 2026-10-04):
+  the deployed frontend's account-security location — the fallback target of
+  an ACCOUNT_LINK projection when no legitimate `next` is known (link start
+  without `next`; a link callback whose transaction cannot be bound). A local
+  destination (`security/redirect_target`); default `/account/security` (the
+  AUTH-line web). The product frontend (CYAN) presents links on `/workspaces`.
 
 FAIL-CLOSED: unset mode means no external provider (login offers none);
 `test` outside DEVELOPMENT / TEST raises `LocalProviderForbidden` at startup
@@ -44,6 +50,7 @@ from security.oidc_provider import OidcProvider
 from security.oidc_standard import google_provider
 from security.oidc_test_issuer import LocalTestIssuer
 from security.recovery import RecoveryPolicy
+from security.redirect_target import is_legitimate_local_destination
 from security.request_security import is_origin
 
 _DEV_ENVIRONMENTS = frozenset({Environment.DEVELOPMENT, Environment.TEST})
@@ -93,6 +100,10 @@ class AuthRuntime:
     """None: no delivery configured, verification and recovery are unavailable
     (24 §36 #16 production delivery is a human decision)."""
     recovery_policy: RecoveryPolicy = RecoveryPolicy.DENIED
+    account_security_path: str = "/account/security"
+    """The deployed frontend's account-security location: the fallback target
+    of a link projection when no legitimate `next` is known. Frontend-owned
+    fact, configured per deployment (`NQUIRY_ACCOUNT_SECURITY_PATH`)."""
     web_base_url: str | None = None
     """WU-AUTH-14: the browser-facing app's origin, prefixed to every local
     post-authentication destination (login projection, post-login target, link
@@ -191,6 +202,14 @@ def auth_runtime_from_environment(
             f"NQUIRY_PUBLIC_WEB_BASE_URL={web_base_url!r} is not an explicit origin "
             "(scheme://host[:port], no path)"
         )
+    account_security_path = (
+        source.get("NQUIRY_ACCOUNT_SECURITY_PATH", "").strip() or "/account/security"
+    )
+    if not is_legitimate_local_destination(account_security_path):
+        raise ValueError(
+            f"NQUIRY_ACCOUNT_SECURITY_PATH={account_security_path!r} is not a local "
+            "destination of the application (24 section 11.17)"
+        )
     return AuthRuntime(
         environment=environment,
         providers=providers,
@@ -199,6 +218,7 @@ def auth_runtime_from_environment(
         account_creation_policy=policy,
         mail_sink=sink,
         recovery_policy=recovery_policy,
+        account_security_path=account_security_path,
         web_base_url=web_base_url,
     )
 

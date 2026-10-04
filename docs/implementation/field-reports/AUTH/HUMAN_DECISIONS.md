@@ -263,6 +263,38 @@ previouslyBound true, workspaceAuthority NONE); `tobi` unchanged
 (record_version 1, memberships 2). HA-AUTH-07 is CLOSED; the generic
 bootstrap is proven live once (24 §41 / §48 #62–63 for this relation).
 
+## HD-AUTH-09 — Final Human Acceptance of the production authentication frontend (2026-10-04)
+
+**Decision (human operator, verbatim essentials):** Human Frontend Acceptance on
+`/cy-review/` "successful"; "Publish the accepted candidate to the production
+root"; after publication and proof: "Final Human Acceptance on
+https://nquiry.condyn.eu/: ACCEPTED. I verified the production root directly.
+The production authentication frontend and the required human flows work
+correctly."
+
+**What it establishes (persisted):** the product frontend of the
+authentication Field is the CYAN lineage at `auth-cyan-reconstruction`
+`94759cd` (AUTH/CYAN-ACCOUNT-01), served at the production root since
+2026-10-04T15:59Z (api `e069fc1`). The human flows accepted on production:
+local password login, Google login (LINKED and BOOTSTRAP cases), identity
+presentation, the Access security chamber (methods, link, sessions, sign out
+everywhere). The AUTH-line web in this branch (`apps/web`) remains a proof
+surface of the API, not the product.
+
+**24 §36 boundaries resolved by this acceptance (recorded, not inferred):**
+#1 official login methods = LOCAL_PASSWORD and GOOGLE_OIDC; #2 password
+authentication is allowed in production; #6 Google OIDC is production-enabled
+for the first release. (#3–#5 by HD-AUTH-08; #15 by HARD-DEP-001 Option A:
+identity creation never founds, founding is a separate act.)
+
+**Propagation derived from the resulting state (this commit):** the API's
+link-projection fallback named a route of the AUTH-line web
+(`/account/security`) that the product frontend does not serve; it is now
+runtime-configured (`NQUIRY_ACCOUNT_SECURITY_PATH`, a local destination,
+default unchanged) — `tests/e2e/test_auth_account_security_path.py`. The
+production value `/workspaces` takes effect with the next API deployment
+(human-run; recorded in `STATUS.md`).
+
 ## Open boundaries (OPEN, awaiting the operator)
 
 | # | Boundary | Home | What it blocks | Default in force | Status |
@@ -274,12 +306,12 @@ bootstrap is proven live once (24 §41 / §48 #62–63 for this relation).
 | HA-AUTH-05 | **Deployment switch to the scoped authentication principal** (24 §21.18; = PFC HA-10) | 24 §21.18, §25.2; 14 §8; PFC HA-09 / HA-10 | — | SWITCH AUTH ONLY (HD-AUTH-06) | **RESOLVED** by HD-AUTH-06 (2026-10-01): SWITCH AUTH ONLY; compose configured; deployment procedure recorded, not executed |
 | HA-AUTH-07 | **Google binding of `tobi` vs stated intent** | 24 §14.2, §18.2; HD-AUTH-08 | — | transition away from `tobi` (HD-AUTH-08 Decision 2) | **RESOLVED** by HD-AUTH-08 and **EXECUTED on production 2026-10-04** (unlink 14:25:01Z, bootstrap 14:28:16Z; `evidence/ha_auth_07_production_transition.txt`) |
 
-Touched and left undecided, not blocking any Work Unit: 24 §36 #1 / #6
-(Google as an official, production-enabled method), #9 (provider-verified
-email as NQUIRY verified email), #10 (session lifetime, 12 h kept), #13
-(administrative recovery / re-enable; no command exists), #15 (governance bootstrap for
-provider-created identities), #16 (production email delivery provider;
-WU-AUTH-11), #18 (multi-account UX).
+Touched and left undecided, not blocking any Work Unit: 24 §36 #9
+(provider-verified email as NQUIRY verified email), #10 (session lifetime,
+12 h kept), #13 (administrative recovery / re-enable; no command exists),
+#16 (production email delivery provider; WU-AUTH-11), #18 (multi-account UX).
+Resolved by HD-AUTH-09: #1, #2, #6; by HD-AUTH-08: #3–#5; #15 is governed by
+HARD-DEP-001 Option A (16 §41 REC-001).
 
 ## Ledger reconciliation (deferred, disclosed)
 
