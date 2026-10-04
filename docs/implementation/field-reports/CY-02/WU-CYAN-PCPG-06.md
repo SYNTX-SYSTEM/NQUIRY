@@ -64,4 +64,8 @@ area focus, delta → span highlight) — presentation refinements for a later u
 attachment (`decision-chamber`, another route).
 
 ## Checkpoint
-(recorded after commit)
+| | Value |
+|---|---|
+| Field commit | `c2a54267ac69bd55749c1947234191558c5f7f76` (tree `13bd497094bf4fa36fd43d85de8241e6dbe78113`) |
+| Tag | `checkpoint-CY-PCPG-06` → tag object `4a54b3feffdc7a188bf83bc710272082be50e17d` → `c2a5426`; pushed |
+| RED pin (local lanes) | `checkpoint-PFC-PCPG-18` → `41b4324a75077ec33b00ed3a878db7a318fc00d8` (unchanged) |
