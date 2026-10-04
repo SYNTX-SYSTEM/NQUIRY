@@ -170,8 +170,9 @@ First Broken Relations, in dependency order:
    Acceptance on `https://nquiry.condyn.eu/`: ACCEPTED (HD-AUTH-09).**
    Propagation: `NQUIRY_ACCOUNT_SECURITY_PATH` (link-projection fallback is
    frontend-owned; production value `/workspaces`) — source + falsifiers in
-   this branch; **pending deployment** (api assembly from this branch +
-   `.env` line; human-run). Previously: the authentication Field is not
+   this branch (`36c5585`); **pending deployment ASP-01** (prepared: assembly
+   archive of `36c5585` + `deploy-asp01.sh` with guards / baseline / anchor
+   `nquiry-api:pre-asp01` / rollback; no migration; human-run). Previously: the authentication Field is not
    reachable by a human through the deployed UI (provider login only via a
    typed URL). Root cutover of the CYAN candidate = CYAN_PRODUCTION_ROOT_CUTOVER
    → Human Frontend Acceptance (human boundary) after 2 and 3 and the real
