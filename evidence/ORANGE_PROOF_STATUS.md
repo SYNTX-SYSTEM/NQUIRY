@@ -274,3 +274,63 @@ Found and fixed on the way: TF-PX-06 (SUCCESSOR_FINDINGS.md). Superseded harness
 Claim ceiling: CANONICAL PROOF VERDICT = REFLECTED BY PROCESS EXIT STATUS; PASS -> exit 0, non-PASS -> exit nonzero.
 Proof semantics unchanged; verbose + heartbeat remain liveness / presentation only. Product claims unchanged:
 PCPG-5 2238/2239 with SF-PX-03 OPEN; SWU-PX-03 2252/2252; performance provisional.
+
+## 15. Stage runner process exit status (Work Unit STAGE_EXIT_STATUS, 2026-10-04)
+
+FBR (TF-PX-07): the standalone proof-executing stage phases recorded their governed pytest result in
+`*_exit_code.txt`, printed it (`exit=N`), and then exited 0 whatever it was. Measured before the repair with a real
+pytest / pytest-xdist child on a synthetic tree: failed tests (recorded 1) and "no tests collected" (recorded 5)
+both gave process exit 0 in `serial_baseline.sh run`, `parallel_proof.sh xdist` and `parallel_proof.sh serial`
+(`evidence/stage_exit_status/pre_repair.log`, 15 failing checks). A standalone caller (`... run && next`) therefore
+observed success for a failed proof. The canonical chain was never affected: it does not consume the stage process
+status and reads `*_exit_code.txt`, as do `analyze_serial.py` and `run_aggregate.py`.
+
+STAGE EXIT CONTRACT (5 added lines, none changed or removed; each carries the token `STAGE_EXIT_STATUS`):
+- `serial_baseline.sh run`, `parallel_proof.sh xdist`, `parallel_proof.sh serial`: exit `0` only if the recorded
+  exit code is exactly `0`; exit `1` for any other recorded value, including an absent, empty or malformed file;
+- the raw pytest code is still what is recorded and printed (1 = failure / refusal, 2 = usage stay the lineage
+  convention, so a raw pytest 2 or 5 never surfaces as "usage" or as success);
+- usage (2) and refusal (1) are unchanged; `pre` and `post` are unchanged (see TF-PX-08).
+Stripping the five lines gives the base runners (ca9cbf9) byte-identical, so pytest command lines, selection,
+partition, environment scrubbing and evidence files are unchanged. `final_closure.sh` is byte-identical; it has no
+errexit / pipefail / ERR trap and calls the three stages unconditionally, so chain behavior is unchanged.
+Section 13's sentence "the stage drivers exit 0 regardless" describes the state at that Work Unit and is superseded
+by this section; the `progress.sh` comment and the `progress_falsifiers.sh` unchanged-scripts check (F11_F12 now
+ignores exactly the `STAGE_EXIT_STATUS` lines) were updated accordingly.
+
+Proof (`stage_exit_falsifiers.sh`, `evidence/stage_exit_status/`), narrow radius, no product test, no database:
+the REAL runner scripts run with exactly one substituted line (`N=` -> a synthetic root), so the governed child is
+a stub with a chosen exit code or a real pytest / pytest-xdist on a synthetic tree. 36/36:
+- child 0 -> recorded 0 -> exit 0; child 1 -> recorded 1 -> exit 1; raw 2, 3, 4, 5, 124, 137, 255 -> exit exactly 1
+  with the raw code recorded and printed (all three phases);
+- real pytest pass -> 0, real failures -> 1, real "no tests collected" (5) -> 1; the xdist phase still runs 4
+  workers and deselects the serial selectors, the serial phase runs exactly them;
+- stdout, evidence file set and evidence contents identical to the base runners; the base runners really exited 0
+  on a failed proof (documents the defect);
+- the status mapping is fail-closed for absent / empty / garbage files; usage 2 and refusal 1 unchanged;
+- the chain's own stage lines (verbatim from `final_closure.sh`) fed by the repaired runners: the chain continues
+  past a failed stage, reports the raw code (`STAGE_FAIL ... rc=4`), ends `PROOF_END verdict=FAIL` / exit 1, and its
+  output and status are identical with base runners; PASS path identical too;
+- static: chain unchanged and never conditional on a stage status; only contract lines added; partition,
+  selection, analysis and aggregation scripts byte-identical; synthetic tree unchanged; no orphan process.
+Mutants 11/11 killed (`mutation_driver.sh`, `mutation.log`): always exit 0, inverted, only raw code 1 fails, raw code
+propagated as status, recorded truth forced to 0, recorded raw code normalized to 1, status before the visible
+summary, parallel runner not repaired, chain consumes the stage status, parallel selection changed (-n 2), absent
+exit-code file is success. Disclosed (own harness defect): in the first mutation run the selection mutant was not
+applied (its pattern also matched a comment line), giving 10/11; the pattern was fixed and all mutants re-run. That
+run is preserved as `mutation_v1_SUPERSEDED_MS9_not_applied/`.
+Versioned per mutant: its verdict log and mutation diff; the per-mutant run directories stay local (`.gitignore`).
+Existing proofs in the affected radius green: progress falsifiers 22/22, exit-status falsifiers 18/18, TF-PX-04/05
+harness 12/12, bash -n 15/15. Not re-run (inputs and scripts byte-identical, outside the radius): canonical ids,
+partition, aggregation and order proofs. No full canonical chain was run: its command lines are byte-identical and
+it does not consume the changed relation.
+
+Not changed, disclosed: the pre-lineage originals in `.venv-proof313-orange/orange-proof/` and the SWU-PX-03 binding
+copies in `.venv-proof313-orange-swu/orange-proof/` keep the old stage status (historical provenance).
+Recorded as TF-PX-08 and kept unchanged by Human Authority decision (2026-10-04): `pre` / `post` process status is
+not a verdict.
+
+Claim ceiling: STAGE RUNNER PROCESS STATUS = REFLECTS THE RECORDED GOVERNED PYTEST EXIT CODE (0 -> 0, else 1) for
+`run` / `xdist` / `serial`. It is a per-stage process fact, never a proof verdict: SERIAL_BASELINE and PARALLEL_PROOF
+verdicts still come only from the analyzers, and the canonical verdict only from `PROOF_END`. Product claims
+unchanged: PCPG-5 2238/2239 with SF-PX-03 OPEN; SWU-PX-03 2252/2252; performance provisional.

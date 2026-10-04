@@ -21,6 +21,7 @@ H() { env -u DATABASE_URL -u PYTHONPATH -u PYTHONDONTWRITEBYTECODE -u NQUIRY_ENV
         -u NQUIRY_RUN_REAL_COMMIT_TESTS -u COVERAGE_PROCESS_START -u ORANGE_XDIST_LANE -u ORANGE_DB_BASE \
         -u ORANGE_BINDING_EVIDENCE PYTHONNOUSERSITE=1 PYTHONPYCACHEPREFIX=$PYC "$@"; }
 mkdir -p "$OUT"
+stage_exit() { [ "$(tr -d '[:space:]' < "$1" 2>/dev/null)" = 0 ] && exit 0; exit 1; }  # STAGE_EXIT_STATUS: process status follows the recorded exit code (0 -> 0; nonzero, absent or garbage -> 1; raw code stays in the file)
 
 tree_hash() { (cd "$O" && find . -path ./.git -prune -o -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum | cut -d' ' -f1); }
 inventory() {
@@ -65,12 +66,14 @@ case "${1:-}" in
         -n 4 --dist load --max-worker-restart=0 $(printf "'%s' " "${DESELECT[@]}") -rA \
         --junitxml='$OUT/xdist_junit.xml' -o junit_family=xunit2 > '$OUT/xdist_run.log' 2>&1"
     tail -1 "$OUT/xdist_run.log"
+    stage_exit "$OUT/xdist_exit_code.txt"  # STAGE_EXIT_STATUS
     ;;
   serial)
     timed serial bash -c "cd '$O' && $(declare -f H); H env DATABASE_URL='${BASE}nquiry_proof_serial_test' \
         '$V/bin/python' -m pytest -p no:cacheprovider $(printf "'%s' " "${SERIAL_SELECTORS[@]}") -rA \
         --junitxml='$OUT/serial_junit.xml' -o junit_family=xunit2 > '$OUT/serial_run.log' 2>&1"
     tail -1 "$OUT/serial_run.log"
+    stage_exit "$OUT/serial_exit_code.txt"  # STAGE_EXIT_STATUS
     ;;
   post)
     inventory post; state post

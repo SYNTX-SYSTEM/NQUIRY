@@ -1,0 +1,4 @@
+61c61
+< bash "$P/parallel_proof.sh" xdist
+---
+> bash "$P/parallel_proof.sh" xdist || exit 1

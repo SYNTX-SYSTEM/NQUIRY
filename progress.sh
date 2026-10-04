@@ -4,8 +4,9 @@
 # - Events go to the chain's stdout, one line each: [HH:MM:SS] EVENT  key=value ...
 #   Timestamps are elapsed time since PROOF_START and are never part of proof truth.
 # - STAGE_START / STAGE_END / STAGE_FAIL / STAGE_TIMEOUT report process facts (the child's exit code). They
-#   never say PASS: the canonical stage drivers exit 0 whatever pytest did, so the real exit code is read from
-#   the stage's own *_exit_code.txt, and "unobserved" is reported where the chain itself discards it.
+#   never say PASS: the chain does not consume the stage drivers' process status (0 / 1 only, STAGE_EXIT_STATUS),
+#   so the real exit code is read from the stage's own *_exit_code.txt, and "unobserved" is reported where the
+#   chain itself discards it.
 # - HEARTBEAT is a liveness signal only (stage, elapsed, optional pytest progress %). It never carries a
 #   verdict. A hang shows as growing elapsed time without a STAGE_END, so it is never masked.
 # - VERDICT copies PASS / FAIL only from the verdict lines the chain already writes (NAME::PASS|FAIL). A

@@ -1,0 +1,131 @@
+== MS1_always_exit_0: rc=1 -> KILLED
+    S2_FAILED_PROOF_EXITS_NONZERO[serial_baseline.sh run]::FAIL (rc=0 recorded=1)
+    S2_FAILED_PROOF_EXITS_NONZERO[parallel_proof.sh xdist]::FAIL (rc=0 recorded=1)
+    S2_FAILED_PROOF_EXITS_NONZERO[parallel_proof.sh serial]::FAIL (rc=0 recorded=1)
+    S3_ANY_NONZERO_RAW_CODE_EXITS_1_AND_STAYS_RECORDED[serial_baseline.sh run]::FAIL 
+    S3_ANY_NONZERO_RAW_CODE_EXITS_1_AND_STAYS_RECORDED[parallel_proof.sh xdist]::FAIL 
+    S3_ANY_NONZERO_RAW_CODE_EXITS_1_AND_STAYS_RECORDED[parallel_proof.sh serial]::FAIL 
+    S4b_REAL_PYTEST_FAILURE_EXITS_NONZERO[serial_baseline.sh run]::FAIL (rc=0 ============================== 10 failed in 0.35s ==============================)
+    S4c_REAL_NO_TESTS_COLLECTED_EXIT_5_IS_FAILURE[serial_baseline.sh run]::FAIL (rc=0 recorded=5)
+    S4b_REAL_PYTEST_FAILURE_EXITS_NONZERO[parallel_proof.sh xdist]::FAIL (rc=0 ============================== 8 failed in 1.65s ===============================)
+    S4c_REAL_NO_TESTS_COLLECTED_EXIT_5_IS_FAILURE[parallel_proof.sh xdist]::FAIL (rc=0 recorded=5)
+    S4b_REAL_PYTEST_FAILURE_EXITS_NONZERO[parallel_proof.sh serial]::FAIL (rc=0 ============================== 2 failed in 0.56s ===============================)
+    S4c_REAL_NO_TESTS_COLLECTED_EXIT_5_IS_FAILURE[parallel_proof.sh serial]::FAIL (rc=0 recorded=5)
+    S6_STATUS_MAPPING_IS_FAIL_CLOSED[serial_baseline.sh]::FAIL 
+    S6_STATUS_MAPPING_IS_FAIL_CLOSED[parallel_proof.sh]::FAIL 
+    STAGE_EXIT_FALSIFIERS::FAIL (14)
+== MS2_inverted_exit_status: rc=1 -> KILLED
+    S1_PASSED_PROOF_EXITS_0[serial_baseline.sh run]::FAIL (rc=1 recorded=0)
+    S1_PASSED_PROOF_EXITS_0[parallel_proof.sh xdist]::FAIL (rc=1 recorded=0)
+    S1_PASSED_PROOF_EXITS_0[parallel_proof.sh serial]::FAIL (rc=1 recorded=0)
+    S2_FAILED_PROOF_EXITS_NONZERO[serial_baseline.sh run]::FAIL (rc=0 recorded=1)
+    S2_FAILED_PROOF_EXITS_NONZERO[parallel_proof.sh xdist]::FAIL (rc=0 recorded=1)
+    S2_FAILED_PROOF_EXITS_NONZERO[parallel_proof.sh serial]::FAIL (rc=0 recorded=1)
+    S3_ANY_NONZERO_RAW_CODE_EXITS_1_AND_STAYS_RECORDED[serial_baseline.sh run]::FAIL 
+    S3_ANY_NONZERO_RAW_CODE_EXITS_1_AND_STAYS_RECORDED[parallel_proof.sh xdist]::FAIL 
+    S3_ANY_NONZERO_RAW_CODE_EXITS_1_AND_STAYS_RECORDED[parallel_proof.sh serial]::FAIL 
+    S4a_REAL_PYTEST_PASS_EXITS_0[serial_baseline.sh run]::FAIL (rc=1 ============================== 10 passed in 0.28s ==============================)
+    S4b_REAL_PYTEST_FAILURE_EXITS_NONZERO[serial_baseline.sh run]::FAIL (rc=0 ============================== 10 failed in 0.36s ==============================)
+    S4c_REAL_NO_TESTS_COLLECTED_EXIT_5_IS_FAILURE[serial_baseline.sh run]::FAIL (rc=0 recorded=5)
+    S4a_REAL_PYTEST_PASS_EXITS_0[parallel_proof.sh xdist]::FAIL (rc=1 ============================== 8 passed in 3.82s ===============================)
+    S4b_REAL_PYTEST_FAILURE_EXITS_NONZERO[parallel_proof.sh xdist]::FAIL (rc=0 ============================== 8 failed in 1.90s ===============================)
+    S4c_REAL_NO_TESTS_COLLECTED_EXIT_5_IS_FAILURE[parallel_proof.sh xdist]::FAIL (rc=0 recorded=5)
+    S4a_REAL_PYTEST_PASS_EXITS_0[parallel_proof.sh serial]::FAIL (rc=1 ============================== 2 passed in 0.24s ===============================)
+    S4b_REAL_PYTEST_FAILURE_EXITS_NONZERO[parallel_proof.sh serial]::FAIL (rc=0 ============================== 2 failed in 0.30s ===============================)
+    S4c_REAL_NO_TESTS_COLLECTED_EXIT_5_IS_FAILURE[parallel_proof.sh serial]::FAIL (rc=0 recorded=5)
+    S6_STATUS_MAPPING_IS_FAIL_CLOSED[serial_baseline.sh]::FAIL 
+    S6_STATUS_MAPPING_IS_FAIL_CLOSED[parallel_proof.sh]::FAIL 
+    STAGE_EXIT_FALSIFIERS::FAIL (20)
+== MS3_only_raw_code_1_is_failure: rc=1 -> KILLED
+    S3_ANY_NONZERO_RAW_CODE_EXITS_1_AND_STAYS_RECORDED[serial_baseline.sh run]::FAIL 
+    S3_ANY_NONZERO_RAW_CODE_EXITS_1_AND_STAYS_RECORDED[parallel_proof.sh xdist]::FAIL 
+    S3_ANY_NONZERO_RAW_CODE_EXITS_1_AND_STAYS_RECORDED[parallel_proof.sh serial]::FAIL 
+    S4c_REAL_NO_TESTS_COLLECTED_EXIT_5_IS_FAILURE[serial_baseline.sh run]::FAIL (rc=0 recorded=5)
+    S4c_REAL_NO_TESTS_COLLECTED_EXIT_5_IS_FAILURE[parallel_proof.sh xdist]::FAIL (rc=0 recorded=5)
+    S4c_REAL_NO_TESTS_COLLECTED_EXIT_5_IS_FAILURE[parallel_proof.sh serial]::FAIL (rc=0 recorded=5)
+    S6_STATUS_MAPPING_IS_FAIL_CLOSED[serial_baseline.sh]::FAIL 
+    S6_STATUS_MAPPING_IS_FAIL_CLOSED[parallel_proof.sh]::FAIL 
+    STAGE_EXIT_FALSIFIERS::FAIL (8)
+== MS4_raw_code_propagated_as_status: rc=1 -> KILLED
+    S3_ANY_NONZERO_RAW_CODE_EXITS_1_AND_STAYS_RECORDED[serial_baseline.sh run]::FAIL 
+    S3_ANY_NONZERO_RAW_CODE_EXITS_1_AND_STAYS_RECORDED[parallel_proof.sh xdist]::FAIL 
+    S3_ANY_NONZERO_RAW_CODE_EXITS_1_AND_STAYS_RECORDED[parallel_proof.sh serial]::FAIL 
+    S4c_REAL_NO_TESTS_COLLECTED_EXIT_5_IS_FAILURE[serial_baseline.sh run]::FAIL (rc=5 recorded=5)
+    S4c_REAL_NO_TESTS_COLLECTED_EXIT_5_IS_FAILURE[parallel_proof.sh xdist]::FAIL (rc=5 recorded=5)
+    S4c_REAL_NO_TESTS_COLLECTED_EXIT_5_IS_FAILURE[parallel_proof.sh serial]::FAIL (rc=5 recorded=5)
+    S6_STATUS_MAPPING_IS_FAIL_CLOSED[serial_baseline.sh]::FAIL 
+    S6_STATUS_MAPPING_IS_FAIL_CLOSED[parallel_proof.sh]::FAIL 
+    STAGE_EXIT_FALSIFIERS::FAIL (8)
+== MS5a_recorded_truth_forced_to_0: rc=1 -> KILLED
+    S2_FAILED_PROOF_EXITS_NONZERO[serial_baseline.sh run]::FAIL (rc=0 recorded=0)
+    S2_FAILED_PROOF_EXITS_NONZERO[parallel_proof.sh xdist]::FAIL (rc=0 recorded=0)
+    S2_FAILED_PROOF_EXITS_NONZERO[parallel_proof.sh serial]::FAIL (rc=0 recorded=0)
+    S3_ANY_NONZERO_RAW_CODE_EXITS_1_AND_STAYS_RECORDED[serial_baseline.sh run]::FAIL 
+    S3_ANY_NONZERO_RAW_CODE_EXITS_1_AND_STAYS_RECORDED[parallel_proof.sh xdist]::FAIL 
+    S3_ANY_NONZERO_RAW_CODE_EXITS_1_AND_STAYS_RECORDED[parallel_proof.sh serial]::FAIL 
+    S4b_REAL_PYTEST_FAILURE_EXITS_NONZERO[serial_baseline.sh run]::FAIL (rc=0 ============================== 10 failed in 0.34s ==============================)
+    S4c_REAL_NO_TESTS_COLLECTED_EXIT_5_IS_FAILURE[serial_baseline.sh run]::FAIL (rc=0 recorded=0)
+    S4b_REAL_PYTEST_FAILURE_EXITS_NONZERO[parallel_proof.sh xdist]::FAIL (rc=0 ============================== 8 failed in 1.95s ===============================)
+    S4c_REAL_NO_TESTS_COLLECTED_EXIT_5_IS_FAILURE[parallel_proof.sh xdist]::FAIL (rc=0 recorded=0)
+    S4b_REAL_PYTEST_FAILURE_EXITS_NONZERO[parallel_proof.sh serial]::FAIL (rc=0 ============================== 2 failed in 0.46s ===============================)
+    S4c_REAL_NO_TESTS_COLLECTED_EXIT_5_IS_FAILURE[parallel_proof.sh serial]::FAIL (rc=0 recorded=0)
+    S5_RECORDED_TRUTH_STDOUT_AND_EVIDENCE_IDENTICAL_TO_BASE[serial_baseline.sh run]::FAIL 
+    S5_RECORDED_TRUTH_STDOUT_AND_EVIDENCE_IDENTICAL_TO_BASE[parallel_proof.sh xdist]::FAIL 
+    S5_RECORDED_TRUTH_STDOUT_AND_EVIDENCE_IDENTICAL_TO_BASE[parallel_proof.sh serial]::FAIL 
+    S8a_CHAIN_CONTINUES_PAST_A_FAILED_STAGE_AND_REPORTS_THE_RAW_CODE::FAIL 
+    S8b_CHAIN_FINAL_VERDICT_AND_EXIT_STATUS_UNCHANGED::FAIL (fail rc=0, pass rc=0)
+    S8c_CHAIN_OUTPUT_AND_STATUS_IDENTICAL_WITH_BASE_RUNNERS::FAIL 
+    S10_ONLY_CONTRACT_LINES_ADDED_SELECTION_PARTITION_AGGREGATION_UNCHANGED::FAIL 
+    STAGE_EXIT_FALSIFIERS::FAIL (19)
+== MS5b_recorded_raw_code_normalized_to_1: rc=1 -> KILLED
+    S3_ANY_NONZERO_RAW_CODE_EXITS_1_AND_STAYS_RECORDED[serial_baseline.sh run]::FAIL 
+    S3_ANY_NONZERO_RAW_CODE_EXITS_1_AND_STAYS_RECORDED[parallel_proof.sh xdist]::FAIL 
+    S3_ANY_NONZERO_RAW_CODE_EXITS_1_AND_STAYS_RECORDED[parallel_proof.sh serial]::FAIL 
+    S4c_REAL_NO_TESTS_COLLECTED_EXIT_5_IS_FAILURE[serial_baseline.sh run]::FAIL (rc=1 recorded=1)
+    S4c_REAL_NO_TESTS_COLLECTED_EXIT_5_IS_FAILURE[parallel_proof.sh xdist]::FAIL (rc=1 recorded=1)
+    S4c_REAL_NO_TESTS_COLLECTED_EXIT_5_IS_FAILURE[parallel_proof.sh serial]::FAIL (rc=1 recorded=1)
+    S5_RECORDED_TRUTH_STDOUT_AND_EVIDENCE_IDENTICAL_TO_BASE[serial_baseline.sh run]::FAIL 
+    S5_RECORDED_TRUTH_STDOUT_AND_EVIDENCE_IDENTICAL_TO_BASE[parallel_proof.sh xdist]::FAIL 
+    S5_RECORDED_TRUTH_STDOUT_AND_EVIDENCE_IDENTICAL_TO_BASE[parallel_proof.sh serial]::FAIL 
+    S8a_CHAIN_CONTINUES_PAST_A_FAILED_STAGE_AND_REPORTS_THE_RAW_CODE::FAIL 
+    S8c_CHAIN_OUTPUT_AND_STATUS_IDENTICAL_WITH_BASE_RUNNERS::FAIL 
+    S10_ONLY_CONTRACT_LINES_ADDED_SELECTION_PARTITION_AGGREGATION_UNCHANGED::FAIL 
+    STAGE_EXIT_FALSIFIERS::FAIL (12)
+== MS6_status_before_the_visible_summary: rc=1 -> KILLED
+    S1_PASSED_PROOF_EXITS_0[serial_baseline.sh run]::FAIL (rc=0 recorded=0)
+    S2_FAILED_PROOF_EXITS_NONZERO[serial_baseline.sh run]::FAIL (rc=1 recorded=1)
+    S3_ANY_NONZERO_RAW_CODE_EXITS_1_AND_STAYS_RECORDED[serial_baseline.sh run]::FAIL 
+    S4a_REAL_PYTEST_PASS_EXITS_0[serial_baseline.sh run]::FAIL (rc=0 )
+    S4b_REAL_PYTEST_FAILURE_EXITS_NONZERO[serial_baseline.sh run]::FAIL (rc=1 )
+    S4a_REAL_PYTEST_PASS_EXITS_0[parallel_proof.sh xdist]::FAIL (rc=0 xdist exit=0 wall=6.941885275 s)
+    S4b_REAL_PYTEST_FAILURE_EXITS_NONZERO[parallel_proof.sh xdist]::FAIL (rc=1 xdist exit=1 wall=2.996973854 s)
+    S4a_REAL_PYTEST_PASS_EXITS_0[parallel_proof.sh serial]::FAIL (rc=0 serial exit=0 wall=1.199520847 s)
+    S4b_REAL_PYTEST_FAILURE_EXITS_NONZERO[parallel_proof.sh serial]::FAIL (rc=1 serial exit=1 wall=1.017932505 s)
+    S5_RECORDED_TRUTH_STDOUT_AND_EVIDENCE_IDENTICAL_TO_BASE[serial_baseline.sh run]::FAIL 
+    S5_RECORDED_TRUTH_STDOUT_AND_EVIDENCE_IDENTICAL_TO_BASE[parallel_proof.sh xdist]::FAIL 
+    S5_RECORDED_TRUTH_STDOUT_AND_EVIDENCE_IDENTICAL_TO_BASE[parallel_proof.sh serial]::FAIL 
+    S8c_CHAIN_OUTPUT_AND_STATUS_IDENTICAL_WITH_BASE_RUNNERS::FAIL 
+    STAGE_EXIT_FALSIFIERS::FAIL (13)
+== MS7_parallel_runner_not_repaired: rc=1 -> KILLED
+    S2_FAILED_PROOF_EXITS_NONZERO[parallel_proof.sh xdist]::FAIL (rc=0 recorded=1)
+    S2_FAILED_PROOF_EXITS_NONZERO[parallel_proof.sh serial]::FAIL (rc=0 recorded=1)
+    S3_ANY_NONZERO_RAW_CODE_EXITS_1_AND_STAYS_RECORDED[parallel_proof.sh xdist]::FAIL 
+    S3_ANY_NONZERO_RAW_CODE_EXITS_1_AND_STAYS_RECORDED[parallel_proof.sh serial]::FAIL 
+    S4b_REAL_PYTEST_FAILURE_EXITS_NONZERO[parallel_proof.sh xdist]::FAIL (rc=0 ============================== 8 failed in 1.85s ===============================)
+    S4c_REAL_NO_TESTS_COLLECTED_EXIT_5_IS_FAILURE[parallel_proof.sh xdist]::FAIL (rc=0 recorded=5)
+    S4b_REAL_PYTEST_FAILURE_EXITS_NONZERO[parallel_proof.sh serial]::FAIL (rc=0 ============================== 2 failed in 0.61s ===============================)
+    S4c_REAL_NO_TESTS_COLLECTED_EXIT_5_IS_FAILURE[parallel_proof.sh serial]::FAIL (rc=0 recorded=5)
+    S10_ONLY_CONTRACT_LINES_ADDED_SELECTION_PARTITION_AGGREGATION_UNCHANGED::FAIL 
+    STAGE_EXIT_FALSIFIERS::FAIL (9)
+== MS8_chain_consumes_the_stage_status: rc=1 -> KILLED
+    S8a_CHAIN_CONTINUES_PAST_A_FAILED_STAGE_AND_REPORTS_THE_RAW_CODE::FAIL 
+    S8b_CHAIN_FINAL_VERDICT_AND_EXIT_STATUS_UNCHANGED::FAIL (fail rc=1, pass rc=0)
+    S8c_CHAIN_OUTPUT_AND_STATUS_IDENTICAL_WITH_BASE_RUNNERS::FAIL 
+    S9_CHAIN_UNCHANGED_AND_NEVER_CONSUMES_THE_STAGE_PROCESS_STATUS::FAIL (calls=3 conditional=1)
+    STAGE_EXIT_FALSIFIERS::FAIL (4)
+== MS9_parallel_selection_changed: MUTATION NOT APPLIED
+== MS10_absent_exit_code_file_is_success: rc=1 -> KILLED
+    S6_STATUS_MAPPING_IS_FAIL_CLOSED[serial_baseline.sh]::FAIL 
+    S6_STATUS_MAPPING_IS_FAIL_CLOSED[parallel_proof.sh]::FAIL 
+    STAGE_EXIT_FALSIFIERS::FAIL (2)
+MUTATION_RESULT::FAIL (10/11 killed)

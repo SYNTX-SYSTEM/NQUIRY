@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="10" skipped="0" tests="10" time="0.165" timestamp="2026-10-04T16:04:54.338214+02:00" hostname="codi-ThinkPad-T470p"><testcase classname="tests.e2e.test_pfc_f09_1_technical_failure" name="test_worker_loop_survives_a_database_outage_and_stops_gracefully" time="0.002"><failure message="AssertionError: assert '1' != '1'&#10; +  where '1' = get('ORANGE_SYNTH_FAIL')&#10; +    where get = environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...sts/e2e/test_pfc_f09_1_technical_failure.py::test_worker_loop_survives_a_database_outage_and_stops_gracefully (call)'}).get&#10; +      where environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...sts/e2e/test_pfc_f09_1_technical_failure.py::test_worker_loop_survives_a_database_outage_and_stops_gracefully (call)'}) = os.environ">def test_worker_loop_survives_a_database_outage_and_stops_gracefully() -&gt; None:
+&gt;       assert os.environ.get("ORANGE_SYNTH_FAIL") != "1"
+E       AssertionError: assert '1' != '1'
+E        +  where '1' = get('ORANGE_SYNTH_FAIL')
+E        +    where get = environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...sts/e2e/test_pfc_f09_1_technical_failure.py::test_worker_loop_survives_a_database_outage_and_stops_gracefully (call)'}).get
+E        +      where environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...sts/e2e/test_pfc_f09_1_technical_failure.py::test_worker_loop_survives_a_database_outage_and_stops_gracefully (call)'}) = os.environ
+
+tests/e2e/test_pfc_f09_1_technical_failure.py:5: AssertionError</failure></testcase><testcase classname="tests.security.test_dev_identity_provisioning" name="test_malformed_input_is_refused" time="0.002"><failure message="AssertionError: assert '1' != '1'&#10; +  where '1' = get('ORANGE_SYNTH_FAIL')&#10; +    where get = environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...1', 'PYTEST_CURRENT_TEST': 'tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused (call)'}).get&#10; +      where environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...1', 'PYTEST_CURRENT_TEST': 'tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused (call)'}) = os.environ">def test_malformed_input_is_refused() -&gt; None:
+&gt;       assert os.environ.get("ORANGE_SYNTH_FAIL") != "1"
+E       AssertionError: assert '1' != '1'
+E        +  where '1' = get('ORANGE_SYNTH_FAIL')
+E        +    where get = environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...1', 'PYTEST_CURRENT_TEST': 'tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused (call)'}).get
+E        +      where environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...1', 'PYTEST_CURRENT_TEST': 'tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused (call)'}) = os.environ
+
+tests/security/test_dev_identity_provisioning.py:5: AssertionError</failure></testcase><testcase classname="tests.test_other" name="test_other[0]" time="0.001"><failure message="AssertionError: assert '1' != '1'&#10; +  where '1' = get('ORANGE_SYNTH_FAIL')&#10; +    where get = environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...2dea3bf0b4576fa5da7e5', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[0] (call)'}).get&#10; +      where environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...2dea3bf0b4576fa5da7e5', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[0] (call)'}) = os.environ">i = 0
+
+    @pytest.mark.parametrize("i", range(8))
+    def test_other(i: int) -&gt; None:
+&gt;       assert os.environ.get("ORANGE_SYNTH_FAIL") != "1"
+E       AssertionError: assert '1' != '1'
+E        +  where '1' = get('ORANGE_SYNTH_FAIL')
+E        +    where get = environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...2dea3bf0b4576fa5da7e5', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[0] (call)'}).get
+E        +      where environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...2dea3bf0b4576fa5da7e5', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[0] (call)'}) = os.environ
+
+tests/test_other.py:8: AssertionError</failure></testcase><testcase classname="tests.test_other" name="test_other[1]" time="0.001"><failure message="AssertionError: assert '1' != '1'&#10; +  where '1' = get('ORANGE_SYNTH_FAIL')&#10; +    where get = environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...2dea3bf0b4576fa5da7e5', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[1] (call)'}).get&#10; +      where environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...2dea3bf0b4576fa5da7e5', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[1] (call)'}) = os.environ">i = 1
+
+    @pytest.mark.parametrize("i", range(8))
+    def test_other(i: int) -&gt; None:
+&gt;       assert os.environ.get("ORANGE_SYNTH_FAIL") != "1"
+E       AssertionError: assert '1' != '1'
+E        +  where '1' = get('ORANGE_SYNTH_FAIL')
+E        +    where get = environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...2dea3bf0b4576fa5da7e5', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[1] (call)'}).get
+E        +      where environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...2dea3bf0b4576fa5da7e5', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[1] (call)'}) = os.environ
+
+tests/test_other.py:8: AssertionError</failure></testcase><testcase classname="tests.test_other" name="test_other[2]" time="0.001"><failure message="AssertionError: assert '1' != '1'&#10; +  where '1' = get('ORANGE_SYNTH_FAIL')&#10; +    where get = environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...2dea3bf0b4576fa5da7e5', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[2] (call)'}).get&#10; +      where environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...2dea3bf0b4576fa5da7e5', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[2] (call)'}) = os.environ">i = 2
+
+    @pytest.mark.parametrize("i", range(8))
+    def test_other(i: int) -&gt; None:
+&gt;       assert os.environ.get("ORANGE_SYNTH_FAIL") != "1"
+E       AssertionError: assert '1' != '1'
+E        +  where '1' = get('ORANGE_SYNTH_FAIL')
+E        +    where get = environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...2dea3bf0b4576fa5da7e5', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[2] (call)'}).get
+E        +      where environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...2dea3bf0b4576fa5da7e5', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[2] (call)'}) = os.environ
+
+tests/test_other.py:8: AssertionError</failure></testcase><testcase classname="tests.test_other" name="test_other[3]" time="0.002"><failure message="AssertionError: assert '1' != '1'&#10; +  where '1' = get('ORANGE_SYNTH_FAIL')&#10; +    where get = environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...2dea3bf0b4576fa5da7e5', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[3] (call)'}).get&#10; +      where environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...2dea3bf0b4576fa5da7e5', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[3] (call)'}) = os.environ">i = 3
+
+    @pytest.mark.parametrize("i", range(8))
+    def test_other(i: int) -&gt; None:
+&gt;       assert os.environ.get("ORANGE_SYNTH_FAIL") != "1"
+E       AssertionError: assert '1' != '1'
+E        +  where '1' = get('ORANGE_SYNTH_FAIL')
+E        +    where get = environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...2dea3bf0b4576fa5da7e5', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[3] (call)'}).get
+E        +      where environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...2dea3bf0b4576fa5da7e5', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[3] (call)'}) = os.environ
+
+tests/test_other.py:8: AssertionError</failure></testcase><testcase classname="tests.test_other" name="test_other[4]" time="0.002"><failure message="AssertionError: assert '1' != '1'&#10; +  where '1' = get('ORANGE_SYNTH_FAIL')&#10; +    where get = environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...2dea3bf0b4576fa5da7e5', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[4] (call)'}).get&#10; +      where environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...2dea3bf0b4576fa5da7e5', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[4] (call)'}) = os.environ">i = 4
+
+    @pytest.mark.parametrize("i", range(8))
+    def test_other(i: int) -&gt; None:
+&gt;       assert os.environ.get("ORANGE_SYNTH_FAIL") != "1"
+E       AssertionError: assert '1' != '1'
+E        +  where '1' = get('ORANGE_SYNTH_FAIL')
+E        +    where get = environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...2dea3bf0b4576fa5da7e5', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[4] (call)'}).get
+E        +      where environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...2dea3bf0b4576fa5da7e5', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[4] (call)'}) = os.environ
+
+tests/test_other.py:8: AssertionError</failure></testcase><testcase classname="tests.test_other" name="test_other[5]" time="0.002"><failure message="AssertionError: assert '1' != '1'&#10; +  where '1' = get('ORANGE_SYNTH_FAIL')&#10; +    where get = environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...2dea3bf0b4576fa5da7e5', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[5] (call)'}).get&#10; +      where environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...2dea3bf0b4576fa5da7e5', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[5] (call)'}) = os.environ">i = 5
+
+    @pytest.mark.parametrize("i", range(8))
+    def test_other(i: int) -&gt; None:
+&gt;       assert os.environ.get("ORANGE_SYNTH_FAIL") != "1"
+E       AssertionError: assert '1' != '1'
+E        +  where '1' = get('ORANGE_SYNTH_FAIL')
+E        +    where get = environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...2dea3bf0b4576fa5da7e5', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[5] (call)'}).get
+E        +      where environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...2dea3bf0b4576fa5da7e5', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[5] (call)'}) = os.environ
+
+tests/test_other.py:8: AssertionError</failure></testcase><testcase classname="tests.test_other" name="test_other[6]" time="0.002"><failure message="AssertionError: assert '1' != '1'&#10; +  where '1' = get('ORANGE_SYNTH_FAIL')&#10; +    where get = environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...2dea3bf0b4576fa5da7e5', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[6] (call)'}).get&#10; +      where environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...2dea3bf0b4576fa5da7e5', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[6] (call)'}) = os.environ">i = 6
+
+    @pytest.mark.parametrize("i", range(8))
+    def test_other(i: int) -&gt; None:
+&gt;       assert os.environ.get("ORANGE_SYNTH_FAIL") != "1"
+E       AssertionError: assert '1' != '1'
+E        +  where '1' = get('ORANGE_SYNTH_FAIL')
+E        +    where get = environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...2dea3bf0b4576fa5da7e5', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[6] (call)'}).get
+E        +      where environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...2dea3bf0b4576fa5da7e5', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[6] (call)'}) = os.environ
+
+tests/test_other.py:8: AssertionError</failure></testcase><testcase classname="tests.test_other" name="test_other[7]" time="0.002"><failure message="AssertionError: assert '1' != '1'&#10; +  where '1' = get('ORANGE_SYNTH_FAIL')&#10; +    where get = environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...2dea3bf0b4576fa5da7e5', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[7] (call)'}).get&#10; +      where environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...2dea3bf0b4576fa5da7e5', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[7] (call)'}) = os.environ">i = 7
+
+    @pytest.mark.parametrize("i", range(8))
+    def test_other(i: int) -&gt; None:
+&gt;       assert os.environ.get("ORANGE_SYNTH_FAIL") != "1"
+E       AssertionError: assert '1' != '1'
+E        +  where '1' = get('ORANGE_SYNTH_FAIL')
+E        +    where get = environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...2dea3bf0b4576fa5da7e5', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[7] (call)'}).get
+E        +      where environ({'SHELL': '/bin/bash', 'COREPACK_ENABLE_AUTO_PIN': '0', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.I...2dea3bf0b4576fa5da7e5', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[7] (call)'}) = os.environ
+
+tests/test_other.py:8: AssertionError</failure></testcase></testsuite></testsuites>

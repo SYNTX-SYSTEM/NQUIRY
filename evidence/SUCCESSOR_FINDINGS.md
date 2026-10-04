@@ -243,3 +243,29 @@ Repair (same relation as the exit-status contract): `prog_init` records the chai
 handler returns at once in any other process: no event, no exit-status change. Falsifier E10b (100 zero-duration
 two-stage chains, PROOF_END exactly once) and mutant MX7 (guard removed: killed) prove it.
 TF-PX-06 = CLOSED in canonical ORANGE lineage.
+
+## TF-PX-07 — TOOLING DEFECT (proof-lineage infrastructure, NOT a product failure): stage runners exit 0 on a failed governed proof
+Found 2026-10-04 by reconstructing the runner contracts (Work Unit STAGE_EXIT_STATUS). Present since the first
+lineage commit. `serial_baseline.sh run` and `parallel_proof.sh xdist | serial` wrote the governed pytest exit code
+to `*_exit_code.txt` and printed it, but ended on an unrelated `tail -1`, so the process status was always 0. It
+never produced a false proof verdict: every canonical consumer (`final_closure.sh` via `prog_exitfile`,
+`analyze_serial.py` EXIT_CODE_0, `run_aggregate.py` / `aggregate.py`) reads the file. It did misreport to any
+standalone caller that trusts the process status. Repair: process status follows the recorded code (0 -> 0, anything
+else -> 1), five added lines; proof and claim ceiling in `ORANGE_PROOF_STATUS.md` §15.
+TF-PX-07 = CLOSED in canonical ORANGE lineage.
+
+## TF-PX-08 — TOOLING FINDING (kept unchanged by Human Authority decision, 2026-10-04): the `pre` / `post` process status is not a verdict
+Found 2026-10-04 in the same reconstruction. `pre` exits 1 only when it refuses (non-empty directory, HEAD not
+frozen); otherwise it ends on an `echo` and exits 0 even if the guard, the proof-DB verification or the collection
+failed. `post` exits with the status of its last `grep`; measured: a `post` whose verdict line is
+`PROOF_DB_PRECONDITIONS::FAIL` exits 0 (`evidence/stage_exit_status/canonical.log`, info lines). No false proof
+verdict follows from it: the chain requires the verdict lines (`prog_verdicts`, absent = MISSING = FAIL) and the
+analyzers re-check guard, proof DBs, tree and collection count.
+Not repaired on purpose: unlike `run` / `xdist` / `serial`, these phases have no recorded single truth to follow, and
+the chain DOES consume the `pre` status (`[ $rc -eq 0 ] || CHAIN STOPPED`). Making `pre` exit nonzero on a FAIL
+verdict would stop the canonical chain early instead of completing its evidence, which is a change of canonical
+chain semantics. Options were: (a) keep (status = refusal only; documented in the README), or (b) authorize a
+verdict-following `pre` / `post` status together with the resulting early chain stop.
+Human Authority decision 2026-10-04: (a). TF-PX-08 stays unchanged and documented: the `pre` / `post` process
+status means refusal only and is never a verdict; their `NAME::PASS|FAIL` lines are the truth.
+TF-PX-08 = DOCUMENTED, NOT REPAIRED (by decision).

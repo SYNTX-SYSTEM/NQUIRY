@@ -1,0 +1,2 @@
+stub governed child: -m pytest -p no:cacheprovider tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused tests/e2e/test_pfc_f09_1_technical_failure.py::test_worker_loop_survives_a_database_outage_and_stops_gracefully -rA --junitxml=/home/codi/Entwicklung/nquiry/worktrees/orange-proof-lineage/evidence/stage_exit_status/pre_repair/s3_pp_serial_137.d/serial_junit.xml -o junit_family=xunit2
+= stub finished =

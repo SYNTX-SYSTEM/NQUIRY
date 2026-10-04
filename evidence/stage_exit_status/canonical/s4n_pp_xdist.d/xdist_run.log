@@ -1,0 +1,11 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.15, pytest-9.1.1, pluggy-1.6.0
+rootdir: /home/codi/Entwicklung/nquiry/worktrees/orange-proof-lineage/evidence/stage_exit_status/canonical/root/worktrees/orange-proof-infra
+configfile: pytest.ini
+plugins: cov-7.1.0, xdist-3.8.0, anyio-4.15.1, hypothesis-6.168.3
+created: 4/4 workers
+4 workers [0 items]
+
+
+- generated xml file: /home/codi/Entwicklung/nquiry/worktrees/orange-proof-lineage/evidence/stage_exit_status/canonical/s4n_pp_xdist.d/xdist_junit.xml -
+============================ no tests ran in 1.98s =============================

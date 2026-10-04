@@ -1,0 +1,17 @@
+[00:00:00] PROOF_START     chain=stage-exit-slice run=slice
+[00:00:00] STAGE_START     stage=serial_reference
+exit=4
+= stub finished =
+[00:00:00] STAGE_FAIL      stage=serial_reference rc=4 elapsed=0s
+[00:00:00] STAGE_START     stage=xdist_partition
+xdist exit=4 wall=.011982748 s
+= stub finished =
+[00:00:00] STAGE_FAIL      stage=xdist_partition rc=4 elapsed=0s
+[00:00:00] STAGE_START     stage=serial_partition
+serial exit=4 wall=.012599083 s
+= stub finished =
+[00:00:00] STAGE_FAIL      stage=serial_partition rc=4 elapsed=0s
+CHAIN_CONTINUED
+[00:00:00] VERDICT         phase=slice name=A value=PASS
+[00:00:00] VERDICT         phase=slice name=B value=PASS
+[00:00:00] PROOF_END       verdict=FAIL failures=3 verdicts_read=2 elapsed=0s

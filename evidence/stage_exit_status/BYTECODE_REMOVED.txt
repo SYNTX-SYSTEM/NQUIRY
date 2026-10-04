@@ -1,0 +1,26 @@
+# runtime bytecode written by harness runs into their own authorized prefixes (counts only; removed, never versioned)
+stage_exit_status/canonical/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+stage_exit_status/mutants/MS10_absent_exit_code_file_is_success/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+stage_exit_status/mutants/MS1_always_exit_0/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+stage_exit_status/mutants/MS2_inverted_exit_status/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+stage_exit_status/mutants/MS3_only_raw_code_1_is_failure/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+stage_exit_status/mutants/MS4_raw_code_propagated_as_status/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+stage_exit_status/mutants/MS5a_recorded_truth_forced_to_0/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+stage_exit_status/mutants/MS5b_recorded_raw_code_normalized_to_1/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+stage_exit_status/mutants/MS6_status_before_the_visible_summary/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+stage_exit_status/mutants/MS7_parallel_runner_not_repaired/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+stage_exit_status/mutants/MS8_chain_consumes_the_stage_status/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+stage_exit_status/mutants/MS9_parallel_selection_changed/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+stage_exit_status/mutation_v1_SUPERSEDED_MS9_not_applied/mutants/MS10_absent_exit_code_file_is_success/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+stage_exit_status/mutation_v1_SUPERSEDED_MS9_not_applied/mutants/MS1_always_exit_0/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+stage_exit_status/mutation_v1_SUPERSEDED_MS9_not_applied/mutants/MS2_inverted_exit_status/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+stage_exit_status/mutation_v1_SUPERSEDED_MS9_not_applied/mutants/MS3_only_raw_code_1_is_failure/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+stage_exit_status/mutation_v1_SUPERSEDED_MS9_not_applied/mutants/MS4_raw_code_propagated_as_status/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+stage_exit_status/mutation_v1_SUPERSEDED_MS9_not_applied/mutants/MS5a_recorded_truth_forced_to_0/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+stage_exit_status/mutation_v1_SUPERSEDED_MS9_not_applied/mutants/MS5b_recorded_raw_code_normalized_to_1/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+stage_exit_status/mutation_v1_SUPERSEDED_MS9_not_applied/mutants/MS6_status_before_the_visible_summary/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+stage_exit_status/mutation_v1_SUPERSEDED_MS9_not_applied/mutants/MS7_parallel_runner_not_repaired/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+stage_exit_status/mutation_v1_SUPERSEDED_MS9_not_applied/mutants/MS8_chain_consumes_the_stage_status/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+stage_exit_status/pre_repair/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+stage_exit_status/regression/progress_falsifiers/xdist/pyc pyc=435
+stage_exit_status/regression/tf_px_04_05/t05b/pyc pyc=435

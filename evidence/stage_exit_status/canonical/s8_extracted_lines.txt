@@ -1,0 +1,9 @@
+prog_begin serial_reference "$S/run.log"
+date +%s.%N > "$S/t0"; bash "$P/serial_baseline.sh" run; date +%s.%N > "$S/t1"
+prog_end serial_reference "$(prog_exitfile "$S/run_exit_code.txt")"
+prog_begin xdist_partition "$R/xdist_run.log"
+bash "$P/parallel_proof.sh" xdist
+prog_end xdist_partition "$(prog_exitfile "$R/xdist_exit_code.txt")"
+prog_begin serial_partition "$R/serial_run.log"
+bash "$P/parallel_proof.sh" serial
+prog_end serial_partition "$(prog_exitfile "$R/serial_exit_code.txt")"

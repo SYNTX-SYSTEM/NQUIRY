@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# stub for the governed child. rc:<n> = print and exit n; real = the same argv on a real pytest;
+# verdictfail = a failing verdict producer (info probe for the post phase)
+case "${ORANGE_STUB_MODE:?}" in
+  rc:*) echo "stub governed child: $*"; echo "= stub finished ="; exit "${ORANGE_STUB_MODE#rc:}" ;;
+  real) exec "$ORANGE_STUB_XPY" "$@" ;;
+  verdictfail) echo "PROOF_DB_PRECONDITIONS::FAIL (stub)"; exit 1 ;;
+esac

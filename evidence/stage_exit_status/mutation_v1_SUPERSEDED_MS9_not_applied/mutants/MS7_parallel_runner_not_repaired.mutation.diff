@@ -1,0 +1,4 @@
+69d68
+<     stage_exit "$OUT/xdist_exit_code.txt"  # STAGE_EXIT_STATUS
+76d74
+<     stage_exit "$OUT/serial_exit_code.txt"  # STAGE_EXIT_STATUS

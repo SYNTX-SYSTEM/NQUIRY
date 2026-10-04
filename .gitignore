@@ -59,3 +59,12 @@ observer.stop
 /evidence/exit_status/regression/progress_falsifiers/integration/closure/serial_ref/pre_collect_raw.txt
 /evidence/exit_status/regression/tf_px_04_05/t04a/serial_ref/collected_nodeids.txt
 /evidence/exit_status/regression/tf_px_04_05/t04a/serial_ref/pre_collect_raw.txt
+
+# stage_exit_status raw outputs > 100 KB (hash-recorded in evidence/stage_exit_status/RAW_EXCLUDED.tsv; kept locally)
+/evidence/stage_exit_status/regression/progress_falsifiers/integration/closure/serial_ref/collected_nodeids.txt
+/evidence/stage_exit_status/regression/progress_falsifiers/integration/closure/serial_ref/pre_collect_raw.txt
+/evidence/stage_exit_status/regression/tf_px_04_05/t04a/serial_ref/collected_nodeids.txt
+/evidence/stage_exit_status/regression/tf_px_04_05/t04a/serial_ref/pre_collect_raw.txt
+# stage_exit_status per-mutant run directories (12k small files; each mutant's verdict log + mutation diff ARE versioned; kept locally)
+/evidence/stage_exit_status/mutants/*/
+/evidence/stage_exit_status/mutation_v1_SUPERSEDED_MS9_not_applied/mutants/*/

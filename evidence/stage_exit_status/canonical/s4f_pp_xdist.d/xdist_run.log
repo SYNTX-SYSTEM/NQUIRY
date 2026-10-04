@@ -1,0 +1,133 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.15, pytest-9.1.1, pluggy-1.6.0
+rootdir: /home/codi/Entwicklung/nquiry/worktrees/orange-proof-lineage/evidence/stage_exit_status/canonical/root/worktrees/orange-proof-infra
+configfile: pytest.ini
+plugins: cov-7.1.0, xdist-3.8.0, anyio-4.15.1, hypothesis-6.168.3
+created: 4/4 workers
+4 workers [8 items]
+
+FFFFFFFF                                                                 [100%]
+=================================== FAILURES ===================================
+________________________________ test_other[6] _________________________________
+[gw3] linux -- Python 3.13.15 /home/codi/Entwicklung/nquiry/.venv-swu-px-03/bin/python
+
+i = 6
+
+    @pytest.mark.parametrize("i", range(8))
+    def test_other(i: int) -> None:
+>       assert os.environ.get("ORANGE_SYNTH_FAIL") != "1"
+E       AssertionError: assert '1' != '1'
+E        +  where '1' = get('ORANGE_SYNTH_FAIL')
+E        +    where get = environ({'SHELL': '/bin/bash', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.ICE-unix/4108,unix/codi-ThinkPad-T..._WORKER': 'gw3', 'PYTEST_XDIST_WORKER_COUNT': '4', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[6] (call)'}).get
+E        +      where environ({'SHELL': '/bin/bash', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.ICE-unix/4108,unix/codi-ThinkPad-T..._WORKER': 'gw3', 'PYTEST_XDIST_WORKER_COUNT': '4', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[6] (call)'}) = os.environ
+
+tests/test_other.py:8: AssertionError
+________________________________ test_other[7] _________________________________
+[gw3] linux -- Python 3.13.15 /home/codi/Entwicklung/nquiry/.venv-swu-px-03/bin/python
+
+i = 7
+
+    @pytest.mark.parametrize("i", range(8))
+    def test_other(i: int) -> None:
+>       assert os.environ.get("ORANGE_SYNTH_FAIL") != "1"
+E       AssertionError: assert '1' != '1'
+E        +  where '1' = get('ORANGE_SYNTH_FAIL')
+E        +    where get = environ({'SHELL': '/bin/bash', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.ICE-unix/4108,unix/codi-ThinkPad-T..._WORKER': 'gw3', 'PYTEST_XDIST_WORKER_COUNT': '4', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[7] (call)'}).get
+E        +      where environ({'SHELL': '/bin/bash', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.ICE-unix/4108,unix/codi-ThinkPad-T..._WORKER': 'gw3', 'PYTEST_XDIST_WORKER_COUNT': '4', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[7] (call)'}) = os.environ
+
+tests/test_other.py:8: AssertionError
+________________________________ test_other[4] _________________________________
+[gw2] linux -- Python 3.13.15 /home/codi/Entwicklung/nquiry/.venv-swu-px-03/bin/python
+
+i = 4
+
+    @pytest.mark.parametrize("i", range(8))
+    def test_other(i: int) -> None:
+>       assert os.environ.get("ORANGE_SYNTH_FAIL") != "1"
+E       AssertionError: assert '1' != '1'
+E        +  where '1' = get('ORANGE_SYNTH_FAIL')
+E        +    where get = environ({'SHELL': '/bin/bash', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.ICE-unix/4108,unix/codi-ThinkPad-T..._WORKER': 'gw2', 'PYTEST_XDIST_WORKER_COUNT': '4', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[4] (call)'}).get
+E        +      where environ({'SHELL': '/bin/bash', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.ICE-unix/4108,unix/codi-ThinkPad-T..._WORKER': 'gw2', 'PYTEST_XDIST_WORKER_COUNT': '4', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[4] (call)'}) = os.environ
+
+tests/test_other.py:8: AssertionError
+________________________________ test_other[5] _________________________________
+[gw2] linux -- Python 3.13.15 /home/codi/Entwicklung/nquiry/.venv-swu-px-03/bin/python
+
+i = 5
+
+    @pytest.mark.parametrize("i", range(8))
+    def test_other(i: int) -> None:
+>       assert os.environ.get("ORANGE_SYNTH_FAIL") != "1"
+E       AssertionError: assert '1' != '1'
+E        +  where '1' = get('ORANGE_SYNTH_FAIL')
+E        +    where get = environ({'SHELL': '/bin/bash', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.ICE-unix/4108,unix/codi-ThinkPad-T..._WORKER': 'gw2', 'PYTEST_XDIST_WORKER_COUNT': '4', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[5] (call)'}).get
+E        +      where environ({'SHELL': '/bin/bash', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.ICE-unix/4108,unix/codi-ThinkPad-T..._WORKER': 'gw2', 'PYTEST_XDIST_WORKER_COUNT': '4', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[5] (call)'}) = os.environ
+
+tests/test_other.py:8: AssertionError
+________________________________ test_other[2] _________________________________
+[gw1] linux -- Python 3.13.15 /home/codi/Entwicklung/nquiry/.venv-swu-px-03/bin/python
+
+i = 2
+
+    @pytest.mark.parametrize("i", range(8))
+    def test_other(i: int) -> None:
+>       assert os.environ.get("ORANGE_SYNTH_FAIL") != "1"
+E       AssertionError: assert '1' != '1'
+E        +  where '1' = get('ORANGE_SYNTH_FAIL')
+E        +    where get = environ({'SHELL': '/bin/bash', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.ICE-unix/4108,unix/codi-ThinkPad-T..._WORKER': 'gw1', 'PYTEST_XDIST_WORKER_COUNT': '4', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[2] (call)'}).get
+E        +      where environ({'SHELL': '/bin/bash', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.ICE-unix/4108,unix/codi-ThinkPad-T..._WORKER': 'gw1', 'PYTEST_XDIST_WORKER_COUNT': '4', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[2] (call)'}) = os.environ
+
+tests/test_other.py:8: AssertionError
+________________________________ test_other[0] _________________________________
+[gw0] linux -- Python 3.13.15 /home/codi/Entwicklung/nquiry/.venv-swu-px-03/bin/python
+
+i = 0
+
+    @pytest.mark.parametrize("i", range(8))
+    def test_other(i: int) -> None:
+>       assert os.environ.get("ORANGE_SYNTH_FAIL") != "1"
+E       AssertionError: assert '1' != '1'
+E        +  where '1' = get('ORANGE_SYNTH_FAIL')
+E        +    where get = environ({'SHELL': '/bin/bash', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.ICE-unix/4108,unix/codi-ThinkPad-T..._WORKER': 'gw0', 'PYTEST_XDIST_WORKER_COUNT': '4', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[0] (call)'}).get
+E        +      where environ({'SHELL': '/bin/bash', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.ICE-unix/4108,unix/codi-ThinkPad-T..._WORKER': 'gw0', 'PYTEST_XDIST_WORKER_COUNT': '4', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[0] (call)'}) = os.environ
+
+tests/test_other.py:8: AssertionError
+________________________________ test_other[3] _________________________________
+[gw1] linux -- Python 3.13.15 /home/codi/Entwicklung/nquiry/.venv-swu-px-03/bin/python
+
+i = 3
+
+    @pytest.mark.parametrize("i", range(8))
+    def test_other(i: int) -> None:
+>       assert os.environ.get("ORANGE_SYNTH_FAIL") != "1"
+E       AssertionError: assert '1' != '1'
+E        +  where '1' = get('ORANGE_SYNTH_FAIL')
+E        +    where get = environ({'SHELL': '/bin/bash', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.ICE-unix/4108,unix/codi-ThinkPad-T..._WORKER': 'gw1', 'PYTEST_XDIST_WORKER_COUNT': '4', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[3] (call)'}).get
+E        +      where environ({'SHELL': '/bin/bash', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.ICE-unix/4108,unix/codi-ThinkPad-T..._WORKER': 'gw1', 'PYTEST_XDIST_WORKER_COUNT': '4', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[3] (call)'}) = os.environ
+
+tests/test_other.py:8: AssertionError
+________________________________ test_other[1] _________________________________
+[gw0] linux -- Python 3.13.15 /home/codi/Entwicklung/nquiry/.venv-swu-px-03/bin/python
+
+i = 1
+
+    @pytest.mark.parametrize("i", range(8))
+    def test_other(i: int) -> None:
+>       assert os.environ.get("ORANGE_SYNTH_FAIL") != "1"
+E       AssertionError: assert '1' != '1'
+E        +  where '1' = get('ORANGE_SYNTH_FAIL')
+E        +    where get = environ({'SHELL': '/bin/bash', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.ICE-unix/4108,unix/codi-ThinkPad-T..._WORKER': 'gw0', 'PYTEST_XDIST_WORKER_COUNT': '4', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[1] (call)'}).get
+E        +      where environ({'SHELL': '/bin/bash', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.ICE-unix/4108,unix/codi-ThinkPad-T..._WORKER': 'gw0', 'PYTEST_XDIST_WORKER_COUNT': '4', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[1] (call)'}) = os.environ
+
+tests/test_other.py:8: AssertionError
+- generated xml file: /home/codi/Entwicklung/nquiry/worktrees/orange-proof-lineage/evidence/stage_exit_status/canonical/s4f_pp_xdist.d/xdist_junit.xml -
+=========================== short test summary info ============================
+FAILED tests/test_other.py::test_other[6] - AssertionError: assert '1' != '1'
+FAILED tests/test_other.py::test_other[7] - AssertionError: assert '1' != '1'
+FAILED tests/test_other.py::test_other[4] - AssertionError: assert '1' != '1'
+FAILED tests/test_other.py::test_other[5] - AssertionError: assert '1' != '1'
+FAILED tests/test_other.py::test_other[2] - AssertionError: assert '1' != '1'
+FAILED tests/test_other.py::test_other[0] - AssertionError: assert '1' != '1'
+FAILED tests/test_other.py::test_other[3] - AssertionError: assert '1' != '1'
+FAILED tests/test_other.py::test_other[1] - AssertionError: assert '1' != '1'
+============================== 8 failed in 2.20s ===============================

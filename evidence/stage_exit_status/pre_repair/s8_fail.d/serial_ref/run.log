@@ -1,0 +1,2 @@
+stub governed child: -m pytest -p no:cacheprovider -rA --junitxml=/home/codi/Entwicklung/nquiry/worktrees/orange-proof-lineage/evidence/stage_exit_status/pre_repair/s8_fail.d/serial_ref/junit.xml -o junit_family=xunit2
+= stub finished =

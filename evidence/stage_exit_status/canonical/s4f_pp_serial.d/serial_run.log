@@ -1,0 +1,36 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.15, pytest-9.1.1, pluggy-1.6.0
+rootdir: /home/codi/Entwicklung/nquiry/worktrees/orange-proof-lineage/evidence/stage_exit_status/canonical/root/worktrees/orange-proof-infra
+configfile: pytest.ini
+plugins: cov-7.1.0, xdist-3.8.0, anyio-4.15.1, hypothesis-6.168.3
+collected 2 items
+
+tests/security/test_dev_identity_provisioning.py F                       [ 50%]
+tests/e2e/test_pfc_f09_1_technical_failure.py F                          [100%]
+
+=================================== FAILURES ===================================
+_______________________ test_malformed_input_is_refused ________________________
+
+    def test_malformed_input_is_refused() -> None:
+>       assert os.environ.get("ORANGE_SYNTH_FAIL") != "1"
+E       AssertionError: assert '1' != '1'
+E        +  where '1' = get('ORANGE_SYNTH_FAIL')
+E        +    where get = environ({'SHELL': '/bin/bash', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.ICE-unix/4108,unix/codi-ThinkPad-T...1', 'PYTEST_CURRENT_TEST': 'tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused (call)'}).get
+E        +      where environ({'SHELL': '/bin/bash', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.ICE-unix/4108,unix/codi-ThinkPad-T...1', 'PYTEST_CURRENT_TEST': 'tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused (call)'}) = os.environ
+
+tests/security/test_dev_identity_provisioning.py:5: AssertionError
+_______ test_worker_loop_survives_a_database_outage_and_stops_gracefully _______
+
+    def test_worker_loop_survives_a_database_outage_and_stops_gracefully() -> None:
+>       assert os.environ.get("ORANGE_SYNTH_FAIL") != "1"
+E       AssertionError: assert '1' != '1'
+E        +  where '1' = get('ORANGE_SYNTH_FAIL')
+E        +    where get = environ({'SHELL': '/bin/bash', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.ICE-unix/4108,unix/codi-ThinkPad-T...sts/e2e/test_pfc_f09_1_technical_failure.py::test_worker_loop_survives_a_database_outage_and_stops_gracefully (call)'}).get
+E        +      where environ({'SHELL': '/bin/bash', 'SESSION_MANAGER': 'local/codi-ThinkPad-T470p:@/tmp/.ICE-unix/4108,unix/codi-ThinkPad-T...sts/e2e/test_pfc_f09_1_technical_failure.py::test_worker_loop_survives_a_database_outage_and_stops_gracefully (call)'}) = os.environ
+
+tests/e2e/test_pfc_f09_1_technical_failure.py:5: AssertionError
+- generated xml file: /home/codi/Entwicklung/nquiry/worktrees/orange-proof-lineage/evidence/stage_exit_status/canonical/s4f_pp_serial.d/serial_junit.xml -
+=========================== short test summary info ============================
+FAILED tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused
+FAILED tests/e2e/test_pfc_f09_1_technical_failure.py::test_worker_loop_survives_a_database_outage_and_stops_gracefully
+============================== 2 failed in 0.33s ===============================

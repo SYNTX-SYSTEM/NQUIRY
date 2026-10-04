@@ -16,6 +16,7 @@ PSQL=(psql -h 127.0.0.1 -p 15432 -U nquiry -d "${ORANGE_CATALOG_DB:-nquiry_proof
 H() { env -u PYTHONPATH -u NQUIRY_ENVIRONMENT -u NQUIRY_AI_PROVIDER -u NQUIRY_RUN_REAL_COMMIT_TESTS \
         -u COVERAGE_PROCESS_START PYTHONNOUSERSITE=1 ${ORANGE_BYTECODE_ENV:-PYTHONDONTWRITEBYTECODE=1} "$@"; }
 mkdir -p "$OUT"
+stage_exit() { [ "$(tr -d '[:space:]' < "$1" 2>/dev/null)" = 0 ] && exit 0; exit 1; }  # STAGE_EXIT_STATUS: process status follows the recorded exit code (0 -> 0; nonzero, absent or garbage -> 1; raw code stays in the file)
 
 tree_hash() {
   (cd "$O" && find . -path ./.git -prune -o -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum | cut -d' ' -f1)
@@ -57,6 +58,7 @@ case "${1:-}" in
     echo $? > "$OUT/run_exit_code.txt"
     date -Iseconds > "$OUT/run_finished.txt"
     echo "exit=$(cat "$OUT/run_exit_code.txt")"; tail -1 "$OUT/run.log"
+    stage_exit "$OUT/run_exit_code.txt"  # STAGE_EXIT_STATUS
     ;;
   post)
     inventory post

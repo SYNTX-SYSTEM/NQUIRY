@@ -1,0 +1,12 @@
+68d67
+<     tail -1 "$OUT/xdist_run.log"
+69a69
+>     tail -1 "$OUT/xdist_run.log"
+75d74
+<     tail -1 "$OUT/serial_run.log"
+76a76
+>     tail -1 "$OUT/serial_run.log"
+60d59
+<     echo "exit=$(cat "$OUT/run_exit_code.txt")"; tail -1 "$OUT/run.log"
+61a61
+>     echo "exit=$(cat "$OUT/run_exit_code.txt")"; tail -1 "$OUT/run.log"

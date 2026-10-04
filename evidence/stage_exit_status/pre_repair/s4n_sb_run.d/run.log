@@ -1,0 +1,9 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.15, pytest-9.1.1, pluggy-1.6.0
+rootdir: /home/codi/Entwicklung/nquiry/worktrees/orange-proof-lineage/evidence/stage_exit_status/pre_repair/root/worktrees/orange-proof-infra
+configfile: pytest.ini
+plugins: cov-7.1.0, xdist-3.8.0, anyio-4.15.1, hypothesis-6.168.3
+collected 10 items / 10 deselected / 0 selected
+
+- generated xml file: /home/codi/Entwicklung/nquiry/worktrees/orange-proof-lineage/evidence/stage_exit_status/pre_repair/s4n_sb_run.d/junit.xml -
+============================ 10 deselected in 0.36s ============================

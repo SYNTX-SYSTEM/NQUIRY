@@ -38,6 +38,7 @@ Full record: `evidence/ORANGE_PROOF_STATUS.md`; findings / successors: `evidence
 | `final_closure.sh` | the complete closure chain under one environment |
 | `progress.sh`, `progress_falsifiers.sh` | structured progress + heartbeat for the chain (observability only; liveness, never verdicts) and its falsifiers |
 | `exit_status_falsifiers.sh` | falsifiers for the runner exit contract: PROOF_END PASS -> exit 0, anything else -> nonzero |
+| `stage_exit_falsifiers.sh` | falsifiers for the stage-runner exit contract (`serial_baseline.sh run`, `parallel_proof.sh xdist` / `serial`): recorded exit code 0 -> exit 0, anything else -> exit 1 |
 | `tooling_falsifiers_tf_px_04_05.sh` | falsifiers for the chain's own pre phase (TF-PX-04) and the governed-subshell bytecode prefix (TF-PX-05) |
 | `timing_stress_probe.sh` | B3 timing probe (its earlier "closure" was falsified by the real run; kept as provenance) |
 | `evidence/` | curated evidence + full final-closure evidence; `EVIDENCE_MANIFEST.tsv` hashes every original file |
@@ -63,6 +64,12 @@ Drivers write only to NEW directories (`ORANGE_SERIAL_DIR`, `ORANGE_PARALLEL_DIR
 `pre` refuses a non-empty directory). Catalog / observer access goes through PROOF databases only
 (`ORANGE_CATALOG_DB`). Proof DBs: `nquiry_proof_serial_test`, `nquiry_proof_gw{0..3}_test` on 127.0.0.1:15432.
 Local-dev-only credentials (`nquiry_local_dev_only`) follow the repository's existing local convention.
+
+Process exit status. `final_closure.sh`: 0 only for `PROOF_END verdict=PASS`, otherwise nonzero. The proof-executing
+stage phases (`serial_baseline.sh run`, `parallel_proof.sh xdist`, `parallel_proof.sh serial`): 0 only if the recorded
+`*_exit_code.txt` is 0, otherwise 1; the raw pytest code stays in that file and on stdout. `pre` exits 1 only when it
+refuses, and the status of `pre` / `post` is otherwise NOT a verdict: read their `NAME::PASS|FAIL` lines (TF-PX-08, kept unchanged by Human Authority decision).
+Usage errors exit 2.
 
 ## Provenance kept on purpose
 
