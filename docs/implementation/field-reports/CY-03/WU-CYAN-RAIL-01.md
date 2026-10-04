@@ -52,4 +52,8 @@ header). Not FIELD_GREEN until accepted; not REVIEWED_FIELD, not PUBLISHED_FIELD
 and `/` unchanged).
 
 ## Checkpoint
-(recorded in the follow-up record commit)
+| | Value |
+|---|---|
+| Field commit | `3a2931930775c39637bf7ec8f534596543302fd5` (tree `5c6140b3d9ec0f4922ba3f001cdaa14fb4c22d70`) |
+| Tag | `checkpoint-CY-RAIL-01` → tag object `2f58df1ff2c8ac10a0eb04bf9a202acfeb1fcee5` → `3a29319`; pushed |
+| RED pin (local lanes) | `checkpoint-PFC-PCPG-18` → `41b4324a75077ec33b00ed3a878db7a318fc00d8` (unchanged) |
