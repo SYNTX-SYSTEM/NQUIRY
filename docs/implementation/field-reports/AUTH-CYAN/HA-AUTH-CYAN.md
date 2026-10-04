@@ -408,4 +408,5 @@ Workspace until it founds one. On production today: `tobi` is CASE LOCAL (the Go
   human's Google account; the test-issuer chain is proven on the cross-lineage real lane.
 - CYAN_PRODUCTION_ROOT_CUTOVER — **AUTHORIZED and EXECUTED 2026-10-04T15:59Z** after the successful Human Frontend
   Acceptance on `/cy-review/` (human decision, verbatim: "Publish the accepted candidate to the production root");
-  root `/` = `94759cd`; record in `WU-AUTH-CYAN-ACCOUNT-01.md`. Final Human Acceptance on the production URL: PENDING.
+  root `/` = `94759cd`; record in `WU-AUTH-CYAN-ACCOUNT-01.md`. **Final Human Acceptance on the production URL:
+  ACCEPTED (2026-10-04, `HUMAN_REVIEW_RESULT_AUTH_CYAN_ACCOUNT_01.md`).**

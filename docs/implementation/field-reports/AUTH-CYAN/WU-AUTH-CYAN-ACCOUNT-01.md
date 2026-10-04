@@ -108,7 +108,10 @@ log `/opt/nquiry/cutover-cyanroot.log`.
 
 Rollback: `bash /opt/nquiry/_baseline-pre-CYANROOT-20261004T155914Z/ROLLBACK.sh` (predecessor compose + anchor image).
 
+## Final Human Acceptance on `https://nquiry.condyn.eu/` — ACCEPTED (2026-10-04)
+`HUMAN_REVIEW_RESULT_AUTH_CYAN_ACCOUNT_01.md`. Status: **FIELD_GREEN · PUBLISHED_FIELD (production root)**.
+
 ## Next boundary
-**Final Human Acceptance on the real production URL `https://nquiry.condyn.eu/`** (CASE LOCAL as `tobi`, CASE
-GOOGLE_BOOTSTRAP as the Google account, the Access security chamber). Afterwards: lifecycle of the `/cy-review/`
-mount and of the older `nquiry-cy01-candidate` stack (human decisions); the `5109e20` last-use line (not published).
+Human decisions: lifecycle of the `/cy-review/` mount (now a duplicate of the root) and of the older
+`nquiry-cy01-candidate` stack; publication of `5109e20` (last-use line); push of this branch; integration of
+`auth-cyan-reconstruction` into `frontend-symbiotic` (whose worktree holds uncommitted `HA-AUTH-CYAN.md` edits).
