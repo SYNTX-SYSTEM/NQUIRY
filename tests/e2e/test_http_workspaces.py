@@ -24,6 +24,7 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 
 import application.http_dispatch as http_dispatch
+import application.http_f02 as http_f02
 import pytest
 import sqlalchemy as sa
 from fastapi.testclient import TestClient
@@ -46,6 +47,9 @@ def http_client(
         yield db_connection
 
     monkeypatch.setattr(http_dispatch, "connect", _reuse_test_connection)
+    # WU-AUTHZ-01: the overview read (http_f02) must see the same transaction — an
+    # unpatched connector would open the real engine (and leak a session; cf. WU-15)
+    monkeypatch.setattr(http_f02, "connect", _reuse_test_connection)
     yield TestClient(app)
 
 
@@ -380,3 +384,112 @@ def test_revoke_authority_binding_denies_with_no_session(http_client: TestClient
         f"/workspaces/{uuid.uuid4()}/authority-bindings/{uuid.uuid4()}/revoke"
     )
     assert response.status_code == 401
+
+
+# --------------------------------------------------------------------------- WU-AUTHZ-01
+# 05 GOV-003 / GOV-004 over HTTP: `POST /workspaces/{ws}/members/{user}/revoke`,
+# `POST /workspaces/{ws}/members/{user}/role`. The governed command and its
+# effects are proven in tests/e2e/test_membership_revocation.py; here the
+# contact's envelope, the overview's capabilities and the roster after.
+
+
+def test_revoke_membership_and_change_role_over_http(
+    db_connection: sa.Connection, http_client: TestClient
+) -> None:
+    _register(db_connection, email="owner-roster@real-human.test")
+    _login(http_client, email="owner-roster@real-human.test")
+    workspace_id = http_client.post("/workspaces", json={"name": "Roster"}).json()["workspaceId"]
+    member_id = _register(db_connection, email="member-roster@real-human.test")
+    assert http_client.post(
+        f"/workspaces/{workspace_id}/members",
+        json={"userId": str(member_id), "role": "Contributor"},
+    ).json() == {"kind": "ok"}
+    overview = http_client.get(f"/workspaces/{workspace_id}/overview").json()
+    assert overview["capabilities"]["revokeMembership"]["available"] is True
+    assert overview["capabilities"]["changeMemberRole"]["available"] is True
+
+    changed = http_client.post(
+        f"/workspaces/{workspace_id}/members/{member_id}/role", json={"role": "Facilitator"}
+    )
+    assert changed.status_code == 200 and changed.json() == {"kind": "ok"}
+    roster = {
+        m["userId"]: m["role"]
+        for m in http_client.get(f"/workspaces/{workspace_id}/overview").json()["members"]
+    }
+    assert roster[str(member_id)] == "Facilitator"
+    assert http_client.post(
+        f"/workspaces/{workspace_id}/members/{member_id}/role", json={"role": "Facilitator"}
+    ).json() == {"kind": "rejected", "reasonCode": "ROLE_UNCHANGED"}
+    assert (
+        http_client.post(
+            f"/workspaces/{workspace_id}/members/{member_id}/role", json={"role": "Owner"}
+        )
+        .json()["reasonCode"]
+        .startswith("OWNER_ROLE_NOT_ASSIGNABLE")
+    )
+    assert http_client.post(
+        f"/workspaces/{workspace_id}/members/{member_id}/role", json={"role": "Boss"}
+    ).json() == {"kind": "rejected", "reasonCode": "UNKNOWN_ROLE:Boss"}
+
+    revoked = http_client.post(f"/workspaces/{workspace_id}/members/{member_id}/revoke")
+    assert revoked.status_code == 200 and revoked.json() == {"kind": "ok"}
+    members = http_client.get(f"/workspaces/{workspace_id}/overview").json()["members"]
+    assert str(member_id) not in {m["userId"] for m in members}
+    again = http_client.post(f"/workspaces/{workspace_id}/members/{member_id}/revoke").json()
+    assert again == {"kind": "denied", "result": "DENY", "reasonCode": "MEMBERSHIP_NOT_FOUND"}
+
+
+def test_the_governance_root_cannot_be_revoked_or_relabelled_over_http(
+    db_connection: sa.Connection, http_client: TestClient
+) -> None:
+    owner_id = _register(db_connection, email="owner-self@real-human.test")
+    _login(http_client, email="owner-self@real-human.test")
+    workspace_id = http_client.post("/workspaces", json={"name": "Root"}).json()["workspaceId"]
+    for path, body in (
+        (f"/workspaces/{workspace_id}/members/{owner_id}/revoke", None),
+        (f"/workspaces/{workspace_id}/members/{owner_id}/role", {"role": "Contributor"}),
+    ):
+        response = http_client.post(path, json=body) if body else http_client.post(path)
+        assert response.status_code == 200
+        assert response.json() == {
+            "kind": "denied",
+            "result": "DENY",
+            "reasonCode": "GOVERNANCE_ROOT_NOT_REMOVABLE",
+        }
+    assert http_client.get(f"/workspaces/{workspace_id}/overview").json()["viewer"][
+        "isGovernanceRoot"
+    ]
+
+
+def test_a_non_root_member_is_denied_roster_administration_and_sees_no_capability(
+    db_connection: sa.Connection, http_client: TestClient
+) -> None:
+    _register(db_connection, email="owner-roster2@real-human.test")
+    _login(http_client, email="owner-roster2@real-human.test")
+    workspace_id = http_client.post("/workspaces", json={"name": "Roster 2"}).json()["workspaceId"]
+    member_id = _register(db_connection, email="member-roster2@real-human.test")
+    other_id = _register(db_connection, email="other-roster2@real-human.test")
+    for uid in (member_id, other_id):
+        http_client.post(
+            f"/workspaces/{workspace_id}/members", json={"userId": str(uid), "role": "Facilitator"}
+        )
+    http_client.post("/auth/logout")
+    _login(http_client, email="member-roster2@real-human.test")
+    overview = http_client.get(f"/workspaces/{workspace_id}/overview").json()
+    assert overview["capabilities"]["revokeMembership"]["available"] is False
+    assert overview["capabilities"]["changeMemberRole"]["available"] is False
+    denied = http_client.post(f"/workspaces/{workspace_id}/members/{other_id}/revoke").json()
+    assert denied["kind"] == "denied"
+    assert (
+        http_client.post(
+            f"/workspaces/{workspace_id}/members/{other_id}/role", json={"role": "Contributor"}
+        ).json()["kind"]
+        == "denied"
+    )
+    http_client.post("/auth/logout")
+    assert (
+        http_client.post(f"/workspaces/{workspace_id}/members/{other_id}/revoke").status_code == 401
+    )
+    assert http_client.post(
+        f"/workspaces/{workspace_id}/members/not-a-uuid/revoke"
+    ).status_code in (400, 401)

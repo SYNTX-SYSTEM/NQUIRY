@@ -149,6 +149,38 @@ class MembershipRepository(Protocol):
         role or authority."""
         ...
 
+    def revoke_membership(
+        self,
+        membership_id: uuid.UUID,
+        *,
+        expected_record_version: RecordVersion,
+        revoked_at: datetime,
+    ) -> RecordVersion:
+        """05 GOV-003: ACTIVE → REVOKED (terminal), `revoked_at` set,
+        `record_version` advanced. Raises `MembershipConflict` unless the row
+        is ACTIVE at exactly `expected_record_version` ("no such row",
+        "already REVOKED" and "changed first" are one class)."""
+        ...
+
+    def revoke_role(self, role_assignment_id: uuid.UUID, *, revoked_at: datetime) -> bool:
+        """05 GOV-004 change model: the current role assignment ends
+        (`revoked_at`), history preserved. False if it was not current."""
+        ...
+
+    def touch_membership(
+        self, membership_id: uuid.UUID, *, expected_record_version: RecordVersion
+    ) -> RecordVersion:
+        """Advance the membership aggregate's `record_version` (a role
+        change is a change of the membership aggregate, 09 §24). Raises
+        `MembershipConflict` on a stale version or a non-ACTIVE row."""
+        ...
+
+
+class MembershipConflict(Exception):
+    """A version-guarded membership write matched no row: unknown id, not
+    ACTIVE, or a concurrent change committed first (one class, like
+    `AuthorityBindingConflict`)."""
+
 
 class SqlAlchemyMembershipRepository:
     """`MembershipRepository` backed by `workspace_memberships`/
@@ -157,6 +189,63 @@ class SqlAlchemyMembershipRepository:
 
     def __init__(self, connection: sa.Connection) -> None:
         self._connection = connection
+
+    def revoke_membership(
+        self,
+        membership_id: uuid.UUID,
+        *,
+        expected_record_version: RecordVersion,
+        revoked_at: datetime,
+    ) -> RecordVersion:
+        next_version = expected_record_version.next()
+        result = self._connection.execute(
+            sa.update(workspace_memberships_table)
+            .where(
+                workspace_memberships_table.c.id == membership_id,
+                workspace_memberships_table.c.status == MembershipStatus.ACTIVE.value,
+                workspace_memberships_table.c.record_version == expected_record_version.value,
+            )
+            .values(
+                status=MembershipStatus.REVOKED.value,
+                revoked_at=revoked_at,
+                record_version=next_version.value,
+            )
+        )
+        if result.rowcount != 1:
+            raise MembershipConflict(
+                f"membership {membership_id} not ACTIVE at the expected version"
+            )
+        return next_version
+
+    def revoke_role(self, role_assignment_id: uuid.UUID, *, revoked_at: datetime) -> bool:
+        result = self._connection.execute(
+            sa.update(role_assignments_table)
+            .where(
+                role_assignments_table.c.id == role_assignment_id,
+                role_assignments_table.c.revoked_at.is_(None),
+            )
+            .values(revoked_at=revoked_at)
+        )
+        return result.rowcount == 1
+
+    def touch_membership(
+        self, membership_id: uuid.UUID, *, expected_record_version: RecordVersion
+    ) -> RecordVersion:
+        next_version = expected_record_version.next()
+        result = self._connection.execute(
+            sa.update(workspace_memberships_table)
+            .where(
+                workspace_memberships_table.c.id == membership_id,
+                workspace_memberships_table.c.status == MembershipStatus.ACTIVE.value,
+                workspace_memberships_table.c.record_version == expected_record_version.value,
+            )
+            .values(record_version=next_version.value)
+        )
+        if result.rowcount != 1:
+            raise MembershipConflict(
+                f"membership {membership_id} not ACTIVE at the expected version"
+            )
+        return next_version
 
     def get_current_membership(
         self, workspace_id: WorkspaceId, user_id: UserId
@@ -307,9 +396,38 @@ def _role_assignment_record_from_row(row: sa.RowMapping) -> RoleAssignmentRecord
     )
 
 
+def membership_target_ref(membership_id: uuid.UUID) -> str:
+    """The commit target reference of a membership aggregate (09 §23)."""
+    return f"workspace_membership:{membership_id}"
+
+
+class SqlAlchemyMembershipVersionReader:
+    """`commit.coordinator.CurrentVersionReader` reading the REAL, fresh
+    `workspace_memberships.record_version` for one membership — no caching,
+    mirrors `SqlAlchemyWorkspaceVersionReader` / `SqlAlchemyAuthorityBindingVersionReader`.
+    Lives here because `application` may not import `sqlalchemy` (14 §3.1/§4)."""
+
+    def __init__(self, connection: sa.Connection, *, membership_id: uuid.UUID) -> None:
+        self._connection = connection
+        self._membership_id = membership_id
+
+    def read(self, target_ref: str) -> RecordVersion | None:
+        if target_ref != membership_target_ref(self._membership_id):
+            return None
+        value = self._connection.execute(
+            sa.select(workspace_memberships_table.c.record_version).where(
+                workspace_memberships_table.c.id == self._membership_id
+            )
+        ).scalar_one_or_none()
+        return None if value is None else RecordVersion(int(value))
+
+
 __all__ = [
+    "MembershipConflict",
     "MembershipRecord",
     "RoleAssignmentRecord",
     "MembershipRepository",
     "SqlAlchemyMembershipRepository",
+    "SqlAlchemyMembershipVersionReader",
+    "membership_target_ref",
 ]

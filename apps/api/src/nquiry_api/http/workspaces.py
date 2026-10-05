@@ -33,9 +33,11 @@ from application.http_dispatch import (
     SESSION_COOKIE_NAME,
     NoValidSessionError,
     dispatch_add_member,
+    dispatch_change_member_role,
     dispatch_create_workspace,
     dispatch_list_accessible_workspaces,
     dispatch_revoke_authority_binding,
+    dispatch_revoke_membership,
     dispatch_workspace_orientation,
 )
 from fastapi import APIRouter, Request
@@ -108,6 +110,47 @@ def add_workspace_member(workspace_id: str, body: AddMemberBody, request: Reques
             session_token=request.cookies.get(SESSION_COOKIE_NAME),
             workspace_id_str=workspace_id,
             new_member_user_id_str=body.userId,
+            role_str=body.role,
+        )
+    except NoValidSessionError as exc:
+        return _no_session_response(exc)
+    except ValueError as exc:
+        return _malformed_input_response(exc)
+    return JSONResponse(content=result)
+
+
+class ChangeRoleBody(BaseModel):
+    role: str
+
+
+@router.post("/workspaces/{workspace_id}/members/{member_user_id}/revoke")
+def revoke_workspace_member(
+    workspace_id: str, member_user_id: str, request: Request
+) -> JSONResponse:
+    """05 GOV-003 (WU-AUTHZ-01): the governance root ends a membership."""
+    try:
+        result = dispatch_revoke_membership(
+            session_token=request.cookies.get(SESSION_COOKIE_NAME),
+            workspace_id_str=workspace_id,
+            member_user_id_str=member_user_id,
+        )
+    except NoValidSessionError as exc:
+        return _no_session_response(exc)
+    except ValueError as exc:
+        return _malformed_input_response(exc)
+    return JSONResponse(content=result)
+
+
+@router.post("/workspaces/{workspace_id}/members/{member_user_id}/role")
+def change_workspace_member_role(
+    workspace_id: str, member_user_id: str, body: ChangeRoleBody, request: Request
+) -> JSONResponse:
+    """05 GOV-004 (WU-AUTHZ-01): the governance root changes a member's role."""
+    try:
+        result = dispatch_change_member_role(
+            session_token=request.cookies.get(SESSION_COOKIE_NAME),
+            workspace_id_str=workspace_id,
+            member_user_id_str=member_user_id,
             role_str=body.role,
         )
     except NoValidSessionError as exc:

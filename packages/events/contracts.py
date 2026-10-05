@@ -118,6 +118,25 @@ PRODUCTION_EVENT_CONTRACTS: EventContractRegistry = {
             "role_assignment_id",
             "role",
         ),
+        # WU-AUTHZ-01 (05 GOV-003 / GOV-004): the membership aggregate's successors
+        _c(
+            "CMD_REVOKE_MEMBERSHIP_COMMITTED",
+            "workspace_membership",
+            "membership_id",
+            "member_user_id",
+            "revoked_role_assignment_id",
+            "revoked_binding_count",
+        ),
+        _c(
+            "CMD_CHANGE_MEMBER_ROLE_COMMITTED",
+            "workspace_membership",
+            "membership_id",
+            "member_user_id",
+            "previous_role_assignment_id",
+            "previous_role",
+            "role_assignment_id",
+            "role",
+        ),
         _c(
             "CMD_GRANT_HUMAN_AUTHORITY_BINDING_COMMITTED",
             "authority_binding",

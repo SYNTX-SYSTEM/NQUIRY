@@ -125,7 +125,10 @@ from persistence.local_auth_repository import (
     SqlAlchemyLocalCredentialRepository,
     SqlAlchemyLocalSessionRepository,
 )
-from persistence.membership_repository import SqlAlchemyMembershipRepository
+from persistence.membership_repository import (
+    SqlAlchemyMembershipRepository,
+    SqlAlchemyMembershipVersionReader,
+)
 from persistence.outbox_repository import SqlAlchemyOutboxRepository
 from persistence.question_repository import SqlAlchemyQuestionRepository
 from persistence.session_repository import SqlAlchemySessionRepository
@@ -178,8 +181,13 @@ from application.human_decision_handler import (
 )
 from application.membership_operations_handler import (
     AddMemberDenied,
+    GovernanceRootNotRemovable,
+    MembershipNotFound,
     OwnerRoleNotAssignable,
+    RoleUnchanged,
     add_member,
+    change_member_role,
+    revoke_membership,
 )
 from application.session_view_query import (
     SessionViewData,
@@ -845,6 +853,150 @@ def dispatch_add_member(
     return {"kind": "ok"}
 
 
+def _governance_ports(connection: Any) -> dict[str, Any]:
+    """The repository set every F01 governance command composes (WU-AUTHZ-01)."""
+    return {
+        "workspace_repository": SqlAlchemyWorkspaceRepository(connection),
+        "membership_repository": SqlAlchemyMembershipRepository(connection),
+        "binding_repository": SqlAlchemyAuthorityBindingRepository(connection),
+        "authority_resolver": AuthorityResolver(
+            SqlAlchemyMembershipRepository(connection),
+            SqlAlchemyAuthorityBindingRepository(connection),
+            _RealClock(),
+        ),
+        "command_repository": SqlAlchemyCommandRepository(connection),
+        "audit_repository": SqlAlchemyAuditRepository(connection),
+        "outbox_repository": SqlAlchemyOutboxRepository(connection),
+        "commit_repository": SqlAlchemyCommitRepository(connection),
+        "idempotency_port": SqlAlchemyIdempotencyRepository(connection),
+    }
+
+
+def _membership_version_reader(
+    connection: Any, workspace_id: WorkspaceId, member_user_id: UserId
+) -> Any:
+    """The commit target of a membership command is the target's membership
+    aggregate when it exists, else the Workspace (the gate then denies)."""
+    membership = SqlAlchemyMembershipRepository(connection).get_current_membership(
+        workspace_id, member_user_id
+    )
+    if membership is None:
+        return SqlAlchemyWorkspaceVersionReader(connection, workspace_id=workspace_id)
+    return SqlAlchemyMembershipVersionReader(connection, membership_id=membership.id)
+
+
+def dispatch_revoke_membership(
+    *, session_token: str | None, workspace_id_str: str, member_user_id_str: str
+) -> dict[str, object]:
+    """`POST /workspaces/{workspaceId}/members/{userId}/revoke` (05 GOV-003,
+    WU-AUTHZ-01): the governance root ends a membership; the member's current
+    role and every Workspace binding end in the same commit."""
+    with connect() as connection:
+        actor = _resolve_actor_from_session(
+            session_token, session_repository=SqlAlchemyLocalSessionRepository(connection)
+        )
+        workspace_id = WorkspaceId(uuid.UUID(workspace_id_str))
+        member_user_id = UserId(uuid.UUID(member_user_id_str))
+        try:
+            revoke_membership(
+                connection,
+                actor=actor,
+                workspace_id=workspace_id,
+                member_user_id=member_user_id,
+                command_id=CommandId(uuid.uuid4()),
+                attempt_id=AttemptId(uuid.uuid4()),
+                correlation_id=CorrelationId(uuid.uuid4()),
+                occurred_at=datetime.now(timezone.utc),
+                commit_id=CommitId(uuid.uuid4()),
+                idempotency_key=None,
+                current_version_reader=_membership_version_reader(
+                    connection, workspace_id, member_user_id
+                ),
+                **_governance_ports(connection),
+            )
+        except AddMemberDenied as exc:
+            return _chain_denied_body(exc.chain_result)
+        except MembershipNotFound:
+            return {"kind": "denied", "result": "DENY", "reasonCode": "MEMBERSHIP_NOT_FOUND"}
+        except GovernanceRootNotRemovable:
+            return {
+                "kind": "denied",
+                "result": "DENY",
+                "reasonCode": "GOVERNANCE_ROOT_NOT_REMOVABLE",
+            }
+        except CommitDenied as exc:
+            return {
+                "kind": "denied",
+                "result": "DENY",
+                "reasonCode": exc.boundary_proof.reason_code,
+            }
+        except CommitFailedPrecommit as exc:
+            return {"kind": "failed_precommit", "reasonCode": exc.reason}
+        except CommitIndeterminate as exc:
+            return {"kind": "indeterminate", "blockedTargetRef": str(exc.commit_id.value)}
+    return {"kind": "ok"}
+
+
+def dispatch_change_member_role(
+    *, session_token: str | None, workspace_id_str: str, member_user_id_str: str, role_str: str
+) -> dict[str, object]:
+    """`POST /workspaces/{workspaceId}/members/{userId}/role` (05 GOV-004,
+    WU-AUTHZ-01): the governance root changes a member's current role."""
+    with connect() as connection:
+        actor = _resolve_actor_from_session(
+            session_token, session_repository=SqlAlchemyLocalSessionRepository(connection)
+        )
+        workspace_id = WorkspaceId(uuid.UUID(workspace_id_str))
+        member_user_id = UserId(uuid.UUID(member_user_id_str))
+        try:
+            role = WorkspaceRole(role_str)
+        except ValueError:
+            return {"kind": "rejected", "reasonCode": f"UNKNOWN_ROLE:{role_str}"}
+        try:
+            change_member_role(
+                connection,
+                actor=actor,
+                workspace_id=workspace_id,
+                member_user_id=member_user_id,
+                role=role,
+                command_id=CommandId(uuid.uuid4()),
+                attempt_id=AttemptId(uuid.uuid4()),
+                correlation_id=CorrelationId(uuid.uuid4()),
+                occurred_at=datetime.now(timezone.utc),
+                commit_id=CommitId(uuid.uuid4()),
+                idempotency_key=None,
+                current_version_reader=_membership_version_reader(
+                    connection, workspace_id, member_user_id
+                ),
+                **_governance_ports(connection),
+            )
+        except OwnerRoleNotAssignable as exc:
+            return {"kind": "rejected", "reasonCode": "OWNER_ROLE_NOT_ASSIGNABLE:" + str(exc)}
+        except RoleUnchanged:
+            return {"kind": "rejected", "reasonCode": "ROLE_UNCHANGED"}
+        except AddMemberDenied as exc:
+            return _chain_denied_body(exc.chain_result)
+        except MembershipNotFound:
+            return {"kind": "denied", "result": "DENY", "reasonCode": "MEMBERSHIP_NOT_FOUND"}
+        except GovernanceRootNotRemovable:
+            return {
+                "kind": "denied",
+                "result": "DENY",
+                "reasonCode": "GOVERNANCE_ROOT_NOT_REMOVABLE",
+            }
+        except CommitDenied as exc:
+            return {
+                "kind": "denied",
+                "result": "DENY",
+                "reasonCode": exc.boundary_proof.reason_code,
+            }
+        except CommitFailedPrecommit as exc:
+            return {"kind": "failed_precommit", "reasonCode": exc.reason}
+        except CommitIndeterminate as exc:
+            return {"kind": "indeterminate", "blockedTargetRef": str(exc.commit_id.value)}
+    return {"kind": "ok"}
+
+
 def dispatch_revoke_authority_binding(
     *, session_token: str | None, workspace_id_str: str, binding_id_str: str
 ) -> dict[str, object]:
@@ -925,5 +1077,7 @@ __all__ = [
     "dispatch_list_accessible_workspaces",
     "dispatch_workspace_orientation",
     "dispatch_add_member",
+    "dispatch_change_member_role",
     "dispatch_revoke_authority_binding",
+    "dispatch_revoke_membership",
 ]

@@ -431,6 +431,9 @@ def workspace_overview(
                 role is WorkspaceRole.FACILITATOR, "NOT_FACILITATOR", role.value if role else "none"
             ),
             "addMember": _cap(governance_root, "NOT_GOVERNANCE_ROOT"),
+            # WU-AUTHZ-01 (05 GOV-003 / GOV-004): the same root administers the roster
+            "revokeMembership": _cap(governance_root, "NOT_GOVERNANCE_ROOT"),
+            "changeMemberRole": _cap(governance_root, "NOT_GOVERNANCE_ROOT"),
         },
     }
 

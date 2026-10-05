@@ -90,6 +90,9 @@ ROUTES: list[tuple[str, str, dict[str, Any] | None]] = [
     ("GET", "/workspaces", None),
     ("POST", "/workspaces", {"name": "W"}),
     ("GET", "/workspaces/{ws}", None),
+    # WU-AUTHZ-01 (05 GOV-003 / GOV-004): the governance root's roster administration.
+    ("POST", "/workspaces/{ws}/members/{member}/revoke", {}),
+    ("POST", "/workspaces/{ws}/members/{member}/role", {"role": "Contributor"}),
     ("POST", "/workspaces/{ws}/members", {"userId": "{outsider}", "role": "Contributor"}),
     ("POST", "/workspaces/{ws}/authority-bindings/{binding}/revoke", {}),
     ("GET", "/workspaces/{ws}/overview", None),
@@ -278,6 +281,7 @@ def _world(db: sa.Connection) -> dict[str, Any]:
         "outsider_id": outsider,
         "ws_b": str(ws_b.value),
         "owner": ctx["owner"],
+        "member": str(ctx["fac"].value),  # WU-AUTHZ-01: a real member of Workspace A
     }
 
 
@@ -322,7 +326,8 @@ def test_the_sweep_covers_every_route() -> None:
             p.replace("{challenge}", "{challenge_id}")
             .replace("{session}", "{session_id}")
             .replace("{binding}", "{binding_id}")
-            .replace("{decision}", "{decision_id}"),
+            .replace("{decision}", "{decision_id}")
+            .replace("{member}", "{member_user_id}"),
         )
         for m, p in swept
     }
