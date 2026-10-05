@@ -22,10 +22,11 @@ admitted in every declared environment, `GET /auth/contacts`, delivery-failure
 events) and CYAN AUTH/CYAN-RECOVERY-01 (`auth-cyan-reconstruction` `7d214e6`:
 chamber verification relation, `/account/verify-email`, `/recover`,
 `/recover/reset`, login contact; cross-lineage real lane 14 / 14 incl.
-verification → recovery → login with the new password). Production still
-serves closure #3 (api `28e6620`, web `2fb7bfa`); the next propagation (ASP-03)
-carries both and needs the production mail-provider facts to activate recovery
-(external dependency; `HUMAN_DECISIONS.md` HD-AUTH-10; `FIELD_CLOSURE.md`
+verification → recovery → login with the new password). **ASP-03 live since 2026-10-05T23:53Z** (api `d03d5ce` as assembly
+`auth-d03d5ce-20261005T235257Z`, web `7d214e6`, head `e3a5c7d9f1b4`; runtime:
+recovery policy VERIFIED_EMAIL_SELF_SERVICE, public web base url). Production
+answers `/auth/contacts` UNAVAILABLE until the operator's mail-provider facts
+exist (external dependency; `HUMAN_DECISIONS.md` HD-AUTH-10; `FIELD_CLOSURE.md`
 "Closure #4"). Earlier closure #3 line, kept:
 
 **FIELD_CLOSED_WITH_ONE_RECORDED_HUMAN_BOUNDARY — closure #3 (2026-10-05T15:24Z):**

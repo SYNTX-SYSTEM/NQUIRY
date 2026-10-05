@@ -1,0 +1,34 @@
+ASP-03 production propagation — human-authorized (HD-AUTH-11), executed 2026-10-05T23:53Z (UTC).
+Deploy log and baseline live on the host (baseline `_baseline-pre-ASP03-20261005T235257Z`: pg_dump, compose + env copies,
+image anchors, ROLLBACK-asp03.sh). No secret, credential or address is recorded here.
+
+== before ==
+api assembly auth-28e6620-20261005T152356Z, web assembly cyanroot-2fb7bfa-20261005T152356Z, head e3a5c7d9f1b4
+GET /auth/contacts -> 404 (contact did not exist)
+
+== assemblies ==
+api  auth-d03d5ce-20261005T235257Z   (git archive accb976 with explicit pathspecs; code = d03d5ce)
+web  cyanroot-7d214e6-20261005T235257Z (git archive 7d214e6: apps/web; Dockerfile byte-identical to the live one)
+runtime delta: NQUIRY_RECOVERY_POLICY -> VERIFIED_EMAIL_SELF_SERVICE; NQUIRY_PUBLIC_WEB_BASE_URL set to the public origin;
+               NO mail-provider facts (NQUIRY_EMAIL_DELIVERY_MODE unset)
+migration: none (assembly head == live head == e3a5c7d9f1b4)
+
+== after (23:53:34Z) ==
+api + web containers recreated and running; postgres unchanged; head e3a5c7d9f1b4; vhost unchanged
+api log: "Application startup complete." (the new runtime configuration was admitted)
+GET /auth/providers      unchanged (google, PRODUCTION_PROVIDER)
+GET /auth/contacts       200 {"kind":"ok","recovery":"UNAVAILABLE","emailVerification":"UNAVAILABLE"}
+/ /login /recover /recover/reset /account/verify-email   all 200
+web bundle carries the recovery form, the verification landing and the chamber's e-mail section
+preservation BEFORE/AFTER diff: the two recreated containers only
+
+== corrected read-only probes, 23:58Z ==
+(the deploy script's own two probes printed 400 MALFORMED_REQUEST_BODY: its JSON body was mangled by the remote
+ shell quoting — a probe artefact)
+POST /auth/recovery/start             503 unavailable RECOVERY_NOT_AVAILABLE
+POST /auth/recovery/complete          503 unavailable RECOVERY_NOT_AVAILABLE
+POST /auth/email/verification/start   401 denied NO_SESSION (no session)
+GET  /auth/emails                     401 denied NO_SESSION (no session)
+GET  /auth/identity                   401 NO_SESSION (unchanged)
+GET  /auth/oidc/google/start          303 to the provider (unchanged)
+GET  /login (SSR)                     no recovery contact rendered while recovery is UNAVAILABLE

@@ -360,6 +360,19 @@ this is a correct, disclosed state, not a hidden failure.
 met; the boundary itself (unlinking the last method) remains undecided and
 NEVER remains in force. It blocks nothing.
 
+## HD-AUTH-11 — ASP-03 production propagation authorized (2026-10-06)
+
+**Decision (human operator, verbatim essentials):** "ASP-03 production
+propagation is authorized. Execute the already prepared and proven ASP-03
+propagation. After the real production effect, verify and reconstruct the
+resulting Authentication and Authorization Field under canonical SFE. Do not
+create, infer, expose, or modify production mail-provider credentials."
+
+**Executed 2026-10-05T23:53Z** by the engineering session on the host: see
+`FIELD_CLOSURE.md` "Closure #4" and `evidence/asp03_production_state.txt`.
+No mail-provider credential was created, read, inferred or changed; the
+production runtime carries the decided policy and the public web origin only.
+
 ## Open boundaries (OPEN, awaiting the operator)
 
 | # | Boundary | Home | What it blocks | Default in force | Status |

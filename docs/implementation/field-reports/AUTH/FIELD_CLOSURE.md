@@ -6,7 +6,7 @@ because additional features are conceivable". Supersedes the status line of
 `FIELD_REVIEW.md` (the first closure of 2026-10-01); every proof listed there
 stands and is not repeated.
 
-## Closure #4 (2026-10-06, HD-AUTH-10: the recovery boundary resolved)
+## Closure #4 (2026-10-06, HD-AUTH-10: the recovery boundary resolved; ASP-03 live)
 
 The one closure-critical boundary of closures #2/#3 (section A, the block at
 the end) was decided by the human on 2026-10-05 (HD-AUTH-10 / HA-AUTH-02):
@@ -29,7 +29,7 @@ production propagation recorded below as they happen (this document is
 updated in place):
 
 - PURPLE closure regression #4 on `accb976` (`evidence/field_closure_4_regression.txt`): **2538 passed / 2 skipped** (0:46:53), no-DB 1030, 44 migrations single head `e3a5c7d9f1b4`, tree hash unchanged during the run. CYAN mocked preservation set 194 passed, cy11 10 / 10, cross-lineage real lane 14 / 14.
-- ASP-03 propagation: **PREPARED, BLOCKED_ON_EXTERNAL_PERMISSION** (2026-10-06T01:5xZ) — api assembly from `accb976` (code = `d03d5ce`), web assembly from `auth-cyan-reconstruction` `7d214e6`, script `deploy-asp03.sh` (ASP-02 pattern; no migration; `.env` delta = `NQUIRY_RECOVERY_POLICY=VERIFIED_EMAIL_SELF_SERVICE` + `NQUIRY_PUBLIC_WEB_BASE_URL=https://nquiry.condyn.eu`; no mail facts). The execution environment's permission layer refused the upload to the production host ("Production Deploy"), as for ASP-01 until the human authorized it. Expected production state after ASP-03 without mail facts: `/auth/contacts` → both UNAVAILABLE, `/recover` served and saying so, no recovery contact on the login.
+- ASP-03 propagation: **DONE 2026-10-05T23:53Z** (human-authorized, HD-AUTH-11) — api assembly `auth-d03d5ce-20261005T235257Z` (source `accb976`, code `d03d5ce`), web assembly `cyanroot-7d214e6-20261005T235257Z`; head `e3a5c7d9f1b4` unchanged (no migration); runtime now carries the decided policy and the public web origin, no mail facts; baseline `_baseline-pre-ASP03-20261005T235257Z` with its rollback script. Verified read-only (`evidence/asp03_production_state.txt`): `/auth/contacts` → recovery UNAVAILABLE / emailVerification UNAVAILABLE; recovery start / complete → 503 `RECOVERY_NOT_AVAILABLE`; verification start → 401 without a session; `/recover`, `/recover/reset`, `/account/verify-email` served; the login withholds the recovery contact; Google start unchanged; preservation diff = the two recreated containers only.
 - **EXTERNAL DEPENDENCY (not a Human Authority decision):** the production
   host's MTA (`mail.condyn.eu`, postfix, submission 587 + TLS) relays only
   for loopback or SASL-authenticated clients, and the api container is a
