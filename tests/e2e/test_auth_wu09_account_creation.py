@@ -250,15 +250,18 @@ def test_under_self_registration_an_unknown_verified_subject_becomes_an_identity
     assert method.method_id == binding.method_id
     assert open_client.get("/auth/me").json() == {"kind": "ok", "userId": str(user["id"])}
 
-    event = (
-        db_connection.execute(
+    # WU-AUTH-18: the login's own event (PROVIDER_LOGIN_SUCCEEDED) stands next to the creation event
+    events = {
+        row["event_type"]: row
+        for row in db_connection.execute(
             sa.select(security_events_table).where(
                 security_events_table.c.target_ref == f"user:{user['id']}"
             )
-        )
-        .mappings()
-        .one()
-    )
+        ).mappings()
+    }
+    assert set(events) == {"IDENTITY_CREATED", "PROVIDER_LOGIN_SUCCEEDED"}
+    assert events["PROVIDER_LOGIN_SUCCEEDED"]["actor_id"] == str(user["id"])
+    event = events["IDENTITY_CREATED"]
     assert event["event_type"] == "IDENTITY_CREATED"
     assert event["actor_type"] == "ACCOUNT_CREATION_POLICY"
     assert event["actor_id"] == "SELF_REGISTRATION_ALLOWED"
@@ -371,8 +374,14 @@ def test_a_failed_provenance_write_leaves_no_identity(
     local effect; if any part fails, none persists and the transaction is
     terminal, not replayable."""
 
+    original = security_event_repository.SqlAlchemySecurityEventRepository.record
+
     def _boom(self: object, event: object) -> None:
-        raise RuntimeError("provenance store unavailable")
+        # WU-AUTH-18: the protocol's own audit events (start, failure) keep writing; the
+        # creation's provenance write is the one that fails
+        if getattr(event, "event_type", None) == "IDENTITY_CREATED":
+            raise RuntimeError("provenance store unavailable")
+        original(self, event)  # type: ignore[arg-type]
 
     monkeypatch.setattr(
         security_event_repository.SqlAlchemySecurityEventRepository, "record", _boom

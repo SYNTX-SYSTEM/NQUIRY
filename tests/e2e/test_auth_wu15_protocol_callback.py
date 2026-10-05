@@ -187,7 +187,8 @@ def test_the_protocol_contacts_are_declared_and_are_exactly_the_mutating_get_rou
         "/auth/oidc/{provider}/link/callback",
     }
     assert set(PROTOCOL_CONTACTS) <= served_get
-    assert set(PROTOCOL_START_WRITE_SET) == {"oidc_auth_transactions"}
+    # WU-AUTH-18: the start also records its audit event (24 §31.1 "provider login start")
+    assert set(PROTOCOL_START_WRITE_SET) == {"oidc_auth_transactions", "security_events"}
     assert set(PROTOCOL_CALLBACK_WRITE_SET) == {
         "oidc_auth_transactions",
         "local_auth_sessions",

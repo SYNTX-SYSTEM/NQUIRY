@@ -76,8 +76,11 @@ persistence scoped). Open Human Authority: HA-AUTH-02 (recovery), HA-AUTH-03 (la
   :18460, app :13470, hostile origin :13471, database `nquiry_purple_real`,
   never the pytest proof database). `AUTH_REAL_SPEC_MATCH=".*"` runs every
   real-stack spec of the repository on it (8 passed at WU-14).
-- Tracked for the hardening step (24 §47 item 24): `auth_events` /
-  SecurityEvents for login, logout, session and provider events (24 §31.1).
+- **WU-AUTH-18 (2026-10-05, 24 §47 item 24):** SecurityEvents for login
+  success / failure, logout, session revocation, provider start / outcomes
+  (24 §31.1; privacy §31.3 proven by value-absence) — `WU-AUTH-18.md`,
+  `evidence/wu18_proof.txt` (752 / 1). Source only; deploys with the next
+  api assembly (ASP-01, blocked on external permission).
 
 ### Baseline (the pin, before any PURPLE change)
 
@@ -112,6 +115,7 @@ preceded them, so the counts are those of the pin.
 | WU-AUTH-16 Authorization Regression | PROVEN (6 identity kinds × the full protected route table; no code delta) | `a4c3bc3` |
 | WU-AUTH-17 Runtime DB Principal Capability Boundary | PROVEN in TEST (auth_runtime, exact capability matrix, live paths scoped, real lane scoped); HA-AUTH-05 (= PFC HA-10 deployment switch) OPEN | `b939037` |
 | PURPLE_IDENTITY_PRESENTATION_01 (post-closure Field, 2026-10-04) | PROVEN at the affected radius: `GET /auth/identity` (self, `displayName`=`users.name`, `canonicalEmail`=`users.email`, method-invariant); F-IP-1 disclosed | this commit |
+| WU-AUTH-18 Authentication Audit Events (2026-10-05) | PROVEN at the affected radius (752 / 1); closed vocabulary; ids and classes only; same transaction as the effect | `WU-AUTH-18.md` |
 | PROVIDER_BOOTSTRAP_01 (post-closure Field, 2026-10-04) | PROVEN in TEST: generic provider-driven identity (24 §11.14) — no name invention (`PROVIDER_PROFILE_INCOMPLETE`), provenance of name/email, re-bootstrap after unlink, collision refusal; production policy still DENIED (HA-AUTH-01) | this commit |
 
 ### Current First Broken Relation

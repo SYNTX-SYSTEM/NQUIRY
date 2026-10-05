@@ -29,10 +29,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from typing import Any
 
 from persistence.engine import connect_auth as connect  # WU-AUTH-17: scoped auth persistence
 from persistence.local_auth_repository import SqlAlchemyLocalSessionRepository
 from persistence.oidc_transaction_repository import SqlAlchemyOidcTransactionRepository
+from security.auth_audit import AuthAuditEvent
 from security.oidc_provider import (
     IdTokenInvalid,
     OidcProvider,
@@ -43,6 +45,7 @@ from security.oidc_provider import (
 from security.oidc_transaction import OidcFailureReason, OidcTransactionPurpose
 from semantic_types.ids import UserId
 
+from application.auth_audit import record_auth_event
 from application.auth_handler import (
     SessionRequired,
     issue_session,
@@ -84,7 +87,12 @@ PROTOCOL_CONTACTS: tuple[str, ...] = (
     "/auth/oidc/{provider}/callback",  # protocol response: proof gates → effects
     "/auth/oidc/{provider}/link/callback",
 )
-PROTOCOL_START_WRITE_SET: frozenset[str] = frozenset({"oidc_auth_transactions"})
+PROTOCOL_START_WRITE_SET: frozenset[str] = frozenset(
+    {
+        "oidc_auth_transactions",
+        "security_events",  # WU-AUTH-18: "provider login start" (24 §31.1)
+    }
+)
 PROTOCOL_CALLBACK_WRITE_SET: frozenset[str] = frozenset(
     {
         "oidc_auth_transactions",  # claim, terminal state
@@ -273,6 +281,19 @@ def _start(
             redirect_target=redirect_candidate,
             now=now,
         )
+        # 24 §31.1 "provider login start" / "OIDC transaction created": ids and classes only
+        record_auth_event(
+            connection,
+            AuthAuditEvent.PROVIDER_LINK_STARTED
+            if purpose is OidcTransactionPurpose.ACCOUNT_LINK
+            else AuthAuditEvent.PROVIDER_LOGIN_STARTED,
+            environment=current_auth_runtime().environment,
+            now=now,
+            actor=initiating_user_id,
+            facts={"provider": provider.provider_id, "transactionId": str(started.transaction_id)},
+            target_ref=f"oidc-transaction:{started.transaction_id}",
+            never=(started.state, started.nonce, started.binding_token, started.code_challenge),
+        )
     return OidcDispatchResult(
         303,
         location=provider.authorization_url(
@@ -338,6 +359,57 @@ def _fail(transaction_id: object, reason: OidcFailureReason, *, now: datetime) -
             reason=reason.value,
             now=now,
         )
+        _transaction_event(
+            connection,
+            AuthAuditEvent.OIDC_TRANSACTION_FAILED,
+            now=now,
+            facts={"transactionId": str(transaction_id), "reason": reason.value},
+            target_ref=f"oidc-transaction:{transaction_id}",
+        )
+
+
+def _transaction_event(
+    connection: Any,
+    event: AuthAuditEvent,
+    *,
+    now: datetime,
+    facts: dict[str, object],
+    target_ref: str | None = None,
+    never: tuple[str | None, ...] = (),
+) -> None:
+    """24 §31.1 protocol events (terminal states, replay / claim rejections,
+    cancels): the unauthenticated client as actor, never a protocol value."""
+    record_auth_event(
+        connection,
+        event,
+        environment=current_auth_runtime().environment,
+        now=now,
+        actor=None,
+        facts=facts,
+        target_ref=target_ref,
+        never=never,
+    )
+
+
+def _rejected_event(
+    provider: OidcProvider,
+    purpose: OidcTransactionPurpose,
+    reason: str,
+    *,
+    now: datetime,
+    never: tuple[str | None, ...],
+) -> None:
+    """A callback the transaction field rejected before any effect (unknown or
+    terminal state, binding or purpose mismatch, replay): its own transaction,
+    because the rejecting one was rolled back."""
+    with connect() as connection:
+        _transaction_event(
+            connection,
+            AuthAuditEvent.OIDC_TRANSACTION_FAILED,
+            now=now,
+            facts={"provider": provider.provider_id, "purpose": purpose.value, "reason": reason},
+            never=never,
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -371,8 +443,22 @@ def _protocol_steps(
                     reason=reason.value,
                     now=now,
                 )
-            except TransactionRejected:
+            except TransactionRejected as rejected:
+                _rejected_event(
+                    provider, purpose, rejected.reason, now=now, never=(state, binding_token)
+                )
                 return "failed"
+            _transaction_event(
+                connection,
+                AuthAuditEvent.OIDC_TRANSACTION_CANCELLED,
+                now=now,
+                facts={
+                    "provider": provider.provider_id,
+                    "purpose": purpose.value,
+                    "reason": reason.value,
+                },
+                never=(state, binding_token),
+            )
         if reason is OidcFailureReason.USER_CANCEL:
             return "cancelled"
         if error in _PROVIDER_UNAVAILABLE_ERRORS:
@@ -394,7 +480,11 @@ def _protocol_steps(
                 initiating_user_id=initiating_user_id,
                 now=now,
             )
-        except TransactionRejected:
+        except TransactionRejected as rejected:
+            # 24 §31.1 "replay rejected" / binding failed / purpose mismatch: the claim's own reason
+            _rejected_event(
+                provider, purpose, rejected.reason, now=now, never=(state, binding_token, code)
+            )
             return "failed"
 
     # (2) provider proof: exchange with the original verifier, then validation.
@@ -462,9 +552,36 @@ def dispatch_oidc_callback(
             complete_transaction(
                 SqlAlchemyOidcTransactionRepository(connection), claimed.transaction_id, now=now
             )
+            # 24 §31.1 provider login success / transaction completed, in the effect's transaction
+            record_auth_event(
+                connection,
+                AuthAuditEvent.PROVIDER_LOGIN_SUCCEEDED,
+                environment=runtime.environment,
+                now=now,
+                actor=resolved.user_id,
+                facts={
+                    "provider": provider.provider_id,
+                    "transactionId": str(claimed.transaction_id),
+                    "methodId": str(resolved.method_id.value),
+                },
+                never=(session.session_token, params.get("state"), params.get("code")),
+            )
     except ProviderIdentityUnresolved as unresolved:
         _fail(claimed.transaction_id, unresolved.reason, now=now)
         if unresolved.reason in _UNAVAILABLE_REASONS:
+            # 24 §31.1 "account creation denied/unavailable": the boundary's own class
+            with connect() as connection:
+                _transaction_event(
+                    connection,
+                    AuthAuditEvent.PROVIDER_LOGIN_UNAVAILABLE,
+                    now=now,
+                    facts={
+                        "provider": provider.provider_id,
+                        "transactionId": str(claimed.transaction_id),
+                        "reason": unresolved.reason.value,
+                    },
+                    target_ref=f"oidc-transaction:{claimed.transaction_id}",
+                )
             return _login_projection("unavailable")
         return _login_projection("failed")
     except Exception:  # noqa: BLE001 -- any local failure after provider proof is terminal

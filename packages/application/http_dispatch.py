@@ -133,7 +133,9 @@ from persistence.workspace_repository import (
     SqlAlchemyWorkspaceRepository,
     SqlAlchemyWorkspaceVersionReader,
 )
+from security.auth_audit import AuthAuditEvent
 from security.identity import AuthenticatedPrincipal
+from security.local_auth import hash_session_token
 from semantic_types.ids import (
     AttemptId,
     AuthorityBindingId,
@@ -150,6 +152,7 @@ from application.accessible_workspaces_query import (
     AccessibleWorkspacesDenied,
     list_accessible_workspaces,
 )
+from application.auth_audit import record_auth_event
 from application.auth_handler import (
     InvalidCredentials,
     SessionRequired,
@@ -167,6 +170,7 @@ from application.authority_binding_handler import (
     revoke_human_authority_binding,
 )
 from application.capability_projection import project_capabilities
+from application.http_oidc import current_auth_runtime
 from application.human_decision_handler import (
     HumanDecisionDenied,
     SelectedOptionNotCandidate,
@@ -262,20 +266,47 @@ def dispatch_login(*, email: str, password: str) -> LoginDispatchResult:
     `denied` body instead, same fail-closed-but-not-500 discipline as
     every other dispatch function here."""
     with _auth_connection() as connection:
+        sessions = SqlAlchemyLocalSessionRepository(connection)
+        now = datetime.now(timezone.utc)
+        environment = current_auth_runtime().environment
         try:
             result = login(
                 email,
                 password,
                 credential_repository=SqlAlchemyLocalCredentialRepository(connection),
-                session_repository=SqlAlchemyLocalSessionRepository(connection),
-                now=datetime.now(timezone.utc),
+                session_repository=sessions,
+                now=now,
             )
         except InvalidCredentials:
+            # 24 §31.1 "login failure aggregated safely": the failure class, no account, no address
+            record_auth_event(
+                connection,
+                AuthAuditEvent.LOGIN_FAILED,
+                environment=environment,
+                now=now,
+                actor=None,
+                facts={"method": "LOCAL_PASSWORD", "reason": "INVALID_CREDENTIALS"},
+                never=(password,),
+            )
             return LoginDispatchResult(
                 body={"kind": "denied", "reasonCode": "INVALID_CREDENTIALS"},
                 session_token=None,
                 expires_at=None,
             )
+        issued = sessions.get_by_token_hash(hash_session_token(result.session_token))
+        record_auth_event(
+            connection,
+            AuthAuditEvent.LOGIN_SUCCEEDED,
+            environment=environment,
+            now=now,
+            actor=result.user_id,
+            facts={
+                "method": "LOCAL_PASSWORD",
+                "sessionId": None if issued is None else str(issued.session_id),
+                "expiresAt": result.expires_at.isoformat(),
+            },
+            never=(result.session_token, password),
+        )
     return LoginDispatchResult(
         body={"kind": "ok", "userId": str(result.user_id.value)},
         session_token=result.session_token,
@@ -287,11 +318,20 @@ def dispatch_logout(*, session_token: str | None) -> dict[str, object]:
     """`POST /auth/logout`. Idempotent -- a missing/unknown/already-
     revoked token is a silent no-op, never an error."""
     with _auth_connection() as connection:
-        logout(
-            session_token,
-            session_repository=SqlAlchemyLocalSessionRepository(connection),
-            now=datetime.now(timezone.utc),
-        )
+        sessions = SqlAlchemyLocalSessionRepository(connection)
+        now = datetime.now(timezone.utc)
+        principal = resolve_session(session_token, session_repository=sessions, now=now)
+        logout(session_token, session_repository=sessions, now=now)
+        if principal is not None:  # a no-op logout (no live session) is no event
+            record_auth_event(
+                connection,
+                AuthAuditEvent.LOGOUT,
+                environment=current_auth_runtime().environment,
+                now=now,
+                actor=principal.user_id,
+                facts={"session": principal.authentication_session_ref},
+                never=(session_token,),
+            )
     return {"kind": "ok"}
 
 
@@ -329,14 +369,23 @@ def dispatch_logout_all(*, session_token: str | None) -> SessionDispatchResult:
     """`POST /auth/logout-all` (24 §15.7 all-session scope). Requires a valid
     session: without one nothing is revoked and the answer is `denied`."""
     with _auth_connection() as connection:
+        sessions = SqlAlchemyLocalSessionRepository(connection)
+        now = datetime.now(timezone.utc)
+        principal = resolve_session(session_token, session_repository=sessions, now=now)
         try:
-            revoked = logout_all_sessions(
-                session_token,
-                session_repository=SqlAlchemyLocalSessionRepository(connection),
-                now=datetime.now(timezone.utc),
-            )
+            revoked = logout_all_sessions(session_token, session_repository=sessions, now=now)
         except SessionRequired:
             return SessionDispatchResult(401, _NO_SESSION_BODY)
+        if principal is not None:
+            record_auth_event(
+                connection,
+                AuthAuditEvent.ALL_SESSIONS_REVOKED,
+                environment=current_auth_runtime().environment,
+                now=now,
+                actor=principal.user_id,
+                facts={"revokedSessions": revoked, "session": principal.authentication_session_ref},
+                never=(session_token,),
+            )
     return SessionDispatchResult(200, {"kind": "ok", "revokedSessions": revoked}, clear_cookie=True)
 
 
@@ -392,7 +441,16 @@ def dispatch_revoke_session(
             session_token, session_id, session_repository=repository, now=now
         ):
             return SessionDispatchResult(404, {"kind": "denied", "reasonCode": "SESSION_NOT_FOUND"})
-    own = principal.authentication_session_ref == f"local-session:{session_id}"
+        own = principal.authentication_session_ref == f"local-session:{session_id}"
+        record_auth_event(
+            connection,
+            AuthAuditEvent.SESSION_REVOKED,
+            environment=current_auth_runtime().environment,
+            now=now,
+            actor=principal.user_id,
+            facts={"revokedSessionId": str(session_id), "currentSessionEnded": own},
+            never=(session_token,),
+        )
     return SessionDispatchResult(200, {"kind": "ok"}, clear_cookie=own)
 
 

@@ -45,6 +45,7 @@ from persistence.tables import (
     users_table,
     verified_emails_table,
 )
+from security.auth_audit import AuthAuditEvent
 from security.local_auth import hash_password
 from security.mail import CapturedMail, LocalMailCapture
 from semantic_types.ids import UserId
@@ -142,13 +143,17 @@ def _verified(db: sa.Connection, user_id: UserId) -> list[sa.RowMapping]:
 
 
 def _events(db: sa.Connection, user_id: UserId) -> list[str]:
-    return list(
-        db.execute(
+    """The verification relation's own events; the session events of WU-AUTH-18
+    (LOGIN_SUCCEEDED, LOGOUT, …) belong to another relation and are left out."""
+    return [
+        event_type
+        for event_type in db.execute(
             sa.select(security_events_table.c.event_type)
             .where(security_events_table.c.target_ref == f"user:{user_id.value}")
             .order_by(security_events_table.c.occurred_at)
         ).scalars()
-    )
+        if event_type not in {e.value for e in AuthAuditEvent}
+    ]
 
 
 # ------------------------------------------------------------- delivery port
@@ -219,7 +224,8 @@ def test_start_issues_a_challenge_delivers_it_and_stores_only_the_hash(
     assert _events(db_connection, user_id) == ["EMAIL_VERIFICATION_ISSUED"]
     facts = db_connection.execute(
         sa.select(security_events_table.c.observed_facts).where(
-            security_events_table.c.target_ref == f"user:{user_id.value}"
+            security_events_table.c.target_ref == f"user:{user_id.value}",
+            security_events_table.c.event_type == "EMAIL_VERIFICATION_ISSUED",
         )
     ).scalar_one()
     assert delivered.token not in (facts or "") and email not in (facts or "")
