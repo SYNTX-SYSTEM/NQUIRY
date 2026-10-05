@@ -29,7 +29,7 @@ production propagation recorded below as they happen (this document is
 updated in place):
 
 - PURPLE closure regression #4 on `accb976` (`evidence/field_closure_4_regression.txt`): **2538 passed / 2 skipped** (0:46:53), no-DB 1030, 44 migrations single head `e3a5c7d9f1b4`, tree hash unchanged during the run. CYAN mocked preservation set 194 passed, cy11 10 / 10, cross-lineage real lane 14 / 14.
-- ASP-03 propagation: PENDING
+- ASP-03 propagation: **PREPARED, BLOCKED_ON_EXTERNAL_PERMISSION** (2026-10-06T01:5xZ) — api assembly from `accb976` (code = `d03d5ce`), web assembly from `auth-cyan-reconstruction` `7d214e6`, script `deploy-asp03.sh` (ASP-02 pattern; no migration; `.env` delta = `NQUIRY_RECOVERY_POLICY=VERIFIED_EMAIL_SELF_SERVICE` + `NQUIRY_PUBLIC_WEB_BASE_URL=https://nquiry.condyn.eu`; no mail facts). The execution environment's permission layer refused the upload to the production host ("Production Deploy"), as for ASP-01 until the human authorized it. Expected production state after ASP-03 without mail facts: `/auth/contacts` → both UNAVAILABLE, `/recover` served and saying so, no recovery contact on the login.
 - **EXTERNAL DEPENDENCY (not a Human Authority decision):** the production
   host's MTA (`mail.condyn.eu`, postfix, submission 587 + TLS) relays only
   for loopback or SASL-authenticated clients, and the api container is a
