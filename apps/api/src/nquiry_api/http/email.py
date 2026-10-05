@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from application.http_dispatch import SESSION_COOKIE_NAME
 from application.http_email import (
+    dispatch_auth_contacts,
     dispatch_list_verified_emails,
     dispatch_test_mail_outbox,
     dispatch_verification_complete,
@@ -30,6 +31,13 @@ class VerificationStartBody(BaseModel):
 class VerificationCompleteBody(BaseModel):
     challengeId: str  # noqa: N815 -- wire name (camelCase JSON contract)
     token: str
+
+
+@router.get("/auth/contacts")
+def auth_contacts() -> JSONResponse:
+    """WU-AUTH-21: public discovery of the policy-gated contacts (recovery, e-mail verification)."""
+    status, payload = dispatch_auth_contacts()
+    return JSONResponse(status_code=status, content=payload)
 
 
 @router.post("/auth/email/verification/start")

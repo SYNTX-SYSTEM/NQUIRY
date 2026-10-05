@@ -201,15 +201,20 @@ def test_the_recovery_policy_defaults_to_denied_and_is_a_closed_vocabulary() -> 
         )
 
 
-@pytest.mark.parametrize("environment", ["PRODUCTION", "STAGING", None])
-def test_self_service_recovery_is_refused_outside_development_and_test(
-    environment: str | None,
-) -> None:
-    env = {"NQUIRY_RECOVERY_POLICY": "VERIFIED_EMAIL_SELF_SERVICE"}
-    if environment is not None:
-        env["NQUIRY_ENVIRONMENT"] = environment
+def test_self_service_recovery_needs_a_declared_environment() -> None:
+    """HD-AUTH-10 (2026-10-06): VERIFIED_EMAIL_SELF_SERVICE is part of the product in every
+    declared environment (WU-AUTH-21 proves PRODUCTION / STAGING); undeclared is refused."""
     with pytest.raises(RecoveryPolicyForbidden):
-        auth_runtime_from_environment(env)
+        auth_runtime_from_environment({"NQUIRY_RECOVERY_POLICY": "VERIFIED_EMAIL_SELF_SERVICE"})
+    for environment in ("PRODUCTION", "STAGING"):
+        runtime = auth_runtime_from_environment(
+            {
+                "NQUIRY_ENVIRONMENT": environment,
+                "NQUIRY_RECOVERY_POLICY": "VERIFIED_EMAIL_SELF_SERVICE",
+            }
+        )
+        assert runtime.recovery_policy.value == "VERIFIED_EMAIL_SELF_SERVICE"
+        assert runtime.mail_sink is None  # policy without delivery: the contacts stay unavailable
 
 
 def test_under_denied_the_contacts_are_unavailable_and_write_nothing(

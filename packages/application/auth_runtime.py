@@ -15,10 +15,22 @@ Settings (environment variables, read once at startup, same discipline as
 - `NQUIRY_GOOGLE_LINK_REDIRECT_URI` (optional): the ACCOUNT_LINK callback's
   registered URI; default is the login URI with `/link/callback`.
 - `NQUIRY_EMAIL_DELIVERY_MODE` (24 §25.2 "email provider config"): `capture`
-  enables the in-process local mail sink in DEVELOPMENT / TEST; unset means
-  no delivery (verification / recovery unavailable); anything else is refused.
+  enables the in-process local mail sink in DEVELOPMENT / TEST; `smtp`
+  (WU-AUTH-21, HD-AUTH-10) hands rendered messages to the deployment's
+  submission service — `NQUIRY_SMTP_HOST`, `NQUIRY_SMTP_PORT` (default 587),
+  `NQUIRY_SMTP_SECURITY` (`starttls` default | `tls`), `NQUIRY_SMTP_FROM`,
+  optional `NQUIRY_SMTP_USERNAME` + `NQUIRY_SMTP_PASSWORD`, optional
+  `NQUIRY_SMTP_CA_FILE` (a private CA to verify against), and requires
+  `NQUIRY_PUBLIC_WEB_BASE_URL` (the absolute links in the messages) — an
+  incomplete configuration is refused at startup; unset means no delivery
+  (verification / recovery unavailable); anything else is refused.
 - `NQUIRY_RECOVERY_POLICY` (24 §17.7, §36 #11; default `DENIED`):
-  `VERIFIED_EMAIL_SELF_SERVICE` in DEVELOPMENT / TEST only.
+  `VERIFIED_EMAIL_SELF_SERVICE` admitted in every DECLARED environment since
+  HD-AUTH-10 (2026-10-06); refused only without an environment. It is
+  effective only together with a mail sink (else the contacts answer
+  `unavailable`).
+- `NQUIRY_EMAIL_VERIFY_PATH` / `NQUIRY_RECOVERY_COMPLETE_PATH` (frontend-owned
+  paths of the mail links; defaults `/account/verify-email`, `/recover/reset`).
 - `NQUIRY_PUBLIC_WEB_BASE_URL` (WU-AUTH-14): the browser-facing app origin when it
   differs from the API origin; local post-auth destinations are prefixed with it.
 - `NQUIRY_PUBLIC_API_BASE_URL`: where a browser reaches this API (the test
@@ -51,7 +63,14 @@ from datetime import timedelta
 from security.account_creation import MATERIALIZED_POLICIES, AccountCreationPolicy
 from security.events import Environment
 from security.login_throttle import ThrottlePolicy
-from security.mail import LocalMailCapture, MailSink
+from security.mail import (
+    LocalMailCapture,
+    MailLinks,
+    MailSink,
+    SmtpMailSink,
+    SmtpSettings,
+    smtp_transport,
+)
 from security.oidc_provider import OidcProvider
 from security.oidc_standard import google_provider
 from security.oidc_test_issuer import LocalTestIssuer
@@ -182,6 +201,12 @@ def auth_runtime_from_environment(
             "SELF_REGISTRATION_ALLOWED needs a declared NQUIRY_ENVIRONMENT; "
             f"refused for NQUIRY_ENVIRONMENT={raw_environment!r}"
         )
+    web_base_url = source.get("NQUIRY_PUBLIC_WEB_BASE_URL", "").strip() or None
+    if web_base_url is not None and not is_origin(web_base_url):
+        raise ValueError(
+            f"NQUIRY_PUBLIC_WEB_BASE_URL={web_base_url!r} is not an explicit origin "
+            "(scheme://host[:port], no path)"
+        )
     delivery_mode = source.get("NQUIRY_EMAIL_DELIVERY_MODE", "").strip().lower()
     sink: MailSink | None = None
     if delivery_mode == "capture":
@@ -191,25 +216,20 @@ def auth_runtime_from_environment(
                 f"NQUIRY_ENVIRONMENT={raw_environment!r} (24 section 25.3)"
             )
         sink = mail_sink or LocalMailCapture()
+    elif delivery_mode == "smtp":
+        sink = mail_sink or _smtp_sink(source, web_base_url)
     elif delivery_mode:
         raise ValueError(
-            f"unknown NQUIRY_EMAIL_DELIVERY_MODE {delivery_mode!r}: production delivery is a "
-            "Human Authority decision (24 section 36 #16); nothing is substituted"
+            f"unknown NQUIRY_EMAIL_DELIVERY_MODE {delivery_mode!r}: the delivery provider is "
+            "the operator's choice (24 section 36 #16); nothing is substituted"
         )
     recovery_policy = RecoveryPolicy(source.get("NQUIRY_RECOVERY_POLICY", "DENIED").strip())
-    if (
-        recovery_policy is RecoveryPolicy.VERIFIED_EMAIL_SELF_SERVICE
-        and environment not in _DEV_ENVIRONMENTS
-    ):
+    if recovery_policy is RecoveryPolicy.VERIFIED_EMAIL_SELF_SERVICE and environment is None:
+        # HD-AUTH-10: self-service recovery through verified e-mail is part of the product in
+        # every declared environment; only an undeclared environment is refused (AC-11-017)
         raise RecoveryPolicyForbidden(
-            "VERIFIED_EMAIL_SELF_SERVICE is DEVELOPMENT / TEST only until 24 section 36 #11 is "
-            f"decided; refused for NQUIRY_ENVIRONMENT={raw_environment!r}"
-        )
-    web_base_url = source.get("NQUIRY_PUBLIC_WEB_BASE_URL", "").strip() or None
-    if web_base_url is not None and not is_origin(web_base_url):
-        raise ValueError(
-            f"NQUIRY_PUBLIC_WEB_BASE_URL={web_base_url!r} is not an explicit origin "
-            "(scheme://host[:port], no path)"
+            "VERIFIED_EMAIL_SELF_SERVICE needs a declared environment; refused for "
+            f"NQUIRY_ENVIRONMENT={raw_environment!r}"
         )
     account_security_path = (
         source.get("NQUIRY_ACCOUNT_SECURITY_PATH", "").strip() or "/account/security"
@@ -232,6 +252,49 @@ def auth_runtime_from_environment(
         account_security_path=account_security_path,
         web_base_url=web_base_url,
     )
+
+
+def _mail_path(source: Mapping[str, str], name: str, default: str) -> str:
+    value = source.get(name, "").strip() or default
+    if not is_legitimate_local_destination(value):
+        raise ValueError(f"{name}={value!r} is not a local destination of the application")
+    return value
+
+
+def _smtp_sink(source: Mapping[str, str], web_base_url: str | None) -> MailSink:
+    """`NQUIRY_EMAIL_DELIVERY_MODE=smtp`: every required fact present or refused
+    at startup (an unreachable or unauthenticated provider fails at delivery,
+    never silently). The secret is read once here and never echoed."""
+    if web_base_url is None:
+        raise ValueError(
+            "NQUIRY_EMAIL_DELIVERY_MODE=smtp needs NQUIRY_PUBLIC_WEB_BASE_URL: the messages "
+            "carry absolute links to the frontend"
+        )
+    raw_port = source.get("NQUIRY_SMTP_PORT", "").strip() or "587"
+    try:
+        port = int(raw_port)
+    except ValueError:
+        raise ValueError(f"NQUIRY_SMTP_PORT={raw_port!r} is not an integer") from None
+    username = source.get("NQUIRY_SMTP_USERNAME", "").strip() or None
+    password = source.get("NQUIRY_SMTP_PASSWORD", "") or None
+    try:
+        settings = SmtpSettings(
+            host=source.get("NQUIRY_SMTP_HOST", "").strip(),
+            port=port,
+            sender=source.get("NQUIRY_SMTP_FROM", "").strip(),
+            security=source.get("NQUIRY_SMTP_SECURITY", "").strip().lower() or "starttls",
+            username=username,
+            password=password,
+            ca_file=source.get("NQUIRY_SMTP_CA_FILE", "").strip() or None,
+        )
+    except ValueError as exc:
+        raise ValueError(f"NQUIRY_SMTP_* incomplete or invalid: {exc}") from None
+    links = MailLinks(
+        web_base_url=web_base_url,
+        verify_path=_mail_path(source, "NQUIRY_EMAIL_VERIFY_PATH", "/account/verify-email"),
+        recovery_path=_mail_path(source, "NQUIRY_RECOVERY_COMPLETE_PATH", "/recover/reset"),
+    )
+    return SmtpMailSink(sender=settings.sender, links=links, transport=smtp_transport(settings))
 
 
 def _throttle_policy(source: Mapping[str, str]) -> ThrottlePolicy:

@@ -14,8 +14,11 @@ import uuid
 from datetime import datetime, timezone
 
 from persistence.engine import connect_auth as connect  # WU-AUTH-17: scoped auth persistence
+from security.auth_audit import AuthAuditEvent
+from security.mail import MailDeliveryFailed
 from security.recovery import RecoveryPolicy
 
+from application.auth_audit import record_auth_event
 from application.http_oidc import current_auth_runtime
 from application.recovery import (
     PasswordInvalid,
@@ -49,14 +52,29 @@ def dispatch_recovery_start(*, email: object) -> tuple[int, dict[str, object]]:
         return _UNAVAILABLE
     runtime = current_auth_runtime()
     assert runtime.mail_sink is not None and runtime.environment is not None
-    with connect() as connection:
-        request_recovery(
-            connection,
-            email=email,
-            now=_now(),
-            environment=runtime.environment,
-            mail_sink=runtime.mail_sink,
-        )
+    now = _now()
+    try:
+        with connect() as connection:
+            request_recovery(
+                connection,
+                email=email,
+                now=now,
+                environment=runtime.environment,
+                mail_sink=runtime.mail_sink,
+            )
+    except MailDeliveryFailed as failed:
+        # WU-AUTH-21: the challenge and its event rolled back with the transaction; the refusal is
+        # operator evidence (class only) and the answer stays the one answer (24 §45.2: a delivery
+        # outage must not tell an unauthenticated caller which addresses have accounts)
+        with connect() as connection:
+            record_auth_event(
+                connection,
+                AuthAuditEvent.MAIL_DELIVERY_FAILED,
+                environment=runtime.environment,
+                now=now,
+                actor=None,
+                facts={"kind": "PASSWORD_RECOVERY", "reason": str(failed)},
+            )
     return 200, {"kind": "ok"}
 
 

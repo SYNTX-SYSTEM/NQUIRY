@@ -196,6 +196,7 @@ _UNAUTHENTICATED = {
     # test provider's consent page). Their own proof:
     # tests/e2e/test_auth_wu07_oidc_provider.py.
     ("GET", "/auth/providers"),
+    ("GET", "/auth/contacts"),  # WU-AUTH-21: public discovery of the policy-gated contacts
     ("GET", "/auth/oidc/{provider}/start"),
     ("GET", "/auth/oidc/{provider}/callback"),
     ("GET", "/auth/oidc/{provider}/link/callback"),

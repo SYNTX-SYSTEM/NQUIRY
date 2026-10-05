@@ -36,6 +36,8 @@ class AuthAuditEvent(Enum):
     PASSWORD_CHANGE_FAILED = "PASSWORD_CHANGE_FAILED"
     # WU-AUTH-20 login lockout boundary (24 §21.16)
     LOGIN_RATE_LIMITED = "LOGIN_RATE_LIMITED"
+    # WU-AUTH-21 production e-mail delivery (24 §36 #16): the submission service refused a message
+    MAIL_DELIVERY_FAILED = "MAIL_DELIVERY_FAILED"
 
 
 ACTOR_UNAUTHENTICATED = "UNAUTHENTICATED_CLIENT"
