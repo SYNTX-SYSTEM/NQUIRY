@@ -87,6 +87,36 @@ class SqlAlchemyLocalCredentialRepository:
             account_disabled=row["disabled_at"] is not None,
         )
 
+    def get_by_user_id(self, user_id: UserId) -> LocalCredentialRecord | None:
+        """WU-AUTH-19 (credential rotation): the identity's own local credential,
+        if it holds one — the same record `get_by_email` returns, keyed by the
+        authenticated identity instead of a typed address."""
+        stmt = (
+            sa.select(
+                local_auth_credentials_table.c.user_id,
+                local_auth_credentials_table.c.password_hash,
+                local_auth_credentials_table.c.authentication_method_id,
+                users_table.c.email,
+                users_table.c.disabled_at,
+            )
+            .select_from(
+                local_auth_credentials_table.join(
+                    users_table, users_table.c.id == local_auth_credentials_table.c.user_id
+                )
+            )
+            .where(local_auth_credentials_table.c.user_id == user_id.value)
+        )
+        row = self._connection.execute(stmt).mappings().one_or_none()
+        if row is None:
+            return None
+        return LocalCredentialRecord(
+            user_id=UserId(row["user_id"]),
+            email=row["email"],
+            password_hash=row["password_hash"],
+            method_id=AuthenticationMethodId(row["authentication_method_id"]),
+            account_disabled=row["disabled_at"] is not None,
+        )
+
     def replace_password(self, *, user_id: UserId, password_hash: str, now: datetime) -> bool:
         """WU-AUTH-12 (24 §19.6): the credential replacement effect of a
         verified recovery. One row per user; the previous hash is replaced,
@@ -310,6 +340,23 @@ class SqlAlchemyLocalSessionRepository:
     ) -> int:
         return self._revoke_where(
             local_auth_sessions_table.c.user_id == user_id.value,
+            revoked_at=revoked_at,
+            reason=reason,
+        )
+
+    def revoke_all_for_user_except(
+        self,
+        user_id: UserId,
+        *,
+        keep_session_id: uuid.UUID,
+        revoked_at: datetime,
+        reason: SessionRevocationReason,
+    ) -> int:
+        """WU-AUTH-19: every other live session of the identity ends; the one
+        that proved the current credential continues (24 §9.2 rotation)."""
+        return self._revoke_where(
+            local_auth_sessions_table.c.user_id == user_id.value,
+            local_auth_sessions_table.c.id != keep_session_id,
             revoked_at=revoked_at,
             reason=reason,
         )

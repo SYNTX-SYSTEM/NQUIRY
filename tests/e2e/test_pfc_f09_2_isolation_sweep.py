@@ -68,6 +68,12 @@ ROUTES: list[tuple[str, str, dict[str, Any] | None]] = [
     ("GET", "/auth/sessions", None),
     ("POST", "/auth/logout-all", None),
     ("POST", "/auth/sessions/{auth_session_id}/revoke", None),
+    # AUTH WU-AUTH-19: the caller's own credential rotation (proof = the current password).
+    (
+        "POST",
+        "/auth/password/change",
+        {"currentPassword": "sweep", "newPassword": "sweep-new-password"},
+    ),
     # AUTH WU-AUTH-10: the caller's own methods and own account link.
     ("GET", "/auth/methods", None),
     ("POST", "/auth/oidc/{provider}/link/start", None),
@@ -213,6 +219,7 @@ _CROSS_WORKSPACE_EXEMPT = {
     ("POST", "/auth/email/verification/complete"),
     ("GET", "/auth/emails"),
     ("POST", "/auth/methods/{method_id}/unlink"),
+    ("POST", "/auth/password/change"),  # the caller's own credential (WU-AUTH-19)
     ("GET", "/workspaces"),  # the caller's own Workspace list (checked separately)
     ("POST", "/workspaces"),  # founding one's own Workspace (F01 bootstrap)
 }
