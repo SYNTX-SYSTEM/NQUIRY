@@ -1,0 +1,13 @@
+HEAD: accb976ef0ea7f3bebedd03f6412c2406330c073 (auth-identity)
+PRE_RUN_GIT_STATUS:
+PRE_RUN_TREE_HASH: 8e8d96f3112a1f35e1437a906edc312a2b850c58006777036b1df0705b602a2c
+LIVE_COMMAND: DATABASE_URL=<isolated test db> /home/codi/Entwicklung/nquiry/.venv/bin/python -m pytest -q -p no:cacheprovider
+LIVE_RESULT: 2538 passed, 2 skipped in 2813.55s (0:46:53)
+LIVE_EXIT_CODE: 0
+NO_DB_COMMAND: env -u DATABASE_URL /home/codi/Entwicklung/nquiry/.venv/bin/python -m pytest -q -p no:cacheprovider
+NO_DB_RESULT: 1030 passed, 1510 skipped in 18.31s
+NO_DB_EXIT_CODE: 0
+MIGRATIONS: MIGRATION_STATIC_CHECK::PASS (44 revision(s), single head ['e3a5c7d9f1b4']) MIGRATION_LIVE_CHECK::PASS (db head matches {'e3a5c7d9f1b4'}) 
+POST_RUN_GIT_STATUS:
+POST_RUN_TREE_HASH: 8e8d96f3112a1f35e1437a906edc312a2b850c58006777036b1df0705b602a2c
+TREE_UNCHANGED_DURING_RUN: true

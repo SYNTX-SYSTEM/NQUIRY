@@ -28,7 +28,7 @@ Code and proof complete on both lineages; full hash-proven regression and
 production propagation recorded below as they happen (this document is
 updated in place):
 
-- PURPLE closure regression #4: `evidence/field_closure_4_regression.txt` — PENDING
+- PURPLE closure regression #4 on `accb976` (`evidence/field_closure_4_regression.txt`): **2538 passed / 2 skipped** (0:46:53), no-DB 1030, 44 migrations single head `e3a5c7d9f1b4`, tree hash unchanged during the run. CYAN mocked preservation set 194 passed, cy11 10 / 10, cross-lineage real lane 14 / 14.
 - ASP-03 propagation: PENDING
 - **EXTERNAL DEPENDENCY (not a Human Authority decision):** the production
   host's MTA (`mail.condyn.eu`, postfix, submission 587 + TLS) relays only

@@ -14,7 +14,7 @@ Session control, capability or governance root.
 
 ## Status
 
-**CLOSURE #4 IN PROGRESS (2026-10-06) — HD-AUTH-10 (HA-AUTH-02 resolved):**
+**CLOSURE #4 (2026-10-06) — HD-AUTH-10 (HA-AUTH-02 resolved); closure regression 2538 / 2 on `accb976` (`evidence/field_closure_4_regression.txt`):**
 self-service recovery through verified e-mail is part of the product.
 Materialized: WU-AUTH-21 (`d03d5ce`: SMTP sink STARTTLS/TLS + SASL, rendered
 messages with one link to the frontend's contact, `VERIFIED_EMAIL_SELF_SERVICE`
