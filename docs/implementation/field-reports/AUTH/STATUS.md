@@ -174,13 +174,18 @@ First Broken Relations, in dependency order:
    Acceptance on `https://nquiry.condyn.eu/`: ACCEPTED (HD-AUTH-09).**
    Propagation: `NQUIRY_ACCOUNT_SECURITY_PATH` (link-projection fallback is
    frontend-owned; production value `/workspaces`) — source + falsifiers in
-   this branch (`36c5585`); **pending deployment ASP-01** (prepared: assembly
-   archive of `36c5585` + `deploy-asp01.sh` with guards / baseline / anchor
-   `nquiry-api:pre-asp01` / rollback; no migration). 2026-10-05: the session's
-   permission layer refuses the upload + run as a production deploy
-   (BOUNDARY: tool permission, not Field semantics); the two commands are
-   recorded for the operator; production is unchanged (api `e069fc1`, web
-   `94759cd`, verified read-only). Previously: the authentication Field is not
+   this branch (`36c5585`). **ASP-01 DEPLOYED 2026-10-05T11:32Z** (human
+   authorization "ASP-01 … at 64930ac is authorized"; the permission layer
+   admitted the effect on that authorization): live api = assembly
+   `auth-64930ac-20261005T113144Z` (this branch `64930ac`: account-security
+   path + WU-AUTH-18 audit events), `.env` +`NQUIRY_ACCOUNT_SECURITY_PATH=/workspaces`,
+   compose api context + pass-through; web / postgres / vhost unchanged, head
+   `d2f4a6b8c1e3`; anchor `nquiry-api:pre-asp01`, `ROLLBACK-asp01.sh`,
+   preservation BEFORE/AFTER (diff: proxy pid and image counts only). Live
+   probe: a failed login records `LOGIN_FAILED` with no account named. A first
+   attempt aborted on its own guard (pipefail on `diff`), restored cleanly;
+   its unreferenced assembly directory `auth-64930ac-20261005T113056Z` remains
+   on the server (not deleted: no rm without a human-scoped target). Previously: the authentication Field is not
    reachable by a human through the deployed UI (provider login only via a
    typed URL). Root cutover of the CYAN candidate = CYAN_PRODUCTION_ROOT_CUTOVER
    → Human Frontend Acceptance (human boundary) after 2 and 3 and the real
