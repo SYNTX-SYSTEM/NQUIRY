@@ -1,0 +1,20 @@
+HEAD: 3c697221ccfe203074b12c6780daf562a653829e (auth-identity)
+PRE_RUN_GIT_STATUS:
+PRE_RUN_TREE_HASH: 06c7d7d1f585200f62cda9343dbea7f2872ed52058e0af3a6e65bb62a38f95fa
+LIVE_COMMAND: DATABASE_URL=<isolated test db> /home/codi/Entwicklung/nquiry/.venv/bin/python -m pytest -q -p no:cacheprovider
+LIVE_RESULT: 2499 passed, 2 skipped in 1890.08s (0:31:30)
+LIVE_EXIT_CODE: 0
+NO_DB_COMMAND: env -u DATABASE_URL /home/codi/Entwicklung/nquiry/.venv/bin/python -m pytest -q -p no:cacheprovider
+NO_DB_RESULT: 1024 passed, 1477 skipped in 29.12s
+NO_DB_EXIT_CODE: 0
+MIGRATIONS: MIGRATION_STATIC_CHECK::PASS (43 revision(s), single head ['d2f4a6b8c1e3']) MIGRATION_LIVE_CHECK::PASS (db head matches {'d2f4a6b8c1e3'}) 
+POST_RUN_GIT_STATUS:
+POST_RUN_TREE_HASH: 06c7d7d1f585200f62cda9343dbea7f2872ed52058e0af3a6e65bb62a38f95fa
+TREE_UNCHANGED_DURING_RUN: true
+
+# runs 1 and 2 (HEAD 7c750c7): 2486 passed / 2 skipped / 13 ERRORS, all in tests/e2e/test_f03_concurrency.py + test_f04_concurrency.py
+#   cause: WU-15's GET sweep reached /auth/identity through the unpatched http_identity connector → the real engine
+#   kept one session on nquiry_purple_test → the concurrency fixture's CREATE DATABASE … TEMPLATE failed (ObjectInUse).
+#   repair: test-side, cbdf03d → 3c69722 (fixture patches http_identity). Run 3 above is the closure evidence.
+# also at this closure: AUTH real lane 8 / 8 (scripts/auth_real_stack.sh, every real spec); RED-line web vitest 181 / 181;
+#   CYAN (auth-cyan-reconstruction 94759cd..c4c6c17): vitest 672, mocked lanes green, cross-lineage real lane 6 / 6.

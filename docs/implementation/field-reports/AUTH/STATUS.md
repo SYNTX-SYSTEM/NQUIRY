@@ -14,6 +14,13 @@ Session control, capability or governance root.
 
 ## Status
 
+**FIELD_CLOSED_WITH_ONE_RECORDED_HUMAN_BOUNDARY (2026-10-05)** — see
+`FIELD_CLOSURE.md`: production api `64930ac` + web `94759cd` accepted
+(HD-AUTH-09); closure regression 2499 / 2 (`evidence/field_closure_2_regression.txt`);
+the one remaining closure-critical relation is the human's recovery decision
+for LOCAL_PASSWORD identities in production (HA-AUTH-02 + 24 §36 #13).
+Earlier status, kept for the record:
+
 **FIELD_GREEN ON CURRENT HEAD — READY_FOR_HUMAN_REVIEW** (2026-10-01).
 Final global preservation proof on `b47bc78` (after HD-AUTH-05 / -06):
 `evidence/final_global_preservation_b47bc78.txt` — live 2456 passed / 2
