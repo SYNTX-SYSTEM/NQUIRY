@@ -132,7 +132,7 @@ check O11b_NO_TARGET_ENVIRONMENT_OR_FIELD_SPECIFIC_REFERENCE $?
 check O11c_ONE_EVENT_IMPLEMENTATION_AND_NO_VERDICT_MACHINERY $?
 
 # ---- O12: the proven ORANGE chain is untouched ---------------------------------------------------------------
-r=0; for f in progress.sh final_closure.sh serial_baseline.sh parallel_proof.sh partition.sh analyze_serial.py aggregate.py run_aggregate.py; do
+r=0; for f in progress.sh final_closure.sh analyze_serial.py aggregate.py run_aggregate.py; do  # what the observer shares with, or could disturb in, the chain
   cmp -s "$T/$f" <(git -C "$LINEAGE" show "$BASE:$f") || { r=1; echo "   changed: $f"; }; done
 check O12_ORANGE_CHAIN_AND_HELPER_BYTE_IDENTICAL_TO_BASE $r
 

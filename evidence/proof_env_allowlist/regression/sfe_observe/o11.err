@@ -1,0 +1,2 @@
+[00:00:00] STAGE_START     stage=c
+[00:00:00] STAGE_FAIL      stage=c rc=9 elapsed=0s

@@ -1,0 +1,2 @@
+  environment value of SFE_FIXTURE_API_KEY found in reachable blob 2a89df3528e2 (leak.txt)
+EVIDENCE_SECRET_GATE[history of HEAD]::FAIL (1) (6 reachable objects, 1 candidate environment variables)

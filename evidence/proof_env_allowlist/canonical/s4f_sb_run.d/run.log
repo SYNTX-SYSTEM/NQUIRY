@@ -1,0 +1,149 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.15, pytest-9.1.1, pluggy-1.6.0
+rootdir: /home/codi/Entwicklung/nquiry/worktrees/orange-proof-lineage/evidence/proof_env_allowlist/canonical/root/worktrees/orange-proof-infra
+configfile: pytest.ini
+plugins: cov-7.1.0, xdist-3.8.0, anyio-4.15.1, hypothesis-6.168.3
+collected 10 items
+
+tests/e2e/test_pfc_f09_1_technical_failure.py F                          [ 10%]
+tests/security/test_dev_identity_provisioning.py F                       [ 20%]
+tests/test_other.py FFFFFFFF                                             [100%]
+
+=================================== FAILURES ===================================
+_______ test_worker_loop_survives_a_database_outage_and_stops_gracefully _______
+
+    def test_worker_loop_survives_a_database_outage_and_stops_gracefully() -> None:
+>       assert os.environ.get("ORANGE_SYNTH_FAIL") != "1"
+E       AssertionError: assert '1' != '1'
+E        +  where '1' = get('ORANGE_SYNTH_FAIL')
+E        +    where get = environ({'DATABASE_URL': 'postgresql+psycopg://nquiry:nquiry_local_dev_only@127.0.0.1:15432/nquiry_proof_serial_test',...sts/e2e/test_pfc_f09_1_technical_failure.py::test_worker_loop_survives_a_database_outage_and_stops_gracefully (call)'}).get
+E        +      where environ({'DATABASE_URL': 'postgresql+psycopg://nquiry:nquiry_local_dev_only@127.0.0.1:15432/nquiry_proof_serial_test',...sts/e2e/test_pfc_f09_1_technical_failure.py::test_worker_loop_survives_a_database_outage_and_stops_gracefully (call)'}) = os.environ
+
+tests/e2e/test_pfc_f09_1_technical_failure.py:5: AssertionError
+_______________________ test_malformed_input_is_refused ________________________
+
+    def test_malformed_input_is_refused() -> None:
+>       assert os.environ.get("ORANGE_SYNTH_FAIL") != "1"
+E       AssertionError: assert '1' != '1'
+E        +  where '1' = get('ORANGE_SYNTH_FAIL')
+E        +    where get = environ({'DATABASE_URL': 'postgresql+psycopg://nquiry:nquiry_local_dev_only@127.0.0.1:15432/nquiry_proof_serial_test',...1', 'PYTEST_CURRENT_TEST': 'tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused (call)'}).get
+E        +      where environ({'DATABASE_URL': 'postgresql+psycopg://nquiry:nquiry_local_dev_only@127.0.0.1:15432/nquiry_proof_serial_test',...1', 'PYTEST_CURRENT_TEST': 'tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused (call)'}) = os.environ
+
+tests/security/test_dev_identity_provisioning.py:5: AssertionError
+________________________________ test_other[0] _________________________________
+
+i = 0
+
+    @pytest.mark.parametrize("i", range(8))
+    def test_other(i: int) -> None:
+>       assert os.environ.get("ORANGE_SYNTH_FAIL") != "1"
+E       AssertionError: assert '1' != '1'
+E        +  where '1' = get('ORANGE_SYNTH_FAIL')
+E        +    where get = environ({'DATABASE_URL': 'postgresql+psycopg://nquiry:nquiry_local_dev_only@127.0.0.1:15432/nquiry_proof_serial_test',...in:/snap/bin:/usr/bin', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[0] (call)'}).get
+E        +      where environ({'DATABASE_URL': 'postgresql+psycopg://nquiry:nquiry_local_dev_only@127.0.0.1:15432/nquiry_proof_serial_test',...in:/snap/bin:/usr/bin', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[0] (call)'}) = os.environ
+
+tests/test_other.py:8: AssertionError
+________________________________ test_other[1] _________________________________
+
+i = 1
+
+    @pytest.mark.parametrize("i", range(8))
+    def test_other(i: int) -> None:
+>       assert os.environ.get("ORANGE_SYNTH_FAIL") != "1"
+E       AssertionError: assert '1' != '1'
+E        +  where '1' = get('ORANGE_SYNTH_FAIL')
+E        +    where get = environ({'DATABASE_URL': 'postgresql+psycopg://nquiry:nquiry_local_dev_only@127.0.0.1:15432/nquiry_proof_serial_test',...in:/snap/bin:/usr/bin', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[1] (call)'}).get
+E        +      where environ({'DATABASE_URL': 'postgresql+psycopg://nquiry:nquiry_local_dev_only@127.0.0.1:15432/nquiry_proof_serial_test',...in:/snap/bin:/usr/bin', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[1] (call)'}) = os.environ
+
+tests/test_other.py:8: AssertionError
+________________________________ test_other[2] _________________________________
+
+i = 2
+
+    @pytest.mark.parametrize("i", range(8))
+    def test_other(i: int) -> None:
+>       assert os.environ.get("ORANGE_SYNTH_FAIL") != "1"
+E       AssertionError: assert '1' != '1'
+E        +  where '1' = get('ORANGE_SYNTH_FAIL')
+E        +    where get = environ({'DATABASE_URL': 'postgresql+psycopg://nquiry:nquiry_local_dev_only@127.0.0.1:15432/nquiry_proof_serial_test',...in:/snap/bin:/usr/bin', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[2] (call)'}).get
+E        +      where environ({'DATABASE_URL': 'postgresql+psycopg://nquiry:nquiry_local_dev_only@127.0.0.1:15432/nquiry_proof_serial_test',...in:/snap/bin:/usr/bin', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[2] (call)'}) = os.environ
+
+tests/test_other.py:8: AssertionError
+________________________________ test_other[3] _________________________________
+
+i = 3
+
+    @pytest.mark.parametrize("i", range(8))
+    def test_other(i: int) -> None:
+>       assert os.environ.get("ORANGE_SYNTH_FAIL") != "1"
+E       AssertionError: assert '1' != '1'
+E        +  where '1' = get('ORANGE_SYNTH_FAIL')
+E        +    where get = environ({'DATABASE_URL': 'postgresql+psycopg://nquiry:nquiry_local_dev_only@127.0.0.1:15432/nquiry_proof_serial_test',...in:/snap/bin:/usr/bin', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[3] (call)'}).get
+E        +      where environ({'DATABASE_URL': 'postgresql+psycopg://nquiry:nquiry_local_dev_only@127.0.0.1:15432/nquiry_proof_serial_test',...in:/snap/bin:/usr/bin', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[3] (call)'}) = os.environ
+
+tests/test_other.py:8: AssertionError
+________________________________ test_other[4] _________________________________
+
+i = 4
+
+    @pytest.mark.parametrize("i", range(8))
+    def test_other(i: int) -> None:
+>       assert os.environ.get("ORANGE_SYNTH_FAIL") != "1"
+E       AssertionError: assert '1' != '1'
+E        +  where '1' = get('ORANGE_SYNTH_FAIL')
+E        +    where get = environ({'DATABASE_URL': 'postgresql+psycopg://nquiry:nquiry_local_dev_only@127.0.0.1:15432/nquiry_proof_serial_test',...in:/snap/bin:/usr/bin', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[4] (call)'}).get
+E        +      where environ({'DATABASE_URL': 'postgresql+psycopg://nquiry:nquiry_local_dev_only@127.0.0.1:15432/nquiry_proof_serial_test',...in:/snap/bin:/usr/bin', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[4] (call)'}) = os.environ
+
+tests/test_other.py:8: AssertionError
+________________________________ test_other[5] _________________________________
+
+i = 5
+
+    @pytest.mark.parametrize("i", range(8))
+    def test_other(i: int) -> None:
+>       assert os.environ.get("ORANGE_SYNTH_FAIL") != "1"
+E       AssertionError: assert '1' != '1'
+E        +  where '1' = get('ORANGE_SYNTH_FAIL')
+E        +    where get = environ({'DATABASE_URL': 'postgresql+psycopg://nquiry:nquiry_local_dev_only@127.0.0.1:15432/nquiry_proof_serial_test',...in:/snap/bin:/usr/bin', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[5] (call)'}).get
+E        +      where environ({'DATABASE_URL': 'postgresql+psycopg://nquiry:nquiry_local_dev_only@127.0.0.1:15432/nquiry_proof_serial_test',...in:/snap/bin:/usr/bin', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[5] (call)'}) = os.environ
+
+tests/test_other.py:8: AssertionError
+________________________________ test_other[6] _________________________________
+
+i = 6
+
+    @pytest.mark.parametrize("i", range(8))
+    def test_other(i: int) -> None:
+>       assert os.environ.get("ORANGE_SYNTH_FAIL") != "1"
+E       AssertionError: assert '1' != '1'
+E        +  where '1' = get('ORANGE_SYNTH_FAIL')
+E        +    where get = environ({'DATABASE_URL': 'postgresql+psycopg://nquiry:nquiry_local_dev_only@127.0.0.1:15432/nquiry_proof_serial_test',...in:/snap/bin:/usr/bin', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[6] (call)'}).get
+E        +      where environ({'DATABASE_URL': 'postgresql+psycopg://nquiry:nquiry_local_dev_only@127.0.0.1:15432/nquiry_proof_serial_test',...in:/snap/bin:/usr/bin', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[6] (call)'}) = os.environ
+
+tests/test_other.py:8: AssertionError
+________________________________ test_other[7] _________________________________
+
+i = 7
+
+    @pytest.mark.parametrize("i", range(8))
+    def test_other(i: int) -> None:
+>       assert os.environ.get("ORANGE_SYNTH_FAIL") != "1"
+E       AssertionError: assert '1' != '1'
+E        +  where '1' = get('ORANGE_SYNTH_FAIL')
+E        +    where get = environ({'DATABASE_URL': 'postgresql+psycopg://nquiry:nquiry_local_dev_only@127.0.0.1:15432/nquiry_proof_serial_test',...in:/snap/bin:/usr/bin', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[7] (call)'}).get
+E        +      where environ({'DATABASE_URL': 'postgresql+psycopg://nquiry:nquiry_local_dev_only@127.0.0.1:15432/nquiry_proof_serial_test',...in:/snap/bin:/usr/bin', 'PYTEST_VERSION': '9.1.1', 'PYTEST_CURRENT_TEST': 'tests/test_other.py::test_other[7] (call)'}) = os.environ
+
+tests/test_other.py:8: AssertionError
+- generated xml file: /home/codi/Entwicklung/nquiry/worktrees/orange-proof-lineage/evidence/proof_env_allowlist/canonical/s4f_sb_run.d/junit.xml -
+=========================== short test summary info ============================
+FAILED tests/e2e/test_pfc_f09_1_technical_failure.py::test_worker_loop_survives_a_database_outage_and_stops_gracefully
+FAILED tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused
+FAILED tests/test_other.py::test_other[0] - AssertionError: assert '1' != '1'
+FAILED tests/test_other.py::test_other[1] - AssertionError: assert '1' != '1'
+FAILED tests/test_other.py::test_other[2] - AssertionError: assert '1' != '1'
+FAILED tests/test_other.py::test_other[3] - AssertionError: assert '1' != '1'
+FAILED tests/test_other.py::test_other[4] - AssertionError: assert '1' != '1'
+FAILED tests/test_other.py::test_other[5] - AssertionError: assert '1' != '1'
+FAILED tests/test_other.py::test_other[6] - AssertionError: assert '1' != '1'
+FAILED tests/test_other.py::test_other[7] - AssertionError: assert '1' != '1'
+============================== 10 failed in 1.00s ==============================

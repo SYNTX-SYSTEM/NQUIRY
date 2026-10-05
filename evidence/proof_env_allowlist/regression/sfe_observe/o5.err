@@ -1,0 +1,4 @@
+[00:00:00] STAGE_START     stage=prog
+[00:00:01] HEARTBEAT       stage=prog elapsed=1s pytest_progress=42%
+[00:00:02] HEARTBEAT       stage=prog elapsed=2s pytest_progress=42%
+[00:00:02] STAGE_END       stage=prog rc=0 elapsed=2s

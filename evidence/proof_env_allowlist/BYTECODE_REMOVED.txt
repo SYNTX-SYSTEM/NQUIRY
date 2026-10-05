@@ -1,0 +1,22 @@
+# runtime bytecode written by harness runs into their own authorized prefixes (counts only; removed, never versioned)
+proof_env_allowlist/canonical/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+proof_env_allowlist/mutants/MA1_denylist_restored/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+proof_env_allowlist/mutants/MA2_allowlist_passes_a_credential_variable/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+proof_env_allowlist/mutants/MA3_allowlist_passes_a_variable_the_target_reads/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+proof_env_allowlist/mutants/MA4_catalog_selector_dropped/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+proof_env_allowlist/mutants/MA5_env_not_cleared/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+proof_env_allowlist/mutants/MA6_only_the_serial_runner_converted/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+proof_env_allowlist/mutants/MA7_partition_collection_not_converted/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+proof_env_allowlist/mutants/MS10_absent_exit_code_file_is_success/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+proof_env_allowlist/mutants/MS1_always_exit_0/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+proof_env_allowlist/mutants/MS2_inverted_exit_status/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+proof_env_allowlist/mutants/MS3_only_raw_code_1_is_failure/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+proof_env_allowlist/mutants/MS4_raw_code_propagated_as_status/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+proof_env_allowlist/mutants/MS5a_recorded_truth_forced_to_0/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+proof_env_allowlist/mutants/MS5b_recorded_raw_code_normalized_to_1/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+proof_env_allowlist/mutants/MS6_status_before_the_visible_summary/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+proof_env_allowlist/mutants/MS7_parallel_runner_not_repaired/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+proof_env_allowlist/mutants/MS8_chain_consumes_the_stage_status/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+proof_env_allowlist/mutants/MS9_parallel_selection_changed/root/.venv-proof313-orange/orange-proof/pycache pyc=437
+proof_env_allowlist/regression/progress_falsifiers/xdist/pyc pyc=435
+proof_env_allowlist/regression/tf_px_04_05/t05b/pyc pyc=435

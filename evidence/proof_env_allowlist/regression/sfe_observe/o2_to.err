@@ -1,0 +1,2 @@
+[00:00:00] STAGE_START     stage=t
+[00:00:01] STAGE_TIMEOUT   stage=t rc=124 elapsed=1s

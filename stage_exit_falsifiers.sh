@@ -6,8 +6,19 @@
 # Narrow radius: the REAL runner scripts are executed with exactly ONE substituted line (N= -> a synthetic root),
 # so their governed child is a stub (chosen exit code) or a real pytest / pytest-xdist on a synthetic tree.
 # No product test is executed, no product tree is read, no database is contacted.
+#
+# PROOF-ENVIRONMENT BOUNDARY (TF-PX-10): the runners give their governed children an ALLOWLIST environment
+# (env -i). S12 proves it on the real runners: ambient variables (a fixture credential, variables the target reads,
+# PYTHONPATH, an ambient DATABASE_URL) never reach the child; the allowlisted and runner-set ones do. The stub is
+# therefore configured through a file, not through the environment.
+# SECRET HYGIENE (TF-PX-09): this harness re-executes itself under `env -i` with a fixed allowlist plus a FIXTURE
+# credential; only variable NAMES are ever written; S13 fails if the fixture value reaches any evidence file.
 # usage: stage_exit_falsifiers.sh <new out dir> [<tooling dir under test>] [<base commit>]
 set -u
+SECRET=S3CRET_FIXTURE_4d7e  # fixture only; stands for any credential in the operator environment
+if [ "${SFE_PEO_SCRUBBED:-}" != 1 ]; then
+  exec env -i PATH="$PATH" HOME="$HOME" LANG=C.UTF-8 SFE_PEO_SCRUBBED=1 SFE_FIXTURE_API_KEY="$SECRET" bash "${BASH_SOURCE[0]}" "$@"
+fi
 OUT=${1:?usage: $0 <new out dir> [tooling dir] [base commit]}
 T=$(cd "${2:-$(dirname "${BASH_SOURCE[0]}")}" && pwd)
 BASE=${3:-ca9cbf94eff5c7d37ed0c5e6aa4bcabf9577b28d}  # last lineage commit whose stage runners exit 0 regardless
@@ -25,12 +36,16 @@ rcof() { cat "$OUT/$1.rc"; }
 ROOT=$OUT/root; O=$ROOT/worktrees/orange-proof-infra; mkdir -p "$ROOT/.venv-proof313-orange/bin" "$ROOT/stubbin" "$O/tests"
 cat > "$ROOT/.venv-proof313-orange/bin/python" <<'STUB'
 #!/usr/bin/env bash
-# stub for the governed child. rc:<n> = print and exit n; real = the same argv on a real pytest;
-# verdictfail = a failing verdict producer (info probe for the post phase)
-case "${ORANGE_STUB_MODE:?}" in
-  rc:*) echo "stub governed child: $*"; echo "= stub finished ="; exit "${ORANGE_STUB_MODE#rc:}" ;;
-  real) exec "$ORANGE_STUB_XPY" "$@" ;;
+# stub for the governed child, configured by <root>/stub.conf (never by the environment: the runners scrub it).
+# rc:<n> = print and exit n; real = the same argv on a real pytest; verdictfail = a failing verdict producer;
+# envnames = report the NAMES of the environment this child received (never a value)
+. "$(cd "$(dirname "$0")/../.." && pwd)/stub.conf"
+case "$MODE" in
+  rc:*) echo "stub governed child: $*"; echo "= stub finished ="; exit "${MODE#rc:}" ;;
+  real) [ -n "$SYNTH_FAIL" ] && export ORANGE_SYNTH_FAIL=1; exec "$XPY" "$@" $ADDOPTS ;;
   verdictfail) echo "PROOF_DB_PRECONDITIONS::FAIL (stub)"; exit 1 ;;
+  envnames) env -0 | cut -z -d= -f1 | sort -z | tr '\0' '\n' | sed 's/^/ENVNAME /'
+    echo "DBNAME ${DATABASE_URL:+${DATABASE_URL##*/}}"; echo "CATALOG ${ORANGE_CATALOG_DB:-}"; exit 0 ;;
 esac
 STUB
 printf '#!/usr/bin/env bash\nexit 2\n' > "$ROOT/stubbin/psql"  # info probe only: the post phase never reaches a database
@@ -45,19 +60,25 @@ tree_before=$(cd "$O" && find . | sort | sha256sum)
 
 mktool() {  # dir source-getter...: the runners with ONLY the N= line substituted
   local d=$1; shift; mkdir -p "$d"
-  for f in serial_baseline.sh parallel_proof.sh serial_partition_selectors.txt; do "$@" "$f" > "$d/$f.orig"
+  for f in serial_baseline.sh parallel_proof.sh partition.sh serial_partition_selectors.txt; do "$@" "$f" > "$d/$f.orig"
     sed "s#^N=.*#N=$ROOT#" "$d/$f.orig" > "$d/$f"; diff "$d/$f.orig" "$d/$f" > "$d/$f.substitution.diff"; rm "$d/$f.orig"; done
 }
 from_t() { cat "$T/$1"; }; from_base() { git -C "$LINEAGE" show "$BASE:$1"; }
 mktool "$OUT/tool" from_t; mktool "$OUT/base_tool" from_base
-r=0; for f in serial_baseline.sh parallel_proof.sh; do [ "$(grep -c '^[<>]' "$OUT/tool/$f.substitution.diff")" -eq 2 ] || r=1; done
+r=0; for f in serial_baseline.sh parallel_proof.sh partition.sh; do [ "$(grep -c '^[<>]' "$OUT/tool/$f.substitution.diff")" -eq 2 ] || r=1; done
 [ ! -s "$OUT/tool/serial_partition_selectors.txt.substitution.diff" ] || r=1
 check S0_ONLY_THE_ROOT_LINE_IS_SUBSTITUTED $r
 
-stage() {  # name tooldir script phase mode [VAR=value ...]
+AMB=()  # ambient environment given to the runner process for one stage (what an operator shell might export)
+conf() {  # mode [SYNTH_FAIL=1] [ADDOPTS=...]: the stub's configuration file
+  local mode=$1 kv; shift
+  { printf 'MODE=%q\nXPY=%q\nSYNTH_FAIL=\nADDOPTS=\n' "$mode" "$XPY"; for kv in "$@"; do printf '%s=%q\n' "${kv%%=*}" "${kv#*=}"; done; } > "$ROOT/stub.conf"
+}
+stage() {  # name tooldir script phase mode [stub conf KEY=value ...]
   local name=$1 tool=$2 script=$3 phase=$4 mode=$5; shift 5
-  ( cd "$OUT" && env ORANGE_SERIAL_DIR="$OUT/$name.d" ORANGE_PARALLEL_DIR="$OUT/$name.d" ORANGE_STUB_MODE="$mode" \
-      ORANGE_STUB_XPY="$XPY" "$@" bash "$tool/$script" "$phase" ) > "$OUT/$name.out" 2>&1
+  conf "$mode" "$@"
+  ( cd "$OUT" && env ORANGE_SERIAL_DIR="$OUT/$name.d" ORANGE_PARALLEL_DIR="$OUT/$name.d" "${AMB[@]}" \
+      bash "$tool/$script" "$phase" ) > "$OUT/$name.out" 2>&1
   echo $? > "$OUT/$name.rc"
 }
 STAGES="sb_run:serial_baseline.sh:run pp_xdist:parallel_proof.sh:xdist pp_serial:parallel_proof.sh:serial"
@@ -85,10 +106,10 @@ each s3
 s4() { stage "s4p_$id" "$OUT/tool" "$script" "$phase" real
   [ "$(rcof "s4p_$id")" -eq 0 ] && [ "$(recorded "s4p_$id")" = 0 ] && grep -qE '[0-9]+ passed' "$OUT/s4p_$id.out" && ! grep -q failed "$OUT/s4p_$id.out"
   check "S4a_REAL_PYTEST_PASS_EXITS_0[$script $phase]" $? "(rc=$(rcof "s4p_$id") $(tail -1 "$OUT/s4p_$id.out"))"
-  stage "s4f_$id" "$OUT/tool" "$script" "$phase" real ORANGE_SYNTH_FAIL=1
+  stage "s4f_$id" "$OUT/tool" "$script" "$phase" real SYNTH_FAIL=1
   [ "$(rcof "s4f_$id")" -eq 1 ] && [ "$(recorded "s4f_$id")" = 1 ] && grep -qE '[0-9]+ failed' "$OUT/s4f_$id.out"
   check "S4b_REAL_PYTEST_FAILURE_EXITS_NONZERO[$script $phase]" $? "(rc=$(rcof "s4f_$id") $(tail -1 "$OUT/s4f_$id.out"))"
-  stage "s4n_$id" "$OUT/tool" "$script" "$phase" real PYTEST_ADDOPTS="-k matches_no_test_at_all"
+  stage "s4n_$id" "$OUT/tool" "$script" "$phase" real ADDOPTS="-k matches_no_test_at_all"
   [ "$(rcof "s4n_$id")" -eq 1 ] && [ "$(recorded "s4n_$id")" = 5 ]
   check "S4c_REAL_NO_TESTS_COLLECTED_EXIT_5_IS_FAILURE[$script $phase]" $? "(rc=$(rcof "s4n_$id") recorded=$(recorded "s4n_$id"))"; }
 each s4
@@ -137,8 +158,8 @@ XP=$(sed -n '/^prog_begin xdist_partition /,/^prog_end serial_partition /p' "$T/
 printf '%s\n%s\n' "$SR" "$XP" > "$OUT/s8_extracted_lines.txt"
 printf 'A::PASS\nB::PASS\n' > "$OUT/ok.log"
 slice() {  # name tooldir mode
-  local name=$1 F=$OUT/$1.d; mkdir -p "$F/serial_ref" "$F/parallel"
-  ( cd "$OUT" && env F="$F" S="$F/serial_ref" R="$F/parallel" P="$2" ORANGE_STUB_MODE="$3" ORANGE_STUB_XPY="$XPY" ORANGE_HEARTBEAT_SECONDS=30 \
+  local name=$1 F=$OUT/$1.d; mkdir -p "$F/serial_ref" "$F/parallel"; conf "$3"
+  ( cd "$OUT" && env F="$F" S="$F/serial_ref" R="$F/parallel" P="$2" ORANGE_HEARTBEAT_SECONDS=30 \
       bash -c ". '$T/progress.sh'; prog_init stage-exit-slice run=slice; export ORANGE_SERIAL_DIR=\$S
         $SR
         unset ORANGE_SERIAL_DIR; export ORANGE_PARALLEL_DIR=\$R
@@ -166,12 +187,15 @@ calls=$(grep -cE '^[^#]*(serial_baseline\.sh" run|parallel_proof\.sh" (xdist|ser
 bad=$(grep -E '^[^#]*(serial_baseline\.sh" run|parallel_proof\.sh" (xdist|serial))' "$T/final_closure.sh" | grep -cE '&&|\|\||^ *(if|while|until|!) |\$\?')
 [ "$calls" -eq 3 ] && [ "$bad" -eq 0 ] || r=1
 check S9_CHAIN_UNCHANGED_AND_NEVER_CONSUMES_THE_STAGE_PROCESS_STATUS $r "(calls=$calls conditional=$bad)"
-r=0; for f in serial_baseline.sh:2 parallel_proof.sh:3; do n=${f##*:}; f=${f%%:*}
-  diff <(grep -v 'STAGE_EXIT_STATUS' "$T/$f") <(git -C "$LINEAGE" show "$BASE:$f") > "$OUT/s10_$f.diff" || { r=1; echo "   $f: more than the contract lines changed"; }
-  [ "$(grep -c 'STAGE_EXIT_STATUS' "$T/$f")" -eq "$n" ] || { r=1; echo "   $f: contract lines $(grep -c 'STAGE_EXIT_STATUS' "$T/$f"), want $n"; }; done
-for f in partition.sh serial_partition_selectors.txt analyze_serial.py aggregate.py run_aggregate.py partition_proof.py order_proof.py inertness_compare.py observer.sh canonical_ids.py verify_proof_dbs.py env_manifest.py; do
+# outside the STAGE_EXIT_STATUS lines and the H() environment helper (TF-PX-10, proven by S12) the scripts equal the base
+normrunner() { sed '/^H() {/,/"\$@"; }$/d' | grep -v 'STAGE_EXIT_STATUS'; }
+r=0; for f in serial_baseline.sh:2 parallel_proof.sh:3 partition.sh:0; do n=${f##*:}; f=${f%%:*}
+  diff <(normrunner < "$T/$f") <(git -C "$LINEAGE" show "$BASE:$f" | normrunner) > "$OUT/s10_$f.diff" || { r=1; echo "   $f: more than the contract lines and H() changed"; }
+  [ "$(grep -c 'STAGE_EXIT_STATUS' "$T/$f")" -eq "$n" ] || { r=1; echo "   $f: contract lines $(grep -c 'STAGE_EXIT_STATUS' "$T/$f"), want $n"; }
+  [ "$(grep -c '^H() {' "$T/$f")" -eq 1 ] || { r=1; echo "   $f: H() definitions"; }; done
+for f in serial_partition_selectors.txt analyze_serial.py aggregate.py run_aggregate.py partition_proof.py order_proof.py inertness_compare.py observer.sh canonical_ids.py verify_proof_dbs.py env_manifest.py; do
   cmp -s "$T/$f" <(git -C "$LINEAGE" show "$BASE:$f") || { r=1; echo "   changed: $f"; }; done
-check S10_ONLY_CONTRACT_LINES_ADDED_SELECTION_PARTITION_AGGREGATION_UNCHANGED $r
+check S10_ONLY_CONTRACT_LINES_AND_ENV_HELPER_DIFFER_SELECTION_PARTITION_AGGREGATION_UNCHANGED $r
 
 # ---- S11: no tree mutation, no orphan process ---------------------------------------------------------------
 [ "$tree_before" = "$(cd "$O" && find . | sort | sha256sum)" ] && [ -z "$(find "$O" -name '*.pyc' -o -name __pycache__)" ]
@@ -179,10 +203,44 @@ check S11a_SYNTHETIC_TREE_UNCHANGED_NO_BYTECODE_IN_TREE $?
 sleep 1.5
 n=$(ps -eo args | grep -E -- "$OUT/(tool|base_tool|root)/" | grep -v grep | wc -l); [ "$n" -eq 0 ]; check S11b_NO_ORPHAN_PROCESS $? "($n)"
 
+# ---- S12: proof-environment boundary: governed children receive the allowlist, never the ambient environment ---
+ALLOWED=" PATH HOME USER LOGNAME LANG LANGUAGE LC_ALL LC_CTYPE LC_COLLATE LC_MESSAGES LC_NUMERIC LC_TIME LC_MONETARY LC_ADDRESS LC_IDENTIFICATION LC_MEASUREMENT LC_NAME LC_PAPER LC_TELEPHONE TZ TMPDIR ORANGE_CATALOG_DB PYTHONNOUSERSITE PYTHONDONTWRITEBYTECODE PYTHONPYCACHEPREFIX DATABASE_URL ORANGE_XDIST_LANE ORANGE_DB_BASE ORANGE_BINDING_EVIDENCE PWD OLDPWD SHLVL _ "
+AMBIENT=(SFE_AMBIENT_API_KEY="$SECRET" NQUIRY_AI_PROVIDER=fixture NQUIRY_SESSION_AUTHORITY=fixture NQUIRY_COOKIE_SECURE=0 F04_PROOF_STATE=fixture
+  PYTHONPATH=/nonexistent-ambient DATABASE_URL=postgresql://ambient.invalid/ambient_db COVERAGE_PROCESS_START=/nonexistent ORANGE_CATALOG_DB=catalog_fixture TZ=UTC)
+FORBIDDEN="SFE_AMBIENT_API_KEY SFE_FIXTURE_API_KEY SFE_PEO_SCRUBBED NQUIRY_AI_PROVIDER NQUIRY_SESSION_AUTHORITY NQUIRY_COOKIE_SECURE F04_PROOF_STATE PYTHONPATH COVERAGE_PROCESS_START"
+envcheck() {  # log expected-dbname must-not-have-DATABASE_URL(0|1) -> 0 if the child environment is the boundary
+  local log=$1 want_db=$2 no_db=$3 r=0 n names; names=$(grep '^ENVNAME ' "$log" | cut -d' ' -f2)
+  [ -n "$names" ] || return 1
+  for n in $names; do case "$ALLOWED" in *" $n "*) ;; *) r=1; echo "   outside the allowlist: $n" ;; esac; done
+  for n in $FORBIDDEN; do grep -qx "$n" <<< "$names" && { r=1; echo "   ambient variable reached the child: $n"; }; done
+  for n in PATH HOME PYTHONNOUSERSITE TZ ORANGE_CATALOG_DB; do grep -qx "$n" <<< "$names" || { r=1; echo "   missing: $n"; }; done
+  grep -qx 'CATALOG catalog_fixture' "$log" || { r=1; echo "   catalog selector not passed"; }
+  grep -qx "DBNAME $want_db" "$log" || { r=1; echo "   database: $(grep '^DBNAME' "$log")"; }
+  [ "$no_db" = 0 ] || ! grep -qx DATABASE_URL <<< "$names" || { r=1; echo "   DATABASE_URL in the xdist controller"; }
+  return $r
+}
+logof() { case "$2" in run) echo "$OUT/$1.d/run.log" ;; *) echo "$OUT/$1.d/${2}_run.log" ;; esac; }
+s12() { AMB=("${AMBIENT[@]}"); stage "s12_$id" "$OUT/tool" "$script" "$phase" envnames; stage "s12base_$id" "$OUT/base_tool" "$script" "$phase" envnames; AMB=()
+  if [ "$phase" = xdist ]; then envcheck "$(logof "s12_$id" "$phase")" "" 1; else envcheck "$(logof "s12_$id" "$phase")" nquiry_proof_serial_test 0; fi
+  check "S12a_GOVERNED_CHILD_ENVIRONMENT_IS_THE_ALLOWLIST[$script $phase]" $?
+  grep -qx 'ENVNAME SFE_AMBIENT_API_KEY' "$(logof "s12base_$id" "$phase")" && grep -qx 'ENVNAME NQUIRY_SESSION_AUTHORITY' "$(logof "s12base_$id" "$phase")"
+  check "S12b_BASE_RUNNER_REALLY_PASSED_AMBIENT_VARIABLES_TO_THE_CHILD[$script $phase]" $? "(documents the defect)"; }
+each s12
+conf envnames; ( cd "$OUT" && env ORANGE_PARTITION_DIR="$OUT/s12_partition.d" "${AMBIENT[@]}" bash "$OUT/tool/partition.sh" ) > "$OUT/s12_partition.out" 2>&1
+envcheck "$OUT/s12_partition.d/full_raw.txt" "" 1; check "S12a_GOVERNED_CHILD_ENVIRONMENT_IS_THE_ALLOWLIST[partition.sh collect]" $?
+conf envnames; ( cd "$OUT" && env ORANGE_SERIAL_DIR="$OUT/s12_noamb.d" bash "$OUT/tool/serial_baseline.sh" run ) > "$OUT/s12_noamb.out" 2>&1
+n=$(grep -c '^ENVNAME ' "$OUT/s12_noamb.d/run.log"); ! grep -qE '^ENVNAME (TZ|ORANGE_CATALOG_DB|TMPDIR|LC_ALL)$' "$OUT/s12_noamb.d/run.log" && grep -qx 'ENVNAME PATH' "$OUT/s12_noamb.d/run.log"
+check S12c_ALLOWLISTED_VARIABLES_PASS_ONLY_WHEN_SET_NEVER_INVENTED $? "($n names)"
+
+# ---- S13: secret hygiene of this proof (TF-PX-09) -----------------------------------------------------------
+extra=$(env -0 | cut -z -d= -f1 | tr '\0' '\n' | grep -vxE 'PATH|HOME|LANG|SFE_PEO_SCRUBBED|SFE_FIXTURE_API_KEY|PWD|OLDPWD|SHLVL|_' | tr '\n' ' ')
+[ -z "$extra" ]; check S13a_PROOF_PROCESS_ENVIRONMENT_IS_THE_ALLOWLIST_ONLY $? "($extra)"
+n=$(grep -rlF -- "$SECRET" "$OUT" | wc -l); [ "$n" -eq 0 ]; check S13b_NO_CREDENTIAL_VALUE_IN_ANY_EVIDENCE_FILE $? "($n file(s))"
+
 # ---- informational (not gating): the pre / post phases are state-capture phases; their process status is NOT
 #      a verdict (their verdict lines are consumed by the chain and by the analyzers). Recorded, not changed here.
 for f in serial_baseline.sh parallel_proof.sh; do
-  stage "info_post_$f" "$OUT/tool" "$f" post verdictfail PATH="$ROOT/stubbin:$PATH"
+  AMB=(PATH="$ROOT/stubbin:$PATH"); stage "info_post_$f" "$OUT/tool" "$f" post verdictfail; AMB=()
   echo "   info: $f post with a FAIL verdict line exits $(rcof "info_post_$f") ($(grep -c '::FAIL' "$OUT/info_post_$f.out") FAIL line(s) on stdout)"
 done
 

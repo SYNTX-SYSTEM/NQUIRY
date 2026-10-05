@@ -17,9 +17,11 @@ mapfile -t SERIAL_SELECTORS < "$P/serial_partition_selectors.txt"
 DESELECT=(); for s in "${SERIAL_SELECTORS[@]}"; do DESELECT+=(--deselect "$s"); done
 export PGPASSWORD=nquiry_local_dev_only
 PSQL=(psql -h 127.0.0.1 -p 15432 -U nquiry -d "${ORANGE_CATALOG_DB:-nquiry_proof_serial_test}" -At)  # catalog via a PROOF db only
-H() { env -u DATABASE_URL -u PYTHONPATH -u PYTHONDONTWRITEBYTECODE -u NQUIRY_ENVIRONMENT -u NQUIRY_AI_PROVIDER \
-        -u NQUIRY_RUN_REAL_COMMIT_TESTS -u COVERAGE_PROCESS_START -u ORANGE_XDIST_LANE -u ORANGE_DB_BASE \
-        -u ORANGE_BINDING_EVIDENCE PYTHONNOUSERSITE=1 PYTHONPYCACHEPREFIX=$PYC "$@"; }
+H() {  # TF-PX-10: governed children get an ALLOWLIST environment (env -i): process basics, locale, the catalog selector, and what this runner sets. Nothing ambient passes by default
+  local n a=()
+  for n in PATH HOME USER LOGNAME LANG LANGUAGE LC_ALL LC_CTYPE LC_COLLATE LC_MESSAGES LC_NUMERIC LC_TIME LC_MONETARY LC_ADDRESS LC_IDENTIFICATION LC_MEASUREMENT LC_NAME LC_PAPER LC_TELEPHONE TZ TMPDIR ORANGE_CATALOG_DB; do
+    [ -n "${!n+x}" ] && a+=("$n=${!n}"); done
+  env -i "${a[@]}" PYTHONNOUSERSITE=1 PYTHONPYCACHEPREFIX=$PYC "$@"; }
 mkdir -p "$OUT"
 stage_exit() { [ "$(tr -d '[:space:]' < "$1" 2>/dev/null)" = 0 ] && exit 0; exit 1; }  # STAGE_EXIT_STATUS: process status follows the recorded exit code (0 -> 0; nonzero, absent or garbage -> 1; raw code stays in the file)
 

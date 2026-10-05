@@ -1,0 +1,8 @@
+51c51
+<   echo "$rc" > "$OUT/${label}_exit_code.txt"
+---
+>   echo "$((rc != 0))" > "$OUT/${label}_exit_code.txt"
+61c61
+<     echo $? > "$OUT/run_exit_code.txt"
+---
+>     echo $(( $? != 0 )) > "$OUT/run_exit_code.txt"

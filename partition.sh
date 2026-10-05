@@ -16,8 +16,11 @@ mapfile -t SERIAL_SELECTORS < "$P/serial_partition_selectors.txt"
 printf "%s\n" "${SERIAL_SELECTORS[@]}" > "$OUT/serial_selector.txt"
 DESELECT=(); for s in "${SERIAL_SELECTORS[@]}"; do DESELECT+=(--deselect "$s"); done
 printf "%s\n" "${DESELECT[@]}" > "$OUT/xdist_selector.txt"
-H() { env -u DATABASE_URL -u PYTHONPATH -u PYTHONDONTWRITEBYTECODE -u NQUIRY_RUN_REAL_COMMIT_TESTS \
-        PYTHONNOUSERSITE=1 PYTHONPYCACHEPREFIX=$PYC "$@"; }
+H() {  # TF-PX-10: governed children get an ALLOWLIST environment (env -i): process basics, locale, the catalog selector, and what this runner sets. Nothing ambient passes by default
+  local n a=()
+  for n in PATH HOME USER LOGNAME LANG LANGUAGE LC_ALL LC_CTYPE LC_COLLATE LC_MESSAGES LC_NUMERIC LC_TIME LC_MONETARY LC_ADDRESS LC_IDENTIFICATION LC_MEASUREMENT LC_NAME LC_PAPER LC_TELEPHONE TZ TMPDIR ORANGE_CATALOG_DB; do
+    [ -n "${!n+x}" ] && a+=("$n=${!n}"); done
+  env -i "${a[@]}" PYTHONNOUSERSITE=1 PYTHONPYCACHEPREFIX=$PYC "$@"; }
 collect() {  # $1 = name, rest = selection args
   local name=$1; shift
   (cd "$O" && H "$V/bin/python" -m pytest -p no:cacheprovider --collect-only -q "$@") > "$OUT/${name}_raw.txt" 2>&1

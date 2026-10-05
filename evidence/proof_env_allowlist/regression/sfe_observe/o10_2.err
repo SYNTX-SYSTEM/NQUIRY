@@ -1,0 +1,1 @@
+usage: sfe_observe.sh [--stage NAME] [--progress-log FILE] [--events FILE] -- COMMAND [ARG...]

@@ -1,0 +1,79 @@
+S0_ONLY_THE_ROOT_LINE_IS_SUBSTITUTED::PASS
+S1_PASSED_PROOF_EXITS_0[serial_baseline.sh run]::PASS
+S1_PASSED_PROOF_EXITS_0[parallel_proof.sh xdist]::PASS
+S1_PASSED_PROOF_EXITS_0[parallel_proof.sh serial]::PASS
+S2_FAILED_PROOF_EXITS_NONZERO[serial_baseline.sh run]::PASS
+S2_FAILED_PROOF_EXITS_NONZERO[parallel_proof.sh xdist]::PASS
+S2_FAILED_PROOF_EXITS_NONZERO[parallel_proof.sh serial]::PASS
+   raw=2 rc=1 recorded=1
+   raw=3 rc=1 recorded=1
+   raw=4 rc=1 recorded=1
+   raw=5 rc=1 recorded=1
+   raw=124 rc=1 recorded=1
+   raw=137 rc=1 recorded=1
+   raw=255 rc=1 recorded=1
+S3_ANY_NONZERO_RAW_CODE_EXITS_1_AND_STAYS_RECORDED[serial_baseline.sh run]::FAIL 
+   raw=2 rc=1 recorded=1
+   raw=3 rc=1 recorded=1
+   raw=4 rc=1 recorded=1
+   raw=5 rc=1 recorded=1
+   raw=124 rc=1 recorded=1
+   raw=137 rc=1 recorded=1
+   raw=255 rc=1 recorded=1
+S3_ANY_NONZERO_RAW_CODE_EXITS_1_AND_STAYS_RECORDED[parallel_proof.sh xdist]::FAIL 
+   raw=2 rc=1 recorded=1
+   raw=3 rc=1 recorded=1
+   raw=4 rc=1 recorded=1
+   raw=5 rc=1 recorded=1
+   raw=124 rc=1 recorded=1
+   raw=137 rc=1 recorded=1
+   raw=255 rc=1 recorded=1
+S3_ANY_NONZERO_RAW_CODE_EXITS_1_AND_STAYS_RECORDED[parallel_proof.sh serial]::FAIL 
+S4a_REAL_PYTEST_PASS_EXITS_0[serial_baseline.sh run]::PASS
+S4b_REAL_PYTEST_FAILURE_EXITS_NONZERO[serial_baseline.sh run]::PASS
+S4c_REAL_NO_TESTS_COLLECTED_EXIT_5_IS_FAILURE[serial_baseline.sh run]::FAIL (rc=1 recorded=1)
+S4a_REAL_PYTEST_PASS_EXITS_0[parallel_proof.sh xdist]::PASS
+S4b_REAL_PYTEST_FAILURE_EXITS_NONZERO[parallel_proof.sh xdist]::PASS
+S4c_REAL_NO_TESTS_COLLECTED_EXIT_5_IS_FAILURE[parallel_proof.sh xdist]::FAIL (rc=1 recorded=1)
+S4a_REAL_PYTEST_PASS_EXITS_0[parallel_proof.sh serial]::PASS
+S4b_REAL_PYTEST_FAILURE_EXITS_NONZERO[parallel_proof.sh serial]::PASS
+S4c_REAL_NO_TESTS_COLLECTED_EXIT_5_IS_FAILURE[parallel_proof.sh serial]::FAIL (rc=1 recorded=1)
+S4d_REAL_PARTITION_SELECTION_STILL_APPLIED::PASS
+   stdout differs: s5_sb_run_5
+   content differs: s5_sb_run_5/./run_exit_code.txt
+   recorded code: s5_sb_run_5
+S5_RECORDED_TRUTH_STDOUT_AND_EVIDENCE_IDENTICAL_TO_BASE[serial_baseline.sh run]::FAIL 
+S5b_BASE_RUNNER_REALLY_EXITED_0_ON_FAILED_PROOF[serial_baseline.sh run]::PASS
+   content differs: s5_pp_xdist_5/./xdist_exit_code.txt
+   recorded code: s5_pp_xdist_5
+S5_RECORDED_TRUTH_STDOUT_AND_EVIDENCE_IDENTICAL_TO_BASE[parallel_proof.sh xdist]::FAIL 
+S5b_BASE_RUNNER_REALLY_EXITED_0_ON_FAILED_PROOF[parallel_proof.sh xdist]::PASS
+   content differs: s5_pp_serial_5/./serial_exit_code.txt
+   recorded code: s5_pp_serial_5
+S5_RECORDED_TRUTH_STDOUT_AND_EVIDENCE_IDENTICAL_TO_BASE[parallel_proof.sh serial]::FAIL 
+S5b_BASE_RUNNER_REALLY_EXITED_0_ON_FAILED_PROOF[parallel_proof.sh serial]::PASS
+S6_STATUS_MAPPING_IS_FAIL_CLOSED[serial_baseline.sh]::PASS
+S6_STATUS_MAPPING_IS_FAIL_CLOSED[parallel_proof.sh]::PASS
+S7_USAGE_2_AND_REFUSAL_1_UNCHANGED::PASS
+S8a_CHAIN_CONTINUES_PAST_A_FAILED_STAGE_AND_REPORTS_THE_RAW_CODE::FAIL 
+S8b_CHAIN_FINAL_VERDICT_AND_EXIT_STATUS_UNCHANGED::PASS
+S8c_CHAIN_OUTPUT_AND_STATUS_IDENTICAL_WITH_BASE_RUNNERS::FAIL 
+S9_CHAIN_UNCHANGED_AND_NEVER_CONSUMES_THE_STAGE_PROCESS_STATUS::PASS
+   serial_baseline.sh: more than the contract lines and H() changed
+   parallel_proof.sh: more than the contract lines and H() changed
+S10_ONLY_CONTRACT_LINES_AND_ENV_HELPER_DIFFER_SELECTION_PARTITION_AGGREGATION_UNCHANGED::FAIL 
+S11a_SYNTHETIC_TREE_UNCHANGED_NO_BYTECODE_IN_TREE::PASS
+S11b_NO_ORPHAN_PROCESS::PASS
+S12a_GOVERNED_CHILD_ENVIRONMENT_IS_THE_ALLOWLIST[serial_baseline.sh run]::PASS
+S12b_BASE_RUNNER_REALLY_PASSED_AMBIENT_VARIABLES_TO_THE_CHILD[serial_baseline.sh run]::PASS
+S12a_GOVERNED_CHILD_ENVIRONMENT_IS_THE_ALLOWLIST[parallel_proof.sh xdist]::PASS
+S12b_BASE_RUNNER_REALLY_PASSED_AMBIENT_VARIABLES_TO_THE_CHILD[parallel_proof.sh xdist]::PASS
+S12a_GOVERNED_CHILD_ENVIRONMENT_IS_THE_ALLOWLIST[parallel_proof.sh serial]::PASS
+S12b_BASE_RUNNER_REALLY_PASSED_AMBIENT_VARIABLES_TO_THE_CHILD[parallel_proof.sh serial]::PASS
+S12a_GOVERNED_CHILD_ENVIRONMENT_IS_THE_ALLOWLIST[partition.sh collect]::PASS
+S12c_ALLOWLISTED_VARIABLES_PASS_ONLY_WHEN_SET_NEVER_INVENTED::PASS
+S13a_PROOF_PROCESS_ENVIRONMENT_IS_THE_ALLOWLIST_ONLY::PASS
+S13b_NO_CREDENTIAL_VALUE_IN_ANY_EVIDENCE_FILE::PASS
+   info: serial_baseline.sh post with a FAIL verdict line exits 0 (3 FAIL line(s) on stdout)
+   info: parallel_proof.sh post with a FAIL verdict line exits 0 (3 FAIL line(s) on stdout)
+STAGE_EXIT_FALSIFIERS::FAIL (12)

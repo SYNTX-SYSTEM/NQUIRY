@@ -75,3 +75,11 @@ observer.stop
 # sfe_observability per-mutant run directories (each mutant's verdict log + mutation diff ARE versioned; kept locally)
 /evidence/sfe_observability/mutants/*/
 /evidence/sfe_observability/mutation_v1_SUPERSEDED_MO16_not_applied/mutants/*/
+
+# proof_env_allowlist raw outputs > 100 KB (hash-recorded in evidence/proof_env_allowlist/RAW_EXCLUDED.tsv; kept locally)
+/evidence/proof_env_allowlist/regression/progress_falsifiers/integration/closure/serial_ref/collected_nodeids.txt
+/evidence/proof_env_allowlist/regression/progress_falsifiers/integration/closure/serial_ref/pre_collect_raw.txt
+/evidence/proof_env_allowlist/regression/tf_px_04_05/t04a/serial_ref/collected_nodeids.txt
+/evidence/proof_env_allowlist/regression/tf_px_04_05/t04a/serial_ref/pre_collect_raw.txt
+# proof_env_allowlist per-mutant run directories (each mutant's verdict log + mutation diff ARE versioned; kept locally)
+/evidence/proof_env_allowlist/mutants/*/

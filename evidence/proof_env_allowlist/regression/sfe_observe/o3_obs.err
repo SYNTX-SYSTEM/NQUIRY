@@ -1,0 +1,3 @@
+[00:00:00] STAGE_START     stage=io
+to-stderr
+[00:00:00] STAGE_END       stage=io rc=0 elapsed=0s

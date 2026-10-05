@@ -130,8 +130,9 @@ for i, s in begins:  # each begin wraps exactly the next command line, then its 
 sys.exit(0 if ok and begins else 1)
 PY
 r=0; for f in serial_baseline.sh parallel_proof.sh partition.sh serial_partition_selectors.txt analyze_serial.py aggregate.py run_aggregate.py partition_proof.py order_proof.py inertness_compare.py; do
-  # the STAGE_EXIT_STATUS contract lines of the two stage runners (successor of $BASE; proven by stage_exit_falsifiers.sh) are not selection / partition / proof semantics
-  cmp -s <(grep -v 'STAGE_EXIT_STATUS' "$T/$f") <(git -C "$LINEAGE" show "$BASE:$f") || { r=1; echo "   changed: $f"; }; done
+  # successors of $BASE that are not selection / partition / proof semantics, each proven by stage_exit_falsifiers.sh: the
+  # STAGE_EXIT_STATUS contract lines, and the H() environment helper (TF-PX-10 allowlist; H() is one block ending in `"$@"; }`)
+  cmp -s <(sed '/^H() {/,/"\$@"; }$/d' "$T/$f" | grep -v 'STAGE_EXIT_STATUS') <(git -C "$LINEAGE" show "$BASE:$f" | sed '/^H() {/,/"\$@"; }$/d') || { r=1; echo "   changed: $f"; }; done
 check F11_F12_SELECTION_PARTITION_AND_PROOF_SCRIPTS_UNCHANGED $r
 
 # ---- integration: the real canonical serial pre stage, exactly as final_closure.sh runs it -----

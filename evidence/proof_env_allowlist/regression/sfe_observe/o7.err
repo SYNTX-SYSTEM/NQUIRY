@@ -1,0 +1,6 @@
+[00:00:00] STAGE_START     stage=outer
+[00:00:00] STAGE_START     stage=inner_a
+[00:00:00] STAGE_END       stage=inner_a rc=0 elapsed=0s
+[00:00:00] STAGE_START     stage=inner_b
+[00:00:00] STAGE_FAIL      stage=inner_b rc=6 elapsed=0s
+[00:00:01] STAGE_FAIL      stage=outer rc=6 elapsed=1s

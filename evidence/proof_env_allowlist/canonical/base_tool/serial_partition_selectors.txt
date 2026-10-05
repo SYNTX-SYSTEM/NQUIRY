@@ -1,0 +1,2 @@
+tests/security/test_dev_identity_provisioning.py::test_malformed_input_is_refused
+tests/e2e/test_pfc_f09_1_technical_failure.py::test_worker_loop_survives_a_database_outage_and_stops_gracefully

@@ -1,0 +1,4 @@
+24c24
+<   env -i "${a[@]}" PYTHONNOUSERSITE=1 PYTHONPYCACHEPREFIX=$PYC "$@"; }
+---
+>   env -i "${a[@]}" PYTHONNOUSERSITE=1 "$@"; }

@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# stub for the governed child, configured by <root>/stub.conf (never by the environment: the runners scrub it).
+# rc:<n> = print and exit n; real = the same argv on a real pytest; verdictfail = a failing verdict producer;
+# envnames = report the NAMES of the environment this child received (never a value)
+. "$(cd "$(dirname "$0")/../.." && pwd)/stub.conf"
+case "$MODE" in
+  rc:*) echo "stub governed child: $*"; echo "= stub finished ="; exit "${MODE#rc:}" ;;
+  real) [ -n "$SYNTH_FAIL" ] && export ORANGE_SYNTH_FAIL=1; exec "$XPY" "$@" $ADDOPTS ;;
+  verdictfail) echo "PROOF_DB_PRECONDITIONS::FAIL (stub)"; exit 1 ;;
+  envnames) env -0 | cut -z -d= -f1 | sort -z | tr '\0' '\n' | sed 's/^/ENVNAME /'
+    echo "DBNAME ${DATABASE_URL:+${DATABASE_URL##*/}}"; echo "CATALOG ${ORANGE_CATALOG_DB:-}"; exit 0 ;;
+esac

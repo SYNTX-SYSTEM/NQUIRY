@@ -1,0 +1,9 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.15, pytest-9.1.1, pluggy-1.6.0
+rootdir: /home/codi/Entwicklung/nquiry/worktrees/orange-proof-lineage/evidence/proof_env_allowlist/canonical/root/worktrees/orange-proof-infra
+configfile: pytest.ini
+plugins: cov-7.1.0, xdist-3.8.0, anyio-4.15.1, hypothesis-6.168.3
+collected 2 items / 2 deselected / 0 selected
+
+- generated xml file: /home/codi/Entwicklung/nquiry/worktrees/orange-proof-lineage/evidence/proof_env_allowlist/canonical/s4n_pp_serial.d/serial_junit.xml -
+============================ 2 deselected in 0.76s =============================

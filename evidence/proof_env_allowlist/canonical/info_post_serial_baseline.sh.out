@@ -1,0 +1,8 @@
+post race_dbs=0 zz_roles=0 proof_conns=[]
+HEAD=3cab23b27e0d75cd7ce2aebd53c14caf9fa64e37
+status_entries_incl_ignored=99
+diff_vs_tag=CHANGED
+content_sha256=a1fc2e5fbd5608a93ff4a643bb8557fc87130db9a1c758c40c2e95f93681a025
+PROOF_DB_PRECONDITIONS::FAIL (stub)
+PROOF_DB_PRECONDITIONS::FAIL (stub)
+PROOF_DB_PRECONDITIONS::FAIL (stub)
