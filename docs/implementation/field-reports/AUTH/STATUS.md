@@ -172,7 +172,11 @@ First Broken Relations, in dependency order:
    frontend-owned; production value `/workspaces`) — source + falsifiers in
    this branch (`36c5585`); **pending deployment ASP-01** (prepared: assembly
    archive of `36c5585` + `deploy-asp01.sh` with guards / baseline / anchor
-   `nquiry-api:pre-asp01` / rollback; no migration; human-run). Previously: the authentication Field is not
+   `nquiry-api:pre-asp01` / rollback; no migration). 2026-10-05: the session's
+   permission layer refuses the upload + run as a production deploy
+   (BOUNDARY: tool permission, not Field semantics); the two commands are
+   recorded for the operator; production is unchanged (api `e069fc1`, web
+   `94759cd`, verified read-only). Previously: the authentication Field is not
    reachable by a human through the deployed UI (provider login only via a
    typed URL). Root cutover of the CYAN candidate = CYAN_PRODUCTION_ROOT_CUTOVER
    → Human Frontend Acceptance (human boundary) after 2 and 3 and the real
