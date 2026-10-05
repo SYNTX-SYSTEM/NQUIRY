@@ -2783,3 +2783,12 @@ Successor record. Nothing earlier is deleted.
 - COUNTS (superseding REC-031 for current use): Decisions 56 (ESTABLISHED 47: NQ-DEC-022, 032..056; REQUIRED 9). Canonical gaps stay 80. No gap status changes.
 
 **Provenance.** The human operator's PFC decision of 2026-09-28. Per `20_SYSTEM_FIELD_ENGINEERING.md` §14.
+
+### REC-033: Proof Execution Observability (SFE-PEO/1) is a Level-1 engineering relation
+
+Persisted as law in `20_SYSTEM_FIELD_ENGINEERING.md` §12A (human-authorized 2026-10-06): a long-running proof is observable while it runs; progress and heartbeat are observations, never verdicts; the real exit status stays authoritative; the Field keeps its own proof semantics; no value of a consumer's process environment may become persistent proof evidence or published lineage. One canonical contract, SFE-PEO/1, owned by the ORANGE proof-infrastructure Field on branch `orange-proof-lineage`, consumed by reference.
+
+- NOT A PRODUCT DECISION: no NQ-DEC row, no gap change. Counts stay as recorded in REC-032 (Decisions 56, canonical gaps 80). Same form as REC-008.
+- NOT INTRODUCED: an adoption obligation or date for any Field; any change to product semantics, proof semantics or existing proof claims.
+
+**Provenance.** The human operator's decision of 2026-10-06 on the published contract (`orange-proof-lineage` `194adf4`). Per `20_SYSTEM_FIELD_ENGINEERING.md` §14.

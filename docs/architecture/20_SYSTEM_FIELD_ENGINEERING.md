@@ -291,6 +291,33 @@ Test ladder (expand by relation impact, not by habit):
   governance, authority and persistence. No `page.route()`, no fabricated
   responses, no raw inserts simulating governed effects.
 
+## 12A. PROOF EXECUTION OBSERVABILITY
+
+HUMAN AUTHORIZED (2026-10-06: "The published contract is accepted as a
+system-wide Level-1 architectural relation"). Recorded in 16 §41 REC-033.
+
+A long-running proof is observable while it runs. Observation is
+infrastructure, not proof:
+
+- progress and heartbeat are observations, never verdicts;
+- the real exit status of the proof process stays authoritative;
+- a long-running stage is reconstructable from its start, liveness and
+  terminal events;
+- the Field keeps its own proof semantics and authority;
+- a consumer's process environment is preserved, and no value from it may
+  become persistent proof evidence or published lineage.
+
+One canonical contract exists: **SFE-PEO/1**. It is owned by the ORANGE
+proof-infrastructure Field and lives outside every product branch, on branch
+`orange-proof-lineage` (`SFE_PROOF_OBSERVABILITY_CONTRACT.md`,
+`sfe_observe.sh`; first published at `194adf4`). A Field consumes it by
+reference to a lineage commit. It does not copy the implementation and does
+not build its own.
+
+This section binds no Field to adopt at a given time. Adoption is each
+Field's own Work Unit (contract §5). It changes no product semantics and no
+existing proof claim.
+
 ## 13. FRONTEND-FIRST MATERIALIZATION LAW
 
 **FRONTEND-FIRST MATERIALIZATION ≠ FRONTEND-DEFINED SEMANTICS.**
