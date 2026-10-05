@@ -6,6 +6,33 @@ because additional features are conceivable". Supersedes the status line of
 `FIELD_REVIEW.md` (the first closure of 2026-10-01); every proof listed there
 stands and is not repeated.
 
+## Closure #3 (2026-10-05, mandate "complete and close as a complete operational product field")
+
+The Field was re-reconstructed against the full identity and access lifecycle.
+Four relations the accepted scope required were found missing and were
+materialized, proven and published:
+
+| Relation | Work Unit | Live since |
+|---|---|---|
+| a local password's owner rotates it (24 §9.2) | WU-AUTH-19 `POST /auth/password/change` | ASP-02 2026-10-05T15:24Z |
+| the governance root ends a membership — role and every Workspace binding end in the same commit (05 GOV-003, 09 §102.1) | WU-AUTHZ-01 `POST /workspaces/{ws}/members/{user}/revoke` | ASP-02 |
+| the governance root changes a member's role (05 GOV-004, §14) | WU-AUTHZ-01 `…/members/{user}/role` | ASP-02 |
+| the login lockout boundary (24 §21.16, §22.3): address- and client-keyed windows, 429 `RATE_LIMITED`, audited, enumeration-resistant | WU-AUTH-20 (`auth_rate_limits`, head `e3a5c7d9f1b4`) | ASP-02 |
+| the product surfaces for all of the above (password form; membership administration from the server's capabilities and per-member `administrable` verdict; the lockout presented as a pause) | CYAN AUTH/CYAN-ACCOUNT-02 `2fb7bfa` | ASP-02 (web root) |
+
+Proof at this closure: full hash-proven regression on `28e6620`
+(`evidence/field_closure_3_regression.txt`): **2530 passed / 2 skipped**,
+no-DB 1026, 44 migrations single head `e3a5c7d9f1b4`, tree unchanged;
+CYAN vitest 675, mocked lanes 172 + 12, cross-lineage real lane **12 / 12**
+(incl. real rotation, roster administration and lockout). Production after
+ASP-02: api `28e6620`, web `2fb7bfa`, head `e3a5c7d9f1b4`, `.env` and vhost
+unchanged, baseline `_baseline-pre-ASP02-20261005T152356Z` (pg_dump, anchors
+`nquiry-api:pre-asp02` / `nquiry-web:pre-asp02`, `ROLLBACK-asp02.sh`).
+
+The remaining boundary is unchanged: section A below (recovery of a lost
+local password, HA-AUTH-02 + 24 §36 #13). GAP-05-001 (owner succession) stays
+an architectural gap of 05 enforced as a refusal.
+
 ## Status
 
 **FIELD_CLOSED_WITH_ONE_RECORDED_HUMAN_BOUNDARY (2026-10-05).** Every

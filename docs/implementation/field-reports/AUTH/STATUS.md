@@ -14,7 +14,12 @@ Session control, capability or governance root.
 
 ## Status
 
-**FIELD_CLOSED_WITH_ONE_RECORDED_HUMAN_BOUNDARY (2026-10-05)** — see
+**FIELD_CLOSED_WITH_ONE_RECORDED_HUMAN_BOUNDARY — closure #3 (2026-10-05T15:24Z):**
+production api `28e6620` (head `e3a5c7d9f1b4`) + web `2fb7bfa` after ASP-02
+(credential rotation, membership revocation / role change, login lockout,
+their product surfaces); closure regression 2530 / 2
+(`evidence/field_closure_3_regression.txt`); `FIELD_CLOSURE.md` "Closure #3".
+Earlier closure #2 line, kept: — see
 `FIELD_CLOSURE.md`: production api `64930ac` + web `94759cd` accepted
 (HD-AUTH-09); closure regression 2499 / 2 (`evidence/field_closure_2_regression.txt`);
 the one remaining closure-critical relation is the human's recovery decision
