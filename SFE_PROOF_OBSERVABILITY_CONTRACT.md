@@ -144,6 +144,9 @@ Level-1 law means amending that document. This lineage does not do it, for two r
 - Every existing change to that document was a recorded Human decision, and placing the amendment on any product
   branch modifies a consumer Field or the stale trunk.
 
+Checked 2026-10-06: the two versions sit on two branch lines that do not contain each other (`f04-implementation`
+and its descendants; `master` and the frontend branches), and both have §12 and §13 once and no §12A.
+
 Proposed amendment text, to be placed by Human Authority (suggested: a new section after §12):
 
 ```text

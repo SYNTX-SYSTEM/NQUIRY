@@ -291,3 +291,29 @@ this lineage persists such a value (gate over the versioned tree and the reachab
 a proof outcome is known. Not changed: replacing the denylist by an allowlist changes the proof environment of the
 canonical chain, which is a global-invariant change and needs Human Authority and a fresh chain.
 
+## TF-PX-10 — reconstruction (2026-10-06; still OPEN, decision with Human Authority)
+Facts, read-only, no canonical file changed:
+- 107 ambient variables currently reach every governed child (pytest on the target, guard, collection) through the
+  denylist `H()` in `serial_baseline.sh`, `parallel_proof.sh` and `partition.sh`.
+- The frozen PCPG-5 target reads these names: DATABASE_URL, NQUIRY_ENVIRONMENT, NQUIRY_AI_PROVIDER,
+  NQUIRY_SESSION_AUTHORITY, NQUIRY_DEV_IDENTITY_PROVISIONING, NQUIRY_COOKIE_SECURE, NQUIRY_AI_MOCK_OUTCOME_*,
+  NQUIRY_RUN_REAL_COMMIT_TESTS and *_PROOF_STATE. It reads no provider credential. None of these names is set in
+  the operator environment (names checked, no value read), so no influence on a recorded outcome is known.
+- The denylist does not cover all of them (NQUIRY_SESSION_AUTHORITY, NQUIRY_DEV_IDENTITY_PROVISIONING,
+  NQUIRY_COOKIE_SECURE, NQUIRY_AI_MOCK_OUTCOME_*, *_PROOF_STATE would pass through if an operator set them). The
+  weakness is structural and not about secrets only; a successor target that reads a provider credential would
+  receive the operator's.
+- Probe: DB-free collection of the frozen target under a 14-name allowlist (PATH, HOME, USER, LOGNAME, LANG,
+  LC_*, plus the variables the runner sets itself) gives the same 2239 node ids as under the denylist, and the
+  import-origin guard passes. The tree stayed at 0 entries.
+- Hidden dependencies an allowlist must keep: `ORANGE_CATALOG_DB` (read by `verify_proof_dbs.py` through `H`),
+  the locale variables, and the stub mechanism of `stage_exit_falsifiers.sh` (its stub reads its mode from the
+  environment). `stage_exit_falsifiers.sh`, `progress_falsifiers.sh`, `sfe_observe_falsifiers.sh` and the
+  TF-PX-04/05 harness compare or extract `H()` and would have to follow.
+Why it is not repaired here: the allowlist redefines the canonical proof environment under which the PCPG-5 and
+SWU-PX-03 results were recorded. Its proof radius is one fresh complete canonical chain, which becomes the new
+reference. Every earlier change of the proof-environment definition was a Human Authority decision.
+Options: (a) keep the denylist, documented as inert for the frozen target; (b) authorize the allowlist `H()` in
+the three scripts with the harness updates and one fresh canonical chain. Recommendation: (b) before any successor
+target that reads provider credentials is proven; (a) is sufficient for the frozen PCPG-5 record.
+

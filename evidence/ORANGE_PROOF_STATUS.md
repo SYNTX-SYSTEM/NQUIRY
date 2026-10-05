@@ -408,3 +408,19 @@ Claim ceiling: SFE-PEO/1 = ONE CANONICAL, FIELD-NEUTRAL OBSERVATION CONTRACT, PR
 CONSUMABLE BY REFERENCE; ITS PROOF EVIDENCE HOLDS NO ENVIRONMENT VALUE. The gate checks against the environment
 it runs in: it cannot see a credential that is not present in that environment. Existing ORANGE and product
 claims unchanged.
+
+## 17. SFE-PEO/1 published; state of the remaining relations (2026-10-06)
+
+`origin/orange-proof-lineage` = 194adf4 (GitHub Push Protection accepted it); the secret gate passes on the full
+reachable history of the published branch. No Field has adopted the contract.
+
+Remaining relations, both at a Human Authority boundary, nothing changed for them:
+- TF-PX-10 (governed children inherit the ambient environment): reconstructed in `SUCCESSOR_FINDINGS.md`. Inert for
+  the frozen target as far as can be shown without running it; structural; an allowlist is feasible (collection
+  identical, 2239) but redefines the canonical proof environment and needs one fresh canonical chain.
+- Level-1 binding in document 20: the two versions sit on two branch lines that do not contain each other
+  (`f04-implementation` -> `auth-identity`, `pfc-integration`, `swu-px-03-worker-readiness`; and `master`,
+  `frontend-symbiotic`, `pfc-architecture`, `pfc-a1-challenge-frame`, `auth-cyan-reconstruction`). Both versions
+  have §12 and §13 once and no §12A, so the proposed section (contract §8) fits either. Which branch or branches
+  receive it, and when the Fields take it over, is a Human decision; each placement modifies a product branch.
+
