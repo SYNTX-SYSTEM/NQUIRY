@@ -32,6 +32,7 @@ import application.http_dispatch as http_dispatch
 import application.http_email as http_email
 import application.http_f02 as http_f02
 import application.http_f04 as http_f04
+import application.http_identity as http_identity
 import application.http_oidc as http_oidc
 import application.http_recovery as http_recovery
 import application.http_revocation as http_revocation
@@ -93,6 +94,7 @@ def client(
         http_email,
         http_recovery,
         http_revocation,
+        http_identity,  # swept too: an unpatched connector would open the real engine
     ):
         monkeypatch.setattr(module, "connect", _reuse)
     configure_auth_runtime(
