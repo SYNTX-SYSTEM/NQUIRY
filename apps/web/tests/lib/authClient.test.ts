@@ -151,8 +151,8 @@ describe("AUTH/CYAN-01 contract identity", () => {
     expect(AUTH_CONTRACT_PRODUCER).toEqual({
       field: "PURPLE_AUTH",
       branch: "auth-identity",
-      commit: "aa32c4d4faad23eea0bd3290641e7a66adcf26a9",
-      liveAssembly: "auth-aa32c4d-20261001T081014Z",
+      commit: "e069fc19f5e39bfcc69dff358314d0527bd57f30",
+      liveAssembly: "auth-e069fc1-20261004T140533Z",
     });
   });
   it("keeps every vocabulary closed and copied from the serializers", () => {

@@ -19,6 +19,7 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AccountSecurity } from "../../components/field/AccountSecurity";
 import { EffectIntent, EffectOutcome, ReconstructionNote } from "../../components/field/EffectSurface";
 import { ChamberHead } from "../../components/field/chambers";
 import { IdentityPanel } from "../../components/field/IdentityPanel";
@@ -30,8 +31,12 @@ import { FieldStage, Plane, Planes, Topology } from "../../components/field/topo
 import { Orbit, type OrbitNode, nodeContent } from "../../components/field/topology/Orbit";
 import { fetchCurrentSession } from "../../lib/api/authClient";
 import { createWorkspace, listWorkspaces, type WorkspaceSummary } from "../../lib/api/workspaceClient";
+import { ACCOUNT_RELATION_PREFIX, endRelation, endSession, removeMethod, removeRelation, SIGN_OUT_EVERYWHERE_RELATION, signOutEverywhere } from "../../lib/field/accountEffects";
+import { accountSecurityFrom } from "../../lib/field/accountSecurity";
+import { mountPath } from "../../lib/field/mount";
 import { accessTrace } from "../../lib/field/position";
 import { useIdentityProjection } from "../../lib/field/useIdentityProjection";
+import { useLinkBoundary } from "../../lib/field/useLinkBoundary";
 import { normalizeWorkspaces } from "../../lib/field/workspaces";
 
 import { type Settlement, useEffectField } from "../../lib/field/useEffectField";
@@ -72,7 +77,25 @@ export default function WorkspacesPage() {
   const effect = useEffectField();
   // AUTH/CYAN-IDENTITY-01: the current authentication relation (session · method · provider truth) behind the
   // /auth/me verdict; every part is none until its own read legitimately produced it. No role or authority here.
-  const identityProjection = useIdentityProjection(identity);
+  const identityField = useIdentityProjection(identity);
+  const identityProjection = identityField.projection;
+  // AUTH/CYAN-ACCOUNT-01: the account-security relations from the SAME reads (one composition); a link returns to
+  // this CYAN-owned page with `?link=`; every effect runs through the page's one effect field and re-reads the
+  // identity field afterwards. An effect that ends the current session leaves for /login (nothing is assumed).
+  const accountSecurity = accountSecurityFrom(identityField.reads, mountPath("/workspaces"));
+  const linkBoundary = useLinkBoundary();
+  const leaveWhenEnded = (ended: boolean): boolean => {
+    if (!ended) return false;
+    router.replace("/login");
+    return true;
+  };
+  const accountEffects = {
+    blocked: effect.blocked,
+    onRemoveMethod: (methodId: string) =>
+      void effect.run({ relation: removeRelation(methodId), keyed: false, send: () => removeMethod(methodId), reconstruct: identityField.reload, onCommitted: (body) => leaveWhenEnded(body.currentSessionEnded) }),
+    onEndSession: (sessionId: string) => void effect.run({ relation: endRelation(sessionId), keyed: false, send: () => endSession(sessionId), reconstruct: identityField.reload }),
+    onSignOutEverywhere: () => void effect.run({ relation: SIGN_OUT_EVERYWHERE_RELATION, keyed: false, send: signOutEverywhere, reconstruct: identityField.reload, onCommitted: () => leaveWhenEnded(true) }),
+  };
 
   const load = useCallback(async (): Promise<boolean> => {
     try {
@@ -220,6 +243,15 @@ export default function WorkspacesPage() {
             <p className="chamber-lede">Accessible Workspaces are the server&apos;s projection of your current memberships; nothing is inferred here.</p>
             <IdentityProjection projection={identityProjection} />
           </Plane>
+          {identity ? (
+            <Plane kind="action" semantic="identity" labelledBy="access-security-title" testId="access-security-plane">
+              <ChamberHead id="access-security-title" semantic="identity" title="Access security" marker="your sign-in" />
+              <p className="chamber-lede">How this identity can be reached, and where it is currently signed in. A sign-in method is not access, and a session is not a right: nothing here grants anything.</p>
+              <AccountSecurity security={accountSecurity} link={linkBoundary} effects={accountEffects} />
+              <EffectIntent field={effect.field} relationPrefix={ACCOUNT_RELATION_PREFIX} />
+              <EffectOutcome field={effect.field} relationPrefix={ACCOUNT_RELATION_PREFIX} reasonTestId="account-effect-reason" committedTestId="account-effect-committed" onReread={() => void effect.rereadNow(identityField.reload)} />
+            </Plane>
+          ) : null}
         </Planes>
       </FieldStage>
     </FieldFrame>

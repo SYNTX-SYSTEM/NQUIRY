@@ -27,12 +27,13 @@ describe("proof 1 + 7: the contact appears only from parsed live-shaped provider
   it("derives the contact from the live fixture with the typed LOGIN start URL", () => {
     const list = parseProviderList(LIVE);
     const contact = providerContactFrom(list, "/");
-    expect(contact.kind).toBe("contact");
-    if (contact.kind !== "contact") throw new Error("unreachable");
-    expect(contact.provider.providerId).toBe("google");
-    expect(contact.provider.proofClass).toBe("PRODUCTION_PROVIDER");
-    expect(contact.url).toBe(loginStartUrl(list.providers[0], "/"));
-    expect(contact.url).toBe("http://localhost:8000/auth/oidc/google/start?next=%2F");
+    expect(contact.kind).toBe("contacts");
+    if (contact.kind !== "contacts") throw new Error("unreachable");
+    expect(contact.contacts).toHaveLength(1);
+    expect(contact.contacts[0].provider.providerId).toBe("google");
+    expect(contact.contacts[0].provider.proofClass).toBe("PRODUCTION_PROVIDER");
+    expect(contact.contacts[0].url).toBe(loginStartUrl(list.providers[0], "/"));
+    expect(contact.contacts[0].url).toBe("http://localhost:8000/auth/oidc/google/start?next=%2F");
   });
   it("renders one navigation to that URL inside the access core vocabulary, labelled by the parsed label", () => {
     const html = render(providerContactFrom(parseProviderList(LIVE), "/"));
@@ -48,7 +49,7 @@ describe("proof 1 + 7: the contact appears only from parsed live-shaped provider
   it("discovers through the typed client with credentials and the live fixture", async () => {
     const fetchImpl = vi.fn().mockResolvedValue(json(LIVE));
     const contact = await discoverProviderContact("/", fetchImpl);
-    expect(contact.kind).toBe("contact");
+    expect(contact.kind).toBe("contacts");
     expect(fetchImpl).toHaveBeenCalledWith("http://localhost:8000/auth/providers", expect.objectContaining({ credentials: "include" }));
   });
   it("names a non-production proof class instead of hiding it (24 §27), still from parsed truth only", () => {
@@ -75,8 +76,9 @@ describe("proof 2 + 10: no hard-coded availability, no inference, no authority",
     expect(PAGE).toMatch(/useProviderContact\(mountPath\("\/"\)\)/); // the mount root (CYAN_REAL_E2E_FIELD_MOUNT_01)
     expect(PAGE).toMatch(/<ProviderContact contact=\{providerContact\} \/>/);
   });
-  it("the only path to a contact is googleLoginStart on a parsed list (no URL is hand-built)", () => {
-    expect(DERIVATION).toMatch(/googleLoginStart\(list, next\)/);
+  it("the only path to a contact is loginStartUrl on each PARSED provider (no URL is hand-built, no provider preferred)", () => {
+    expect(DERIVATION).toMatch(/loginStartUrl\(provider, next\)/);
+    expect(DERIVATION).not.toMatch(/googleLoginStart|availableProvider/);
     expect(DERIVATION).not.toMatch(/\/auth\/oidc|\/start|\/link/);
     expect(COMPONENT).not.toMatch(/\/auth\/oidc|\/start|\/link|apiBaseUrl/);
     expect(HOOK).not.toMatch(/\/auth\/oidc|\/start|\/link|apiBaseUrl/);
@@ -103,7 +105,6 @@ describe("proof 3, 4, 5: fail-closed rendering", () => {
     ["denied", { kind: "denied", reasonCode: "NO_SESSION" }],
     ["unavailable", { kind: "unavailable", reasonCode: "PROVIDER_NOT_CONFIGURED" }],
     ["empty provider list", { kind: "ok", providers: [] }],
-    ["only another provider", { kind: "ok", providers: [{ providerId: "test", label: "Local test issuer", proofClass: "TEST_PROVIDER" }] }],
     ["forbidden key", { kind: "ok", providers: [{ providerId: "google", label: "Google", proofClass: "PRODUCTION_PROVIDER", clientSecret: "x" }] }],
     ["null body", null],
   ];
@@ -114,6 +115,15 @@ describe("proof 3, 4, 5: fail-closed rendering", () => {
       expect(render(contact)).toBe("");
     });
   }
+  it("another parsed provider (a test issuer, as a TEST environment lists it) is a contact too, named with its class — never hidden, never assumed", async () => {
+    const contact = await discoverProviderContact("/", vi.fn().mockResolvedValue(json({ kind: "ok", providers: [{ providerId: "test", label: "Local test issuer", proofClass: "TEST_PROVIDER" }] })));
+    expect(contact.kind).toBe("contacts");
+    const html = render(contact);
+    expect(html).toContain('data-testid="provider-test"');
+    expect(html).toContain("Continue with Local test issuer");
+    expect(html).toContain("test provider");
+    expect(html).toContain('href="http://localhost:8000/auth/oidc/test/start?next=%2F"');
+  });
   it("non-JSON 503 → no contact", async () => {
     const contact = await discoverProviderContact("/", vi.fn().mockResolvedValue(new Response("<html>503</html>", { status: 503 })));
     expect(contact).toEqual(NO_PROVIDER_CONTACT);
@@ -130,6 +140,7 @@ describe("proof 3, 4, 5: fail-closed rendering", () => {
 describe("proof 8 + 9: unsafe next stays refused; no link or account-creation behaviour", () => {
   it("an unsafe next target yields no contact (the builder refuses, the derivation fails closed)", async () => {
     expect(() => googleLoginStart(parseProviderList(LIVE), "https://evil.example/")).toThrow();
+    expect(() => providerContactFrom(parseProviderList(LIVE), "https://evil.example/")).toThrow();
     expect(await discoverProviderContact("https://evil.example/", vi.fn().mockResolvedValue(json(LIVE)))).toEqual(NO_PROVIDER_CONTACT);
     expect(await discoverProviderContact("//evil.example", vi.fn().mockResolvedValue(json(LIVE)))).toEqual(NO_PROVIDER_CONTACT);
   });

@@ -13,7 +13,9 @@
  * Laws: IDENTITY != ROLE · AUTHENTICATION != AUTHORIZATION · AUTH_METHOD != ACCESS_RIGHT · PROVIDER_EMAIL !=
  * CANONICAL_IDENTITY · SESSION != AUTHORITY · UNKNOWN != INFERRED · GOOGLE_OIDC != GOOGLE_AUTHORITY. Nothing here
  * reads a role, a membership, a capability or an authority; nothing is inferred from timestamps, array order or an
- * email domain. The human-facing NQUIRY display name is NOT_MATERIALIZED: no producer provides it.
+ * email domain. The presentation is a function of `userId` alone (CONSUMER_CONTRACT.md §1): the same for every
+ * session of ONE identity; a provider login that bootstrapped its own identity (GOOGLE_BOOTSTRAP) is simply a
+ * different `userId` with its own presentation — nothing here compares, merges or prefers identities.
  */
 import type {
   AuthMethodStatus,

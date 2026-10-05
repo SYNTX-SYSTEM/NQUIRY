@@ -9,7 +9,9 @@ import path from "node:path";
 
 export type DevIdentity = { readonly userId: string; readonly email: string; readonly password: string; readonly name: string };
 
-const REPO_ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), "../../../..");
+// AUTH/CYAN-ACCOUNT-01: when the lane runs this web against a PURPLE API served from another checkout (the
+// cross-lineage real lane), the provisioning script and packages must be THAT checkout's, so its schema is spoken.
+const REPO_ROOT = process.env.REAL_STACK_REPO_ROOT ?? path.resolve(path.dirname(new URL(import.meta.url).pathname), "../../../..");
 
 export function provisionIdentity(label: string): DevIdentity {
   const stamp = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;

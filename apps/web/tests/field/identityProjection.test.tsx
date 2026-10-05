@@ -291,7 +291,7 @@ describe("CYAN_IDENTITY_PRESENTATION_CONSUMPTION_01 — WHO I AM != HOW I LOGGED
     expect(html).toMatch(/Local password/);
     expect(html).not.toMatch(/Google|person@example|protonmail/);
   });
-  it("STATE B / F2 / F6: Google current → the SAME name and canonical email, Google, the provider email in its own position", () => {
+  it("STATE B / F2 / F6 (GOOGLE_LINKED): Google current for the SAME identity → the same name and canonical email, Google, the provider email in its own position", () => {
     const chamber = render(PROVIDER_EMAIL_READS);
     const panel = renderPanel(PROVIDER_EMAIL_READS);
     for (const html of [chamber, panel]) {
@@ -305,7 +305,7 @@ describe("CYAN_IDENTITY_PRESENTATION_CONSUMPTION_01 — WHO I AM != HOW I LOGGED
     expect(panel).toContain('data-testid="identity-panel-email">tobias@thescaleforge.com<');
     expect(panel).toContain('<span class="identity-panel-account-label">Google account</span><span class="mono">syntxsystem@protonmail.com</span>');
   });
-  it("F3 / F4: switching the current method changes only the authentication relation; the identity is identical", () => {
+  it("F3 / F4 (GOOGLE_LINKED, CONSUMER_CONTRACT §1): for ONE identity, switching the current method changes only the authentication relation; the identity is identical", () => {
     const a = identityProjectionFrom(LOCAL_READS);
     const b = identityProjectionFrom(PROVIDER_EMAIL_READS);
     expect(a.identity).toEqual(b.identity);

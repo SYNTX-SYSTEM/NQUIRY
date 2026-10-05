@@ -412,14 +412,43 @@ the STATE A/B/C fixtures sharing one `/auth/identity` body, the `authClient.ts` 
 review guide's CASE LOCAL / CASE GOOGLE "SAME name, SAME canonical email"). These are not repaired here: the
 replacement truth belongs to PURPLE.
 
+## HOLD LIFTED (2026-10-04, AUTH/CYAN-ACCOUNT-01): the upstream contract arrived and was consumed
+
+PURPLE stated its reconstructed contract (`auth-identity` `4c82e0e`, `docs/implementation/field-reports/AUTH/CONSUMER_CONTRACT.md`):
+every shape CYAN consumes is unchanged; the presentation is a function of `userId`; the identity a provider login
+reaches is PURPLE's resolution — LINKED (the same identity) or BOOTSTRAP (its own identity, name and e-mail copied once
+from the provider's claims); each relation proven live on production (LINK 2026-10-03, LOGIN 2026-10-03, OWNER UNLINK
+and PROVIDER_BOOTSTRAP 2026-10-04, `AUTH/evidence/ha_auth_07_production_transition.txt`). The stale partition of the
+HOLD is repaired on branch `auth-cyan-reconstruction` (base `618d7a6`): F2/F3/F4 are the GOOGLE_LINKED case, the
+GOOGLE_BOOTSTRAP case has its own falsifiers (unit C2, browser S8, real lane), the `authClient.ts` comment states the
+contract, the review guide's CASE GOOGLE splits into GOOGLE_LINKED and GOOGLE_BOOTSTRAP (see the guide note below).
+The same unit materializes the 24 §24.5 account-security contacts and proves the whole chain on the cross-lineage
+real lane (`WU-AUTH-CYAN-ACCOUNT-01.md`). Authority: the human mandate of 2026-10-04 (complete authentication and
+authorization across the entire software, autonomously, up to a genuine boundary).
+
+**Review guide note (supersedes CASE GOOGLE of `HUMAN_REVIEW_GUIDE_AUTH_CYAN_IDENTITY_01.md`):**
+CASE GOOGLE_LINKED — a Google account LINKED by an identity (Access security → "Add Google") logs in as THAT identity:
+the SAME name and canonical e-mail as its local login, "Google", the Google account e-mail beneath it, two sign-in
+methods. CASE GOOGLE_BOOTSTRAP — a Google account linked to nobody logs in as ITS OWN identity: the Google display
+name as the nquiry name, the Google e-mail as the canonical e-mail, "Google", one sign-in method (not removable), no
+Workspace until it founds one. On production today: `tobi` is CASE LOCAL (the Google method was unlinked
+2026-10-04 14:25Z); the Google account is CASE GOOGLE_BOOTSTRAP (identity "SYNTX System", created 14:28Z).
+
 ## Open for Human Authority
 - REAL_SAME_ORIGIN_AUTH_E2E on `https://nquiry.condyn.eu/cy-review/login` (local password, then Google) — not
   authorized, not entered.
 - Lifecycle of the staged review mount after the proof (SEMANTIC_ERROR_12) and of the older `nquiry-cy01-candidate`
   stack on 3401/8401 — a human decision.
 - Human Frontend Acceptance of AUTH/CYAN-IDENTITY-01 — PENDING the real E2E proof.
-- No further AUTH/CYAN Work Unit is defined or authorized on this line.
-- **2026-10-04 (later) — reconstruction on this line:** the hold was lifted and the identity projection accepted on
-  production on the second CYAN line `auth-cyan-reconstruction` (`94759cd`, HD-AUTH-09, unpushed); this line and that
-  line diverge from `618d7a6`. The :13500 review cannot cover authentication / identity (FIXTURE_NON_PROOF, superseded
-  projection). Integration of the two heads = Human Authority (`CY-03/REVIEW_COVERAGE_RECONSTRUCTION_2026-10-04.md`).
+- Human Frontend Acceptance of AUTH/CYAN-ACCOUNT-01 (the Access security chamber, the generalized provider
+  contact) on the staged mount, rebuilt from `auth-cyan-reconstruction` — a human act.
+- REAL GOOGLE E2E with the current CYAN (CASE GOOGLE_LINKED and CASE GOOGLE_BOOTSTRAP on `/cy-review/`) — the
+  human's Google account; the test-issuer chain is proven on the cross-lineage real lane.
+- CYAN_PRODUCTION_ROOT_CUTOVER — **AUTHORIZED and EXECUTED 2026-10-04T15:59Z** after the successful Human Frontend
+  Acceptance on `/cy-review/` (human decision, verbatim: "Publish the accepted candidate to the production root");
+  root `/` = `94759cd`; record in `WU-AUTH-CYAN-ACCOUNT-01.md`. **Final Human Acceptance on the production URL:
+  ACCEPTED (2026-10-04, `HUMAN_REVIEW_RESULT_AUTH_CYAN_ACCOUNT_01.md`).**
+- **2026-10-05 — INTEGRATION (HUMAN_AUTHORITY_DECISION = ACCEPTED, 2026-10-05):** the two CYAN heads are one lineage
+  again: `auth-cyan-reconstruction` (`c4c6c17`, the accepted production line) merged into `frontend-symbiotic`
+  (PCPG-06, RAIL-01) through the proven candidate `c6479df` (`CY-03/REVIEW_COVERAGE_RECONSTRUCTION_2026-10-04.md`).
+  The :13500 review covers PCPG-06 + RAIL-01 only; authentication / identity stays accepted on production (HD-AUTH-09).
