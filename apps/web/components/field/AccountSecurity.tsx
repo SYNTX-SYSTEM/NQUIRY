@@ -22,6 +22,8 @@ export type AccountEffects = {
   readonly onSignOutEverywhere: () => void;
   /** WU-AUTH-19: current and new password as typed; the page sends them and clears the form on commit. */
   readonly onChangePassword: (currentPassword: string, newPassword: string) => void;
+  /** AUTH/CYAN-RECOVERY-01: a verification message for the canonical address. */
+  readonly onSendVerification: (email: string) => void;
 };
 
 function Moment({ value }: { readonly value: string }) {
@@ -147,6 +149,36 @@ export function AccountSecurity({ security, link, effects }: { readonly security
           </form>
         ))}
       </section>
+
+      {security.verification.kind === "relation" ? (
+        <section className="account-section" aria-labelledby="account-email-title" data-testid="account-email" data-verified={security.verification.verified ? "true" : "false"}>
+          <h3 id="account-email-title" className="account-section-title">
+            E-mail
+          </h3>
+          <div className="account-item">
+            <div className="account-item-body">
+              <span className="account-item-words mono" data-testid="account-email-address">
+                {security.verification.canonicalEmail}
+              </span>
+              {security.verification.verified ? (
+                <span className="auth-note" data-testid="account-email-verified">
+                  verified{security.verification.verifiedAt ? <> · <Moment value={security.verification.verifiedAt} /></> : null}
+                  {security.verification.recoveryOffered ? " · it can recover your password" : null}
+                </span>
+              ) : (
+                <span className="auth-note" data-testid="account-email-unverified">
+                  not verified{security.verification.recoveryOffered ? " · a lost password can only be recovered through a verified address" : null}
+                </span>
+              )}
+            </div>
+            {!security.verification.verified ? (
+              <button type="button" className="button secondary" data-testid="account-email-verify" disabled={effects.blocked} onClick={() => effects.onSendVerification((security.verification as { canonicalEmail: string }).canonicalEmail)}>
+                Send verification e-mail
+              </button>
+            ) : null}
+          </div>
+        </section>
+      ) : null}
 
       {security.rotatable ? <PasswordRotation blocked={effects.blocked} onChangePassword={effects.onChangePassword} /> : null}
 

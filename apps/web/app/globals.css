@@ -6729,3 +6729,9 @@ h3.chamber-title {
 .roster-admin-row strong {
   margin-right: auto;
 }
+
+/* AUTH/CYAN-RECOVERY-01 · recovery link on the login core */
+.access-recovery {
+  margin-top: var(--space-3);
+  text-align: center;
+}

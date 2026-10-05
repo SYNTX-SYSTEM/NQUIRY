@@ -49,9 +49,23 @@ export type AccountSecurity = {
   readonly links: readonly LinkOffer[];
   /** WU-AUTH-19: the identity holds an ACTIVE local password it may rotate (the server proves the current one). */
   readonly rotatable: boolean;
+  /** AUTH/CYAN-RECOVERY-01: the identity's e-mail verification relation (the recovery authority, 24 §17.4). */
+  readonly verification: VerificationRelation;
 };
 
-export const NO_ACCOUNT_SECURITY: AccountSecurity = { methods: [], sessions: [], links: [], rotatable: false };
+export type VerificationRelation =
+  | { readonly kind: "none" } // no identity presentation, or the deployment offers no verification
+  | {
+      readonly kind: "relation";
+      readonly canonicalEmail: string;
+      /** The canonical address is an ACTIVE verified address of the identity. */
+      readonly verified: boolean;
+      readonly verifiedAt: string | null;
+      /** The deployment serves recovery (so "verified" means "can recover"). */
+      readonly recoveryOffered: boolean;
+    };
+
+export const NO_ACCOUNT_SECURITY: AccountSecurity = { methods: [], sessions: [], links: [], rotatable: false, verification: { kind: "none" } };
 
 function labelOf(method: MethodSummary, reads: IdentityReads): AuthenticationLabel | null {
   if (method.methodType === "LOCAL_PASSWORD") return method.provider === null ? { kind: "local" } : null;
@@ -121,5 +135,27 @@ export function accountSecurityFrom(reads: IdentityReads, linkNext: string): Acc
     }
   }
   const rotatable = methods.some((m) => m.label.kind === "local");
-  return { methods, sessions, links, rotatable };
+  // the verification relation exists only when the deployment serves verification and the identity is presented;
+  // "verified" is the server's own ACTIVE relation for the canonical address, never inferred from the identity row
+  let verification: VerificationRelation = { kind: "none" };
+  const contacts = reads.contacts ?? null;
+  if (
+    contacts !== null
+    && contacts.emailVerification === "AVAILABLE"
+    && reads.identity !== null
+    && reads.identity.kind === "ok"
+    && reads.identity.userId === reads.me.userId
+  ) {
+    const canonical = reads.identity.canonicalEmail;
+    const list = reads.emails ?? null;
+    const active = list !== null && list.kind === "ok" ? list.emails.find((e) => e.active && e.email === canonical.toLowerCase()) : undefined;
+    verification = {
+      kind: "relation",
+      canonicalEmail: canonical,
+      verified: active !== undefined,
+      verifiedAt: active ? active.verifiedAt : null,
+      recoveryOffered: contacts.recovery === "AVAILABLE",
+    };
+  }
+  return { methods, sessions, links, rotatable, verification };
 }

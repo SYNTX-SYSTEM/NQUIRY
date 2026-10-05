@@ -10,7 +10,7 @@
  * A lost response is an UNKNOWN consequence (network_failure), an unrecognized one is indeterminate — never success,
  * never "nothing happened" (Network Failure != Proof Of No Effect). The server's reason codes pass through verbatim.
  */
-import { changePassword, logoutAll, revokeSession, unlinkMethod } from "../api/authClient";
+import { changePassword, logoutAll, revokeSession, startVerification, unlinkMethod } from "../api/authClient";
 import type { Settlement } from "./useEffectField";
 
 type Outcome<T> = { readonly kind: "ok" } & T;
@@ -58,9 +58,20 @@ export function rotatePassword(currentPassword: string, newPassword: string): Pr
   return settle<RotatedPassword>((f) => changePassword(currentPassword, newPassword, f));
 }
 
+export type VerificationSent = { readonly challengeId: string; readonly expiresAt: string };
+/** AUTH/CYAN-RECOVERY-01: a verification message for the canonical address; `unavailable` settles as indeterminate's sibling (no effect). */
+export function sendVerification(email: string): Promise<Settlement<VerificationSent>> {
+  return settle<VerificationSent>(async (f) => {
+    const result = await startVerification(email, f);
+    if (result.kind === "unavailable") return { kind: "denied", reasonCode: result.reasonCode };
+    return result;
+  });
+}
+
 /** Relation names of the page's effect field (one prefix, so one outcome surface owns all three). */
 export const ACCOUNT_RELATION_PREFIX = "account-security:";
 export const removeRelation = (methodId: string) => `${ACCOUNT_RELATION_PREFIX}remove:${methodId}`;
 export const endRelation = (sessionId: string) => `${ACCOUNT_RELATION_PREFIX}end:${sessionId}`;
 export const SIGN_OUT_EVERYWHERE_RELATION = `${ACCOUNT_RELATION_PREFIX}sign-out-everywhere`;
 export const CHANGE_PASSWORD_RELATION = `${ACCOUNT_RELATION_PREFIX}change-password`;
+export const SEND_VERIFICATION_RELATION = `${ACCOUNT_RELATION_PREFIX}send-verification`;

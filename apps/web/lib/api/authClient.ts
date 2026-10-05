@@ -123,11 +123,12 @@ function parseAuthResult(body: unknown): LoginResult {
 export const AUTH_CONTRACT_PRODUCER = {
   field: "PURPLE_AUTH",
   branch: "auth-identity",
-  // WU-AUTH-19/20 + WU-AUTHZ-01 (credential rotation, login lockout, roster administration) on top of HD-AUTH-08;
+  // WU-AUTH-21 (HD-AUTH-10: self-service recovery through verified e-mail, production mail delivery, `/auth/contacts`
+  // discovery) on top of WU-AUTH-19/20 + WU-AUTHZ-01 and HD-AUTH-08;
   // every earlier shape is unchanged — see PURPLE `docs/implementation/field-reports/AUTH/CONSUMER_CONTRACT.md`.
   // `liveAssembly` names what production serves while this consumer is staged.
-  commit: "50ccdb0c9167d81773102dc33ff38eed44d321e2",
-  liveAssembly: "auth-e069fc1-20261004T140533Z",
+  commit: "d03d5cef054ab7e53aa87ed1ffc4160617f7bea1",
+  liveAssembly: "auth-28e6620-20261005T152356Z",
 } as const;
 
 /** `oidc_provider.proof_class` (24 §27): closed; shown, never hidden, never upgraded. */
@@ -690,6 +691,213 @@ export async function changePassword(currentPassword: string, newPassword: strin
     body: JSON.stringify({ currentPassword, newPassword }),
   });
   return parsePasswordChange(await authBody(response, "passwordChange"));
+}
+
+// --- the policy-gated contacts (`GET /auth/contacts`, WU-AUTH-21) -----------------------------------------------
+//
+// Which optional contacts THIS deployment serves: recovery (self-service through verified e-mail, HD-AUTH-10) and
+// e-mail verification. A frontend offers a link only when it leads somewhere (24 §24.2). Closed words; an unknown
+// word fails closed; the read's failure is "none" for the caller (no contact is offered).
+
+export const CONTACT_WORDS = ["AVAILABLE", "UNAVAILABLE"] as const;
+export type ContactWord = (typeof CONTACT_WORDS)[number];
+export type AuthContacts = { readonly kind: "ok"; readonly recovery: ContactWord; readonly emailVerification: ContactWord };
+
+function authWord(rec: Record<string, unknown>, key: string, path: string): ContactWord {
+  const v = authStr(rec, key, path);
+  if (!(CONTACT_WORDS as readonly string[]).includes(v)) failAuth(`${path}.${key}`, `unknown word ${JSON.stringify(v)}`);
+  return v as ContactWord;
+}
+
+export function parseAuthContacts(body: unknown): AuthContacts {
+  const path = "contacts";
+  const rec = authKind(body, path);
+  if (rec.kind !== "ok") failAuth(`${path}.kind`, `unknown kind ${JSON.stringify(rec.kind)}`);
+  authExactKeys(rec, path, ["kind", "recovery", "emailVerification"]);
+  return { kind: "ok", recovery: authWord(rec, "recovery", path), emailVerification: authWord(rec, "emailVerification", path) };
+}
+
+export async function fetchAuthContacts(fetchImpl: typeof fetch = fetch): Promise<AuthContacts> {
+  const response = await fetchImpl(`${apiBaseUrl()}/auth/contacts`, { headers: { Accept: "application/json" } });
+  return parseAuthContacts(await authBody(response, "contacts"));
+}
+
+// --- recovery (`POST /auth/recovery/start`, `/complete`, WU-AUTH-12 / HD-AUTH-10) ---------------------------------
+//
+// Unauthenticated by nature (the credential is lost). The start answers the one answer whatever the address
+// (24 §45.2); the completion presents the challenge from the mail link and the new password. RECOVERY != LOGIN:
+// a completed recovery creates no session; the human logs in with the new password.
+
+export const RECOVERY_UNAVAILABLE_REASONS = ["RECOVERY_NOT_AVAILABLE"] as const;
+export const RECOVERY_DENIED_REASONS = ["RECOVERY_DENIED"] as const;
+export const RECOVERY_REJECTED_REASONS = ["MALFORMED_RECOVERY_ID", "MALFORMED_TOKEN", "PASSWORD_INVALID"] as const;
+export type RecoveryStartResult =
+  | { readonly kind: "ok" }
+  | { readonly kind: "unavailable"; readonly reasonCode: (typeof RECOVERY_UNAVAILABLE_REASONS)[number] };
+export type RecoveryCompleteResult =
+  | { readonly kind: "ok" }
+  | { readonly kind: "unavailable"; readonly reasonCode: (typeof RECOVERY_UNAVAILABLE_REASONS)[number] }
+  | { readonly kind: "denied"; readonly reasonCode: (typeof RECOVERY_DENIED_REASONS)[number] }
+  | { readonly kind: "rejected"; readonly reasonCode: (typeof RECOVERY_REJECTED_REASONS)[number] };
+
+export function parseRecoveryStart(body: unknown): RecoveryStartResult {
+  const path = "recoveryStart";
+  const rec = authKind(body, path);
+  switch (rec.kind) {
+    case "ok":
+      authExactKeys(rec, path, ["kind"]);
+      return { kind: "ok" };
+    case "unavailable":
+      return reasonBody(rec, path, "unavailable", RECOVERY_UNAVAILABLE_REASONS);
+    default:
+      failAuth(`${path}.kind`, `unknown kind ${JSON.stringify(rec.kind)}`);
+  }
+}
+
+export function parseRecoveryComplete(body: unknown): RecoveryCompleteResult {
+  const path = "recoveryComplete";
+  const rec = authKind(body, path);
+  switch (rec.kind) {
+    case "ok":
+      authExactKeys(rec, path, ["kind"]);
+      return { kind: "ok" };
+    case "unavailable":
+      return reasonBody(rec, path, "unavailable", RECOVERY_UNAVAILABLE_REASONS);
+    case "denied":
+      return reasonBody(rec, path, "denied", RECOVERY_DENIED_REASONS);
+    case "rejected":
+      return reasonBody(rec, path, "rejected", RECOVERY_REJECTED_REASONS);
+    default:
+      failAuth(`${path}.kind`, `unknown kind ${JSON.stringify(rec.kind)}`);
+  }
+}
+
+export async function startRecovery(email: string, fetchImpl: typeof fetch = fetch): Promise<RecoveryStartResult> {
+  const response = await fetchImpl(`${apiBaseUrl()}/auth/recovery/start`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ email }),
+  });
+  return parseRecoveryStart(await authBody(response, "recoveryStart"));
+}
+
+export async function completeRecovery(recoveryId: string, token: string, newPassword: string, fetchImpl: typeof fetch = fetch): Promise<RecoveryCompleteResult> {
+  const response = await fetchImpl(`${apiBaseUrl()}/auth/recovery/complete`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ recoveryId, token, newPassword }),
+  });
+  return parseRecoveryComplete(await authBody(response, "recoveryComplete"));
+}
+
+// --- e-mail verification (`POST /auth/email/verification/start`, `/complete`, `GET /auth/emails`, WU-AUTH-11) ------
+//
+// Authenticated: the identity verifies that it reaches an address (the recovery authority of 24 §17.4). The
+// challenge travels by mail; completion presents it from the link while logged in. VERIFICATION != IDENTITY: a
+// verified address is a relation of the identity, never the identity.
+
+export const VERIFICATION_UNAVAILABLE_REASONS = ["EMAIL_DELIVERY_NOT_CONFIGURED", "ENVIRONMENT_NOT_DECLARED", "EMAIL_DELIVERY_FAILED"] as const;
+export const VERIFICATION_DENIED_REASONS = ["NO_SESSION", "VERIFICATION_DENIED", "VERIFICATION_RESEND_THROTTLED"] as const;
+export const VERIFICATION_REJECTED_REASONS = ["EMAIL_INVALID", "MALFORMED_CHALLENGE_ID", "MALFORMED_TOKEN"] as const;
+export type VerificationStartResult =
+  | { readonly kind: "ok"; readonly challengeId: string; readonly expiresAt: string }
+  | { readonly kind: "unavailable"; readonly reasonCode: (typeof VERIFICATION_UNAVAILABLE_REASONS)[number] }
+  | { readonly kind: "denied"; readonly reasonCode: (typeof VERIFICATION_DENIED_REASONS)[number] }
+  | { readonly kind: "rejected"; readonly reasonCode: (typeof VERIFICATION_REJECTED_REASONS)[number] };
+export type VerificationCompleteResult =
+  | { readonly kind: "ok"; readonly email: string }
+  | { readonly kind: "unavailable"; readonly reasonCode: (typeof VERIFICATION_UNAVAILABLE_REASONS)[number] }
+  | { readonly kind: "denied"; readonly reasonCode: (typeof VERIFICATION_DENIED_REASONS)[number] }
+  | { readonly kind: "rejected"; readonly reasonCode: (typeof VERIFICATION_REJECTED_REASONS)[number] };
+export type VerifiedEmail = { readonly email: string; readonly verifiedAt: string; readonly active: boolean };
+export type VerifiedEmailsResult =
+  | { readonly kind: "ok"; readonly emails: readonly VerifiedEmail[] }
+  | { readonly kind: "denied"; readonly reasonCode: (typeof SESSION_DENIED_REASONS)[number] };
+
+export function parseVerificationStart(body: unknown): VerificationStartResult {
+  const path = "verificationStart";
+  const rec = authKind(body, path);
+  switch (rec.kind) {
+    case "ok":
+      authExactKeys(rec, path, ["kind", "challengeId", "expiresAt"]);
+      return { kind: "ok", challengeId: authId(rec, "challengeId", path), expiresAt: authStr(rec, "expiresAt", path) };
+    case "unavailable":
+      return reasonBody(rec, path, "unavailable", VERIFICATION_UNAVAILABLE_REASONS);
+    case "denied":
+      return reasonBody(rec, path, "denied", VERIFICATION_DENIED_REASONS);
+    case "rejected":
+      return reasonBody(rec, path, "rejected", VERIFICATION_REJECTED_REASONS);
+    default:
+      failAuth(`${path}.kind`, `unknown kind ${JSON.stringify(rec.kind)}`);
+  }
+}
+
+export function parseVerificationComplete(body: unknown): VerificationCompleteResult {
+  const path = "verificationComplete";
+  const rec = authKind(body, path);
+  switch (rec.kind) {
+    case "ok":
+      authExactKeys(rec, path, ["kind", "email"]);
+      return { kind: "ok", email: authNonEmpty(rec, "email", path) };
+    case "unavailable":
+      return reasonBody(rec, path, "unavailable", VERIFICATION_UNAVAILABLE_REASONS);
+    case "denied":
+      return reasonBody(rec, path, "denied", VERIFICATION_DENIED_REASONS);
+    case "rejected":
+      return reasonBody(rec, path, "rejected", VERIFICATION_REJECTED_REASONS);
+    default:
+      failAuth(`${path}.kind`, `unknown kind ${JSON.stringify(rec.kind)}`);
+  }
+}
+
+export function parseVerifiedEmails(body: unknown): VerifiedEmailsResult {
+  const path = "emails";
+  const rec = authKind(body, path);
+  switch (rec.kind) {
+    case "ok": {
+      authExactKeys(rec, path, ["kind", "emails"]);
+      const raw = rec.emails;
+      if (!Array.isArray(raw)) failAuth(`${path}.emails`, "not a list");
+      const emails = raw.map((item: unknown, i: number): VerifiedEmail => {
+        if (typeof item !== "object" || item === null) failAuth(`${path}.emails[${i}]`, "not an object");
+        const r = item as Record<string, unknown>;
+        authExactKeys(r, `${path}.emails[${i}]`, ["email", "verifiedAt", "active"]);
+        return { email: authNonEmpty(r, "email", path), verifiedAt: authStr(r, "verifiedAt", path), active: authBool(r, "active", path) };
+      });
+      return { kind: "ok", emails };
+    }
+    case "denied":
+      return reasonBody(rec, path, "denied", SESSION_DENIED_REASONS);
+    default:
+      failAuth(`${path}.kind`, `unknown kind ${JSON.stringify(rec.kind)}`);
+  }
+}
+
+export async function startVerification(email: string, fetchImpl: typeof fetch = fetch): Promise<VerificationStartResult> {
+  const response = await fetchImpl(`${apiBaseUrl()}/auth/email/verification/start`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ email }),
+  });
+  return parseVerificationStart(await authBody(response, "verificationStart"));
+}
+
+export async function completeVerification(challengeId: string, token: string, fetchImpl: typeof fetch = fetch): Promise<VerificationCompleteResult> {
+  const response = await fetchImpl(`${apiBaseUrl()}/auth/email/verification/complete`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ challengeId, token }),
+  });
+  return parseVerificationComplete(await authBody(response, "verificationComplete"));
+}
+
+export async function listVerifiedEmails(fetchImpl: typeof fetch = fetch): Promise<VerifiedEmailsResult> {
+  const response = await fetchImpl(`${apiBaseUrl()}/auth/emails`, { headers: { Accept: "application/json" }, credentials: "include" });
+  return parseVerifiedEmails(await authBody(response, "emails"));
 }
 
 // --- identity presentation (`GET /auth/identity`, PURPLE_IDENTITY_PRESENTATION_01 @ auth-identity 2ec05c0) -----------

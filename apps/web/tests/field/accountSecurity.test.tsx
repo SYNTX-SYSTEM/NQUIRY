@@ -12,8 +12,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { afterAll, describe, expect, it } from "vitest";
 
 import { AccountSecurity } from "../../components/field/AccountSecurity";
-import { parseIdentityPresentation, parseMethodList, parseProviderList, parseSessionList } from "../../lib/api/authClient";
-import { endSession, removeMethod, rotatePassword, signOutEverywhere } from "../../lib/field/accountEffects";
+import { parseIdentityPresentation, parseMethodList, parseProviderList, parseSessionList, parseVerifiedEmails } from "../../lib/api/authClient";
+import { endSession, removeMethod, rotatePassword, sendVerification, signOutEverywhere } from "../../lib/field/accountEffects";
 import { accountSecurityFrom, NO_ACCOUNT_SECURITY } from "../../lib/field/accountSecurity";
 import { identityProjectionFrom, type IdentityReads } from "../../lib/field/identityProjection";
 import { LINK_BOUNDARY_MESSAGES, linkBoundaryFrom, NO_LINK_BOUNDARY } from "../../lib/field/linkBoundary";
@@ -58,7 +58,7 @@ const BOOTSTRAP_READS: IdentityReads = {
 };
 
 const json = (status: number, body: unknown): typeof fetch => async () => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
-const EFFECTS_IDLE = { blocked: false, onRemoveMethod: () => undefined, onEndSession: () => undefined, onSignOutEverywhere: () => undefined, onChangePassword: () => undefined };
+const EFFECTS_IDLE = { blocked: false, onRemoveMethod: () => undefined, onEndSession: () => undefined, onSignOutEverywhere: () => undefined, onChangePassword: () => undefined, onSendVerification: () => undefined };
 const render = (reads: IdentityReads, search = "") => renderToStaticMarkup(<AccountSecurity security={accountSecurityFrom(reads, NEXT)} link={linkBoundaryFrom(search)} effects={EFFECTS_IDLE} />);
 
 describe("A1–A6: the relations from the one set of reads", () => {
@@ -196,7 +196,10 @@ describe("C1–C7: the chamber markup", () => {
     const html = render(READS);
     // `role=` is the ARIA attribute of the result line (status / alert), never a Workspace role word
     expect(html).not.toMatch(/\brole\b(?!=)|authority|permission|capabilit|membership|avatar|password reset|forgot|register|sign up|token|secret/i);
-    for (const src of [COMPONENT, DERIVATION, EFFECTS]) expect(src).not.toMatch(/\brole\b(?!=)|authority|permission|capabilit|membership|avatar|recover|register/i);
+    // recovery itself lives on the unauthenticated /recover pages: the chamber names it only as what a verified
+    // address makes possible (AUTH/CYAN-RECOVERY-01) and carries no recovery control or link
+    expect(html).not.toMatch(/href="\/recover|recover-form|reset-form/);
+    for (const src of [COMPONENT, DERIVATION, EFFECTS]) expect(src).not.toMatch(/\brole\b(?!=)|authority|permission|capabilit|membership|avatar|register|\/recover/i);
     const blocked = renderToStaticMarkup(<AccountSecurity security={accountSecurityFrom(READS, NEXT)} link={NO_LINK_BOUNDARY} effects={{ ...EFFECTS_IDLE, blocked: true }} />);
     expect(blocked.match(/<button[^>]*disabled=""/g)?.length).toBe(5); // 2 Remove + End + Sign out everywhere + Change password
   });
@@ -229,6 +232,49 @@ describe("P1–P3: password rotation (WU-AUTH-19) — a local password is rotate
     expect(await rotatePassword("old", "x")).toEqual({ kind: "rejected", reasonCode: "PASSWORD_INVALID" });
     vi_stub(json(200, { kind: "ok", sessionsRevoked: 2, token: "leak" }));
     expect((await rotatePassword("old", "new one")).kind).toBe("indeterminate");
+  });
+});
+
+describe("V1–V3: the e-mail verification relation (AUTH/CYAN-RECOVERY-01) — the recovery authority of 24 §17.4", () => {
+  const CONTACTS = { kind: "ok", recovery: "AVAILABLE", emailVerification: "AVAILABLE" } as const;
+  const NONE = { kind: "ok", recovery: "UNAVAILABLE", emailVerification: "UNAVAILABLE" } as const;
+  const EMAILS_VERIFIED = parseVerifiedEmails({ kind: "ok", emails: [{ email: "a@example.test", verifiedAt: T1, active: true }] });
+  const EMAILS_OTHER = parseVerifiedEmails({ kind: "ok", emails: [{ email: "old@example.test", verifiedAt: T0, active: true }, { email: "a@example.test", verifiedAt: T0, active: false }] });
+  it("V1: the relation exists only when the deployment serves verification and the identity is presented; verified = the server's ACTIVE relation for the canonical address", () => {
+    expect(accountSecurityFrom({ ...READS, contacts: NONE, emails: EMAILS_VERIFIED }, NEXT).verification).toEqual({ kind: "none" });
+    expect(accountSecurityFrom({ ...READS, contacts: null, emails: EMAILS_VERIFIED }, NEXT).verification).toEqual({ kind: "none" });
+    expect(accountSecurityFrom({ ...READS, identity: null, contacts: CONTACTS, emails: EMAILS_VERIFIED }, NEXT).verification).toEqual({ kind: "none" });
+    expect(accountSecurityFrom({ ...READS, contacts: CONTACTS, emails: EMAILS_VERIFIED }, NEXT).verification).toEqual({
+      kind: "relation",
+      canonicalEmail: "a@example.test",
+      verified: true,
+      verifiedAt: T1,
+      recoveryOffered: true,
+    });
+    // another verified address, or a superseded relation for the canonical one, is not "verified"
+    expect(accountSecurityFrom({ ...READS, contacts: CONTACTS, emails: EMAILS_OTHER }, NEXT).verification).toMatchObject({ kind: "relation", verified: false, verifiedAt: null });
+    expect(accountSecurityFrom({ ...READS, contacts: CONTACTS, emails: null }, NEXT).verification).toMatchObject({ kind: "relation", verified: false });
+    expect(accountSecurityFrom({ ...READS, contacts: { ...CONTACTS, recovery: "UNAVAILABLE" }, emails: EMAILS_VERIFIED }, NEXT).verification).toMatchObject({ recoveryOffered: false });
+  });
+  it("V2: markup — unverified: the address, the consequence for recovery, one Send control; verified: no control", () => {
+    const unverified = render({ ...READS, contacts: CONTACTS, emails: null });
+    expect(unverified).toContain('data-testid="account-email"');
+    expect(unverified).toContain('data-verified="false"');
+    expect(unverified).toContain("a lost password can only be recovered through a verified address");
+    expect(unverified).toContain('data-testid="account-email-verify"');
+    const verified = render({ ...READS, contacts: CONTACTS, emails: EMAILS_VERIFIED });
+    expect(verified).toContain('data-verified="true"');
+    expect(verified).toContain("it can recover your password");
+    expect(verified).not.toContain('data-testid="account-email-verify"');
+    expect(render({ ...READS, contacts: NONE })).not.toContain('data-testid="account-email"');
+  });
+  it("V3: sending a verification settles verbatim (ok → committed with the challenge facts; unavailable → denied with the class)", async () => {
+    vi_stub(json(200, { kind: "ok", challengeId: "3a0a0a0a-1111-4111-8111-111111111111", expiresAt: T2 }));
+    expect(await sendVerification("a@example.test")).toEqual({ kind: "committed", reasonCode: null, body: { challengeId: "3a0a0a0a-1111-4111-8111-111111111111", expiresAt: T2 } });
+    vi_stub(json(503, { kind: "unavailable", reasonCode: "EMAIL_DELIVERY_FAILED" }));
+    expect(await sendVerification("a@example.test")).toEqual({ kind: "denied", reasonCode: "EMAIL_DELIVERY_FAILED" });
+    vi_stub(json(429, { kind: "denied", reasonCode: "VERIFICATION_RESEND_THROTTLED" }));
+    expect(await sendVerification("a@example.test")).toEqual({ kind: "denied", reasonCode: "VERIFICATION_RESEND_THROTTLED" });
   });
 });
 

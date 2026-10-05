@@ -31,7 +31,7 @@ import { FieldStage, Plane, Planes, Topology } from "../../components/field/topo
 import { Orbit, type OrbitNode, nodeContent } from "../../components/field/topology/Orbit";
 import { fetchCurrentSession } from "../../lib/api/authClient";
 import { createWorkspace, listWorkspaces, type WorkspaceSummary } from "../../lib/api/workspaceClient";
-import { ACCOUNT_RELATION_PREFIX, CHANGE_PASSWORD_RELATION, endRelation, endSession, removeMethod, removeRelation, rotatePassword, SIGN_OUT_EVERYWHERE_RELATION, signOutEverywhere } from "../../lib/field/accountEffects";
+import { ACCOUNT_RELATION_PREFIX, CHANGE_PASSWORD_RELATION, endRelation, endSession, removeMethod, removeRelation, rotatePassword, SEND_VERIFICATION_RELATION, sendVerification, SIGN_OUT_EVERYWHERE_RELATION, signOutEverywhere } from "../../lib/field/accountEffects";
 import { accountSecurityFrom } from "../../lib/field/accountSecurity";
 import { mountPath } from "../../lib/field/mount";
 import { accessTrace } from "../../lib/field/position";
@@ -98,6 +98,8 @@ export default function WorkspacesPage() {
     // WU-AUTH-19: the proving session continues; the sessions list is re-read (the others ended)
     onChangePassword: (currentPassword: string, newPassword: string) =>
       void effect.run({ relation: CHANGE_PASSWORD_RELATION, keyed: false, send: () => rotatePassword(currentPassword, newPassword), reconstruct: identityField.reload }),
+    // AUTH/CYAN-RECOVERY-01: the message is the effect; the relation itself appears after the link is opened
+    onSendVerification: (email: string) => void effect.run({ relation: SEND_VERIFICATION_RELATION, keyed: false, send: () => sendVerification(email), reconstruct: identityField.reload }),
   };
 
   const load = useCallback(async (): Promise<boolean> => {

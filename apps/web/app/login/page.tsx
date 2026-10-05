@@ -30,6 +30,7 @@
  * malformed value presents nothing (UNKNOWN != FAILURE, UNKNOWN != SUCCESS).
  * No word is a success, an authority or a role.
  */
+import Link from "next/link";
 import { type FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FieldBackground } from "../../components/field/FieldBackground";
@@ -39,6 +40,7 @@ import { ProviderContact } from "../../components/field/ProviderContact";
 import { login } from "../../lib/api/authClient";
 import { mountPath } from "../../lib/field/mount";
 import { useAuthBoundary } from "../../lib/field/useAuthBoundary";
+import { recoveryOffered, useAuthContacts } from "../../lib/field/useAuthContacts";
 import { useProviderContact } from "../../lib/field/useProviderContact";
 
 type SubmitState =
@@ -63,6 +65,8 @@ export default function LoginPage() {
   // new local request or verdict replaces it rather than stacking two boundaries.
   const authBoundary = useAuthBoundary();
   const providerBoundary = state.kind === "idle" ? authBoundary : { kind: "none" as const };
+  // AUTH/CYAN-RECOVERY-01 (24 §24.2): the recovery link exists only when the deployment serves recovery
+  const recovery = recoveryOffered(useAuthContacts());
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -147,6 +151,13 @@ export default function LoginPage() {
             </div>
           </form>
           <ProviderContact contact={providerContact} />
+          {recovery ? (
+            <p className="access-recovery muted">
+              <Link href="/recover" data-testid="recover-link">
+                Forgot your password?
+              </Link>
+            </p>
+          ) : null}
           <AuthBoundary boundary={providerBoundary} />
           {submitting ? (
             <p className="access-status effect-intent" role="status" data-testid="login-pending">

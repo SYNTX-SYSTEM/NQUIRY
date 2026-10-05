@@ -213,3 +213,69 @@ test("LOCKOUT: five wrong passwords pause the address; the right password is pau
   await expect(page.getByTestId("login-error")).toContainText("Too many attempts");
   await expect(page).toHaveURL(/\/login$/);
 });
+
+// --- AUTH/CYAN-RECOVERY-01 (real; the API's TEST mail capture stands in for the deployment's provider) -----------
+
+type OutboxMail = { kind: string; to: string; challengeId: string; token: string };
+async function outbox(page: Page): Promise<OutboxMail[]> {
+  const body = (await (await page.request.get(`${API}/auth/test-mail/outbox`)).json()) as { mail: OutboxMail[] };
+  return body.mail;
+}
+
+test("E-MAIL VERIFICATION → SELF-SERVICE RECOVERY: verify the canonical address from the chamber, lose the password, recover through the mail link, log in with the new one", async ({ page }) => {
+  const me = provisionIdentity("cyanrecover");
+  await localLogin(page, me.email, me.password);
+  const chamber = page.getByTestId("access-security-plane");
+  await expect(chamber.getByTestId("account-email")).toHaveAttribute("data-verified", "false");
+  await expect(chamber.getByTestId("account-email-address")).toHaveText(me.email);
+  // 1. send the verification message for the canonical address and open its link (logged in)
+  await chamber.getByTestId("account-email-verify").click();
+  await expect(chamber.getByTestId("account-effect-committed")).toBeVisible();
+  const verification = (await outbox(page)).filter((m) => m.kind === "EMAIL_VERIFICATION" && m.to === me.email).pop();
+  expect(verification).toBeDefined();
+  await page.goto(`/account/verify-email?challengeId=${verification!.challengeId}&token=${verification!.token}`);
+  await expect(page.getByTestId("verify-done")).toBeVisible();
+  await expect(page.getByTestId("verify-email")).toHaveText(me.email);
+  await expect(page).toHaveURL(/\/account\/verify-email$/);
+  await page.getByTestId("verify-continue").click();
+  await expect(chamber.getByTestId("account-email")).toHaveAttribute("data-verified", "true");
+  // the same link a second time is one denied class (single use)
+  await page.goto(`/account/verify-email?challengeId=${verification!.challengeId}&token=${verification!.token}`);
+  await expect(page.getByTestId("verify-error")).toHaveAttribute("data-outcome", "denied");
+  // 2. lose the password: log out, ask for recovery from the login
+  await page.goto("/workspaces");
+  await page.getByTestId("logout-button").click();
+  await page.getByTestId("recover-link").click();
+  await expect(page).toHaveURL(/\/recover$/);
+  await page.getByTestId("recover-email").fill(me.email);
+  await page.getByTestId("recover-submit").click();
+  await expect(page.getByTestId("recover-sent")).toBeVisible();
+  const recovery = (await outbox(page)).filter((m) => m.kind === "PASSWORD_RECOVERY" && m.to === me.email).pop();
+  expect(recovery).toBeDefined();
+  // an unknown address gets the same answer and no mail
+  await page.goto("/recover");
+  await page.getByTestId("recover-email").fill(`nobody-${Date.now()}@dev.local.test`);
+  await page.getByTestId("recover-submit").click();
+  await expect(page.getByTestId("recover-sent")).toBeVisible();
+  // 3. the reset link: new password, no session created, old password refused, new one logs in
+  await page.goto(`/recover/reset?recovery=${recovery!.challengeId}&token=${recovery!.token}`);
+  await expect(page).toHaveURL(/\/recover\/reset$/);
+  const fresh = `${me.password}-recovered`;
+  await page.getByTestId("reset-password").fill(fresh);
+  await page.getByTestId("reset-confirm").fill(fresh);
+  await page.getByTestId("reset-submit").click();
+  await expect(page.getByTestId("reset-done")).toBeVisible();
+  await page.goto("/workspaces");
+  await expect(page).toHaveURL(/\/login$/); // recovery created no session
+  await page.getByTestId("login-email").fill(me.email);
+  await page.getByTestId("login-password").fill(me.password);
+  await page.getByTestId("login-submit").click();
+  await expect(page.getByTestId("login-error")).toContainText("Incorrect");
+  await localLogin(page, me.email, fresh);
+  // the used reset link is dead
+  await page.goto(`/recover/reset?recovery=${recovery!.challengeId}&token=${recovery!.token}`);
+  await page.getByTestId("reset-password").fill("another passphrase 7");
+  await page.getByTestId("reset-confirm").fill("another passphrase 7");
+  await page.getByTestId("reset-submit").click();
+  await expect(page.getByTestId("reset-error")).toHaveAttribute("data-outcome", "denied");
+});
