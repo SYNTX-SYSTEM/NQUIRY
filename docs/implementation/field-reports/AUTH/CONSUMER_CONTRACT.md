@@ -1,8 +1,9 @@
 # PURPLE → CONSUMER CONTRACT (post HD-AUTH-08)
 
 Producer: `auth-identity` (this branch); live api = assembly
-`auth-e069fc1-20261004T140533Z` (product `e069fc1`, migration head
-`d2f4a6b8c1e3`). Written 2026-10-04 for the frontend lineage (CYAN,
+`auth-64930ac-20261005T113144Z` (product `64930ac`, migration head
+`d2f4a6b8c1e3`); the next assembly carries WU-AUTH-19/20 and WU-AUTHZ-01
+(migration head `e3a5c7d9f1b4`). Written 2026-10-04 for the frontend lineage (CYAN,
 `frontend-symbiotic`) whose FIELD_RECONSTRUCTION_HOLD (`618d7a6`) waits for
 "PURPLE's reconstructed production Field, provider-bootstrap behaviour,
 identity presentation contract and real runtime proof". This document is that
@@ -74,6 +75,9 @@ code, state or nonce ever appears in a body.
 | `GET /auth/sessions` | required | `200 {kind: ok, sessions: [{sessionId, issuedAt, expiresAt, current, methodType}]}` | `401` |
 | `POST /auth/sessions/{id}/revoke` | required | `200 {kind: ok}` (cookie cleared when it was the current one) | `400 rejected MALFORMED_SESSION_ID`, `404 denied SESSION_NOT_FOUND` (foreign == missing) |
 | `POST /auth/logout-all` | required | `200 {kind: ok, revokedSessions}` + cookie cleared | `401` |
+| `POST /auth/password/change` `{currentPassword, newPassword}` (WU-AUTH-19) | required | `200 {kind: ok, sessionsRevoked}` (the proving session continues) | `401 NO_SESSION`, `403 denied CURRENT_PASSWORD_INVALID \| NO_LOCAL_CREDENTIAL`, `400 rejected PASSWORD_INVALID` |
+| `POST /auth/login` under the lockout boundary (WU-AUTH-20) | — | — | `429 {kind: denied, reasonCode: RATE_LIMITED}` (the address or the client is paused; identical for known and unknown addresses) |
+| `POST /workspaces/{ws}/members/{user}/revoke`, `POST /workspaces/{ws}/members/{user}/role {role}` (WU-AUTHZ-01) | required | `200 {kind: ok}` | `{kind: denied, result: DENY, reasonCode: NOT_GOVERNANCE_ROOT \| MEMBERSHIP_NOT_FOUND \| GOVERNANCE_ROOT_NOT_REMOVABLE \| …}`, `{kind: rejected, reasonCode: ROLE_UNCHANGED \| UNKNOWN_ROLE:* \| OWNER_ROLE_NOT_ASSIGNABLE:*}`; the overview carries `capabilities.revokeMembership / changeMemberRole` and per member `administrable` (the root is never administrable) — a consumer offers the controls on those, never on a role |
 | `POST /auth/email/verification/start`, `/complete`, `GET /auth/emails` | required | per `WU-AUTH-11.md` | production: `unavailable` (no mail provider, 24 §36 #16) |
 | `POST /auth/recovery/start`, `/complete` | — | per `WU-AUTH-12.md` | production: `unavailable` (HA-AUTH-02 DENIED) |
 

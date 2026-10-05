@@ -122,6 +122,9 @@ preceded them, so the counts are those of the pin.
 | WU-AUTH-16 Authorization Regression | PROVEN (6 identity kinds × the full protected route table; no code delta) | `a4c3bc3` |
 | WU-AUTH-17 Runtime DB Principal Capability Boundary | PROVEN in TEST (auth_runtime, exact capability matrix, live paths scoped, real lane scoped); HA-AUTH-05 (= PFC HA-10 deployment switch) OPEN | `b939037` |
 | PURPLE_IDENTITY_PRESENTATION_01 (post-closure Field, 2026-10-04) | PROVEN at the affected radius: `GET /auth/identity` (self, `displayName`=`users.name`, `canonicalEmail`=`users.email`, method-invariant); F-IP-1 disclosed | this commit |
+| WU-AUTH-19 Credential Rotation (2026-10-05) | PROVEN (9 falsifiers; route-table radius 234) | `WU-AUTH-19.md` |
+| WU-AUTHZ-01 Revoke Membership / Change Role (2026-10-05) | PROVEN (8 + 3 falsifiers; governance radius 279) | `WU-AUTHZ-01.md` |
+| WU-AUTH-20 Login Lockout Boundary (2026-10-05) | PROVEN (6 falsifiers; auth radius 802 / 1; migration `e3a5c7d9f1b4`) | `WU-AUTH-20.md` |
 | WU-AUTH-18 Authentication Audit Events (2026-10-05) | PROVEN at the affected radius (752 / 1); closed vocabulary; ids and classes only; same transaction as the effect | `WU-AUTH-18.md` |
 | PROVIDER_BOOTSTRAP_01 (post-closure Field, 2026-10-04) | PROVEN in TEST: generic provider-driven identity (24 §11.14) — no name invention (`PROVIDER_PROFILE_INCOMPLETE`), provenance of name/email, re-bootstrap after unlink, collision refusal; production policy still DENIED (HA-AUTH-01) | this commit |
 
@@ -228,7 +231,7 @@ authentication relation and none grants authority by side effect):
 
 ### Migrations
 
-Head `d2f4a6b8c1e3`. Chain from the pin head `e8c2a5f1b7d4`: `f1a7c3d9b2e4`
+Head `e3a5c7d9f1b4` (WU-AUTH-20 `auth_rate_limits`). Chain from the pin head `e8c2a5f1b7d4`: `f1a7c3d9b2e4`
 (WU-AUTH-02 `authentication_methods`) → `a2c4e6f8b1d3` (WU-AUTH-03 credential ↔ method) → `b3d5f7a9c2e6` (WU-AUTH-04
 session attribution and revocation reason) → `c4e6a8b1d3f5` (WU-AUTH-05 OIDC
 transactions) → `d5f7b9c1e3a7` (WU-AUTH-08 provider identities) → `e6a8c1d3f5b9` (WU-AUTH-09
@@ -236,7 +239,8 @@ account creation failure classes) → `f7b9d1e3a5c8` (WU-AUTH-11 challenges and
 verified emails) → `a8c1e3f5b7d9` (WU-AUTH-12 recovery challenges, `CREDENTIAL_RESET`) →
 `b9d2f4a6c8e1` (WU-AUTH-13 account disable, one active binding per subject, `ACCOUNT_DISABLED`) →
 `c1e3a5b7d9f2` (WU-AUTH-17 `auth_runtime` grants, session-resolution reads) →
-`d2f4a6b8c1e3` (PROVIDER_BOOTSTRAP `PROVIDER_PROFILE_INCOMPLETE` failure class).
+`d2f4a6b8c1e3` (PROVIDER_BOOTSTRAP `PROVIDER_PROFILE_INCOMPLETE` failure class) →
+`e3a5c7d9f1b4` (WU-AUTH-20 `auth_rate_limits`, grants).
 
 ## Upstream dependencies
 
