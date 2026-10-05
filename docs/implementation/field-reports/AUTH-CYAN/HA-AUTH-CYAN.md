@@ -452,3 +452,10 @@ Workspace until it founds one. On production today: `tobi` is CASE LOCAL (the Go
   again: `auth-cyan-reconstruction` (`c4c6c17`, the accepted production line) merged into `frontend-symbiotic`
   (PCPG-06, RAIL-01) through the proven candidate `c6479df` (`CY-03/REVIEW_COVERAGE_RECONSTRUCTION_2026-10-04.md`).
   The :13500 review covers PCPG-06 + RAIL-01 only; authentication / identity stays accepted on production (HD-AUTH-09).
+- **2026-10-06 — INTEGRATION-02 (reconstruction against upstream, `CY-03/FIELD_RECONSTRUCTION_2026-10-06.md`):**
+  ACCOUNT-02 (`2fb7bfa`, the production root since ASP-02) and RECOVERY-01 (`7d214e6`, proven, unpublished) joined
+  `frontend-symbiotic` at `9f950c4` (`checkpoint-CYAN-INTEGRATION-02b`). The older open items above (STAGED assembly,
+  IDENTITY-01 acceptance, ACCOUNT-01 acceptance, real Google E2E) are closed or superseded by HD-AUTH-09 and the
+  2026-10-04/05 records. **Open now:** Human Frontend Acceptance of ACCOUNT-02 (live without one), RAIL-01, PCPG-06;
+  the review-mount rebuild from `9f950c4` (prepared, human-run); root cutover of `9f950c4` after acceptance.
+
