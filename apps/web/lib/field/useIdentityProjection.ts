@@ -10,11 +10,19 @@
  * revoke). `reload` resolves true only when the two relation reads (sessions, methods) produced a current answer.
  */
 import { useCallback, useEffect, useState } from "react";
-import { fetchIdentityPresentation, listMethods, listProviders, listSessions, type IdentityPresentationResult, type MethodListResult, type ProviderListResult, type SessionListResult } from "../api/authClient";
+import { type AuthContacts, fetchAuthContacts, fetchIdentityPresentation, listMethods, listProviders, listSessions, listVerifiedEmails, type IdentityPresentationResult, type MethodListResult, type ProviderListResult, type SessionListResult, type VerifiedEmailsResult } from "../api/authClient";
 import { identityProjectionFrom, type IdentityProjection, type IdentityReads } from "./identityProjection";
 
-type Reads = { readonly identity: IdentityPresentationResult | null; readonly sessions: SessionListResult | null; readonly methods: MethodListResult | null; readonly providers: ProviderListResult | null };
-const PENDING: Reads = { identity: null, sessions: null, methods: null, providers: null };
+type Reads = {
+  readonly identity: IdentityPresentationResult | null;
+  readonly sessions: SessionListResult | null;
+  readonly methods: MethodListResult | null;
+  readonly providers: ProviderListResult | null;
+  /** AUTH/CYAN-RECOVERY-01: the identity's verified addresses and the deployment's optional contacts. */
+  readonly emails: VerifiedEmailsResult | null;
+  readonly contacts: AuthContacts | null;
+};
+const PENDING: Reads = { identity: null, sessions: null, methods: null, providers: null, emails: null, contacts: null };
 const quiet = <T,>(read: Promise<T>): Promise<T | null> => read.catch(() => null);
 
 export type IdentityField = {
@@ -26,8 +34,8 @@ export type IdentityField = {
 export function useIdentityProjection(userId: string | null): IdentityField {
   const [reads, setReads] = useState<Reads>(PENDING);
   const read = useCallback(async (): Promise<Reads> => {
-    const [identity, sessions, methods, providers] = await Promise.all([quiet(fetchIdentityPresentation()), quiet(listSessions()), quiet(listMethods()), quiet(listProviders())]);
-    return { identity, sessions, methods, providers };
+    const [identity, sessions, methods, providers, emails, contacts] = await Promise.all([quiet(fetchIdentityPresentation()), quiet(listSessions()), quiet(listMethods()), quiet(listProviders()), quiet(listVerifiedEmails()), quiet(fetchAuthContacts())]);
+    return { identity, sessions, methods, providers, emails, contacts };
   }, []);
   useEffect(() => {
     if (userId === null) return;

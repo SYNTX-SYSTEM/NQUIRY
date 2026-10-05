@@ -18,6 +18,7 @@
  * different `userId` with its own presentation — nothing here compares, merges or prefers identities.
  */
 import type {
+  AuthContacts,
   AuthMethodStatus,
   AuthMethodType,
   CurrentSessionResult,
@@ -26,6 +27,7 @@ import type {
   MethodSummary,
   ProviderListResult,
   SessionListResult,
+  VerifiedEmailsResult,
 } from "../api/authClient";
 
 /** Each read as the typed client returned it, or null when the read threw (malformed, non-JSON, network). */
@@ -36,6 +38,9 @@ export type IdentityReads = {
   readonly sessions: SessionListResult | null;
   readonly methods: MethodListResult | null;
   readonly providers: ProviderListResult | null;
+  /** AUTH/CYAN-RECOVERY-01 (optional reads, consumed by the account-security derivation only). */
+  readonly emails?: VerifiedEmailsResult | null;
+  readonly contacts?: AuthContacts | null;
 };
 
 export type AuthenticationLabel =

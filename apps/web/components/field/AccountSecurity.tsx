@@ -11,6 +11,7 @@
  * recovery, verification or registration control: those contacts answer `unavailable` on the live producer.
  * The chamber is pure render: the page owns the effect field and the re-read.
  */
+import { type FormEvent, useState } from "react";
 import type { AccountSecurity as AccountSecurityValue } from "../../lib/field/accountSecurity";
 import type { LinkBoundary } from "../../lib/field/linkBoundary";
 
@@ -19,6 +20,10 @@ export type AccountEffects = {
   readonly onRemoveMethod: (methodId: string) => void;
   readonly onEndSession: (sessionId: string) => void;
   readonly onSignOutEverywhere: () => void;
+  /** WU-AUTH-19: current and new password as typed; the page sends them and clears the form on commit. */
+  readonly onChangePassword: (currentPassword: string, newPassword: string) => void;
+  /** AUTH/CYAN-RECOVERY-01: a verification message for the canonical address. */
+  readonly onSendVerification: (email: string) => void;
 };
 
 function Moment({ value }: { readonly value: string }) {
@@ -26,6 +31,58 @@ function Moment({ value }: { readonly value: string }) {
     <time className="mono" dateTime={value}>
       {value.replace("T", " ").replace(/\.\d+/, "").replace(/\+00:00$|Z$/, " UTC")}
     </time>
+  );
+}
+
+/**
+ * WU-AUTH-19: the local password is replaced by its owner after proving the current one (ROTATION != RECOVERY).
+ * The confirmation is the only local check (two typed values must agree); every other verdict is the server's
+ * (current password, password rules, other sessions ended). Nothing is kept after a commit.
+ */
+function PasswordRotation({ blocked, onChangePassword }: { readonly blocked: boolean; readonly onChangePassword: (current: string, next: string) => void }) {
+  const [current, setCurrent] = useState("");
+  const [next, setNext] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const mismatch = confirm.length > 0 && next !== confirm;
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (next !== confirm) return;
+    onChangePassword(current, next);
+    setCurrent("");
+    setNext("");
+    setConfirm("");
+  }
+  return (
+    <section className="account-section" aria-labelledby="account-password-title" data-testid="account-password">
+      <h3 id="account-password-title" className="account-section-title">
+        Password
+      </h3>
+      <form onSubmit={submit} className="account-password-form" data-testid="account-password-form" autoComplete="off">
+        <div className="field">
+          <label htmlFor="account-current-password">Current password</label>
+          <input id="account-current-password" data-testid="account-current-password" type="password" autoComplete="current-password" required value={current} onChange={(e) => setCurrent(e.target.value)} />
+        </div>
+        <div className="field">
+          <label htmlFor="account-new-password">New password</label>
+          <input id="account-new-password" data-testid="account-new-password" type="password" autoComplete="new-password" required minLength={1} value={next} onChange={(e) => setNext(e.target.value)} />
+        </div>
+        <div className="field">
+          <label htmlFor="account-confirm-password">New password again</label>
+          <input id="account-confirm-password" data-testid="account-confirm-password" type="password" autoComplete="new-password" required aria-invalid={mismatch || undefined} value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+          {mismatch ? (
+            <span className="auth-note" role="alert" data-testid="account-password-mismatch">
+              the two new passwords differ · nothing was sent
+            </span>
+          ) : null}
+        </div>
+        <div className="actions-row">
+          <button type="submit" className="button secondary" data-testid="account-password-submit" disabled={blocked || mismatch || !current || !next || !confirm}>
+            Change password
+          </button>
+          <span className="auth-note">your other sessions end · this one continues</span>
+        </div>
+      </form>
+    </section>
   );
 }
 
@@ -92,6 +149,38 @@ export function AccountSecurity({ security, link, effects }: { readonly security
           </form>
         ))}
       </section>
+
+      {security.verification.kind === "relation" ? (
+        <section className="account-section" aria-labelledby="account-email-title" data-testid="account-email" data-verified={security.verification.verified ? "true" : "false"}>
+          <h3 id="account-email-title" className="account-section-title">
+            E-mail
+          </h3>
+          <div className="account-item">
+            <div className="account-item-body">
+              <span className="account-item-words mono" data-testid="account-email-address">
+                {security.verification.canonicalEmail}
+              </span>
+              {security.verification.verified ? (
+                <span className="auth-note" data-testid="account-email-verified">
+                  verified{security.verification.verifiedAt ? <> · <Moment value={security.verification.verifiedAt} /></> : null}
+                  {security.verification.recoveryOffered ? " · it can recover your password" : null}
+                </span>
+              ) : (
+                <span className="auth-note" data-testid="account-email-unverified">
+                  not verified{security.verification.recoveryOffered ? " · a lost password can only be recovered through a verified address" : null}
+                </span>
+              )}
+            </div>
+            {!security.verification.verified ? (
+              <button type="button" className="button secondary" data-testid="account-email-verify" disabled={effects.blocked} onClick={() => effects.onSendVerification((security.verification as { canonicalEmail: string }).canonicalEmail)}>
+                Send verification e-mail
+              </button>
+            ) : null}
+          </div>
+        </section>
+      ) : null}
+
+      {security.rotatable ? <PasswordRotation blocked={effects.blocked} onChangePassword={effects.onChangePassword} /> : null}
 
       <section className="account-section" aria-labelledby="account-sessions-title" data-testid="account-sessions">
         <h3 id="account-sessions-title" className="account-section-title">

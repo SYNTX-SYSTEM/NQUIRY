@@ -234,3 +234,70 @@ test("S12 · no chamber before the /auth/me verdict; an unauthenticated visitor 
   await expect(page).toHaveURL(/\/login$/);
   await expect(page.getByTestId("access-security-plane")).toHaveCount(0);
 });
+
+// --- AUTH/CYAN-ACCOUNT-02 ------------------------------------------------------------------------------------------
+
+test("S13 · Change password: confirm must agree locally; the typed rotation; committed; the sessions re-read; the form cleared", async ({ page }) => {
+  const w = world({ sessions: [session(S_OLD, false, "LOCAL_PASSWORD"), session(S_CUR, true, "LOCAL_PASSWORD")] });
+  await purple(page, w);
+  let sent: unknown = null;
+  await page.route(`${API}/auth/password/change`, async (route) => {
+    sent = route.request().postDataJSON();
+    w.sessions = w.sessions.filter((s) => (s as { current: boolean }).current);
+    await route.fulfill({ json: { kind: "ok", sessionsRevoked: 1 } });
+  });
+  await page.goto("/workspaces");
+  const form = page.getByTestId("access-security-plane").getByTestId("account-password-form");
+  await expect(form).toBeVisible();
+  await form.getByTestId("account-current-password").fill("old pass");
+  await form.getByTestId("account-new-password").fill("new passphrase 1");
+  await form.getByTestId("account-confirm-password").fill("new passphrase 2");
+  await expect(form.getByTestId("account-password-mismatch")).toBeVisible();
+  await expect(form.getByTestId("account-password-submit")).toBeDisabled();
+  expect(sent).toBeNull();
+  await form.getByTestId("account-confirm-password").fill("new passphrase 1");
+  await expect(form.getByTestId("account-password-mismatch")).toHaveCount(0);
+  await form.getByTestId("account-password-submit").click();
+  await expect(page.getByTestId("access-security-plane").getByTestId("account-effect-committed")).toBeVisible();
+  expect(sent).toEqual({ currentPassword: "old pass", newPassword: "new passphrase 1" });
+  await expect(page.getByTestId("access-security-plane").getByTestId("account-session")).toHaveCount(1);
+  await expect(form.getByTestId("account-current-password")).toHaveValue("");
+  await expect(form.getByTestId("account-new-password")).toHaveValue("");
+  await expect(page).toHaveURL(/\/workspaces$/);
+});
+
+test("S14 · a wrong current password is the server's refusal on the surface; a provider-only identity has no form", async ({ page }) => {
+  const w = world();
+  await purple(page, w);
+  await page.route(`${API}/auth/password/change`, (route) => route.fulfill({ status: 403, json: { kind: "denied", reasonCode: "CURRENT_PASSWORD_INVALID" } }));
+  await page.goto("/workspaces");
+  const chamber = page.getByTestId("access-security-plane");
+  const form = chamber.getByTestId("account-password-form");
+  await form.getByTestId("account-current-password").fill("wrong");
+  await form.getByTestId("account-new-password").fill("new passphrase 1");
+  await form.getByTestId("account-confirm-password").fill("new passphrase 1");
+  await form.getByTestId("account-password-submit").click();
+  await expect(chamber.getByTestId("account-effect-reason")).toHaveText("CURRENT_PASSWORD_INVALID");
+  await expect(page).toHaveURL(/\/workspaces$/);
+  // a bootstrapped (provider-only) identity: no password form at all
+  const b = world({ me: { kind: "ok", userId: USER_B }, identity: { kind: "ok", userId: USER_B, displayName: "Provider Person", canonicalEmail: "person@example.test" }, methods: [{ ...GOOGLE, methodId: "eeeeeeee-2222-4222-8222-222222222222" }], sessions: [session(S_CUR, true, "GOOGLE_OIDC")] });
+  await purple(page, b);
+  await page.goto("/workspaces");
+  await expect(page.getByTestId("access-security-plane")).toBeVisible();
+  await expect(page.getByTestId("account-password-form")).toHaveCount(0);
+});
+
+test("S15 · the login lockout boundary (429 RATE_LIMITED) is presented as a pause, not as wrong credentials", async ({ page }) => {
+  await page.route(`${API}/auth/me`, (route) => route.fulfill({ status: 401, json: { kind: "denied", reasonCode: "NO_SESSION" } }));
+  await page.route(`${API}/auth/providers`, (route) => route.fulfill({ json: PROVIDERS }));
+  await page.route(`${API}/auth/login`, (route) => route.fulfill({ status: 429, json: { kind: "denied", reasonCode: "RATE_LIMITED" } }));
+  await page.goto("/login");
+  await page.getByTestId("login-email").fill("person@nonproof.test");
+  await page.getByTestId("login-password").fill("pw");
+  await page.getByTestId("login-submit").click();
+  const alert = page.getByTestId("login-error");
+  await expect(alert).toContainText("Too many attempts");
+  await expect(alert).not.toContainText("Incorrect");
+  await expect(page).toHaveURL(/\/login$/);
+  await expect(page.getByTestId("login-submit")).toBeEnabled();
+});

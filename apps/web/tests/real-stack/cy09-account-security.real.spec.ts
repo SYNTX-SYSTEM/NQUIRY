@@ -138,3 +138,144 @@ test("PROVIDER_BOOTSTRAP: an unbound subject reaches its OWN identity — name a
   await expect(page).toHaveURL(/\/workspaces$/);
   await expect(page.getByTestId("identity-user-id")).toHaveText(userId);
 });
+
+// --- AUTH/CYAN-ACCOUNT-02 (real) --------------------------------------------------------------------------------
+
+test("PASSWORD ROTATION: the owner changes the password in the chamber; the old one stops working, the other session ends, this one continues", async ({ page, browser }) => {
+  const me = provisionIdentity("cyanrot");
+  const other = await browser.newContext();
+  const otherPage = await other.newPage();
+  await localLogin(otherPage, me.email, me.password);
+  await localLogin(page, me.email, me.password);
+  const chamber = page.getByTestId("access-security-plane");
+  await expect(chamber.getByTestId("account-session")).toHaveCount(2);
+  const form = chamber.getByTestId("account-password-form");
+  await form.getByTestId("account-current-password").fill(me.password);
+  await form.getByTestId("account-new-password").fill(`${me.password}-rotated`);
+  await form.getByTestId("account-confirm-password").fill(`${me.password}-rotated`);
+  await form.getByTestId("account-password-submit").click();
+  await expect(chamber.getByTestId("account-effect-committed")).toBeVisible();
+  await expect(chamber.getByTestId("account-session")).toHaveCount(1);
+  await expect(page.getByTestId("identity-panel-name")).toHaveText(me.name);
+  await otherPage.goto("/workspaces");
+  await expect(otherPage).toHaveURL(/\/login$/);
+  await other.close();
+  // a wrong current password is refused on the surface and changes nothing
+  await form.getByTestId("account-current-password").fill("not the password");
+  await form.getByTestId("account-new-password").fill("another passphrase 9");
+  await form.getByTestId("account-confirm-password").fill("another passphrase 9");
+  await form.getByTestId("account-password-submit").click();
+  await expect(chamber.getByTestId("account-effect-reason")).toHaveText("CURRENT_PASSWORD_INVALID");
+  // the old password is gone, the rotated one logs in
+  await page.getByTestId("logout-button").click();
+  await page.getByTestId("login-email").fill(me.email);
+  await page.getByTestId("login-password").fill(me.password);
+  await page.getByTestId("login-submit").click();
+  await expect(page.getByTestId("login-error")).toContainText("Incorrect");
+  await localLogin(page, me.email, `${me.password}-rotated`);
+});
+
+test("ROSTER: the governance root changes a member's role and then ends the membership through the Members chamber", async ({ page }) => {
+  const owner = provisionIdentity("cyanroot");
+  const member = provisionIdentity("cyanmember");
+  await localLogin(page, owner.email, owner.password);
+  await page.getByTestId("workspace-name-input").fill("Roster Field");
+  await page.getByTestId("create-workspace-submit").click();
+  await expect(page).toHaveURL(/\/workspaces\/[0-9a-f-]{36}$/);
+  await page.getByTestId("new-member-user-id-input").fill(member.userId);
+  await page.getByTestId("add-member-submit").click();
+  await expect(page.getByTestId("add-member-success")).toBeVisible();
+  const admin = page.getByTestId("roster-admin");
+  const row = admin.locator(`[data-user="${member.userId}"]`);
+  await expect(row).toBeVisible();
+  await expect(admin.locator(`[data-user="${owner.userId}"]`)).toHaveCount(0); // the root is never administrable
+  await expect(row).toHaveAttribute("data-role", "Contributor");
+  await row.getByTestId("roster-change-role").click();
+  await expect(admin.getByTestId("roster-admin-success")).toBeVisible();
+  await expect(row).toHaveAttribute("data-role", "Facilitator");
+  await row.getByTestId("roster-remove").click();
+  await expect(admin.getByTestId("roster-admin-success")).toBeVisible();
+  await expect(admin.locator(`[data-user="${member.userId}"]`)).toHaveCount(0);
+  await expect(page.getByTestId("members-list").locator(`[data-user="${member.userId}"]`)).toHaveCount(0);
+});
+
+test("LOCKOUT: five wrong passwords pause the address; the right password is paused too; the login page says so", async ({ page }) => {
+  const me = provisionIdentity("cyanlock");
+  await page.goto("/login");
+  for (let i = 0; i < 5; i += 1) {
+    await page.getByTestId("login-email").fill(me.email);
+    await page.getByTestId("login-password").fill("wrong");
+    await page.getByTestId("login-submit").click();
+    await expect(page.getByTestId("login-error")).toContainText("Incorrect");
+  }
+  await page.getByTestId("login-password").fill(me.password);
+  await page.getByTestId("login-submit").click();
+  await expect(page.getByTestId("login-error")).toContainText("Too many attempts");
+  await expect(page).toHaveURL(/\/login$/);
+});
+
+// --- AUTH/CYAN-RECOVERY-01 (real; the API's TEST mail capture stands in for the deployment's provider) -----------
+
+type OutboxMail = { kind: string; to: string; challengeId: string; token: string };
+async function outbox(page: Page): Promise<OutboxMail[]> {
+  const body = (await (await page.request.get(`${API}/auth/test-mail/outbox`)).json()) as { mail: OutboxMail[] };
+  return body.mail;
+}
+
+test("E-MAIL VERIFICATION → SELF-SERVICE RECOVERY: verify the canonical address from the chamber, lose the password, recover through the mail link, log in with the new one", async ({ page }) => {
+  const me = provisionIdentity("cyanrecover");
+  await localLogin(page, me.email, me.password);
+  const chamber = page.getByTestId("access-security-plane");
+  await expect(chamber.getByTestId("account-email")).toHaveAttribute("data-verified", "false");
+  await expect(chamber.getByTestId("account-email-address")).toHaveText(me.email);
+  // 1. send the verification message for the canonical address and open its link (logged in)
+  await chamber.getByTestId("account-email-verify").click();
+  await expect(chamber.getByTestId("account-effect-committed")).toBeVisible();
+  const verification = (await outbox(page)).filter((m) => m.kind === "EMAIL_VERIFICATION" && m.to === me.email).pop();
+  expect(verification).toBeDefined();
+  await page.goto(`/account/verify-email?challengeId=${verification!.challengeId}&token=${verification!.token}`);
+  await expect(page.getByTestId("verify-done")).toBeVisible();
+  await expect(page.getByTestId("verify-email")).toHaveText(me.email);
+  await expect(page).toHaveURL(/\/account\/verify-email$/);
+  await page.getByTestId("verify-continue").click();
+  await expect(chamber.getByTestId("account-email")).toHaveAttribute("data-verified", "true");
+  // the same link a second time is one denied class (single use)
+  await page.goto(`/account/verify-email?challengeId=${verification!.challengeId}&token=${verification!.token}`);
+  await expect(page.getByTestId("verify-error")).toHaveAttribute("data-outcome", "denied");
+  // 2. lose the password: log out, ask for recovery from the login
+  await page.goto("/workspaces");
+  await page.getByTestId("logout-button").click();
+  await page.getByTestId("recover-link").click();
+  await expect(page).toHaveURL(/\/recover$/);
+  await page.getByTestId("recover-email").fill(me.email);
+  await page.getByTestId("recover-submit").click();
+  await expect(page.getByTestId("recover-sent")).toBeVisible();
+  const recovery = (await outbox(page)).filter((m) => m.kind === "PASSWORD_RECOVERY" && m.to === me.email).pop();
+  expect(recovery).toBeDefined();
+  // an unknown address gets the same answer and no mail
+  await page.goto("/recover");
+  await page.getByTestId("recover-email").fill(`nobody-${Date.now()}@dev.local.test`);
+  await page.getByTestId("recover-submit").click();
+  await expect(page.getByTestId("recover-sent")).toBeVisible();
+  // 3. the reset link: new password, no session created, old password refused, new one logs in
+  await page.goto(`/recover/reset?recovery=${recovery!.challengeId}&token=${recovery!.token}`);
+  await expect(page).toHaveURL(/\/recover\/reset$/);
+  const fresh = `${me.password}-recovered`;
+  await page.getByTestId("reset-password").fill(fresh);
+  await page.getByTestId("reset-confirm").fill(fresh);
+  await page.getByTestId("reset-submit").click();
+  await expect(page.getByTestId("reset-done")).toBeVisible();
+  await page.goto("/workspaces");
+  await expect(page).toHaveURL(/\/login$/); // recovery created no session
+  await page.getByTestId("login-email").fill(me.email);
+  await page.getByTestId("login-password").fill(me.password);
+  await page.getByTestId("login-submit").click();
+  await expect(page.getByTestId("login-error")).toContainText("Incorrect");
+  await localLogin(page, me.email, fresh);
+  // the used reset link is dead
+  await page.goto(`/recover/reset?recovery=${recovery!.challengeId}&token=${recovery!.token}`);
+  await page.getByTestId("reset-password").fill("another passphrase 7");
+  await page.getByTestId("reset-confirm").fill("another passphrase 7");
+  await page.getByTestId("reset-submit").click();
+  await expect(page.getByTestId("reset-error")).toHaveAttribute("data-outcome", "denied");
+});
