@@ -47,9 +47,11 @@ export type AccountSecurity = {
   readonly methods: readonly MethodRelation[];
   readonly sessions: readonly SessionRelation[];
   readonly links: readonly LinkOffer[];
+  /** WU-AUTH-19: the identity holds an ACTIVE local password it may rotate (the server proves the current one). */
+  readonly rotatable: boolean;
 };
 
-export const NO_ACCOUNT_SECURITY: AccountSecurity = { methods: [], sessions: [], links: [] };
+export const NO_ACCOUNT_SECURITY: AccountSecurity = { methods: [], sessions: [], links: [], rotatable: false };
 
 function labelOf(method: MethodSummary, reads: IdentityReads): AuthenticationLabel | null {
   if (method.methodType === "LOCAL_PASSWORD") return method.provider === null ? { kind: "local" } : null;
@@ -118,5 +120,6 @@ export function accountSecurityFrom(reads: IdentityReads, linkNext: string): Acc
       }
     }
   }
-  return { methods, sessions, links };
+  const rotatable = methods.some((m) => m.label.kind === "local");
+  return { methods, sessions, links, rotatable };
 }

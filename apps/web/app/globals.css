@@ -6705,3 +6705,27 @@ h3.chamber-title {
     align-items: stretch;
   }
 }
+
+/* AUTH/CYAN-ACCOUNT-02 · password rotation form + roster administration */
+.account-password-form {
+  display: grid;
+  gap: var(--space-2);
+  max-width: 28rem;
+}
+.roster-admin {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+.roster-admin-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.roster-admin-row strong {
+  margin-right: auto;
+}

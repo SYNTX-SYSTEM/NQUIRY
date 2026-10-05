@@ -13,7 +13,7 @@ import { afterAll, describe, expect, it } from "vitest";
 
 import { AccountSecurity } from "../../components/field/AccountSecurity";
 import { parseIdentityPresentation, parseMethodList, parseProviderList, parseSessionList } from "../../lib/api/authClient";
-import { endSession, removeMethod, signOutEverywhere } from "../../lib/field/accountEffects";
+import { endSession, removeMethod, rotatePassword, signOutEverywhere } from "../../lib/field/accountEffects";
 import { accountSecurityFrom, NO_ACCOUNT_SECURITY } from "../../lib/field/accountSecurity";
 import { identityProjectionFrom, type IdentityReads } from "../../lib/field/identityProjection";
 import { LINK_BOUNDARY_MESSAGES, linkBoundaryFrom, NO_LINK_BOUNDARY } from "../../lib/field/linkBoundary";
@@ -57,7 +57,8 @@ const BOOTSTRAP_READS: IdentityReads = {
   providers: PROVIDERS,
 };
 
-const EFFECTS_IDLE = { blocked: false, onRemoveMethod: () => undefined, onEndSession: () => undefined, onSignOutEverywhere: () => undefined };
+const json = (status: number, body: unknown): typeof fetch => async () => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
+const EFFECTS_IDLE = { blocked: false, onRemoveMethod: () => undefined, onEndSession: () => undefined, onSignOutEverywhere: () => undefined, onChangePassword: () => undefined };
 const render = (reads: IdentityReads, search = "") => renderToStaticMarkup(<AccountSecurity security={accountSecurityFrom(reads, NEXT)} link={linkBoundaryFrom(search)} effects={EFFECTS_IDLE} />);
 
 describe("A1–A6: the relations from the one set of reads", () => {
@@ -197,12 +198,41 @@ describe("C1–C7: the chamber markup", () => {
     expect(html).not.toMatch(/\brole\b(?!=)|authority|permission|capabilit|membership|avatar|password reset|forgot|register|sign up|token|secret/i);
     for (const src of [COMPONENT, DERIVATION, EFFECTS]) expect(src).not.toMatch(/\brole\b(?!=)|authority|permission|capabilit|membership|avatar|recover|register/i);
     const blocked = renderToStaticMarkup(<AccountSecurity security={accountSecurityFrom(READS, NEXT)} link={NO_LINK_BOUNDARY} effects={{ ...EFFECTS_IDLE, blocked: true }} />);
-    expect(blocked.match(/<button[^>]*disabled=""/g)?.length).toBe(4);
+    expect(blocked.match(/<button[^>]*disabled=""/g)?.length).toBe(5); // 2 Remove + End + Sign out everywhere + Change password
+  });
+});
+
+describe("P1–P3: password rotation (WU-AUTH-19) — a local password is rotated by its owner", () => {
+  it("P1: the form exists only while an ACTIVE local password is held; a provider-only identity gets none", () => {
+    expect(accountSecurityFrom(READS, NEXT).rotatable).toBe(true);
+    expect(accountSecurityFrom(BOOTSTRAP_READS, NEXT).rotatable).toBe(false);
+    expect(render(READS)).toContain('data-testid="account-password-form"');
+    expect(render(BOOTSTRAP_READS)).not.toContain('data-testid="account-password-form"');
+    const revoked = parseMethodList({ kind: "ok", methods: [{ ...LOCAL_METHOD, status: "REVOKED" }, GOOGLE_METHOD] });
+    expect(accountSecurityFrom({ ...READS, methods: revoked }, NEXT).rotatable).toBe(false);
+  });
+  it("P2: the form carries current / new / confirm, password inputs, no prefilled value, and says the other sessions end", () => {
+    const html = render(READS);
+    for (const id of ["account-current-password", "account-new-password", "account-confirm-password"]) {
+      expect(html).toMatch(new RegExp(`<input[^>]*data-testid="${id}"[^>]*type="password"`));
+      expect(html).not.toMatch(new RegExp(`data-testid="${id}"[^>]*value="[^"]+"`));
+    }
+    expect(html).toContain("your other sessions end");
+    expect(html).not.toMatch(/forgot|reset link|recover/i);
+  });
+  it("P3: rotation settles verbatim: ok → committed {sessionsRevoked}; CURRENT_PASSWORD_INVALID / PASSWORD_INVALID pass through", async () => {
+    vi_stub(json(200, { kind: "ok", sessionsRevoked: 2 }));
+    expect(await rotatePassword("old", "new one")).toEqual({ kind: "committed", reasonCode: null, body: { sessionsRevoked: 2 } });
+    vi_stub(json(403, { kind: "denied", reasonCode: "CURRENT_PASSWORD_INVALID" }));
+    expect(await rotatePassword("bad", "new one")).toEqual({ kind: "denied", reasonCode: "CURRENT_PASSWORD_INVALID" });
+    vi_stub(json(400, { kind: "rejected", reasonCode: "PASSWORD_INVALID" }));
+    expect(await rotatePassword("old", "x")).toEqual({ kind: "rejected", reasonCode: "PASSWORD_INVALID" });
+    vi_stub(json(200, { kind: "ok", sessionsRevoked: 2, token: "leak" }));
+    expect((await rotatePassword("old", "new one")).kind).toBe("indeterminate");
   });
 });
 
 describe("E1–E4: effects settle verbatim (Network Failure != Proof Of No Effect)", () => {
-  const json = (status: number, body: unknown): typeof fetch => async () => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
   it("E1: unlink ok → committed with the server's own consequence facts", async () => {
     vi_stub(json(200, { kind: "ok", methodId: M_GOOGLE, sessionsRevoked: 2, currentSessionEnded: true }));
     expect(await removeMethod(M_GOOGLE)).toEqual({ kind: "committed", reasonCode: null, body: { methodId: M_GOOGLE, sessionsRevoked: 2, currentSessionEnded: true } });

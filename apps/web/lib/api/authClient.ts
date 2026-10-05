@@ -123,9 +123,10 @@ function parseAuthResult(body: unknown): LoginResult {
 export const AUTH_CONTRACT_PRODUCER = {
   field: "PURPLE_AUTH",
   branch: "auth-identity",
-  // HD-AUTH-08 (generic provider bootstrap admitted in production); every shape consumed here is unchanged since
-  // aa32c4d / 2ec05c0 — see PURPLE `docs/implementation/field-reports/AUTH/CONSUMER_CONTRACT.md`.
-  commit: "e069fc19f5e39bfcc69dff358314d0527bd57f30",
+  // WU-AUTH-19/20 + WU-AUTHZ-01 (credential rotation, login lockout, roster administration) on top of HD-AUTH-08;
+  // every earlier shape is unchanged — see PURPLE `docs/implementation/field-reports/AUTH/CONSUMER_CONTRACT.md`.
+  // `liveAssembly` names what production serves while this consumer is staged.
+  commit: "50ccdb0c9167d81773102dc33ff38eed44d321e2",
   liveAssembly: "auth-e069fc1-20261004T140533Z",
 } as const;
 
@@ -649,6 +650,46 @@ export async function unlinkMethod(methodId: string, fetchImpl: typeof fetch = f
     credentials: "include",
   });
   return parseUnlink(await authBody(response, "unlink"));
+}
+
+// --- credential rotation (`POST /auth/password/change`, WU-AUTH-19) ----------------------------------------------
+//
+// The authenticated identity replaces its OWN local password after proving the current one. ROTATION != RECOVERY
+// (no e-mail, no challenge; a live session and the credential are the proof). `sessionsRevoked` = the OTHER
+// sessions the server ended (the proving session continues). Closed denial / rejection vocabularies copied from
+// `http_credential.py`; an unknown reason fails closed.
+
+export const PASSWORD_CHANGE_DENIED_REASONS = ["NO_SESSION", "CURRENT_PASSWORD_INVALID", "NO_LOCAL_CREDENTIAL"] as const;
+export const PASSWORD_CHANGE_REJECTED_REASONS = ["PASSWORD_INVALID"] as const;
+export type PasswordChangeResult =
+  | { readonly kind: "ok"; readonly sessionsRevoked: number }
+  | { readonly kind: "denied"; readonly reasonCode: (typeof PASSWORD_CHANGE_DENIED_REASONS)[number] }
+  | { readonly kind: "rejected"; readonly reasonCode: (typeof PASSWORD_CHANGE_REJECTED_REASONS)[number] };
+
+export function parsePasswordChange(body: unknown): PasswordChangeResult {
+  const path = "passwordChange";
+  const rec = authKind(body, path);
+  switch (rec.kind) {
+    case "ok":
+      authExactKeys(rec, path, ["kind", "sessionsRevoked"]);
+      return { kind: "ok", sessionsRevoked: authCount(rec, "sessionsRevoked", path) };
+    case "denied":
+      return reasonBody(rec, path, "denied", PASSWORD_CHANGE_DENIED_REASONS);
+    case "rejected":
+      return reasonBody(rec, path, "rejected", PASSWORD_CHANGE_REJECTED_REASONS);
+    default:
+      failAuth(`${path}.kind`, `unknown kind ${JSON.stringify(rec.kind)}`);
+  }
+}
+
+export async function changePassword(currentPassword: string, newPassword: string, fetchImpl: typeof fetch = fetch): Promise<PasswordChangeResult> {
+  const response = await fetchImpl(`${apiBaseUrl()}/auth/password/change`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+  return parsePasswordChange(await authBody(response, "passwordChange"));
 }
 
 // --- identity presentation (`GET /auth/identity`, PURPLE_IDENTITY_PRESENTATION_01 @ auth-identity 2ec05c0) -----------

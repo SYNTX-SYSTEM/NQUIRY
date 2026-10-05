@@ -10,7 +10,7 @@
  * A lost response is an UNKNOWN consequence (network_failure), an unrecognized one is indeterminate — never success,
  * never "nothing happened" (Network Failure != Proof Of No Effect). The server's reason codes pass through verbatim.
  */
-import { logoutAll, revokeSession, unlinkMethod } from "../api/authClient";
+import { changePassword, logoutAll, revokeSession, unlinkMethod } from "../api/authClient";
 import type { Settlement } from "./useEffectField";
 
 type Outcome<T> = { readonly kind: "ok" } & T;
@@ -52,8 +52,15 @@ export function signOutEverywhere(): Promise<Settlement<SignedOutEverywhere>> {
   return settle<SignedOutEverywhere>((f) => logoutAll(f));
 }
 
+export type RotatedPassword = { readonly sessionsRevoked: number };
+/** WU-AUTH-19: the identity replaces its own local password; the OTHER sessions end, this one continues. */
+export function rotatePassword(currentPassword: string, newPassword: string): Promise<Settlement<RotatedPassword>> {
+  return settle<RotatedPassword>((f) => changePassword(currentPassword, newPassword, f));
+}
+
 /** Relation names of the page's effect field (one prefix, so one outcome surface owns all three). */
 export const ACCOUNT_RELATION_PREFIX = "account-security:";
 export const removeRelation = (methodId: string) => `${ACCOUNT_RELATION_PREFIX}remove:${methodId}`;
 export const endRelation = (sessionId: string) => `${ACCOUNT_RELATION_PREFIX}end:${sessionId}`;
 export const SIGN_OUT_EVERYWHERE_RELATION = `${ACCOUNT_RELATION_PREFIX}sign-out-everywhere`;
+export const CHANGE_PASSWORD_RELATION = `${ACCOUNT_RELATION_PREFIX}change-password`;

@@ -74,10 +74,13 @@ export default function LoginPage() {
           return;
         }
         // F02 WU-02.12 (FBR-C): a malformed request is not a credential denial.
+        // WU-AUTH-20: the lockout boundary is a denial of the attempt, not a verdict on the credential
         setState(
           result.kind === "rejected"
             ? { kind: "error", boundary: "rejected", message: "The login request was invalid. Please enter an email and a password." }
-            : { kind: "error", boundary: "denied", message: "Incorrect email or password." },
+            : result.reasonCode === "RATE_LIMITED"
+              ? { kind: "error", boundary: "denied", message: "Too many attempts. Logging in is paused for a while; try again later." }
+              : { kind: "error", boundary: "denied", message: "Incorrect email or password." },
         );
       })
       .catch(() => {

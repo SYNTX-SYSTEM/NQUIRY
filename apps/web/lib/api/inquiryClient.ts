@@ -22,7 +22,14 @@ export type Capability = {
   readonly reason: string | null;
 };
 
-export type Member = { readonly userId: string; readonly name: string; readonly email: string; readonly role: string | null };
+export type Member = {
+  readonly userId: string;
+  readonly name: string;
+  readonly email: string;
+  readonly role: string | null;
+  /** WU-AUTHZ-01: the server's own verdict whether the governance root may administer this membership (never the root). */
+  readonly administrable?: boolean;
+};
 
 export type BindingProvenance = {
   readonly bindingId: string;
@@ -42,7 +49,13 @@ export type WorkspaceOverview = {
   readonly viewer: { readonly userId: string; readonly role: string | null; readonly isGovernanceRoot: boolean };
   readonly members: readonly Member[];
   readonly challenges: readonly { readonly challengeId: string; readonly title: string; readonly description: string | null; readonly createdAt: string }[];
-  readonly capabilities: { readonly createChallenge: Capability; readonly addMember: Capability };
+  readonly capabilities: {
+    readonly createChallenge: Capability;
+    readonly addMember: Capability;
+    /** WU-AUTHZ-01 (05 GOV-003 / GOV-004); absent on an older producer = not available. */
+    readonly revokeMembership?: Capability;
+    readonly changeMemberRole?: Capability;
+  };
 };
 
 export type ChallengeDetail = {
@@ -424,6 +437,39 @@ export function addMemberCommand(
     headers: { "Content-Type": "application/json", Accept: "application/json" },
     credentials: "include",
     body: JSON.stringify({ userId, role }),
+  })
+    .then((r) => r.json())
+    .then((body: unknown): CommandResult => {
+      if (isRecord(body) && body.kind === "ok") return { kind: "committed", body };
+      if (isRecord(body)) return asFailure(body) ?? protocolError();
+      return protocolError();
+    })
+    .catch((): CommandResult => ({ kind: "network_failure", reasonCode: "NETWORK_FAILURE" }));
+}
+
+/** F01-shaped roster command (WU-AUTHZ-01): the governance root ends a membership. */
+export function revokeMembershipCommand(workspaceId: string, userId: string, fetchImpl: typeof fetch = fetch): Promise<CommandResult> {
+  return fetchImpl(`${apiBaseUrl()}/workspaces/${enc(workspaceId)}/members/${enc(userId)}/revoke`, {
+    method: "POST",
+    headers: { Accept: "application/json" },
+    credentials: "include",
+  })
+    .then((r) => r.json())
+    .then((body: unknown): CommandResult => {
+      if (isRecord(body) && body.kind === "ok") return { kind: "committed", body };
+      if (isRecord(body)) return asFailure(body) ?? protocolError();
+      return protocolError();
+    })
+    .catch((): CommandResult => ({ kind: "network_failure", reasonCode: "NETWORK_FAILURE" }));
+}
+
+/** F01-shaped roster command (WU-AUTHZ-01): the governance root changes a member's current role. */
+export function changeMemberRoleCommand(workspaceId: string, userId: string, role: string, fetchImpl: typeof fetch = fetch): Promise<CommandResult> {
+  return fetchImpl(`${apiBaseUrl()}/workspaces/${enc(workspaceId)}/members/${enc(userId)}/role`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ role }),
   })
     .then((r) => r.json())
     .then((body: unknown): CommandResult => {

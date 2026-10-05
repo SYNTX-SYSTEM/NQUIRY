@@ -29,9 +29,11 @@ import { Unavailable } from "../../../components/f02/Unavailable";
 import { fetchCurrentSession } from "../../../lib/api/authClient";
 import {
   addMemberCommand,
+  changeMemberRoleCommand,
   createChallenge,
   fetchWorkspaceOverview,
   type QueryResult,
+  revokeMembershipCommand,
   type WorkspaceOverview,
 } from "../../../lib/api/inquiryClient";
 import { fetchWorkspaceOrientation, type WorkspaceOrientationResult } from "../../../lib/api/workspaceClient";
@@ -45,6 +47,10 @@ type Orientation = { readonly kind: "checking" } | { readonly kind: "loaded"; re
 
 const CREATE_CHALLENGE = "create-challenge";
 const ADD_MEMBER = "add-member";
+// WU-AUTHZ-01 (05 GOV-003 / GOV-004): the governance root administers the roster; one effect field, one prefix
+const ROSTER_PREFIX = "roster:";
+const removeMemberRelation = (userId: string) => `${ROSTER_PREFIX}remove:${userId}`;
+const changeRoleRelation = (userId: string) => `${ROSTER_PREFIX}role:${userId}`;
 
 /** Dates in the focus lens: the server's timestamps, formatted for the reader. */
 const WHEN = new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" });
@@ -123,6 +129,32 @@ export default function WorkspacePage() {
         setMemberId("");
         return false;
       },
+    });
+  }
+
+  function handleRemoveMember(member: { userId: string; name: string }) {
+    pendingEvents.current[removeMemberRelation(member.userId)] = {
+      title: "MEMBERSHIP ENDED",
+      text: `${member.name} no longer holds membership in this Workspace. Their role and every Workspace binding ended with it.`,
+    };
+    void effect.run({
+      relation: removeMemberRelation(member.userId),
+      keyed: false,
+      send: async () => settleCommand(await revokeMembershipCommand(workspaceId, member.userId)),
+      reconstruct: load,
+    });
+  }
+
+  function handleChangeRole(member: { userId: string; name: string }, role: string) {
+    pendingEvents.current[changeRoleRelation(member.userId)] = {
+      title: "ROLE CHANGED",
+      text: `${member.name} now holds the ${role} role in this Workspace. A role is a label, not authority.`,
+    };
+    void effect.run({
+      relation: changeRoleRelation(member.userId),
+      keyed: false,
+      send: async () => settleCommand(await changeMemberRoleCommand(workspaceId, member.userId, role)),
+      reconstruct: load,
     });
   }
 
@@ -344,6 +376,18 @@ export default function WorkspacePage() {
                 }))}
               />
             ) : null}
+            {ov && (ov.capabilities.revokeMembership?.available || ov.capabilities.changeMemberRole?.available) ? (
+              <RosterAdministration
+                members={ov.members.filter((m) => m.userId !== ov.viewer.userId && m.administrable === true)}
+                canRevoke={ov.capabilities.revokeMembership?.available === true}
+                canChangeRole={ov.capabilities.changeMemberRole?.available === true}
+                blocked={effect.blocked}
+                onRemove={handleRemoveMember}
+                onChangeRole={handleChangeRole}
+                field={effect.field}
+                onReread={() => void effect.rereadNow(load)}
+              />
+            ) : null}
             {confirmed.governanceCapable ? (
               <>
                 <ChamberHead id="add-member-title" level={3} semantic="action" title="Add a member" marker="governance root" />
@@ -412,3 +456,70 @@ export default function WorkspacePage() {
     </FieldFrame>
   );
 }
+
+
+/**
+ * WU-AUTHZ-01: roster administration — Remove (05 GOV-003) and Change role (GOV-004) per member, rendered ONLY when
+ * the server's overview capability says so, and only for members the server marks `administrable` (SERVER
+ * CAPABILITY → UI AFFORDANCE; the governance root is never administrable: GAP-05-001) — never by reading a role.
+ * Every verdict is the server's, on the shared effect surface of this page; the roster is re-read after each effect.
+ */
+function RosterAdministration({
+  members,
+  canRevoke,
+  canChangeRole,
+  blocked,
+  onRemove,
+  onChangeRole,
+  field,
+  onReread,
+}: {
+  readonly members: readonly { readonly userId: string; readonly name: string; readonly role: string | null }[];
+  readonly canRevoke: boolean;
+  readonly canChangeRole: boolean;
+  readonly blocked: boolean;
+  readonly onRemove: (member: { userId: string; name: string }) => void;
+  readonly onChangeRole: (member: { userId: string; name: string }, role: string) => void;
+  readonly field: Parameters<typeof EffectOutcome>[0]["field"];
+  readonly onReread: () => void;
+}) {
+  const [roles, setRoles] = useState<Record<string, string>>({});
+  return (
+    <div className="roster-admin" data-testid="roster-admin">
+      <ChamberHead id="roster-admin-title" level={3} semantic="action" title="Membership administration" marker="governance root" />
+      <p className="muted">Ends a membership (its role and every Workspace binding end with it) or changes a role. Neither grants authority.</p>
+      {members.length === 0 ? <p className="muted" data-testid="roster-admin-empty">No other members to administer.</p> : null}
+      {members.map((m) => {
+        const options = ["Contributor", "Facilitator"].filter((r) => r !== m.role);
+        const chosen = roles[m.userId] ?? options[0];
+        return (
+          <div key={m.userId} className="roster-admin-row" data-testid="roster-admin-row" data-user={m.userId} data-role={m.role ?? undefined}>
+            <strong>{m.name}</strong>
+            {canChangeRole ? (
+              <>
+                <select aria-label={`New role for ${m.name}`} data-testid="roster-role-select" value={chosen} onChange={(e) => setRoles({ ...roles, [m.userId]: e.target.value })}>
+                  {options.map((r) => (
+                    <option key={r} value={r}>
+                      {r}
+                    </option>
+                  ))}
+                </select>
+                <button type="button" className="button secondary" data-testid="roster-change-role" disabled={blocked} onClick={() => onChangeRole(m, chosen)}>
+                  Change role
+                </button>
+              </>
+            ) : null}
+            {canRevoke ? (
+              <button type="button" className="button secondary" data-testid="roster-remove" disabled={blocked} onClick={() => onRemove(m)}>
+                Remove
+              </button>
+            ) : null}
+          </div>
+        );
+      })}
+      <EffectIntent field={field} relationPrefix={ROSTER_PREFIX} />
+      <EffectOutcome field={field} relationPrefix={ROSTER_PREFIX} reasonTestId="roster-admin-error" committedTestId="roster-admin-success" onReread={onReread} />
+    </div>
+  );
+}
+
