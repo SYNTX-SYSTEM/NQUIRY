@@ -1,9 +1,10 @@
-# PURPLE → CONSUMER CONTRACT (post HD-AUTH-08)
+# PURPLE → CONSUMER CONTRACT (post HD-AUTH-08, extended for HD-AUTH-10)
 
 Producer: `auth-identity` (this branch); live api = assembly
-`auth-64930ac-20261005T113144Z` (product `64930ac`, migration head
-`d2f4a6b8c1e3`); the next assembly carries WU-AUTH-19/20 and WU-AUTHZ-01
-(migration head `e3a5c7d9f1b4`). Written 2026-10-04 for the frontend lineage (CYAN,
+`auth-28e6620-20261005T152356Z` (product `28e6620`, migration head
+`e3a5c7d9f1b4`, WU-AUTH-19/20 + WU-AUTHZ-01); the next assembly carries
+WU-AUTH-21 (`d03d5ce`, HD-AUTH-10: self-service recovery through verified
+e-mail, production mail delivery, `GET /auth/contacts`; no migration). Written 2026-10-04 for the frontend lineage (CYAN,
 `frontend-symbiotic`) whose FIELD_RECONSTRUCTION_HOLD (`618d7a6`) waits for
 "PURPLE's reconstructed production Field, provider-bootstrap behaviour,
 identity presentation contract and real runtime proof". This document is that
@@ -78,8 +79,12 @@ code, state or nonce ever appears in a body.
 | `POST /auth/password/change` `{currentPassword, newPassword}` (WU-AUTH-19) | required | `200 {kind: ok, sessionsRevoked}` (the proving session continues) | `401 NO_SESSION`, `403 denied CURRENT_PASSWORD_INVALID \| NO_LOCAL_CREDENTIAL`, `400 rejected PASSWORD_INVALID` |
 | `POST /auth/login` under the lockout boundary (WU-AUTH-20) | — | — | `429 {kind: denied, reasonCode: RATE_LIMITED}` (the address or the client is paused; identical for known and unknown addresses) |
 | `POST /workspaces/{ws}/members/{user}/revoke`, `POST /workspaces/{ws}/members/{user}/role {role}` (WU-AUTHZ-01) | required | `200 {kind: ok}` | `{kind: denied, result: DENY, reasonCode: NOT_GOVERNANCE_ROOT \| MEMBERSHIP_NOT_FOUND \| GOVERNANCE_ROOT_NOT_REMOVABLE \| …}`, `{kind: rejected, reasonCode: ROLE_UNCHANGED \| UNKNOWN_ROLE:* \| OWNER_ROLE_NOT_ASSIGNABLE:*}`; the overview carries `capabilities.revokeMembership / changeMemberRole` and per member `administrable` (the root is never administrable) — a consumer offers the controls on those, never on a role |
-| `POST /auth/email/verification/start`, `/complete`, `GET /auth/emails` | required | per `WU-AUTH-11.md` | production: `unavailable` (no mail provider, 24 §36 #16) |
-| `POST /auth/recovery/start`, `/complete` | — | per `WU-AUTH-12.md` | production: `unavailable` (HA-AUTH-02 DENIED) |
+| `GET /auth/contacts` (WU-AUTH-21) | — | `200 {kind: ok, recovery: AVAILABLE \| UNAVAILABLE, emailVerification: AVAILABLE \| UNAVAILABLE}` — what THIS deployment serves (recovery policy ≠ DENIED and a mail sink; a mail sink and a declared environment). A consumer offers the two contact groups below on these words only | — |
+| `POST /auth/email/verification/start` `{email}` (WU-AUTH-11/21) | required | `200 {kind: ok, challengeId, expiresAt}`; the message goes to the address with ONE link `<NQUIRY_PUBLIC_WEB_BASE_URL><NQUIRY_EMAIL_VERIFY_PATH>?challengeId=&token=` (default path `/account/verify-email`) | `401 NO_SESSION`, `400 rejected EMAIL_INVALID`, `429 denied VERIFICATION_RESEND_THROTTLED`, `503 unavailable EMAIL_DELIVERY_NOT_CONFIGURED \| ENVIRONMENT_NOT_DECLARED \| EMAIL_DELIVERY_FAILED` |
+| `POST /auth/email/verification/complete` `{challengeId, token}` | required (the SAME identity that started it) | `200 {kind: ok, email}` — the address is now an ACTIVE verified relation of the identity | `401 NO_SESSION`, `400 rejected MALFORMED_CHALLENGE_ID \| MALFORMED_TOKEN`, `403 denied VERIFICATION_DENIED` (expired / used / foreign / wrong token — one class), `503 ENVIRONMENT_NOT_DECLARED` |
+| `GET /auth/emails` | required | `200 {kind: ok, emails: [{email, verifiedAt, active}]}` (`active` = neither superseded nor revoked) | `401` |
+| `POST /auth/recovery/start` `{email}` (WU-AUTH-12/21) | — | `200 {kind: ok}` — THE ONE ANSWER for every address (known, unknown, unverified, delivery failed); a message with ONE link `<NQUIRY_PUBLIC_WEB_BASE_URL><NQUIRY_RECOVERY_COMPLETE_PATH>?recovery=&token=` (default path `/recover/reset`) goes only to an ACTIVE verified address of a LOCAL_PASSWORD identity | `503 unavailable RECOVERY_NOT_AVAILABLE` (policy DENIED, no mail sink or undeclared environment); a malformed address gets the one answer too |
+| `POST /auth/recovery/complete` `{recoveryId, token, newPassword}` | — (creates NO session; every ACTIVE session of the identity is revoked) | `200 {kind: ok}` | `503 RECOVERY_NOT_AVAILABLE`, `400 rejected MALFORMED_RECOVERY_ID \| MALFORMED_TOKEN \| PASSWORD_INVALID`, `403 denied RECOVERY_DENIED` (expired / used / unknown / wrong token — one class) |
 
 ## 4. What a human-facing consumer may and must expose (24 §24)
 
@@ -87,14 +92,24 @@ Must (24 §24.5 target UI contacts, all served by this branch): list methods,
 add Google (link), remove method, revoke sessions, logout-all; show the
 identity presentation. May (when the API says so): the provider button only
 when `/auth/providers` lists it; a `TEST_PROVIDER` only with its label.
-Must not: a recovery link while recovery is `unavailable`; self-registration
-UI (bootstrap is the provider path, not a form); any local truth about
-identity, session validity, role or authority (24 §24.3); raw protocol
-material (24 §24.6).
+Since WU-AUTH-21 (HD-AUTH-10) also: the verified-address relation and its
+Send control; the two mail-link landings (`/account/verify-email`,
+`/recover/reset` — the paths the producer renders, configurable); the
+recovery start; a "forgot password" contact on the login — each only while
+`/auth/contacts` says AVAILABLE (the product frontend materializes exactly
+this: CYAN AUTH/CYAN-RECOVERY-01).
+Must not: a recovery link while `/auth/contacts.recovery` is `UNAVAILABLE`;
+self-registration UI (bootstrap is the provider path, not a form); any local
+truth about identity, session validity, role or authority (24 §24.3); raw
+protocol material (24 §24.6) — the mail token is presented to the API once and
+leaves the address bar, the DOM and storage.
 
 ## 5. Open on the producer side (not blocking consumption)
 
-HA-AUTH-02 recovery (DENIED), HA-AUTH-03 last method (NEVER), 24 §36 #13
-re-enable / administrative recovery, #16 mail provider, #18 multi-account UX
-(a live session starting a provider login is not refused), PFC HA-10
-business-path DB principal. None changes a shape above.
+HA-AUTH-03 last method (NEVER), 24 §36 #13 re-enable / administrative
+recovery, #18 multi-account UX (a live session starting a provider login is
+not refused), PFC HA-10 business-path DB principal. HA-AUTH-02 is resolved
+(HD-AUTH-10); the production mail-provider facts (#16: sender identity and
+SMTP submission credentials) are an external dependency of the deployment —
+until configured, `/auth/contacts` says UNAVAILABLE and the consumer offers
+nothing. None changes a shape above.

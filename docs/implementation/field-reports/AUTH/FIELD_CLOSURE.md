@@ -6,6 +6,45 @@ because additional features are conceivable". Supersedes the status line of
 `FIELD_REVIEW.md` (the first closure of 2026-10-01); every proof listed there
 stands and is not repeated.
 
+## Closure #4 (2026-10-06, HD-AUTH-10: the recovery boundary resolved)
+
+The one closure-critical boundary of closures #2/#3 (section A, the block at
+the end) was decided by the human on 2026-10-05 (HD-AUTH-10 / HA-AUTH-02):
+self-service recovery through verified e-mail is part of the product, not
+future scope; operator-mediated recovery may exist but does not replace it.
+The recovery Field and the dependencies it entails were reconstructed:
+
+| Relation | Work Unit | State |
+|---|---|---|
+| `VERIFIED_EMAIL_SELF_SERVICE` admitted in every declared environment (default DENIED unchanged) | WU-AUTH-21 (`d03d5ce`) | PROVEN |
+| production e-mail delivery (24 §36 #16): SMTP submission, STARTTLS / implicit TLS only, SASL when configured, one rendered message with one link to the frontend's contact; delivery failure = `MAIL_DELIVERY_FAILED` event, the one answer kept at recovery start, 503 at verification start | WU-AUTH-21 (`packages/security/mail.py`, `auth_runtime.py`) | PROVEN against a real STARTTLS + AUTH submission service in-test |
+| discovery of what a deployment serves: `GET /auth/contacts` | WU-AUTH-21 | PROVEN |
+| the product surfaces: verified-address relation + Send in the Access security chamber, `/account/verify-email`, `/recover`, `/recover/reset`, "Forgot your password?" on the login — each only on the server's AVAILABLE | CYAN AUTH/CYAN-RECOVERY-01 (`auth-cyan-reconstruction` `7d214e6`) | PROVEN: vitest 678, cy11 10 / 10, cross-lineage real lane **14 / 14** (verification → recovery → login with the new password) |
+| production activation | ASP-03 (api `d03d5ce`+, web `7d214e6`+) + the production `.env` mail facts | see "Closure #4 status" below |
+
+### Closure #4 status
+
+Code and proof complete on both lineages; full hash-proven regression and
+production propagation recorded below as they happen (this document is
+updated in place):
+
+- PURPLE closure regression #4: `evidence/field_closure_4_regression.txt` — PENDING
+- ASP-03 propagation: PENDING
+- **EXTERNAL DEPENDENCY (not a Human Authority decision):** the production
+  host's MTA (`mail.condyn.eu`, postfix, submission 587 + TLS) relays only
+  for loopback or SASL-authenticated clients, and the api container is a
+  bridge client. Activating recovery on production therefore needs, in the
+  production `.env`: `NQUIRY_EMAIL_DELIVERY_MODE=smtp`,
+  `NQUIRY_SMTP_HOST`/`PORT=587`/`SECURITY=starttls`, `NQUIRY_SMTP_FROM` (a
+  sender identity of that MTA), `NQUIRY_SMTP_USERNAME`/`PASSWORD` (a SASL
+  credential of that MTA — created by its operator, never by this Field),
+  `NQUIRY_PUBLIC_WEB_BASE_URL=https://nquiry.condyn.eu`,
+  `NQUIRY_RECOVERY_POLICY=VERIFIED_EMAIL_SELF_SERVICE`. Until they exist,
+  the deployed product says "recovery is not available on this deployment"
+  (`/auth/contacts` UNAVAILABLE) — a disclosed state, not a silent default.
+  Section A below is thereby RESOLVED as a decision and OPEN only as this
+  operational fact.
+
 ## Closure #3 (2026-10-05, mandate "complete and close as a complete operational product field")
 
 The Field was re-reconstructed against the full identity and access lifecycle.
@@ -80,6 +119,7 @@ classified below; nothing is added because it is conceivable.
 | Relation | Why closure-critical | Default in force | Boundary |
 |---|---|---|---|
 | **Credential recovery for a LOCAL_PASSWORD identity in production** | HD-AUTH-09 admits password authentication in production. A local-only identity that loses its password has today no legitimate path back: self-service recovery is DENIED (HA-AUTH-02; no mail provider, 24 §36 #16), and no administrative reset exists (24 §36 #13). Its e-mail is unique, so it cannot be re-provisioned under the same address without losing its memberships. An identity dependency therefore remains unresolved for the accepted scope. | DENIED (fail closed) | HA-AUTH-02 + 24 §36 #13 — see the block below |
+| *(2026-10-06)* **RESOLVED by HD-AUTH-10** — option (b) of the block below is the decided path and is materialized (WU-AUTH-21 + AUTH/CYAN-RECOVERY-01); (a) may be added later, (c) is excluded. What remains is the production mail-provider fact (external dependency, "Closure #4 status"). | | VERIFIED_EMAIL_SELF_SERVICE where configured | — |
 
 ### B. Closure-compatible as recorded (defaults in force, documented, no silent decision)
 
@@ -108,7 +148,7 @@ classified below; nothing is added because it is conceivable.
 
 ### E. Explicitly future / optional scope (not required for closure)
 
-Microsoft / GitHub providers (24 §36 #7 / #8) · provider tokens for API access (#14) · rate-limit thresholds beyond the existing attempt limits (#17) · INVITATION_REQUIRED / PRE_PROVISIONED / GOVERNANCE_MEDIATED creation policies (24 §11.14) · identity re-enable (one-way disable stays) · e-mail verification in production (needs #16).
+Microsoft / GitHub providers (24 §36 #7 / #8) · provider tokens for API access (#14) · rate-limit thresholds beyond the existing attempt limits (#17) · INVITATION_REQUIRED / PRE_PROVISIONED / GOVERNANCE_MEDIATED creation policies (24 §11.14) · identity re-enable (one-way disable stays) · a second factor on recovery (HD-AUTH-10 decided none) · operator-mediated reset as an addition (HD-AUTH-10: permitted, not required).
 
 ## 24 §48 acceptance condition — delta since the first closure
 
@@ -121,7 +161,7 @@ link-fallback target was repaired (`NQUIRY_ACCOUNT_SECURITY_PATH`, deployed);
 24 §6.4's text "governance root open" is superseded by 16 §41 REC-001 (an
 architecture-document edit, human-owned, F-AZ-6).
 
-## TRUE_HUMAN_AUTHORITY_BOUNDARY — the one decision that closes the Field
+## TRUE_HUMAN_AUTHORITY_BOUNDARY — the one decision that closes the Field (DECIDED 2026-10-05: HD-AUTH-10 → option (b); kept as the record of the question)
 
 ```
 BOUNDARY: HA-AUTH-02 (24 §36 #11) together with 24 §36 #13

@@ -295,13 +295,78 @@ default unchanged) — `tests/e2e/test_auth_account_security_path.py`. The
 production value `/workspaces` takes effect with the next API deployment
 (human-run; recorded in `STATUS.md`).
 
+## HD-AUTH-10 — HA-AUTH-02 resolved: VERIFIED_EMAIL_SELF_SERVICE is part of the product (2026-10-05)
+
+**Decision (human operator, verbatim):** "HA-AUTH-02: A complete production
+LOCAL_PASSWORD lifecycle requires legitimate self-service recovery through
+verified e-mail. This is part of the current NQUIRY Authentication and
+Authorization Field, not future scope. Reconstruct the complete recovery Field
+and all dependencies it legitimately entails, including the existing production
+mail-provider boundary. Operator-mediated recovery may exist where legitimate,
+but does not replace the required self-service recovery path."
+
+**What it establishes (persisted):** 24 §36 #11 = VERIFIED_EMAIL_SELF_SERVICE
+with the proof level of §17.6–17.7 as materialized by WU-AUTH-11/12 (a
+verified e-mail relation of the identity, a single-use time-boxed challenge,
+the one answer at start, no session from completion, every ACTIVE session of
+the identity revoked by completion). A second factor was not decided and is not
+materialized. OPERATOR_MEDIATED (§36 #13) remains undecided and unmaterialized;
+by this decision it could only ever be an addition, never the required path.
+
+**Reconstruction (WU-AUTH-21, `d03d5ce`) — the dependencies the decision
+legitimately entails:**
+1. *Policy admission*: `NQUIRY_RECOVERY_POLICY=VERIFIED_EMAIL_SELF_SERVICE` is
+   admitted in every declared environment (previously refused outside
+   DEVELOPMENT / TEST); only an undeclared environment is still refused
+   (`test_self_service_recovery_needs_a_declared_environment`). The default
+   stays DENIED: a deployment that does not configure recovery has none.
+2. *Production e-mail delivery* (§36 #16, the "existing production
+   mail-provider boundary"): `SmtpMailSink` / `smtp_transport`
+   (`packages/security/mail.py`) — STARTTLS or implicit TLS always (plaintext
+   submission refused), SASL when configured, certificate verification never
+   disabled, the challenge rendered as ONE message with ONE absolute link to the
+   frontend's own contact; delivery failure is a recorded `MAIL_DELIVERY_FAILED`
+   security event without address or token, the recovery start still answers
+   with the one answer, the verification start answers 503
+   `EMAIL_DELIVERY_FAILED`. Configuration: `NQUIRY_EMAIL_DELIVERY_MODE=smtp`,
+   `NQUIRY_SMTP_HOST/PORT/SECURITY/FROM/USERNAME+PASSWORD/CA_FILE`,
+   `NQUIRY_PUBLIC_WEB_BASE_URL`, `NQUIRY_EMAIL_VERIFY_PATH`,
+   `NQUIRY_RECOVERY_COMPLETE_PATH`. Proven against a real STARTTLS + AUTH
+   submission service in-test (`tests/e2e/test_auth_wu21_mail_delivery.py`).
+   **Which provider, which sender identity and which credentials is the
+   operator's (24 §36 #16) — see the external dependency below.**
+3. *Discovery*: `GET /auth/contacts` (unauthenticated) states whether this
+   deployment serves recovery and e-mail verification, so the product offers
+   the contacts only where they exist (SERVER CAPABILITY → UI AFFORDANCE).
+4. *The product frontend* (CYAN `auth-cyan-reconstruction` `b75ea1f`,
+   AUTH/CYAN-RECOVERY-01): the E-mail verification relation and Send control
+   in the Access security chamber, `/account/verify-email`, `/recover`,
+   `/recover/reset`, "Forgot your password?" on the login. Proven end to end
+   on the cross-lineage real lane (verification → recovery → login with the
+   new password; 14/14).
+
+**External dependency (not a human decision, not resolvable by this Field):**
+the production host's MTA (`mail.condyn.eu`, postfix, submission on 587 with
+TLS) relays only for loopback (`mynetworks`) or SASL-authenticated clients;
+the api container is a bridge-network client. Production delivery therefore
+needs either a SASL mailbox / credential for the sender identity on that MTA,
+or the host operator's own relay decision. Neither is created, read or changed
+by this Field (foreign mail-server configuration is never edited). Until the
+facts exist in the production `.env`, the deployment serves
+`recovery = UNAVAILABLE`, offers no recovery contact, and the product says so;
+this is a correct, disclosed state, not a hidden failure.
+
+**Consequence for HA-AUTH-03:** its precondition "HA-AUTH-02 ≠ DENIED" is now
+met; the boundary itself (unlinking the last method) remains undecided and
+NEVER remains in force. It blocks nothing.
+
 ## Open boundaries (OPEN, awaiting the operator)
 
 | # | Boundary | Home | What it blocks | Default in force | Status |
 |---|---|---|---|---|---|
 | HA-AUTH-01 | **Production account creation policy for an unknown, verified external-provider subject** | 24 §11.14, §36 #3–#5; HD-28 | — | SELF_REGISTRATION_ALLOWED = PROVIDER_BOOTSTRAP (HD-AUTH-08) | **RESOLVED** by HD-AUTH-08 (2026-10-04): generic provider bootstrap admitted in PRODUCTION with the stated exclusions |
-| HA-AUTH-02 | **Production recovery policy and proof level** (24 §36 #11; §17.6–17.7). Options: DENIED; VERIFIED_EMAIL_SELF_SERVICE (materialized, DEVELOPMENT / TEST only); VERIFIED_EMAIL_SELF_SERVICE plus a second factor; OPERATOR_MEDIATED (§36 #13; not materialized). Full block: `WU-AUTH-12.md`. **Field closure 2026-10-05: the ONE closure-critical boundary** — HD-AUTH-09 admitted password login in production, so a local-only identity without any recovery path can become permanently unreachable; see `FIELD_CLOSURE.md` for the three options as they exist today. | 24 §17, §36 #11 / #13; HD-28 (host-operator provisioning) | Legitimate closure of the AUTH/AUTHZ Field (the default DENIED is in force) | DENIED | **OPEN — closure-critical** |
-| HA-AUTH-03 | **Unlinking the last authentication method** (24 §36 #12; §14.6). Options: NEVER; ALLOWED WITH RECOVERY AUTHORITY (needs HA-AUTH-02 ≠ DENIED). (ALLOWED AS SELF-DISABLE excluded by HD-AUTH-05.) Full block: `WU-AUTH-13.md`. | 24 §14.6, §36 #12 | Nothing (the default is complete) | NEVER (`409 LAST_METHOD`) | OPEN |
+| HA-AUTH-02 | **Production recovery policy and proof level** (24 §36 #11; §17.6–17.7). Full block: `WU-AUTH-12.md`. | 24 §17, §36 #11 / #13; HD-28 (host-operator provisioning) | — | VERIFIED_EMAIL_SELF_SERVICE where configured (HD-AUTH-10); DENIED where not | **RESOLVED** by HD-AUTH-10 (2026-10-05): self-service recovery through verified e-mail is part of the product; materialized by WU-AUTH-21 + AUTH/CYAN-RECOVERY-01; production activation awaits the mail-provider facts (external dependency, see HD-AUTH-10) |
+| HA-AUTH-03 | **Unlinking the last authentication method** (24 §36 #12; §14.6). Options: NEVER; ALLOWED WITH RECOVERY AUTHORITY (precondition HA-AUTH-02 ≠ DENIED — met by HD-AUTH-10). (ALLOWED AS SELF-DISABLE excluded by HD-AUTH-05.) Full block: `WU-AUTH-13.md`. | 24 §14.6, §36 #12 | Nothing (the default is complete) | NEVER (`409 LAST_METHOD`) | OPEN |
 | HA-AUTH-04 | **Who may disable an identity in PRODUCTION / STAGING** | 24 §18, §36 #13; HD-28 | — | HOST_OPERATOR (HD-AUTH-05) | **RESOLVED** by HD-AUTH-05 (2026-10-01): HOST_OPERATOR; no HTTP route, no self-disable, no derived authority; re-enable separate |
 | HA-AUTH-05 | **Deployment switch to the scoped authentication principal** (24 §21.18; = PFC HA-10) | 24 §21.18, §25.2; 14 §8; PFC HA-09 / HA-10 | — | SWITCH AUTH ONLY (HD-AUTH-06) | **RESOLVED** by HD-AUTH-06 (2026-10-01): SWITCH AUTH ONLY; compose configured; deployment procedure recorded, not executed |
 | HA-AUTH-07 | **Google binding of `tobi` vs stated intent** | 24 §14.2, §18.2; HD-AUTH-08 | — | transition away from `tobi` (HD-AUTH-08 Decision 2) | **RESOLVED** by HD-AUTH-08 and **EXECUTED on production 2026-10-04** (unlink 14:25:01Z, bootstrap 14:28:16Z; `evidence/ha_auth_07_production_transition.txt`) |
@@ -309,9 +374,10 @@ production value `/workspaces` takes effect with the next API deployment
 Touched and left undecided, not blocking any Work Unit: 24 §36 #9
 (provider-verified email as NQUIRY verified email), #10 (session lifetime,
 12 h kept), #13 (administrative recovery / re-enable; no command exists),
-#16 (production email delivery provider; WU-AUTH-11), #18 (multi-account UX).
-Resolved by HD-AUTH-09: #1, #2, #6; by HD-AUTH-08: #3–#5; #15 is governed by
-HARD-DEP-001 Option A (16 §41 REC-001).
+#16 (production email delivery: the sink is materialized by WU-AUTH-21; the
+provider, sender identity and credentials are the operator's facts), #18
+(multi-account UX). Resolved by HD-AUTH-09: #1, #2, #6; by HD-AUTH-08: #3–#5;
+by HD-AUTH-10: #11; #15 is governed by HARD-DEP-001 Option A (16 §41 REC-001).
 
 ## Ledger reconciliation (deferred, disclosed)
 

@@ -14,6 +14,20 @@ Session control, capability or governance root.
 
 ## Status
 
+**CLOSURE #4 IN PROGRESS (2026-10-06) — HD-AUTH-10 (HA-AUTH-02 resolved):**
+self-service recovery through verified e-mail is part of the product.
+Materialized: WU-AUTH-21 (`d03d5ce`: SMTP sink STARTTLS/TLS + SASL, rendered
+messages with one link to the frontend's contact, `VERIFIED_EMAIL_SELF_SERVICE`
+admitted in every declared environment, `GET /auth/contacts`, delivery-failure
+events) and CYAN AUTH/CYAN-RECOVERY-01 (`auth-cyan-reconstruction` `7d214e6`:
+chamber verification relation, `/account/verify-email`, `/recover`,
+`/recover/reset`, login contact; cross-lineage real lane 14 / 14 incl.
+verification → recovery → login with the new password). Production still
+serves closure #3 (api `28e6620`, web `2fb7bfa`); the next propagation (ASP-03)
+carries both and needs the production mail-provider facts to activate recovery
+(external dependency; `HUMAN_DECISIONS.md` HD-AUTH-10; `FIELD_CLOSURE.md`
+"Closure #4"). Earlier closure #3 line, kept:
+
 **FIELD_CLOSED_WITH_ONE_RECORDED_HUMAN_BOUNDARY — closure #3 (2026-10-05T15:24Z):**
 production api `28e6620` (head `e3a5c7d9f1b4`) + web `2fb7bfa` after ASP-02
 (credential rotation, membership revocation / role change, login lockout,
@@ -47,9 +61,11 @@ persistence scoped). Open Human Authority: HA-AUTH-02 (recovery), HA-AUTH-03 (la
 - **HA-AUTH-01 RESOLVED** by HD-AUTH-08 (2026-10-04): generic provider
   bootstrap (`SELF_REGISTRATION_ALLOWED`, PROVIDER_BOOTSTRAP class) admitted
   in every declared environment incl. PRODUCTION; default DENIED unchanged.
-- **HA-AUTH-02 OPEN** (WU-AUTH-12): production recovery policy and proof
-  level (24 §36 #11); DENIED in force, the verified-email self-service
-  mechanism is refused outside DEVELOPMENT / TEST. Block in `WU-AUTH-12.md`.
+- **HA-AUTH-02 RESOLVED** by HD-AUTH-10 (2026-10-05): VERIFIED_EMAIL_SELF_SERVICE
+  is the required production recovery path (24 §36 #11); admitted in every
+  declared environment since WU-AUTH-21, DENIED only where a deployment does
+  not configure it. Production activation = the mail-provider facts
+  (external dependency). Block history in `WU-AUTH-12.md`.
 - **HA-AUTH-03 OPEN** (WU-AUTH-13): unlinking the last authentication method
   (24 §36 #12); refused (`LAST_METHOD`) in force. Block in `WU-AUTH-13.md`.
 - **HA-AUTH-04 RESOLVED** by HD-AUTH-05 (2026-10-01): identity disable
@@ -75,8 +91,10 @@ persistence scoped). Open Human Authority: HA-AUTH-02 (recovery), HA-AUTH-03 (la
   materialized.
   WU-AUTH-13: #12 recorded as HA-AUTH-03; disable authority recorded as
   HA-AUTH-04; #13 (re-enable) not materialized.
-  WU-AUTH-11: #16 (production email delivery provider) — no provider exists;
-  delivery is unavailable outside the DEVELOPMENT / TEST capture sink. Touched and left
+  WU-AUTH-11 / WU-AUTH-21: #16 (production email delivery provider) — the
+  SMTP submission sink exists (`NQUIRY_EMAIL_DELIVERY_MODE=smtp`); which
+  provider, sender identity and credentials is the operator's fact, not yet
+  present in the production `.env`. Touched and left
   undecided so far: #10 session lifetime (12 h kept), #18 multi-account UX
   (an earlier session is not revoked by a new login).
   WU-AUTH-07: #1 / #6 (Google as an official, production-enabled method:
@@ -131,6 +149,7 @@ preceded them, so the counts are those of the pin.
 | WU-AUTHZ-01 Revoke Membership / Change Role (2026-10-05) | PROVEN (8 + 3 falsifiers; governance radius 279) | `WU-AUTHZ-01.md` |
 | WU-AUTH-20 Login Lockout Boundary (2026-10-05) | PROVEN (6 falsifiers; auth radius 802 / 1; migration `e3a5c7d9f1b4`) | `WU-AUTH-20.md` |
 | WU-AUTH-18 Authentication Audit Events (2026-10-05) | PROVEN at the affected radius (752 / 1); closed vocabulary; ids and classes only; same transaction as the effect | `WU-AUTH-18.md` |
+| WU-AUTH-21 Production E-mail Delivery + Recovery Admission (2026-10-05/06, HD-AUTH-10) | PROVEN (9 falsifiers incl. the real STARTTLS + AUTH transport; radius WU-11/12/15/18 + sweep 189); no migration | `d03d5ce` / `WU-AUTH-21.md` |
 | PROVIDER_BOOTSTRAP_01 (post-closure Field, 2026-10-04) | PROVEN in TEST: generic provider-driven identity (24 §11.14) — no name invention (`PROVIDER_PROFILE_INCOMPLETE`), provenance of name/email, re-bootstrap after unlink, collision refusal; production policy still DENIED (HA-AUTH-01) | this commit |
 
 ### Current First Broken Relation
