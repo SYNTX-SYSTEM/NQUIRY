@@ -27,9 +27,21 @@ AUTHORITY: HUMAN_AUTHORITY_DECISION = ACCEPTED (2026-10-05, verbatim: "The prove
 | Target | State |
 |---|---|
 | Local review runtime `127.0.0.1:13500` (RED `checkpoint-PFC-PCPG-18` + review proxy) | refreshed with the integrated `apps/web` (archive of `7f42d8e`, `.next` cleared, restarted). Rail at 1024 / 1280 / 1440: current station fits, no overlap (RAIL-01 holds); Session page: governance panel present, five stations, no sideways scroll on Pixel 7; Workspaces: identity panel (fail-closed words, since the RED producer serves no `/auth/identity`), "Identity and access" and "Access security" chambers rendered from the proxy's FIXTURE_NON_PROOF reads — `browser-evidence/integration-01/SUMMARY.md`. Coverage of this runtime unchanged: PCPG-06 + RAIL-01 only. |
-| Staged review mount `https://nquiry.condyn.eu/cy-review/` (web only, loopback 3402) | **PREPARED, NOT EXECUTED**: the session's permission layer refused the rebuild as a production deploy (the same refusal the other session met for `5109e20`). Prepared in the session scratchpad: `deploy/cyreview/cyreview-7f42d8e-20261005T104910Z.tar.gz` (`git archive apps/web` of `7f42d8e`, 214 files) and `rebuild-integrated.sh` (the recorded `rebuild.sh` pattern: predecessor Dockerfile, `SHA256SUMS`, `DEPLOYMENT_MANIFEST.json` with source/tag/claim ceiling, `compose.yaml.pre`, context switch of `/opt/nquiry/review/compose.yaml`, build, up, `STATE_BEFORE/AFTER.txt`). Human-run: `scp` both to `/opt/nquiry/assembly/`, extract, then `ASSEMBLY=cyreview-7f42d8e-20261005T104910Z COMMIT=7f42d8e6ee6297c3c815810a04fbaca5cd6771d5 TREE=e92b50243e9300bdf951aee1a6086686431ef280 TAG=checkpoint-CYAN-INTEGRATION-01 bash rebuild.sh`. Rollback = `compose.yaml.pre` + rebuild, or `_baseline-pre-CYREVIEW-20261003T213429Z/ROLLBACK.sh`. |
+| Staged review mount `https://nquiry.condyn.eu/cy-review/` (web only, loopback 3402) | **EXECUTED 2026-10-05T11:29:24–11:29:39Z** under the human's explicit authorization of this specific staging ("Retry the prepared /cy-review staging effect now. I authorize this specific staging deployment."), after the session's first attempt had been refused by its permission layer. Assembly `/opt/nquiry/assembly/cyreview-7f42d8e-20261005T104910Z` (`git archive apps/web` of `7f42d8e`, 186 checksummed files, `DEPLOYMENT_MANIFEST.json` source = `frontend-symbiotic` `7f42d8e` / `checkpoint-CYAN-INTEGRATION-01` / tree `e92b502`, predecessor `cyreview-94759cd-20261004T153003Z`, `compose.yaml.pre`, `rebuild.sh`, `STATE_BEFORE.txt`, `STATE_AFTER.txt`). Server delta: exactly the `context:` line of `/opt/nquiry/review/compose.yaml`; project `nquiry-cy-review` rebuilt and up on 127.0.0.1:3402 (image `42e4be97…`). Rollback: `cp compose.yaml.pre /opt/nquiry/review/compose.yaml && docker compose -p nquiry-cy-review up -d --build`, or `_baseline-pre-CYREVIEW-20261003T213429Z/ROLLBACK.sh`. |
 | Production root `/` | unchanged (`94759cd`, accepted). Not touched; cutover not authorized. |
 | Records | this unit; `HA-AUTH-CYAN.md` carries the integration note; `REVIEW_COVERAGE_RECONSTRUCTION_2026-10-04.md` names the candidate. Known cosmetic incoherence left as is: two units numbered "cy09" (`cy09-attachments`, `cy09-account-security`); files do not collide. |
+
+## Proof of the staged effect (read-only, after)
+| Relation | Result |
+|---|---|
+| live `/` and `/login` body hashes | unchanged before → after (`7603390d…`, `99caba1e…`); `/login` carries 0 `/cy-review` references |
+| vhost sha / `.env` sha / `nginx -t` | `14053fb3…` / `8829c9e7…` unchanged; configuration test successful |
+| `/api/auth/providers` live body; `/api/auth/identity` without a session | unchanged `[google · PRODUCTION_PROVIDER]`; 401 |
+| `/cy-review/login`, `/cy-review/workspaces` (loopback and same-origin) | 200 / 200; the page references 24 `/cy-review/_next/static` assets and 0 root `/_next/static` assets |
+| served stylesheet `/cy-review/_next/static/chunks/42qja2a4fs0h1.css` (132,591 bytes) | contains the RAIL-01 rules (`container-type:inline-size` ×2, `li[data-status=current]` ×14), `.governance-panel` (×11), `.boundary-card`, `.account-security` — the integrated lineage is what is served (the `STATE_AFTER.txt` line "rail rule in css: 0" is the script's wrong path `.next/static/css`; the chunk check above is the valid one) |
+| built chunks | `account-security` in 2, `governance-panel` in 2 |
+| headless browser, desktop 1280 + Pixel 7, no login (`browser-evidence/integration-01/screenshots/origin-cy-review-login-*.png`) | `/cy-review/workspaces` → `/cy-review/login`; one provider contact `https://nquiry.condyn.eu/api/auth/oidc/google/start?next=%2Fcy-review%2F`; brand asset beneath the mount; requests only `GET /api/auth/me`, `GET /api/auth/providers`; zero `/cy-review/api/` requests; zero off-mount requests; zero cookies set by the visit; no auth boundary shown; the live `/login` still has its own form and provider contact |
+| other containers | `nquiry-web-1` (3400) and `nquiry-api-1` (8400) untouched (uptimes 20 h / 21 h) |
 
 ## Status
 CYAN-INTEGRATION-01: **CLOSED — LOCAL_GREEN + FIELD_GREEN on the mocked and mount lanes; PUBLISHED on `origin/frontend-symbiotic`.**
@@ -37,7 +49,16 @@ The integrated lineage carries: the accepted authentication / identity / account
 production root), PCPG-06 (READY_FOR_HUMAN_FRONTEND_REVIEW), RAIL-01 (READY_FOR_HUMAN_FRONTEND_REVIEW), the
 per-method last-use fact `5109e20` (proven, not published).
 
+## Field state after the staging (reconstructed)
+| Surface | Tree | Status |
+|---|---|---|
+| production root `https://nquiry.condyn.eu/` | web `94759cd`, api `e069fc1` | PUBLISHED_FIELD, human-accepted (HD-AUTH-09); unchanged by this unit |
+| staged mount `https://nquiry.condyn.eu/cy-review/` | web `7f42d8e` (= root's auth state + PCPG-06 + RAIL-01 + `5109e20`) against the production `/api/` | STAGED; technically proven (lanes above + same-origin proof); HUMAN ACCEPTANCE PENDING |
+| local review runtime `127.0.0.1:13500` | `7f42d8e` with the pinned RED PCPG-18 producer | organism-only review (governance observation with a real producer, which the staged mount cannot show: production RED has no PCPG routes) |
+| `origin/frontend-symbiotic` | `7f42d8e` + records | one lineage; `checkpoint-CYAN-INTEGRATION-01` |
+What the staged mount can and cannot show the human: it CAN show RAIL-01 on every real Session (the route left of the centred mark at 1024–1440 px, the current station complete), the integrated account-security chamber with real effects, and the `5109e20` last-use line; it CANNOT show PCPG-06's strips, panel content or boundary card with a real observation, because the production api (PURPLE `e069fc1` on the RED base of `checkpoint-PFC-AC1.1`) serves no governance observation route — on `/cy-review/` the panel states the absence only. PCPG-06 with a real producer is reviewable on `127.0.0.1:13500`.
+
 ## Boundary — HUMAN_AUTHORITY_REQUIRED
-1. **Staging of the integrated candidate on `/cy-review/`** — prepared, refused to the session as a production deploy; a human-run step.
-2. **Human Frontend Acceptance of PCPG-06 and RAIL-01** on the real topology once staged (or on `127.0.0.1:13500` for the organism-only scope, guide `CY-02/HUMAN_REVIEW_GUIDE_PCPG-06.md`, record `WU-CYAN-RAIL-01.md`).
-3. After acceptance: CYAN_PRODUCTION_ROOT_CUTOVER of the integrated tree (a separate, human-authorized Field, as before), which would also publish `5109e20`.
+1. **Human Frontend Acceptance** of RAIL-01 (and of the integrated lineage as a whole) on `https://nquiry.condyn.eu/cy-review/` with the human's real identities (CASE LOCAL `tobi`, CASE GOOGLE_BOOTSTRAP), and of PCPG-06 on `127.0.0.1:13500` (guide `CY-02/HUMAN_REVIEW_GUIDE_PCPG-06.md`). TECHNICAL_PASS != HUMAN_VISUAL_ACCEPTANCE.
+2. After acceptance: CYAN_PRODUCTION_ROOT_CUTOVER of `7f42d8e` (a separate, human-authorized Field, as before; it would also publish `5109e20`).
+3. Lifecycle of the older `nquiry-cy01-candidate` stack (3401/8401) — unchanged, a human decision.
