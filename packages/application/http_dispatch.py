@@ -179,6 +179,7 @@ from application.human_decision_handler import (
     SelectedOptionNotCandidate,
     record_human_decision,
 )
+from application.login_throttle import LoginThrottle
 from application.membership_operations_handler import (
     AddMemberDenied,
     GovernanceRootNotRemovable,
@@ -258,6 +259,8 @@ class LoginDispatchResult:
     body: dict[str, object]
     session_token: str | None
     expires_at: datetime | None
+    status_code: int = 401
+    """The status of a non-success (WU-AUTH-20: 429 for the lockout boundary)."""
 
 
 def _auth_connection():  # type: ignore[no-untyped-def]
@@ -269,14 +272,35 @@ def _auth_connection():  # type: ignore[no-untyped-def]
     return connect_auth() if auth_scope_configured() else connect()
 
 
-def dispatch_login(*, email: str, password: str) -> LoginDispatchResult:
+def dispatch_login(*, email: str, password: str, client: str | None = None) -> LoginDispatchResult:
     """`POST /auth/login`. Never raises on bad credentials -- returns a
     `denied` body instead, same fail-closed-but-not-500 discipline as
-    every other dispatch function here."""
+    every other dispatch function here. WU-AUTH-20: the login lockout
+    boundary (24 §22.3) is decided before any credential work and recorded
+    after the outcome, in the same transaction; `client` is the caller's
+    network address as the edge reports it (a CLIENT-keyed window) or None."""
     with _auth_connection() as connection:
         sessions = SqlAlchemyLocalSessionRepository(connection)
         now = datetime.now(timezone.utc)
-        environment = current_auth_runtime().environment
+        runtime = current_auth_runtime()
+        environment = runtime.environment
+        throttle = LoginThrottle(connection, policy=runtime.login_throttle)
+        if throttle.locked(email, client, now=now):
+            record_auth_event(
+                connection,
+                AuthAuditEvent.LOGIN_RATE_LIMITED,
+                environment=environment,
+                now=now,
+                actor=None,
+                facts={"method": "LOCAL_PASSWORD", "boundary": "LOCKOUT"},
+                never=(password,),
+            )
+            return LoginDispatchResult(
+                body={"kind": "denied", "reasonCode": "RATE_LIMITED"},
+                session_token=None,
+                expires_at=None,
+                status_code=429,
+            )
         try:
             result = login(
                 email,
@@ -286,6 +310,7 @@ def dispatch_login(*, email: str, password: str) -> LoginDispatchResult:
                 now=now,
             )
         except InvalidCredentials:
+            throttle.failed(email, client, now=now)
             # 24 §31.1 "login failure aggregated safely": the failure class, no account, no address
             record_auth_event(
                 connection,
@@ -301,6 +326,7 @@ def dispatch_login(*, email: str, password: str) -> LoginDispatchResult:
                 session_token=None,
                 expires_at=None,
             )
+        throttle.succeeded(email, now=now)
         issued = sessions.get_by_token_hash(hash_session_token(result.session_token))
         record_auth_event(
             connection,

@@ -38,6 +38,7 @@ AUTH_PERSISTENCE_CAPABILITIES: Mapping[str, frozenset[str]] = {
     "auth_challenges": _RW,
     "verified_emails": _RW,
     "recovery_challenges": _RW,
+    "auth_rate_limits": _RW,  # WU-AUTH-20: the login lockout boundary's windows
     "security_events": frozenset({"INSERT"}),  # append-only audit (11 §47)
 }
 

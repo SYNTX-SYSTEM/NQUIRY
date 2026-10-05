@@ -30,12 +30,12 @@ from boundaries.participation_right import resolve_participation_right
 from domain.burst import BurstState
 from domain.session import Session, SessionState
 from domain.session_transitions import SessionTransitionId, resolve_session_transition
-from governance.authority_binding import AuthorityClass
+from governance.authority_binding import AuthorityBindingState, AuthorityClass
 from governance.membership import WorkspaceRole
 from persistence import inquiry_directory as directory
 from persistence.session_participation_repository import SqlAlchemySessionParticipationRepository
 from security.identity import AuthenticatedPrincipal
-from semantic_types.ids import ChallengeId, SessionId, WorkspaceId
+from semantic_types.ids import ChallengeId, SessionId, UserId, WorkspaceId
 
 from application.analysis_begin_handler import begin_analysis_blocker
 from application.analysis_projection import analysis_view
@@ -378,11 +378,40 @@ def _workspace_json(ports: GovernedPorts, context: WorkspaceContext) -> dict[str
     }
 
 
-def _members_json(members: tuple[directory.MemberRow, ...]) -> list[dict[str, object]]:
-    return [
-        {"userId": str(m.user_id), "name": m.name, "email": m.email, "role": m.role}
-        for m in members
-    ]
+def _members_json(
+    members: tuple[directory.MemberRow, ...],
+    *,
+    ports: GovernedPorts | None = None,
+    context: WorkspaceContext | None = None,
+) -> list[dict[str, object]]:
+    """`administrable` (WU-AUTHZ-01): the server's own verdict whether the
+    governance root may revoke or re-label this membership — never the
+    Workspace owner, never a holder of an ACTIVE WORKSPACE_GOVERNANCE_RIGHT,
+    never a current Owner role (GAP-05-001; the same three facts the command
+    refuses on). The frontend offers administration only on this flag, never
+    by reading a role (20 §13 SERVER CAPABILITY → UI AFFORDANCE)."""
+    rows: list[dict[str, object]] = []
+    for m in members:
+        row: dict[str, object] = {
+            "userId": str(m.user_id),
+            "name": m.name,
+            "email": m.email,
+            "role": m.role,
+        }
+        if ports is not None and context is not None:
+            is_owner = context.workspace.owner_id.value == m.user_id
+            holds_root = any(
+                b.state is AuthorityBindingState.ACTIVE
+                and b.authority_class is AuthorityClass.WORKSPACE_GOVERNANCE_RIGHT
+                for b in ports.bindings.list_current_bindings(
+                    context.workspace.id, UserId(m.user_id)
+                )
+            )
+            row["administrable"] = not (
+                is_owner or holds_root or m.role == WorkspaceRole.OWNER.value
+            )
+        rows.append(row)
+    return rows
 
 
 def _binding_json(b: directory.BindingRow) -> dict[str, object]:
@@ -416,7 +445,9 @@ def workspace_overview(
             "role": role.value if role is not None else None,
             "isGovernanceRoot": governance_root,
         },
-        "members": _members_json(directory.list_members(ports.connection, ws)),
+        "members": _members_json(
+            directory.list_members(ports.connection, ws), ports=ports, context=context
+        ),
         "challenges": [
             {
                 "challengeId": str(c.challenge_id),

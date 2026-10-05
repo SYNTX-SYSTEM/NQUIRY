@@ -1715,6 +1715,22 @@ verified_emails_table = sa.Table(
     sa.CheckConstraint("provenance_ref <> ''", name="ck_verified_emails_provenance"),
 )
 
+auth_rate_limits_table = sa.Table(
+    # WU-AUTH-20 (migration e3a5c7d9f1b4): the login lockout boundary (24 §21.16,
+    # §22.3). Hash-keyed failure windows; never an address, never an identity.
+    "auth_rate_limits",
+    metadata,
+    sa.Column("key_kind", sa.Text(), primary_key=True),
+    sa.Column("key_hash", sa.Text(), primary_key=True),
+    sa.Column("window_started_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("failures", sa.Integer(), nullable=False, server_default="0"),
+    sa.Column("locked_until", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
+    sa.CheckConstraint("key_kind IN ('CREDENTIAL', 'CLIENT')", name="ck_auth_rate_limits_kind"),
+    sa.CheckConstraint("failures >= 0", name="ck_auth_rate_limits_failures"),
+    sa.CheckConstraint("length(key_hash) = 64", name="ck_auth_rate_limits_hash"),
+)
+
 recovery_challenges_table = sa.Table(
     # WU-AUTH-12 (migration a8c1e3f5b7d9): 24 §17.3 recovery challenge. Not an
     # authentication method. Hash only; verified and consumed at most once.
@@ -1778,6 +1794,7 @@ __all__ = [
     "inquiry_read_model_table",
     "recovery_records_table",
     "security_events_table",
+    "auth_rate_limits_table",
     "session_participations_table",
     "local_auth_credentials_table",
     "local_auth_sessions_table",

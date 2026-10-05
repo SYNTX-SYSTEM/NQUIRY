@@ -137,6 +137,7 @@ def test_the_capability_map_names_only_authentication_relations_and_never_delete
         "auth_challenges",
         "verified_emails",
         "recovery_challenges",
+        "auth_rate_limits",
         "security_events",
     }
     for table, privileges in AUTH_PERSISTENCE_CAPABILITIES.items():

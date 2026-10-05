@@ -248,9 +248,7 @@ def test_the_root_revokes_a_membership_with_its_role_and_bindings_in_one_commit(
     # the dependent relations invalidated in the same bundle are recorded on the CommitUnit (09 §13)
     commit = (
         db_connection.execute(
-            sa.select(commit_units_table).where(
-                commit_units_table.c.id == unit.commit_id.value
-            )
+            sa.select(commit_units_table).where(commit_units_table.c.id == unit.commit_id.value)
         )
         .mappings()
         .one()

@@ -60,11 +60,24 @@ class LoginRequestBody(BaseModel):
     password: str
 
 
+def _client_address(request: Request) -> str | None:
+    """WU-AUTH-20: the caller's network address for the CLIENT-keyed window — the
+    first `X-Forwarded-For` hop when the edge proxy sets it (the deployment's
+    nginx), else the socket peer. Hashed before storage, never logged."""
+    forwarded = request.headers.get("x-forwarded-for", "")
+    first = forwarded.split(",")[0].strip() if forwarded else ""
+    if first:
+        return first
+    return request.client.host if request.client is not None else None
+
+
 @router.post("/auth/login")
-def login(body: LoginRequestBody, response: Response) -> JSONResponse:
-    result = dispatch_login(email=body.email, password=body.password)
+def login(body: LoginRequestBody, request: Request, response: Response) -> JSONResponse:
+    result = dispatch_login(
+        email=body.email, password=body.password, client=_client_address(request)
+    )
     if result.session_token is None or result.expires_at is None:
-        return JSONResponse(status_code=401, content=result.body)
+        return JSONResponse(status_code=result.status_code, content=result.body)
 
     json_response = JSONResponse(content=result.body)
     max_age = max(0, int((result.expires_at - datetime.now(timezone.utc)).total_seconds()))

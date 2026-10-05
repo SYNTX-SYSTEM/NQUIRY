@@ -24,6 +24,10 @@ Settings (environment variables, read once at startup, same discipline as
 - `NQUIRY_PUBLIC_API_BASE_URL`: where a browser reaches this API (the test
   provider's authorize page and callback live under it); default
   `http://localhost:8000`.
+- `NQUIRY_LOGIN_LOCKOUT_FAILURES` / `NQUIRY_LOGIN_LOCKOUT_MINUTES` (WU-AUTH-20,
+  24 §21.16 / §36 #17): the CREDENTIAL-key lockout threshold and the window
+  = lock duration; defaults 5 / 15 (`security.login_throttle`); the CLIENT
+  key locks at ten times the failures. Positive integers, else refused.
 - `NQUIRY_ACCOUNT_SECURITY_PATH` (CYAN_PRODUCTION_ROOT_CUTOVER, 2026-10-04):
   the deployed frontend's account-security location — the fallback target of
   an ACCOUNT_LINK projection when no legitimate `next` is known (link start
@@ -42,9 +46,11 @@ from __future__ import annotations
 import os
 from collections.abc import Mapping
 from dataclasses import dataclass, field
+from datetime import timedelta
 
 from security.account_creation import MATERIALIZED_POLICIES, AccountCreationPolicy
 from security.events import Environment
+from security.login_throttle import ThrottlePolicy
 from security.mail import LocalMailCapture, MailSink
 from security.oidc_provider import OidcProvider
 from security.oidc_standard import google_provider
@@ -100,6 +106,9 @@ class AuthRuntime:
     """None: no delivery configured, verification and recovery are unavailable
     (24 §36 #16 production delivery is a human decision)."""
     recovery_policy: RecoveryPolicy = RecoveryPolicy.DENIED
+    login_throttle: ThrottlePolicy = field(default_factory=ThrottlePolicy)
+    """WU-AUTH-20: the login lockout policy (24 §21.16); defaults are the
+    fail-closed product policy, per-deployment overrides are a human choice (§36 #17)."""
     account_security_path: str = "/account/security"
     """The deployed frontend's account-security location: the fallback target
     of a link projection when no legitimate `next` is known. Frontend-owned
@@ -210,6 +219,7 @@ def auth_runtime_from_environment(
             f"NQUIRY_ACCOUNT_SECURITY_PATH={account_security_path!r} is not a local "
             "destination of the application (24 section 11.17)"
         )
+    throttle = _throttle_policy(source)
     return AuthRuntime(
         environment=environment,
         providers=providers,
@@ -218,9 +228,29 @@ def auth_runtime_from_environment(
         account_creation_policy=policy,
         mail_sink=sink,
         recovery_policy=recovery_policy,
+        login_throttle=throttle,
         account_security_path=account_security_path,
         web_base_url=web_base_url,
     )
+
+
+def _throttle_policy(source: Mapping[str, str]) -> ThrottlePolicy:
+    defaults = ThrottlePolicy()
+    raw_failures = source.get("NQUIRY_LOGIN_LOCKOUT_FAILURES", "").strip()
+    raw_minutes = source.get("NQUIRY_LOGIN_LOCKOUT_MINUTES", "").strip()
+    try:
+        failures = int(raw_failures) if raw_failures else defaults.credential_failures
+        minutes = int(raw_minutes) if raw_minutes else None
+        if failures < 1 or (minutes is not None and minutes < 1):
+            raise ValueError
+    except ValueError:
+        raise ValueError(
+            "NQUIRY_LOGIN_LOCKOUT_FAILURES / NQUIRY_LOGIN_LOCKOUT_MINUTES must be positive integers"
+        ) from None
+    if minutes is None:
+        return ThrottlePolicy(credential_failures=failures)
+    window = timedelta(minutes=minutes)
+    return ThrottlePolicy(credential_failures=failures, window=window, lock=window)
 
 
 __all__ = [

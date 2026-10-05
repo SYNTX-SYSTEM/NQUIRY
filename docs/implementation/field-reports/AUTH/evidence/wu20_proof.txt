@@ -1,0 +1,4 @@
+WU-AUTH-20 proof (2026-10-05) — affected radius: every auth suite + http_auth + sweep + AC1 + membership revocation + http workspaces + tests/security
+result: 802 passed, 1 skipped in 1073.51s (0:17:53)
+then (administrable member verdict added to the overview, WU-AUTHZ-01 propagation): http_workspaces + http_f02 + wu16 = 41 passed
+ruff clean; mypy clean on the touched modules; migration e3a5c7d9f1b4 upgrade/downgrade/upgrade proven on nquiry_purple_test

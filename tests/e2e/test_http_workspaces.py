@@ -407,6 +407,10 @@ def test_revoke_membership_and_change_role_over_http(
     overview = http_client.get(f"/workspaces/{workspace_id}/overview").json()
     assert overview["capabilities"]["revokeMembership"]["available"] is True
     assert overview["capabilities"]["changeMemberRole"]["available"] is True
+    # the per-member verdict: the governance root is never administrable, the member is
+    administrable = {m["userId"]: m["administrable"] for m in overview["members"]}
+    assert administrable[str(member_id)] is True
+    assert administrable[overview["viewer"]["userId"]] is False
 
     changed = http_client.post(
         f"/workspaces/{workspace_id}/members/{member_id}/role", json={"role": "Facilitator"}
