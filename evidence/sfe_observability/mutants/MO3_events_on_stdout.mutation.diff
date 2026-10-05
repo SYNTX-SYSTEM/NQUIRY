@@ -1,0 +1,4 @@
+34c34
+< exec 9>&2  # event sink: stderr, or the events file if it can be opened (an unusable sink never stops the run)
+---
+> exec 9>&1  # event sink: stderr, or the events file if it can be opened (an unusable sink never stops the run)

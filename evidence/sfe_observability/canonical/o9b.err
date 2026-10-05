@@ -1,0 +1,2 @@
+[00:00:00] STAGE_START     stage=badsink
+[00:00:00] STAGE_FAIL      stage=badsink rc=4 elapsed=0s

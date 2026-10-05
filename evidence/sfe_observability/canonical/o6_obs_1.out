@@ -1,0 +1,4 @@
+HEAD: synthetic
+LIVE_RESULT: 3 passed in 2.40s
+LIVE_EXIT_CODE: 1
+TREE_UNCHANGED_DURING_RUN: true

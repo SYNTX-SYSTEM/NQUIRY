@@ -1,0 +1,4 @@
+[00:00:00] STAGE_START     stage=slow
+[00:00:01] HEARTBEAT       stage=slow elapsed=1s
+[00:00:02] HEARTBEAT       stage=slow elapsed=2s
+[00:00:02] STAGE_END       stage=slow rc=0 elapsed=2s

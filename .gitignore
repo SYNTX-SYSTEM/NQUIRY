@@ -68,3 +68,10 @@ observer.stop
 # stage_exit_status per-mutant run directories (12k small files; each mutant's verdict log + mutation diff ARE versioned; kept locally)
 /evidence/stage_exit_status/mutants/*/
 /evidence/stage_exit_status/mutation_v1_SUPERSEDED_MS9_not_applied/mutants/*/
+
+# sfe_observability raw outputs > 100 KB (hash-recorded in evidence/sfe_observability/RAW_EXCLUDED.tsv; kept locally)
+/evidence/sfe_observability/regression/progress_falsifiers/integration/closure/serial_ref/collected_nodeids.txt
+/evidence/sfe_observability/regression/progress_falsifiers/integration/closure/serial_ref/pre_collect_raw.txt
+# sfe_observability per-mutant run directories (each mutant's verdict log + mutation diff ARE versioned; kept locally)
+/evidence/sfe_observability/mutants/*/
+/evidence/sfe_observability/mutation_v1_SUPERSEDED_MO16_not_applied/mutants/*/

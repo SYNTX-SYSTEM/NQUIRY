@@ -1,0 +1,4 @@
+78c78
+<     else prog_event HEARTBEAT "stage=$1" "elapsed=${el}s"; fi
+---
+>     else prog_event HEARTBEAT "stage=$1" "elapsed=${el}s" "status=PASS"; fi

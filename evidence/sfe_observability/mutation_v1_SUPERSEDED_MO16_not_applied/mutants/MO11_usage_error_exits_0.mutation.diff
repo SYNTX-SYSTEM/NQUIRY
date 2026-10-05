@@ -1,0 +1,4 @@
+19c19
+< usage() { echo "usage: sfe_observe.sh [--stage NAME] [--progress-log FILE] [--events FILE] -- COMMAND [ARG...]" >&2; exit 2; }
+---
+> usage() { echo "usage: sfe_observe.sh [--stage NAME] [--progress-log FILE] [--events FILE] -- COMMAND [ARG...]" >&2; exit 0; }

@@ -1,0 +1,4 @@
+[00:00:00] STAGE_START     stage=closure_regression
+[00:00:01] HEARTBEAT       stage=closure_regression elapsed=1s
+[00:00:02] HEARTBEAT       stage=closure_regression elapsed=2s
+[00:00:02] STAGE_END       stage=closure_regression rc=0 elapsed=2s

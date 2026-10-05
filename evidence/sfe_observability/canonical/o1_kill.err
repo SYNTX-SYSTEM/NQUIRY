@@ -1,0 +1,3 @@
+[00:00:00] STAGE_START     stage=s
+/home/codi/Entwicklung/nquiry/worktrees/orange-proof-lineage/sfe_observe.sh: line 38: 350973 Killed                  "$@" 9>&-
+[00:00:00] STAGE_FAIL      stage=s rc=137 elapsed=0s

@@ -1,0 +1,4 @@
+35c35
+< if [ -n "$evfile" ] && { : >> "$evfile"; } 2>/dev/null; then exec 9>>"$evfile"; fi
+---
+> if [ -n "$evfile" ]; then { : >> "$evfile"; } 2>/dev/null || exit 1; exec 9>>"$evfile"; fi

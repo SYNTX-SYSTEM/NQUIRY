@@ -1,0 +1,2 @@
+36a37
+> trap 'pkill -P $$; exit 143' TERM

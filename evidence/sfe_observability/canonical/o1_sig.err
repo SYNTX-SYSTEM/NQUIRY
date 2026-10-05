@@ -1,0 +1,3 @@
+[00:00:00] STAGE_START     stage=s
+Terminated
+[00:00:00] STAGE_FAIL      stage=s rc=143 elapsed=0s

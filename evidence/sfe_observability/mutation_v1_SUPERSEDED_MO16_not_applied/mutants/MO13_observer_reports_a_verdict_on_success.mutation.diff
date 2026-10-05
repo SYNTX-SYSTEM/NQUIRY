@@ -1,0 +1,4 @@
+40c40
+< prog_end "$stage" "$rc" >&9
+---
+> prog_end "$stage" "$rc" >&9; [ "$rc" -ne 0 ] || echo "[00:00:00] VERDICT         value=PASS" >&9

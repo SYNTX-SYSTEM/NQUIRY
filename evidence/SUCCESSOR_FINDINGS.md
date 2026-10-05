@@ -269,3 +269,25 @@ verdict-following `pre` / `post` status together with the resulting early chain 
 Human Authority decision 2026-10-04: (a). TF-PX-08 stays unchanged and documented: the `pre` / `post` process
 status means refusal only and is never a verdict; their `NAME::PASS|FAIL` lines are the truth.
 TF-PX-08 = DOCUMENTED, NOT REPAIRED (by decision).
+
+## TF-PX-09 — TOOLING DEFECT (proof-lineage infrastructure): a falsifier persisted the proof process environment as evidence
+Found 2026-10-05 when GitHub Push Protection rejected the publication of the unpublished local commit dcf4a82. To
+prove that the SFE-PEO/1 observer leaves the child's environment unchanged, falsifier O3e wrote the child's full
+`env` output to `o3_env_obs.out` / `o3_env_dir.out`. The operator's shell profile exports credentials into every
+process, so their values were persisted and committed. First broken relation: evidence generation ("prove equality
+by persisting the values"); there was also no check between evidence persistence and commit. The observer itself
+was not involved. Credentials in a consumer's environment are legitimate and stay untouched.
+Repair (provider- and name-neutral; `ORANGE_PROOF_STATUS.md` §16): names + digest instead of values; the harness
+runs under `env -i` with an allowlist and a fixture credential; `evidence_secret_gate.py` before every commit, over
+the files to be versioned and over reachable history. dcf4a82 was withdrawn and its objects deleted; never
+published.
+TF-PX-09 = CLOSED in canonical ORANGE lineage.
+
+## TF-PX-10 — TOOLING FINDING (OPEN, needs Human Authority): governed proof children inherit ambient credentials
+Found 2026-10-05 in the same reconstruction. `serial_baseline.sh` and `parallel_proof.sh` scrub a fixed list of
+variables before running pytest on the proof target (a denylist), so every other ambient variable, including
+application and provider credentials exported by the operator's shell, reaches the governed tests. No evidence of
+this lineage persists such a value (gate over the versioned tree and the reachable history: PASS), and no effect on
+a proof outcome is known. Not changed: replacing the denylist by an allowlist changes the proof environment of the
+canonical chain, which is a global-invariant change and needs Human Authority and a fresh chain.
+

@@ -1,0 +1,4 @@
+85c85
+<         print(f"  environment value of {name} found in {path}")
+---
+>         print(f"  environment value of {name} = {os.environ[name]} found in {path}")

@@ -1,0 +1,2 @@
+# runtime bytecode written by harness runs into their own authorized prefixes (counts only; removed, never versioned)
+sfe_observability/regression/progress_falsifiers/xdist/pyc pyc=435

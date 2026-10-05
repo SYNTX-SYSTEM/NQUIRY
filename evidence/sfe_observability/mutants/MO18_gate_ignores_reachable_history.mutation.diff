@@ -1,0 +1,4 @@
+61c61
+<         if kind == b"blob":
+---
+>         if kind == b"blob" and False:

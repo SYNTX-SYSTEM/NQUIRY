@@ -1,0 +1,4 @@
+[00:00:00] STAGE_START     stage=io
+[00:00:00] STAGE_END       stage=io rc=0 elapsed=0s
+[00:00:00] STAGE_START     stage=io2
+[00:00:00] STAGE_END       stage=io2 rc=0 elapsed=0s

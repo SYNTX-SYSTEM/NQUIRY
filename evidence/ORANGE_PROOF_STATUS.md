@@ -334,3 +334,77 @@ Claim ceiling: STAGE RUNNER PROCESS STATUS = REFLECTS THE RECORDED GOVERNED PYTE
 `run` / `xdist` / `serial`. It is a per-stage process fact, never a proof verdict: SERIAL_BASELINE and PARALLEL_PROOF
 verdicts still come only from the analyzers, and the canonical verdict only from `PROOF_END`. Product claims
 unchanged: PCPG-5 2238/2239 with SF-PX-03 OPEN; SWU-PX-03 2252/2252; performance provisional.
+
+## 16. System-wide proof-execution observability and the secret / evidence boundary (Work Unit SFE_PROOF_OBSERVABILITY, 2026-10-05)
+
+Human observation: ORANGE's proof-execution observability was local to this lineage; a PURPLE closure regression
+ran opaque until completion. Reconstructed: PURPLE's runner (`auth-identity: scripts/auth_regression_run.sh`)
+captures the whole live pytest run in a shell variable and reports afterwards (recorded closure run: 31:30). The
+relation "operator observes a running proof" is the same in every Field, so it is SFE infrastructure with one
+producer (ORANGE, the proof-infrastructure Field) and many consumers, not an ORANGE detail.
+
+Materialized (contract: `SFE_PROOF_OBSERVABILITY_CONTRACT.md`, version SFE-PEO/1):
+- `sfe_observe.sh [--stage NAME] [--progress-log FILE] [--events FILE] -- COMMAND [ARG...]`: runs one command as
+  its foreground child and emits STAGE_START, HEARTBEAT and one of STAGE_END / STAGE_FAIL / STAGE_TIMEOUT. It
+  returns the child's exit status unmapped, leaves the child's streams, arguments, environment and working
+  directory untouched, writes events to stderr or an events file (never stdout), and never emits a verdict;
+- one implementation: it sources `progress.sh` and uses only `prog_begin` / `prog_end`. `progress.sh`,
+  `final_closure.sh` and the stage runners are byte-identical to 26bd82e; the chain's PROOF_START / VERDICT /
+  PROOF_END layer stays ORANGE proof semantics and is not part of the system-wide contract;
+- consumption by reference to a lineage commit. The lineage shares no history with any product branch.
+
+Publication failure and repair (TF-PX-09, `SUCCESSOR_FINDINGS.md`). The first version of this Work Unit was
+committed locally as dcf4a82 and its publication was rejected by GitHub Push Protection: falsifier O3e had written
+the child's full environment into two evidence files to prove environment preservation, and the operator's shell
+exports credentials into every process. First broken relation: evidence generation in the proof, not the
+observer (it never read or emitted environment values). Repair, provider- and name-neutral:
+- environment preservation is proven by variable NAMES and one digest; no value is written;
+- the falsifier harness re-executes under `env -i` with a fixed allowlist plus a FIXTURE credential, so no ambient
+  credential enters the proof process, and it fails if the fixture value reaches any evidence file;
+- `evidence_secret_gate.py`: fails if the value of any current environment variable occurs in a file that would be
+  versioned, or in any blob reachable from a revision; reports variable name and file only; reads no `.env`.
+dcf4a82 was never published. It was withdrawn (branch back at 26bd82e), its unreachable objects were deleted from
+the local object store, and every evidence file holding the dump was deleted. This commit is a new one on 26bd82e.
+No application or provider credential, and no `.env` file, was read, printed, rotated or modified.
+
+Proof (`sfe_observe_falsifiers.sh`, `evidence/sfe_observability/`), synthetic children only, no product test, no
+database, no consumer Field modified or executed: 29/29:
+- exit status returned unmapped (0, 1, 2, 3, 5, 77, 124, 126, 127, 255; signal death 143 / 137; unstartable 127);
+- event grammar: start first, at least one heartbeat on a slow child, exactly one terminal event last;
+- stdin and stdout byte-identical, stderr = child stderr + events, events file keeps stderr byte-identical,
+  arguments verbatim; environment (names + digest, a fixture credential reaches the child), cwd and descriptors
+  unchanged;
+- no event outside the grammar or carrying a verdict word; no command line and no secret in events;
+- optional progress from a named log; nested observation composes;
+- a consumer-shaped runner (opaque capture, evidence block on stdout, own exit conjunction): evidence block and
+  exit status identical with and without the observer, heartbeats visible only with it;
+- a terminated observer exits 143, reports no terminal event and leaves the proof running; a killed observer
+  leaves no heartbeat; a failing event sink changes neither the run nor its status; usage errors exit 2;
+- closure of two files with no target-, environment- or Field-specific reference; one event implementation, no
+  verdict machinery; ORANGE chain byte-identical; no orphan process;
+- secret hygiene: proof process environment = the allowlist only; the fixture credential value is in no evidence
+  file; the gate detects a planted value by variable name without printing it, detects a value that only reachable
+  history still holds, and passes this run's own evidence.
+Mutants 18/18 killed (`mutation_driver.sh`, `mutation.log`): the 14 observer mutants (exit always 0, exit mapped to
+0/1, events on stdout, terminal event always rc=0, stdin dropped, arguments re-parsed, command line echoed, event
+descriptor leaked, heartbeat carries a verdict, terminated observer stops the proof, usage error exits 0, unusable
+sink aborts the run, verdict on success, verdict machinery installed), observer dumps the environment into events,
+gate always passes, gate prints the value, gate ignores reachable history. Disclosed (own harness defect): the
+first mutation run gave 17/18 because the "gate always passes" mutant was not applied (its pattern matched two
+places); fixed, all re-run; the driver now also refuses to count a refused run as a kill. First run's logs and
+diffs: `mutation_v1_SUPERSEDED_MO16_not_applied/`. Versioned per mutant: verdict log and mutation diff.
+Regression in the radius: progress falsifiers 22/22, exit-status falsifiers 18/18, bash -n 17/17. Not re-run:
+stage-exit falsifiers, TF-PX-04/05 harness, Python proofs, full canonical chain (inputs byte-identical).
+Gate before this commit: files to be versioned PASS; history reachable from 26bd82e PASS.
+
+Boundaries, recorded and not crossed:
+- no Field adopted the contract; no real Field proof was observed. PURPLE was not modified, executed or contacted;
+- Level-1 binding in `docs/architecture/20_SYSTEM_FIELD_ENGINEERING.md` is Human Authority (two versions of that
+  document exist across the product branches); proposed text in the contract §8;
+- under zero-change adoption a hung child and a working child both show heartbeats;
+- TF-PX-10 (open): the canonical chain's governed pytest children inherit the operator's ambient credentials.
+
+Claim ceiling: SFE-PEO/1 = ONE CANONICAL, FIELD-NEUTRAL OBSERVATION CONTRACT, PROVEN ON SYNTHETIC CONSUMERS AND
+CONSUMABLE BY REFERENCE; ITS PROOF EVIDENCE HOLDS NO ENVIRONMENT VALUE. The gate checks against the environment
+it runs in: it cannot see a credential that is not present in that environment. Existing ORANGE and product
+claims unchanged.

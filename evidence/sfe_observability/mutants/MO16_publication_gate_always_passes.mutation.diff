@@ -1,0 +1,8 @@
+69c69
+<     return 1 if hits else 0
+---
+>     return 0
+88c88
+<     return 1 if hits else 0
+---
+>     return 0

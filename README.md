@@ -38,6 +38,8 @@ Full record: `evidence/ORANGE_PROOF_STATUS.md`; findings / successors: `evidence
 | `final_closure.sh` | the complete closure chain under one environment |
 | `progress.sh`, `progress_falsifiers.sh` | structured progress + heartbeat for the chain (observability only; liveness, never verdicts) and its falsifiers |
 | `exit_status_falsifiers.sh` | falsifiers for the runner exit contract: PROOF_END PASS -> exit 0, anything else -> nonzero |
+| `SFE_PROOF_OBSERVABILITY_CONTRACT.md`, `sfe_observe.sh`, `sfe_observe_falsifiers.sh` | system-wide SFE proof-execution observability contract SFE-PEO/1, its single field-neutral observer (closure: `sfe_observe.sh` + `progress.sh`) and its falsifiers. Consumed by any Field by reference, never copied |
+| `evidence_secret_gate.py` | secret / evidence boundary gate: fails if the value of any current environment variable occurs in a file that would be versioned (provider- and name-neutral; reports names only). Run before every commit of this lineage |
 | `stage_exit_falsifiers.sh` | falsifiers for the stage-runner exit contract (`serial_baseline.sh run`, `parallel_proof.sh xdist` / `serial`): recorded exit code 0 -> exit 0, anything else -> exit 1 |
 | `tooling_falsifiers_tf_px_04_05.sh` | falsifiers for the chain's own pre phase (TF-PX-04) and the governed-subshell bytecode prefix (TF-PX-05) |
 | `timing_stress_probe.sh` | B3 timing probe (its earlier "closure" was falsified by the real run; kept as provenance) |
