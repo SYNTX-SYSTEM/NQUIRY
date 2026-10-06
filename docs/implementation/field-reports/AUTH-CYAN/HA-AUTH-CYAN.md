@@ -459,4 +459,8 @@ Workspace until it founds one. On production today: `tobi` is CASE LOCAL (the Go
   2026-10-04/05 records. **Open now:** Human Frontend Acceptance of ACCOUNT-02 (live without one), RAIL-01, PCPG-06;
   the review-mount rebuild from `9f950c4` (prepared, human-run); root cutover of `9f950c4` after acceptance.
 - **2026-10-06 ASP-03 (HD-AUTH-11):** executed by PURPLE's session 23:53Z; production web = `7d214e6` (ACCOUNT-02 + RECOVERY-01), api `d03d5ce`; recovery UNAVAILABLE until the operator's mail-provider facts exist (external, never a session's). CYAN verification: `CY-03/ASP-03_VERIFICATION_2026-10-06.md`. `7d214e6` is an ancestor of `frontend-symbiotic` `9f950c4`.
+- **2026-10-06 CYAN-ENTRY-01 (human mandate: the complete legitimate entry path for a person without an identity):**
+  `b5297a0` = `checkpoint-CYAN-ENTRY-01`; production projection candidate `8af287d` (production `7d214e6` + the delta) staged
+  on `/cy-review/` and proven against the real API; root cutover prepared, human-run. Stopped relation: account-creation
+  policy discovery (PURPLE). Record `CY-03/WU-CYAN-ENTRY-01.md`.
 

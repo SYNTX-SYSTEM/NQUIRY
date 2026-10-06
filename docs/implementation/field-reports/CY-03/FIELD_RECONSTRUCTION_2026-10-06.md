@@ -46,7 +46,7 @@ propagation; do not preserve an old boundary merely because it was pending.
 |---|---|---|
 | production root `https://nquiry.condyn.eu/` | **web `7d214e6` (ACCOUNT-02 + RECOVERY-01), api `d03d5ce` — ASP-03 live since 2026-10-05T23:53Z (HD-AUTH-11, executed by PURPLE's session; `ASP-03_VERIFICATION_2026-10-06.md`)** | recovery UNAVAILABLE until the operator's mail facts exist; ACCOUNT-02 / RECOVERY-01 surfaces without a recorded Human Frontend Acceptance; RAIL-01 absent (the rail overlap is live) |
 | `origin/frontend-symbiotic` | `9f950c4` = `checkpoint-CYAN-INTEGRATION-02b` | one lineage: production auth state + ACCOUNT-02 + RECOVERY-01 + PCPG-06 + RAIL-01 + `5109e20`; proven |
-| staged `/cy-review/` | `7f42d8e` | SUPERSEDED; rebuild from `9f950c4` prepared, human-run |
+| staged `/cy-review/` | `8af287d` since 2026-10-06T16:34Z (production `7d214e6` + CYAN-ENTRY-01) | the production projection candidate; ENTRY-01 acceptance pending; the `9f950c4` rebuild was superseded by it |
 | `127.0.0.1:13500` | `9f950c4` + RED `checkpoint-PFC-PCPG-18` | PCPG-06 with a real producer reviewable only here; RAIL-01 reviewable here too |
 | `auth-cyan-reconstruction` (PURPLE's worktree) | `572e2fd` (docs only after `7d214e6`) | consumed up to `7d214e6`; `572e2fd` is the next, trivial propagation |
 | PURPLE `auth-identity` | origin `4ae1bc0` (closure #4, HD-AUTH-10/11) — `d03d5ce` deployed by ASP-03 | RECOVERY-01 live but UNAVAILABLE (external mail dependency) |
