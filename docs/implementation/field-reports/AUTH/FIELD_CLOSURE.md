@@ -60,10 +60,25 @@ updated in place):
   alignment). Ownership: host / Deployment Field; the delta was handed to its
   owner. The InternalHosts entry MAIL-01 added for the api's bridge becomes
   effective once that is closed.
+- **Human UI acceptance attempt 2026-10-06 (real user, external mailbox):
+  "Send verification e-mail" → no message arrived.** Inverse trace from the
+  evidence: the request, issuance, rendering, authenticated submission and MX
+  routing all happened (journal: the application's submission at 15:47:11Z,
+  routed to the recipient domain's MX); the delivery is **deferred:
+  `connect … :25: Connection timed out`**. Connect-only probes show TCP 25
+  egress from the host times out to every MX while 587 egress works and no
+  local egress rule exists; the host has never relayed an outbound message.
+  **First broken relation = outbound port 25 at the hosting provider's
+  network policy** — an EXTERNAL boundary owned by the server owner /
+  provider, not an AUTH relation; MAIL-02 stands (local recipient). Until it
+  is lifted (provider unblock request, or a smarthost on 587 chosen by the
+  host operator), external recipients receive nothing; postfix keeps the
+  message queued and retries, but the challenge expires first, so the human
+  must send again afterwards.
 - **Remaining relations of closure #4:** (a) **Human acceptance of the real
   recovery flow on the production UI** (HD-AUTH-09 pattern; needs the human's
-  own mailbox) — a Human Authority step, not derivable; (b) the DKIM delta
-  (host Field); (c) section C/D leftovers (push/integration of
+  own mailbox) — blocked by the port-25 boundary above until lifted; (b) the
+  DKIM delta (host Field); (c) section C/D leftovers (push/integration of
   `auth-cyan-reconstruction`, `/cy-review` mount, `nquiry-cy01-candidate`,
   the unreferenced assembly, DNS notes: PTR, duplicate `_dmarc` record).
 
