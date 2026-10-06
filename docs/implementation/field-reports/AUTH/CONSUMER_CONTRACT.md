@@ -109,7 +109,6 @@ leaves the address bar, the DOM and storage.
 HA-AUTH-03 last method (NEVER), 24 §36 #13 re-enable / administrative
 recovery, #18 multi-account UX (a live session starting a provider login is
 not refused), PFC HA-10 business-path DB principal. HA-AUTH-02 is resolved
-(HD-AUTH-10); the production mail-provider facts (#16: sender identity and
-SMTP submission credentials) are an external dependency of the deployment —
-until configured, `/auth/contacts` says UNAVAILABLE and the consumer offers
-nothing. None changes a shape above.
+(HD-AUTH-10) and **live since 2026-10-06 (HD-AUTH-12): production
+`/auth/contacts` answers AVAILABLE / AVAILABLE and the lifecycle is proven
+with real delivery**. None changes a shape above.

@@ -24,9 +24,9 @@ chamber verification relation, `/account/verify-email`, `/recover`,
 `/recover/reset`, login contact; cross-lineage real lane 14 / 14 incl.
 verification → recovery → login with the new password). **ASP-03 live since 2026-10-05T23:53Z** (api `d03d5ce` as assembly
 `auth-d03d5ce-20261005T235257Z`, web `7d214e6`, head `e3a5c7d9f1b4`; runtime:
-recovery policy VERIFIED_EMAIL_SELF_SERVICE, public web base url). Production
-answers `/auth/contacts` UNAVAILABLE until the operator's mail-provider facts
-exist (external dependency; `HUMAN_DECISIONS.md` HD-AUTH-10; `FIELD_CLOSURE.md`
+recovery policy VERIFIED_EMAIL_SELF_SERVICE, public web base url). **MAIL-01 / MAIL-02 (2026-10-06, HD-AUTH-12): production e-mail delivery
+materialized and the complete verified-e-mail recovery lifecycle proven live
+with real delivery; `/auth/contacts` → AVAILABLE / AVAILABLE** (`evidence/mail_01_02_production_proof.txt`; `HUMAN_DECISIONS.md` HD-AUTH-10; `FIELD_CLOSURE.md`
 "Closure #4"). Earlier closure #3 line, kept:
 
 **FIELD_CLOSED_WITH_ONE_RECORDED_HUMAN_BOUNDARY — closure #3 (2026-10-05T15:24Z):**

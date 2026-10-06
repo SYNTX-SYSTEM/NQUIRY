@@ -1,0 +1,52 @@
+MAIL-01 / MAIL-02 — production e-mail delivery and the verified-e-mail recovery lifecycle, 2026-10-06
+(human-authorized materialization; scripts prepared by the engineering session, executed by the human on the host because
+the engineering environment's permission layer refuses production actions in this scope; outcomes as reported back.
+No secret, token, address of a third party or message body is recorded here.)
+
+== MAIL-01 — materialization (baseline _baseline-pre-MAIL-20261006T003644Z, ROLLBACK-mail.sh) ==
+design: reuse the host MTA (mail.condyn.eu = MX/SPF/DKIM/DMARC of condyn.eu); ONE sending identity for the application
+  account nquiry (no shell) / sender nquiry@condyn.eu; password generated on the host, set via PAM, present only in the
+  production runtime file (0600) and the api container's environment; postfix sender-login map nquiry@condyn.eu -> nquiry
+  enforced on the submission service only (reject_known_sender_login_mismatch: other users untouched); no mynetworks,
+  dovecot, DNS or nginx change.
+run 1 (00:36Z): steps 1-4 done; step 5 (real submission through the product sink) printed nothing -> harness defect
+  (docker run without -i; nothing submitted). Repaired: materialize-mail-continue.sh.
+run 2: step 5 refused SSLCertVerificationError -> inverse trace: chain/SAN/CA correct, leaf EXPIRED 2026-08-06 (renewal
+  profile standalone vs nginx on :80). Ownership: host/Deployment Field -> FELD_NQUIRY_DEPLOYMENT_f5 re-issued it
+  (webroot, postfix reload hook, dry-run ok; valid 2026-10-06 .. 2027-01-04; independently verified: return code 0).
+run 3: step 5 PASS (sink delivered: ok; 1 message; From nquiry@condyn.eu; Subject "nquiry: verify your e-mail address";
+  1 link line; 1 authenticated submission logged). Step 6: api recreated but /auth/contacts stayed UNAVAILABLE -> the
+  script restored the runtime file and recreated the api (fail-closed). Inverse trace: compose.yaml hands the api an
+  EXPLICIT environment map; facts only in the runtime file never reach the container (this is also why ASP-03's
+  NQUIRY_PUBLIC_WEB_BASE_URL had not reached it — F-ASP3-1, harmless: relative fallbacks). Repaired at the root:
+  materialize-mail-resume.sh = +8 compose entries (PUBLIC_WEB_BASE_URL, EMAIL_DELIVERY_MODE, SMTP_HOST/PORT/SECURITY/
+  FROM/USERNAME/PASSWORD), sender password rotated (the first value was gone by design), facts rewritten, real submission
+  with the rotated credential, api recreated.
+run 4 (resume): MAIL-01 DONE — live /auth/contacts {"kind":"ok","recovery":"AVAILABLE","emailVerification":"AVAILABLE"};
+  opendkim InternalHosts += 172.19.0.0/16 (additive; see DKIM below).
+
+== MAIL-02 — real lifecycle proof on production (prove-mail-lifecycle.sh) ==
+run 1: stopped at verification complete 403 VERIFICATION_DENIED -> inverse trace: harness selected the OLDEST subject
+  match (a MAIL-01 smoke message with a dummy challenge); the API answered UNKNOWN_CHALLENGE as designed. Harness repaired
+  (newest message for THIS run's address, newer than the step start); unique proof address per run
+  (nquiry+mail02-<ts>@condyn.eu, recipient_delimiter=+); the first run's identity superseded by operator disable.
+run 2: COMPLETE —
+  previous proof identity disabled (sessions revoked) · new LOCAL_PASSWORD proof identity created (HD-28 command)
+  login 200 · verified addresses before = [] · verification start 200 · REAL verification mail delivered
+  verification complete 200 · the address became ACTIVE · reuse of the link 403 VERIFICATION_DENIED
+  logout 200 · recovery start (known, verified) 200 {kind: ok} · recovery start (unknown) 200 {kind: ok} (the one answer)
+  REAL recovery mail delivered for the known address only · messages for the unknown address = 0
+  recovery complete 200 · Set-Cookie headers = 0 (no session from recovery)
+  old password 401 INVALID_CREDENTIALS · new password 200 · reuse of the recovery link 403 RECOVERY_DENIED
+  LOCAL_PASSWORD method ACTIVE
+  security events of the proof identity: EMAIL_VERIFICATION_ISSUED=1, EMAIL_VERIFICATION_COMPLETED=1, IDENTITY_CREATED=1,
+    LOGIN_SUCCEEDED=2, LOGOUT=1, RECOVERY_ISSUED=1, RECOVERY_COMPLETED=1, PASSWORD_RESET=1; MAIL_DELIVERY_FAILED (1 h) = 0
+  cleanup: proof identity disabled by the host operator (sessionsRevoked=1); login after disable 401
+
+== DKIM observation (not an AUTH relation) ==
+DKIM-Signature headers = 0 on every delivered message. Inverse trace (read-only): InternalHosts entry present and opendkim
+signalled; opendkim shows no activity at all; postfix journal: "warning: connect to Milter service
+unix:/run/opendkim/opendkim.sock: No such file or directory" on every submission — smtpd/submission/cleanup run chrooted
+and the socket is outside /var/spool/postfix; milter_default_action=accept -> unsigned delivery. Pre-existing for every
+sender of the host. DMARC still passes on SPF alignment (envelope condyn.eu from 49.13.3.21). Ownership: host/Deployment
+Field; delta emitted in FIELD_CLOSURE.md.

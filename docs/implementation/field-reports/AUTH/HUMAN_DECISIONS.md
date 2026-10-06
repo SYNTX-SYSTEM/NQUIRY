@@ -373,6 +373,26 @@ create, infer, expose, or modify production mail-provider credentials."
 No mail-provider credential was created, read, inferred or changed; the
 production runtime carries the decided policy and the public web origin only.
 
+## HD-AUTH-12 — production e-mail delivery authorized for autonomous materialization (2026-10-06)
+
+**Decision (human operator, verbatim essentials):** "The remaining production
+e-mail delivery dependency is authorized for autonomous materialization …
+You are authorized to create and configure the required mail infrastructure,
+sender identity, authentication material, runtime configuration and
+supporting host relations yourself … Reuse legitimate existing infrastructure
+where appropriate … Create and manage required credentials locally. Never
+expose secrets … Preserve unrelated existing mail services and host functions
+… prove the real external effect end-to-end, including actual mail delivery
+and the complete verified-email password-recovery lifecycle." Later refined:
+ownership of a root relation is reconstructed, not assumed (the host TLS
+certificate belonged to and was closed by FELD_NQUIRY_DEPLOYMENT_f5).
+
+**Executed 2026-10-06** (scripts from the engineering session, run by the
+human on the host; the engineering environment's permission layer refuses
+production actions in this scope): `FIELD_CLOSURE.md` "Closure #4",
+`evidence/mail_01_02_production_proof.txt`. 24 §36 #16 is thereby decided and
+materialized: the deployment's own MTA with one application sending identity.
+
 ## Open boundaries (OPEN, awaiting the operator)
 
 | # | Boundary | Home | What it blocks | Default in force | Status |

@@ -30,21 +30,42 @@ updated in place):
 
 - PURPLE closure regression #4 on `accb976` (`evidence/field_closure_4_regression.txt`): **2538 passed / 2 skipped** (0:46:53), no-DB 1030, 44 migrations single head `e3a5c7d9f1b4`, tree hash unchanged during the run. CYAN mocked preservation set 194 passed, cy11 10 / 10, cross-lineage real lane 14 / 14.
 - ASP-03 propagation: **DONE 2026-10-05T23:53Z** (human-authorized, HD-AUTH-11) — api assembly `auth-d03d5ce-20261005T235257Z` (source `accb976`, code `d03d5ce`), web assembly `cyanroot-7d214e6-20261005T235257Z`; head `e3a5c7d9f1b4` unchanged (no migration); runtime now carries the decided policy and the public web origin, no mail facts; baseline `_baseline-pre-ASP03-20261005T235257Z` with its rollback script. Verified read-only (`evidence/asp03_production_state.txt`): `/auth/contacts` → recovery UNAVAILABLE / emailVerification UNAVAILABLE; recovery start / complete → 503 `RECOVERY_NOT_AVAILABLE`; verification start → 401 without a session; `/recover`, `/recover/reset`, `/account/verify-email` served; the login withholds the recovery contact; Google start unchanged; preservation diff = the two recreated containers only.
-- **MAIL-01 (2026-10-06, human-authorized materialization of the mail dependency, run by the human on the host; scripts in the engineering scratchpad):** steps 1–4 DONE — sending account `nquiry` (no shell), postfix sender-login map `nquiry@condyn.eu → nquiry` enforced on the submission service only (`reject_known_sender_login_mismatch`; other users untouched), the seven `NQUIRY_SMTP_*` / delivery-mode facts in the production runtime file (0600; never printed). Step 5 (real submission through the product's `SmtpMailSink`) **refused: `SSLCertVerificationError`** — the api is NOT yet recreated, `/auth/contacts` still UNAVAILABLE; baseline `_baseline-pre-MAIL-20261006T003644Z`. **First broken relation reconstructed (read-only):** the chain, SAN and intermediate presented on `mail.condyn.eu:587` are correct; the leaf certificate **expired 2026-08-06** because its certbot renewal profile is `authenticator = standalone` (binds :80) while nginx has owned :80 since the web deployments → every renewal since June failed (`StandaloneBindError`). Verification is correct and must stay; the repair is the host certificate lifecycle. **Ownership: the host operator / NQUIRY Deployment Field (FELD_NQUIRY_DEPLOYMENT_f5 law: never edit foreign nginx files or use certbot --nginx; only `nquiry.condyn.eu` is NQUIRY's certificate) — not PURPLE.** Cross-Field delta required there: re-issue `mail.condyn.eu` with an nginx-coexisting authenticator and a postfix reload hook (the nginx default server on :80 serves `/var/www/html` and answers the challenge path with 404, not a redirect, so `webroot -w /var/www/html` is viable), then rerun `materialize-mail-continue.sh`. PURPLE resumes at step 5 once the certificate is valid.
-- **EXTERNAL DEPENDENCY (not a Human Authority decision):** the production
-  host's MTA (`mail.condyn.eu`, postfix, submission 587 + TLS) relays only
-  for loopback or SASL-authenticated clients, and the api container is a
-  bridge client. Activating recovery on production therefore needs, in the
-  production `.env`: `NQUIRY_EMAIL_DELIVERY_MODE=smtp`,
-  `NQUIRY_SMTP_HOST`/`PORT=587`/`SECURITY=starttls`, `NQUIRY_SMTP_FROM` (a
-  sender identity of that MTA), `NQUIRY_SMTP_USERNAME`/`PASSWORD` (a SASL
-  credential of that MTA — created by its operator, never by this Field),
-  `NQUIRY_PUBLIC_WEB_BASE_URL=https://nquiry.condyn.eu`,
-  `NQUIRY_RECOVERY_POLICY=VERIFIED_EMAIL_SELF_SERVICE`. Until they exist,
-  the deployed product says "recovery is not available on this deployment"
-  (`/auth/contacts` UNAVAILABLE) — a disclosed state, not a silent default.
-  Section A below is thereby RESOLVED as a decision and OPEN only as this
-  operational fact.
+- *(history)* MAIL-01 first runs 2026-10-06: steps 1–4 done, step 5 refused by TLS (expired host certificate; closed by the Deployment Field), then step 6 fail-closed on container propagation — superseded by the next bullet.
+- **MAIL-01 DONE / MAIL-02 PROVEN (2026-10-06; HD-AUTH-12):** the mail
+  dependency is materialized and the complete verified-e-mail recovery
+  lifecycle is proven on production with real delivery
+  (`evidence/mail_01_02_production_proof.txt`). Design: the host MTA reused
+  as the domain's legitimate sender; one application sending identity,
+  credential only in the runtime file and the api container, scoped to its
+  sender address on the submission service; nothing else of the host's mail
+  service changed. Four relations broke on the way and were repaired at
+  their root — two harness defects, the host TLS certificate (owned and
+  closed by FELD_NQUIRY_DEPLOYMENT_f5), and **F-ASP3-1**: the api receives
+  an explicit environment map from compose, so a runtime fact needs a
+  compose entry (ASP-03's `NQUIRY_PUBLIC_WEB_BASE_URL` had never reached the
+  container; harmless by the relative fallbacks; repaired together with the
+  mail facts). Production now: `/auth/contacts` →
+  **`recovery AVAILABLE / emailVerification AVAILABLE`**; the product offers
+  the recovery contact and the verification control. MAIL-02 proved live:
+  verification mail → ACTIVE relation → single-use link; recovery start = the
+  one answer for known and unknown, mail only for the known; recovery
+  complete without a session; old password refused, new one logs in; link
+  single-use; the audit classes `EMAIL_VERIFICATION_ISSUED/COMPLETED`,
+  `RECOVERY_ISSUED/COMPLETED`, `PASSWORD_RESET`; `MAIL_DELIVERY_FAILED` = 0;
+  proof identity disabled afterwards. **24 §17.6–17.7 proven in production.**
+  Section A below is thereby RESOLVED and materialized.
+- **Residual observation, not an AUTH relation:** delivered messages carry no
+  DKIM signature — the host's milter is not reachable from postfix's chrooted
+  services (pre-existing, for every sender of the host; DMARC passes on SPF
+  alignment). Ownership: host / Deployment Field; the delta was handed to its
+  owner. The InternalHosts entry MAIL-01 added for the api's bridge becomes
+  effective once that is closed.
+- **Remaining relations of closure #4:** (a) **Human acceptance of the real
+  recovery flow on the production UI** (HD-AUTH-09 pattern; needs the human's
+  own mailbox) — a Human Authority step, not derivable; (b) the DKIM delta
+  (host Field); (c) section C/D leftovers (push/integration of
+  `auth-cyan-reconstruction`, `/cy-review` mount, `nquiry-cy01-candidate`,
+  the unreferenced assembly, DNS notes: PTR, duplicate `_dmarc` record).
 
 ## Closure #3 (2026-10-05, mandate "complete and close as a complete operational product field")
 
