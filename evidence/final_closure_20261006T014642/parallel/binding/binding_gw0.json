@@ -1,0 +1,13 @@
+{
+ "workerid": "gw0",
+ "pid": 1606665,
+ "database": "nquiry_proof_gw0_test",
+ "observed": {
+  "current_database": "nquiry_proof_gw0_test",
+  "head": [
+   "e8c2a5f1b7d4"
+  ],
+  "foreign_connections": 0,
+  "nonempty_tables": {}
+ }
+}

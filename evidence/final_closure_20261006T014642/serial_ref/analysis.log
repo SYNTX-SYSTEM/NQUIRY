@@ -1,0 +1,20 @@
+canonical identities: 2239 (volatile raw ids canonicalized: 2)
+    test_malformed_input_is_refused[dev-<uuid4hex10>@dev.local.test- -dev-password-123]  raw collected=test_malformed_input_is_refused[dev-39b41d3ee4@dev.local.test- -dev-password-123]  raw executed=['test_malformed_input_is_refused[dev-c1e0aba774@dev.local.test- -dev-password-123]']  = passed
+    test_malformed_input_is_refused[dev-<uuid4hex10>@dev.local.test-A-short]  raw collected=test_malformed_input_is_refused[dev-a310c8a5b7@dev.local.test-A-short]  raw executed=['test_malformed_input_is_refused[dev-2e61d228cc@dev.local.test-A-short]']  = passed
+collected=2239 executed_in_junit=2239 counts={'passed': 2237, 'skipped': 2}
+concurrency states: ['passed']
+COLLECTED_2239::PASS
+EXECUTED_SET_EQUALS_COLLECTION::PASS
+SKIP_SET_EQUALS_DECLARED_2::PASS
+ZERO_FAILURES_ERRORS::PASS
+CONCURRENCY_13_EXECUTED::PASS
+EXIT_CODE_0::PASS
+TREE_UNCHANGED::PASS
+ENV_MANIFEST_UNCHANGED::PASS
+GUARD_GREEN_BEFORE_AND_AFTER::PASS
+PROOF_DBS_SAME_HEAD_FINGERPRINT::PASS
+PROOF_DBS_CLEAN_AFTER::PASS
+PROOF_DBS_NO_CONNECTIONS_AFTER::PASS
+NO_RESIDUAL_RACE_DB::PASS
+NO_RESIDUAL_ZZ_PKG25_ROLE::PASS
+SERIAL_BASELINE::PASS

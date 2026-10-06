@@ -317,3 +317,8 @@ Options: (a) keep the denylist, documented as inert for the frozen target; (b) a
 the three scripts with the harness updates and one fresh canonical chain. Recommendation: (b) before any successor
 target that reads provider credentials is proven; (a) is sufficient for the frozen PCPG-5 record.
 
+## TF-PX-10 — CLOSED in canonical ORANGE lineage (2026-10-06)
+Human Authority authorized the allowlist and the fresh canonical chain. `H()` in the three scripts is `env -i` plus
+the fixed allowlist; proof and the fresh reference chain (PASS end to end, 2239 / 2239 observed, snapshot identical)
+in `ORANGE_PROOF_STATUS.md` §18, `evidence/proof_env_allowlist/`, `evidence/final_closure_20261006T014642/`.
+

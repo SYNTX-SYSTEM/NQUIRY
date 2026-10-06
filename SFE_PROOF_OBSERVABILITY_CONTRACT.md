@@ -132,7 +132,14 @@ Adoption is each Field's decision. No Field is modified by this contract.
 - It is a bash implementation for POSIX hosts. Frontend lanes (Playwright, vitest) can be observed as a child
   command like any other; nothing frontend-specific exists.
 
-## 8. Boundary: Level-1 binding (Human Authority)
+## 8. Level-1 binding
+
+**Done (2026-10-06).** Human Authority accepted SFE-PEO/1 as a system-wide Level-1 relation. The binding is
+`20_SYSTEM_FIELD_ENGINEERING.md` §12A with `16_DECISION_GAP_REGISTER.md` §41 REC-033, committed on `pfc-integration`
+(`0885ebf`), the reconstructed authoritative lineage of those documents (`evidence/ORANGE_PROOF_STATUS.md` §18).
+The text below is the proposal as it was recorded before placement; §12A as committed is the authoritative wording.
+
+### 8a. Boundary as recorded before the binding (historical)
 
 SFE's governing architecture is `docs/architecture/20_SYSTEM_FIELD_ENGINEERING.md`. Making observability a
 Level-1 law means amending that document. This lineage does not do it, for two reasons found in the repository:

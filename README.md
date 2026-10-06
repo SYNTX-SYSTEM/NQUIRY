@@ -67,6 +67,10 @@ Drivers write only to NEW directories (`ORANGE_SERIAL_DIR`, `ORANGE_PARALLEL_DIR
 (`ORANGE_CATALOG_DB`). Proof DBs: `nquiry_proof_serial_test`, `nquiry_proof_gw{0..3}_test` on 127.0.0.1:15432.
 Local-dev-only credentials (`nquiry_local_dev_only`) follow the repository's existing local convention.
 
+Governed children (pytest on the target, the guard, collection) receive an ALLOWLIST environment (`env -i`: process
+basics, locale, `ORANGE_CATALOG_DB`, and what the runner sets). Nothing else from the operator shell reaches them
+(TF-PX-10). Run `evidence_secret_gate.py` before every commit of this lineage.
+
 Process exit status. `final_closure.sh`: 0 only for `PROOF_END verdict=PASS`, otherwise nonzero. The proof-executing
 stage phases (`serial_baseline.sh run`, `parallel_proof.sh xdist`, `parallel_proof.sh serial`): 0 only if the recorded
 `*_exit_code.txt` is 0, otherwise 1; the raw pytest code stays in that file and on stdout. `pre` exits 1 only when it

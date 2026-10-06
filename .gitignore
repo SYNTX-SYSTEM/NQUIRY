@@ -83,3 +83,19 @@ observer.stop
 /evidence/proof_env_allowlist/regression/tf_px_04_05/t04a/serial_ref/pre_collect_raw.txt
 # proof_env_allowlist per-mutant run directories (each mutant's verdict log + mutation diff ARE versioned; kept locally)
 /evidence/proof_env_allowlist/mutants/*/
+
+# final_closure_20261006T014642 raw outputs > 100 KB (hash-recorded in its EVIDENCE_MANIFEST.tsv; kept locally)
+/evidence/final_closure_20261006T014642/parallel/aggregated_outcomes.tsv
+/evidence/final_closure_20261006T014642/parallel/partition/full_nodeids.txt
+/evidence/final_closure_20261006T014642/parallel/partition/full_raw.txt
+/evidence/final_closure_20261006T014642/parallel/partition/xdist_nodeids.txt
+/evidence/final_closure_20261006T014642/parallel/partition/xdist_raw.txt
+/evidence/final_closure_20261006T014642/parallel/xdist_junit.xml
+/evidence/final_closure_20261006T014642/parallel/xdist_run.log
+/evidence/final_closure_20261006T014642/serial_ref/canonical_outcomes.tsv
+/evidence/final_closure_20261006T014642/serial_ref/collected_nodeids.txt
+/evidence/final_closure_20261006T014642/serial_ref/junit.xml
+/evidence/final_closure_20261006T014642/serial_ref/pre_collect_raw.txt
+/evidence/final_closure_20261006T014642/serial_ref/run.log
+/evidence/final_closure_20261006T014642/parallel/observer.stop
+/evidence/final_closure_20261006T014642/serial_ref/observer.stop

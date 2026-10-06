@@ -424,3 +424,56 @@ Remaining relations, both at a Human Authority boundary, nothing changed for the
   have §12 and §13 once and no §12A, so the proposed section (contract §8) fits either. Which branch or branches
   receive it, and when the Fields take it over, is a Human decision; each placement modifies a product branch.
 
+## 18. Proof-environment allowlist (TF-PX-10) and the fresh canonical reference chain (2026-10-06)
+
+Human Authority 2026-10-06 authorized the allowlist and the fresh chain, and accepted SFE-PEO/1 as a Level-1 relation.
+
+Delta (lineage commit 35e7d55): `H()` in `serial_baseline.sh`, `parallel_proof.sh` and `partition.sh` is now
+`env -i` plus a fixed allowlist (PATH, HOME, USER, LOGNAME, LANG, LANGUAGE, LC_*, TZ, TMPDIR, ORANGE_CATALOG_DB) and
+what the runner sets itself (PYTHONNOUSERSITE, the bytecode variable, DATABASE_URL or the xdist lane variables).
+Before, a fixed list was unset and the rest of the operator environment (107 variables in the probe, credentials
+included) reached every governed pytest, guard and collection process. Outside `H()` the three scripts are
+unchanged; `final_closure.sh` and `progress.sh` are byte-identical. `binding_proof.sh` and `px1_falsifiers.sh`
+keep their own denylist helpers: they are falsifier harnesses of the plugins, not the chain, and the allowlist is
+stricter than what they prove against.
+
+Local proof (`evidence/proof_env_allowlist/`): `stage_exit_falsifiers.sh` 46/46, now with S12 on the real runner
+scripts (one substituted root line): an ambient fixture credential, variables the target reads, PYTHONPATH and an
+ambient DATABASE_URL never reach the child; the allowlisted and runner-set variables do; the base runners really
+passed them (documents the defect); the stub is configured by a file because the runners scrub the environment;
+the harness runs under `env -i` and S13 fails if the fixture value reaches any evidence file. Mutants 19/19: 8 for
+the allowlist (denylist restored, a credential-like or a target-read variable allowlisted, catalog selector
+dropped, `env -i` removed, only the serial runner or not the partition collection converted, bytecode prefix
+dropped) and the 11 STAGE_EXIT_STATUS mutants again on the reworked harness. Regression in the radius: progress
+falsifiers 22/22 and TF-PX-04/05 12/12 (both run the real serial pre phase under the allowlist: 2239 collected,
+guard and proof-DB preconditions PASS), exit-status 18/18, SFE-PEO/1 29/29, bash -n 19/19, secret gate PASS.
+
+FRESH CANONICAL REFERENCE CHAIN (`final_closure.sh` at 35e7d55, unmodified, frozen `checkpoint-PFC-PCPG-5`
+e0a6b3b, PCPG-5 environment; started only after no other proof ran on the machine and the load was below 4;
+evidence `evidence/final_closure_20261006T014642/`, hash manifest, run stdout `closure.log`, snapshots):
+
+| Phase | Result |
+|---|---|
+| Pre phases | not refused; serial collection 2239; PARTITION_PROOF 24/24 |
+| Serial reference | 2237 passed / 2 declared skips / 0 failed in 807.5 s; SERIAL_BASELINE::PASS; instrumentation inert vs `final_closure/serial_ref` |
+| Governed xdist (2235) | 2233 passed + 2 declared skips, exit 0, 357.9 s |
+| Governed serial (4) | 4 / 4 passed, exit 0, 4.2 s |
+| Aggregation / order | AGGREGATION_AND_EQUIVALENCE::PASS (2239 nodes); PARALLEL_PROOF::PASS; ORDER_PROOF::PASS |
+| Tree / env / DBs | frozen tree unchanged (0 entries, content `ba25b56f…`); env manifest unchanged; heads and fingerprint unchanged; proof DBs clean, no connections, no residual race DB or role |
+| Verdicts / exit | 69 verdicts read, 0 failures; PROOF_END verdict=PASS; process exit 0 |
+| Snapshot | before/after identical: both frozen trees, both tags, both environments, the 355 original evidence files |
+
+This run is the reference for the allowlist environment. Claim ceiling unchanged in kind: historical
+`checkpoint-PFC-PCPG-5` stays 2238 / 2239 with SF-PX-03 OPEN; this run's 2239 / 2239 is an observation (the
+SF-PX-03 node passed again in the governed serial partition); governed 362.1 s vs serial 807.5 s = 2.23x for this
+measurement only. TF-PX-10 = CLOSED.
+
+Level-1 binding: `docs/architecture/20_SYSTEM_FIELD_ENGINEERING.md` §12A and `16_DECISION_GAP_REGISTER.md` §41
+REC-033 are committed on `pfc-integration` (`0885ebf`, documentation only; the 319 tests that read the architecture
+documents pass without a database). Ownership was reconstructed from the lineage, not from the presence of a copy:
+document 20 has one linear history (F02 `2f33be1` -> F03 `0d59ae3` -> F04 `d9410b3`); `pfc-integration` is the
+continuation of both `master` and the F04 line (PFC-I1 integrated them), it is where documents 16 and 20 were last
+amended and where the cross-Field Architecture 27 was placed, and `auth-identity` and `swu-px-03-worker-readiness`
+fork from it. The copy on `master` is the older ancestor version, not a divergent one (correcting §17). Other
+branches take the section over at their own integration; no Field is bound to adopt at a given time.
+

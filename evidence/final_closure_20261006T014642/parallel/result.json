@@ -1,0 +1,45 @@
+{
+ "checks": {
+  "AGGREGATION_AND_EQUIVALENCE": true,
+  "TREE_UNCHANGED": true,
+  "ENV_MANIFEST_UNCHANGED": true,
+  "IMPORT_ORIGIN_GUARD_VALID": true,
+  "MIGRATION_HEADS_AND_FINGERPRINT_UNCHANGED": true,
+  "PROOF_DBS_CLEAN_AND_UNCONNECTED_AFTER": true,
+  "NO_RESIDUAL_RACE_DB": true,
+  "NO_RESIDUAL_ZZ_PKG25_ROLE": true,
+  "OBSERVED_OBJECTS_ATTRIBUTABLE": true
+ },
+ "violations": [],
+ "counts": {
+  "xdist": {
+   "passed": 2233,
+   "skipped": 2
+  },
+  "serial": {
+   "passed": 4
+  }
+ },
+ "durations_s": {
+  "xdist": 357.92760848999023,
+  "serial": 4.212325811386108,
+  "total": 362.13993430137634,
+  "serial_baseline": 807.55
+ },
+ "observed_created": [
+  "db:race_1b12d21fb5",
+  "db:race_2c9cb2f88c",
+  "db:race_32d0be89d4",
+  "db:race_76e7c3fe57",
+  "db:race_7f635ad2eb",
+  "db:race_87b1e9b853",
+  "db:race_a3ef9c1c35",
+  "db:race_a63c3406d7",
+  "db:race_b27deca46b",
+  "db:race_c0781fe5fd",
+  "db:race_c092e0d699",
+  "db:race_ce462d2668",
+  "db:race_eac42bad0a"
+ ],
+ "claim": "2235 nodes executed under governed 4-worker parallelism + 4 nodes executed under governed serial execution (3 volatile-identity nodes + 1 fixed-time-window node, SF-PX-03) = complete 2239-node frozen-field coverage"
+}
