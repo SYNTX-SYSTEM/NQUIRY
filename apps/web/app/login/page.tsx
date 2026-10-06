@@ -37,6 +37,8 @@ import { FieldBackground } from "../../components/field/FieldBackground";
 import { Identity } from "../../components/field/Identity";
 import { AuthBoundary } from "../../components/field/AuthBoundary";
 import { ProviderContact } from "../../components/field/ProviderContact";
+import { EntryPath } from "../../components/field/EntryPath";
+import { entryPathFrom } from "../../lib/field/entryPath";
 import { login } from "../../lib/api/authClient";
 import { mountPath } from "../../lib/field/mount";
 import { useAuthBoundary } from "../../lib/field/useAuthBoundary";
@@ -158,6 +160,7 @@ export default function LoginPage() {
               </Link>
             </p>
           ) : null}
+          <EntryPath entry={entryPathFrom(providerContact)} />
           <AuthBoundary boundary={providerBoundary} />
           {submitting ? (
             <p className="access-status effect-intent" role="status" data-testid="login-pending">

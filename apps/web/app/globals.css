@@ -6898,3 +6898,21 @@ h3.chamber-title {
   margin-top: var(--space-3);
   text-align: center;
 }
+
+/* ============================================================ CYAN-ENTRY-01 · the entry path of a person without an identity
+   Words inside the Access core below the contacts: provider entry (labels from the server), the operator's local entry,
+   LINK != LOGIN. No control. */
+.access-entry {
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.access-entry p {
+  margin: 0 0 var(--space-2);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+.access-entry p:last-child {
+  margin-bottom: 0;
+}
+
