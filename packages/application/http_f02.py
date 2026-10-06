@@ -51,6 +51,7 @@ from persistence.command_repository import (
     CommandWorkspaceMismatch,
 )
 from persistence.engine import connect
+from persistence.identity_repository import SqlAlchemyIdentityRepository
 from persistence.local_auth_repository import SqlAlchemyLocalSessionRepository
 from semantic_types.ids import ChallengeId, CommandId, SessionId, UserId, WorkspaceId
 from semantic_types.versions import MethodVersion
@@ -121,6 +122,12 @@ def _with_actor(
             )
             if principal is None:
                 return _denied("NO_VALID_SESSION", 401)
+            # WU-AUTH-22 (HD-AUTH-13): an identity that exists but is not yet
+            # established for normal use (self-registered, address unverified)
+            # may authenticate and use the authentication surface, but no
+            # business relation — identity is necessary, not sufficient (06 §7).
+            if not SqlAlchemyIdentityRepository(connection).is_established(principal.user_id):
+                return _denied("IDENTITY_NOT_ESTABLISHED", 403)
             return work(GovernedPorts(connection), principal)
     except _Rejected as exc:
         return _rejected(exc.reason_code)

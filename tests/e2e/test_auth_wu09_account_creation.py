@@ -349,6 +349,7 @@ def test_a_provider_email_matching_an_existing_identity_is_a_collision_not_a_lin
             name="Existing",
             record_version=1,
             created_at=_NOW,
+            established_at=_NOW,  # WU-AUTH-22: established
             updated_at=_NOW,
         )
     )

@@ -98,6 +98,7 @@ def _identity(
             name=name,
             record_version=1,
             created_at=_NOW,
+            established_at=_NOW,  # WU-AUTH-22: established
             updated_at=_NOW,
         )
     )
@@ -200,7 +201,7 @@ def test_a_local_password_session_reads_its_own_identity_presentation(
 def test_auth_me_keeps_its_verdict_shape(db_connection: sa.Connection, client: TestClient) -> None:
     _, email = _identity(db_connection)
     _login(client, email)
-    assert set(client.get("/auth/me").json()) == {"kind", "userId"}
+    assert set(client.get("/auth/me").json()) == {"kind", "userId", "establishment"}  # WU-AUTH-22
 
 
 def test_unauthenticated_requests_leak_no_presentation(client: TestClient) -> None:

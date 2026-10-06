@@ -107,6 +107,7 @@ def provision_dev_identity(
                 name=name.strip(),
                 record_version=1,
                 created_at=now,
+                established_at=now,  # WU-AUTH-22: established
                 updated_at=now,
             )
         )

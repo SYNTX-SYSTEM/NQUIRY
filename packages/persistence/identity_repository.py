@@ -32,7 +32,18 @@ class SqlAlchemyIdentityRepository:
             is not None
         )
 
-    def create(self, *, user_id: UserId, email: str, name: str, now: datetime) -> None:
+    def create(
+        self,
+        *,
+        user_id: UserId,
+        email: str,
+        name: str,
+        now: datetime,
+        established_at: datetime | None,
+    ) -> None:
+        """WU-AUTH-22: `established_at` is the creation path's statement — the
+        host operator and a verified provider credential establish at creation
+        (`now`); self-registration passes None (PENDING_EMAIL_VERIFICATION)."""
         self._connection.execute(
             sa.insert(users_table).values(
                 id=user_id.value,
@@ -41,8 +52,42 @@ class SqlAlchemyIdentityRepository:
                 record_version=1,
                 created_at=now,
                 updated_at=now,
+                established_at=established_at,
             )
         )
+
+    # --- WU-AUTH-22 (HD-AUTH-13: establishment) -------------------------------
+
+    def canonical_email(self, user_id: UserId) -> str | None:
+        row = self._connection.execute(
+            sa.select(users_table.c.email).where(users_table.c.id == user_id.value)
+        ).first()
+        return None if row is None else row.email.strip().lower()
+
+    def is_established(self, user_id: UserId) -> bool:
+        """True when the identity exists and is established for normal use."""
+        return (
+            self._connection.execute(
+                sa.select(users_table.c.id).where(
+                    users_table.c.id == user_id.value, users_table.c.established_at.isnot(None)
+                )
+            ).first()
+            is not None
+        )
+
+    def establish(self, user_id: UserId, *, now: datetime) -> bool:
+        """One conditional write: establishes a pending identity. False when it
+        does not exist or is already established (nothing rewritten)."""
+        result = self._connection.execute(
+            sa.update(users_table)
+            .where(users_table.c.id == user_id.value, users_table.c.established_at.is_(None))
+            .values(
+                established_at=now,
+                updated_at=now,
+                record_version=users_table.c.record_version + 1,
+            )
+        )
+        return result.rowcount == 1
 
     # --- PURPLE_IDENTITY_PRESENTATION_01 ------------------------------------
 

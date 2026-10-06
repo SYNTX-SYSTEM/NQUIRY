@@ -49,6 +49,7 @@ def _insert_user(connection: sa.Connection, *, email: str) -> uuid.UUID:
             name="Owner",
             record_version=1,
             created_at=datetime.now(timezone.utc),
+            established_at=datetime.now(timezone.utc),  # WU-AUTH-22: established
             updated_at=datetime.now(timezone.utc),
         )
     )

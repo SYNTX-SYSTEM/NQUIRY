@@ -46,6 +46,7 @@ from application.http_dispatch import (
     dispatch_logout_all,
     dispatch_revoke_session,
 )
+from application.http_registration import dispatch_register
 from fastapi import APIRouter, Request, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -57,6 +58,12 @@ _COOKIE_SECURE = os.environ.get("NQUIRY_COOKIE_SECURE") == "1"
 
 class LoginRequestBody(BaseModel):
     email: str
+    password: str
+
+
+class RegisterRequestBody(BaseModel):
+    email: str
+    name: str
     password: str
 
 
@@ -91,6 +98,16 @@ def login(body: LoginRequestBody, request: Request, response: Response) -> JSONR
         secure=_COOKIE_SECURE,
     )
     return json_response
+
+
+@router.post("/auth/register")
+def register(body: RegisterRequestBody, request: Request) -> JSONResponse:
+    """WU-AUTH-22 (HD-AUTH-13): local self-registration — identity only, no
+    session; the one answer; see `application.http_registration`."""
+    status, payload = dispatch_register(
+        email=body.email, name=body.name, password=body.password, client=_client_address(request)
+    )
+    return JSONResponse(status_code=status, content=payload)
 
 
 @router.post("/auth/logout")

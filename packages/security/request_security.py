@@ -29,6 +29,10 @@ from urllib.parse import urlsplit
 
 DEFAULT_ALLOWED_ORIGINS: tuple[str, ...] = ("http://localhost:3000",)
 LOGIN_CONTACT = "/auth/login"
+# WU-AUTH-22: self-registration is unauthenticated and creates an identity — the
+# same login-CSRF class (admitted metadata AND the JSON contract) applies to it.
+REGISTRATION_CONTACT = "/auth/register"
+LOGIN_CLASS_CONTACTS = frozenset({LOGIN_CONTACT, REGISTRATION_CONTACT})
 _SAFE_METHODS = frozenset({"GET", "HEAD", "OPTIONS"})
 
 
@@ -148,7 +152,9 @@ def login_contract_satisfied(content_type: str | None) -> bool:
 
 __all__ = [
     "DEFAULT_ALLOWED_ORIGINS",
+    "LOGIN_CLASS_CONTACTS",
     "LOGIN_CONTACT",
+    "REGISTRATION_CONTACT",
     "AllowedOriginsInvalid",
     "RequestSecurityPolicy",
     "Verdict",

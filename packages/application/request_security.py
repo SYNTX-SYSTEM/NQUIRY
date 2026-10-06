@@ -25,7 +25,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 
 from security.request_security import (
-    LOGIN_CONTACT,
+    LOGIN_CLASS_CONTACTS,
     RequestSecurityPolicy,
     Verdict,
     evaluate_unsafe_request,
@@ -82,7 +82,7 @@ def guard_request(
         own_origin=own_origin,
         policy=current_request_security(),
     )
-    if path == LOGIN_CONTACT:
+    if path in LOGIN_CLASS_CONTACTS:
         if not verdict.admitted or not login_contract_satisfied(content_type):
             return LOGIN_CSRF_REJECTED
         return None

@@ -150,6 +150,7 @@ def test_dispatch_record_human_decision_survives_a_real_closing_connection(
                 email=unique_email,
                 name="Real Connection Lifecycle Owner",
                 created_at=_NOW,
+                established_at=_NOW,  # WU-AUTH-22: established
                 updated_at=_NOW,
                 record_version=1,
             )

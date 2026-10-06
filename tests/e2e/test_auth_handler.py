@@ -46,6 +46,7 @@ def _seed_user_with_password(db_connection: sa.Connection, *, email: str, passwo
             name="Local Auth Test User",
             record_version=1,
             created_at=_NOW,
+            established_at=_NOW,  # WU-AUTH-22: established
             updated_at=_NOW,
         )
     )

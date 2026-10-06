@@ -58,6 +58,7 @@ def insert_user(db: sa.Connection, label: str) -> UserId:
             name=f"{label.title()} {user_id.hex[:4]}",
             record_version=1,
             created_at=NOW,
+            established_at=NOW,  # WU-AUTH-22: established
             updated_at=NOW,
         )
     )

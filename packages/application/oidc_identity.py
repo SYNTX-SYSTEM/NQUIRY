@@ -161,7 +161,8 @@ def _bootstrap_identity(
         raise ProviderIdentityUnresolved(OidcFailureReason.PROVIDER_PROFILE_INCOMPLETE)
     user_id = UserId(uuid.uuid4())
     try:
-        identities.create(user_id=user_id, email=email, name=name, now=now)
+        # the provider's verified credential establishes the identity (WU-AUTH-22)
+        identities.create(user_id=user_id, email=email, name=name, now=now, established_at=now)
         method = SqlAlchemyAuthenticationMethodRepository(connection).create(
             user_id=user_id,
             method_type=method_type,

@@ -162,6 +162,7 @@ def _local_user(db: sa.Connection) -> tuple[UserId, str]:
             name="Caller",
             record_version=1,
             created_at=_NOW,
+            established_at=_NOW,  # WU-AUTH-22: established
             updated_at=_NOW,
         )
     )

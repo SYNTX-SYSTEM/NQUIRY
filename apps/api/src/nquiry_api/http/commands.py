@@ -44,7 +44,8 @@ def record_human_decision(
         )
     except NoValidSessionError as exc:
         return JSONResponse(
-            status_code=401, content={"kind": "denied", "result": "DENY", "reasonCode": str(exc)}
+            status_code=exc.status_code,
+            content={"kind": "denied", "result": "DENY", "reasonCode": str(exc)},
         )
     except ValueError as exc:
         return JSONResponse(status_code=400, content={"kind": "rejected", "reasonCode": str(exc)})

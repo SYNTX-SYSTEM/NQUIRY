@@ -252,6 +252,7 @@ def test_ai_origin_with_an_author_is_rejected_by_the_check_constraint(
             name="Claimed Author",
             record_version=1,
             created_at=_NOW,
+            established_at=_NOW,  # WU-AUTH-22: established
             updated_at=_NOW,
         )
     )

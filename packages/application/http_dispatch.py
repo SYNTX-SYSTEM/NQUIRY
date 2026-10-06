@@ -121,6 +121,7 @@ from persistence.decision_repository import (
     SqlAlchemyDecisionVersionReader,
 )
 from persistence.engine import auth_scope_configured, connect, connect_auth
+from persistence.identity_repository import SqlAlchemyIdentityRepository
 from persistence.local_auth_repository import (
     SqlAlchemyLocalCredentialRepository,
     SqlAlchemyLocalSessionRepository,
@@ -136,6 +137,7 @@ from persistence.workspace_repository import (
     SqlAlchemyWorkspaceRepository,
     SqlAlchemyWorkspaceVersionReader,
 )
+from security.account_creation import ESTABLISHMENT_ESTABLISHED, ESTABLISHMENT_PENDING
 from security.auth_audit import AuthAuditEvent
 from security.identity import AuthenticatedPrincipal
 from security.local_auth import hash_session_token
@@ -219,6 +221,28 @@ class NoValidSessionError(ValueError):
     from "revoked" from "forged" (same non-enumeration principle
     `application.auth_handler.resolve_session` already applies)."""
 
+    status_code = 401
+
+
+class IdentityNotEstablishedError(NoValidSessionError):
+    """WU-AUTH-22 (HD-AUTH-13): a VALID session of an identity that exists but
+    is not yet established for normal use (self-registered, its address
+    unverified). Not a session failure — the authentication surface stays
+    open to it — but no business relation: 403 IDENTITY_NOT_ESTABLISHED.
+    A subclass so every business handler's existing fail-closed mapping
+    catches it; the status and reason are its own."""
+
+    status_code = 403
+
+    def __init__(self) -> None:
+        super().__init__("IDENTITY_NOT_ESTABLISHED")
+
+
+def _established(principal: AuthenticatedPrincipal, *, connection: Any) -> AuthenticatedPrincipal:
+    if not SqlAlchemyIdentityRepository(connection).is_established(principal.user_id):
+        raise IdentityNotEstablishedError()
+    return principal
+
 
 def _resolve_actor_from_session(
     session_token: str | None, *, session_repository: Any
@@ -228,6 +252,7 @@ def _resolve_actor_from_session(
     )
     if principal is None:
         raise NoValidSessionError("no valid session")
+    _established(principal, connection=session_repository.connection)
     return ActorIdentity(ActorClass.HUMAN_USER, principal.user_id)
 
 
@@ -248,7 +273,7 @@ def _resolve_principal_from_session(
     )
     if principal is None:
         raise NoValidSessionError("no valid session")
-    return principal
+    return _established(principal, connection=session_repository.connection)
 
 
 @dataclass(frozen=True, slots=True)
@@ -380,9 +405,16 @@ def dispatch_current_session(*, session_token: str | None) -> dict[str, object]:
             session_repository=SqlAlchemyLocalSessionRepository(connection),
             now=datetime.now(timezone.utc),
         )
-    if principal is None:
-        return {"kind": "denied", "reasonCode": "NO_SESSION"}
-    return {"kind": "ok", "userId": str(principal.user_id.value)}
+        if principal is None:
+            return {"kind": "denied", "reasonCode": "NO_SESSION"}
+        # WU-AUTH-22 (HD-AUTH-13): whether this identity is established for normal
+        # use — the consumer's only legitimate source for "verify your address first"
+        established = SqlAlchemyIdentityRepository(connection).is_established(principal.user_id)
+    return {
+        "kind": "ok",
+        "userId": str(principal.user_id.value),
+        "establishment": ESTABLISHMENT_ESTABLISHED if established else ESTABLISHMENT_PENDING,
+    }
 
 
 _NO_SESSION_BODY: dict[str, object] = {"kind": "denied", "reasonCode": "NO_SESSION"}

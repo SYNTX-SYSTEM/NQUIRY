@@ -119,7 +119,11 @@ def test_rotation_replaces_the_credential_keeps_the_proving_session_and_ends_the
     assert response.json() == {"kind": "ok", "sessionsRevoked": 1}
     assert SESSION_COOKIE_NAME not in response.headers.get("set-cookie", "")
     # the proving session continues; the other one ended with the credential
-    assert client.get("/auth/me").json() == {"kind": "ok", "userId": str(user_id.value)}
+    assert client.get("/auth/me").json() == {
+        "kind": "ok",
+        "userId": str(user_id.value),
+        "establishment": "ESTABLISHED",  # WU-AUTH-22
+    }
     other.cookies.set(SESSION_COOKIE_NAME, other_token)
     assert other.get("/auth/me").status_code == 401
     reasons = (

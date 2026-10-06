@@ -148,6 +148,7 @@ def _insert_user(connection: sa.Connection, *, email: str | None = None) -> User
             name="Method Owner",
             record_version=1,
             created_at=_NOW,
+            established_at=_NOW,  # WU-AUTH-22: established
             updated_at=_NOW,
         )
     )
@@ -487,6 +488,7 @@ def test_two_concurrent_creations_leave_one_active_local_password_method(
                 name="Concurrent",
                 record_version=1,
                 created_at=_NOW,
+                established_at=_NOW,  # WU-AUTH-22: established
                 updated_at=_NOW,
             )
         )

@@ -126,6 +126,7 @@ class NonProofWorkspaceBootstrap:
                 name="NonProof Fixture Owner",
                 record_version=1,
                 created_at=now,
+                established_at=now,  # WU-AUTH-22: established
                 updated_at=now,
             )
         )

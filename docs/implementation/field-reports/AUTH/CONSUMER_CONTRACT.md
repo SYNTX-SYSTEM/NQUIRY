@@ -1,4 +1,4 @@
-# PURPLE → CONSUMER CONTRACT (post HD-AUTH-08, extended for HD-AUTH-10)
+# PURPLE → CONSUMER CONTRACT (post HD-AUTH-08, extended for HD-AUTH-10 and HD-AUTH-13)
 
 Producer: `auth-identity` (this branch); live api = assembly
 `auth-28e6620-20261005T152356Z` (product `28e6620`, migration head
@@ -64,7 +64,7 @@ code, state or nonce ever appears in a body.
 |---|---|---|---|
 | `POST /auth/login` `{email,password}` | — | `200 {kind: ok, userId}` + cookie | `401 denied INVALID_CREDENTIALS`, `403 rejected LOGIN_CSRF_REJECTED`, `400 rejected …` |
 | `POST /auth/logout` | optional | `200 {kind: ok}` + cookie cleared | — |
-| `GET /auth/me` | required | `200 {kind: ok, userId}` | `401 denied NO_SESSION` |
+| `GET /auth/me` | required | `200 {kind: ok, userId, establishment: ESTABLISHED \| PENDING_EMAIL_VERIFICATION}` (WU-AUTH-22: PENDING = a self-registered identity whose own address is not yet verified — it may use every `/auth/*` contact; every business contact answers `403 {kind: denied, result: DENY, reasonCode: IDENTITY_NOT_ESTABLISHED}` until the verification completes) | `401 denied NO_SESSION` |
 | `GET /auth/identity` | required | `200 {kind: ok, userId, displayName, canonicalEmail}` | `401 denied NO_SESSION` |
 | `GET /auth/providers` | — | `200 {kind: ok, providers: [{providerId, label, proofClass}]}` (`PRODUCTION_PROVIDER` \| `TEST_PROVIDER`) | — |
 | `GET /auth/oidc/{p}/start?next=<path>` | — (a live session is ignored; 24 §36 #18 open) | `303` to the provider | `503 unavailable PROVIDER_NOT_CONFIGURED`; `next` is validated server-side (path only) |
@@ -79,7 +79,8 @@ code, state or nonce ever appears in a body.
 | `POST /auth/password/change` `{currentPassword, newPassword}` (WU-AUTH-19) | required | `200 {kind: ok, sessionsRevoked}` (the proving session continues) | `401 NO_SESSION`, `403 denied CURRENT_PASSWORD_INVALID \| NO_LOCAL_CREDENTIAL`, `400 rejected PASSWORD_INVALID` |
 | `POST /auth/login` under the lockout boundary (WU-AUTH-20) | — | — | `429 {kind: denied, reasonCode: RATE_LIMITED}` (the address or the client is paused; identical for known and unknown addresses) |
 | `POST /workspaces/{ws}/members/{user}/revoke`, `POST /workspaces/{ws}/members/{user}/role {role}` (WU-AUTHZ-01) | required | `200 {kind: ok}` | `{kind: denied, result: DENY, reasonCode: NOT_GOVERNANCE_ROOT \| MEMBERSHIP_NOT_FOUND \| GOVERNANCE_ROOT_NOT_REMOVABLE \| …}`, `{kind: rejected, reasonCode: ROLE_UNCHANGED \| UNKNOWN_ROLE:* \| OWNER_ROLE_NOT_ASSIGNABLE:*}`; the overview carries `capabilities.revokeMembership / changeMemberRole` and per member `administrable` (the root is never administrable) — a consumer offers the controls on those, never on a role |
-| `GET /auth/contacts` (WU-AUTH-21) | — | `200 {kind: ok, recovery: AVAILABLE \| UNAVAILABLE, emailVerification: AVAILABLE \| UNAVAILABLE}` — what THIS deployment serves (recovery policy ≠ DENIED and a mail sink; a mail sink and a declared environment). A consumer offers the two contact groups below on these words only | — |
+| `GET /auth/contacts` (WU-AUTH-21/22) | — | `200 {kind: ok, recovery: AVAILABLE \| UNAVAILABLE, emailVerification: AVAILABLE \| UNAVAILABLE, registration: AVAILABLE \| UNAVAILABLE}` — what THIS deployment serves (recovery policy ≠ DENIED and a mail sink; a mail sink and a declared environment). A consumer offers the two contact groups below on these words only | — |
+| `POST /auth/register` `{email, name, password}` (WU-AUTH-22; HD-AUTH-13) | — (login-CSRF class: admitted Origin / Fetch-Metadata AND `Content-Type: application/json`, else `403 LOGIN_CSRF_REJECTED`) | `200 {kind: ok}` — THE ONE ANSWER for a new and for a taken address; no session; the identity exists PENDING with a LOCAL_PASSWORD credential and ONE verification message is on its way; the person logs in with the chosen password and opens the link while logged in | `503 unavailable REGISTRATION_NOT_AVAILABLE` (not the open policy, no mail sink or undeclared environment), `400 rejected EMAIL_INVALID \| NAME_REQUIRED \| PASSWORD_INVALID` (12..1024 chars, no surrounding whitespace), `429 denied RATE_LIMITED` (per client), `503 unavailable EMAIL_DELIVERY_FAILED` (nothing created) |
 | `POST /auth/email/verification/start` `{email}` (WU-AUTH-11/21) | required | `200 {kind: ok, challengeId, expiresAt}`; the message goes to the address with ONE link `<NQUIRY_PUBLIC_WEB_BASE_URL><NQUIRY_EMAIL_VERIFY_PATH>?challengeId=&token=` (default path `/account/verify-email`) | `401 NO_SESSION`, `400 rejected EMAIL_INVALID`, `429 denied VERIFICATION_RESEND_THROTTLED`, `503 unavailable EMAIL_DELIVERY_NOT_CONFIGURED \| ENVIRONMENT_NOT_DECLARED \| EMAIL_DELIVERY_FAILED` |
 | `POST /auth/email/verification/complete` `{challengeId, token}` | required (the SAME identity that started it) | `200 {kind: ok, email}` — the address is now an ACTIVE verified relation of the identity | `401 NO_SESSION`, `400 rejected MALFORMED_CHALLENGE_ID \| MALFORMED_TOKEN`, `403 denied VERIFICATION_DENIED` (expired / used / foreign / wrong token — one class), `503 ENVIRONMENT_NOT_DECLARED` |
 | `GET /auth/emails` | required | `200 {kind: ok, emails: [{email, verifiedAt, active}]}` (`active` = neither superseded nor revoked) | `401` |
@@ -98,8 +99,13 @@ Send control; the two mail-link landings (`/account/verify-email`,
 recovery start; a "forgot password" contact on the login — each only while
 `/auth/contacts` says AVAILABLE (the product frontend materializes exactly
 this: CYAN AUTH/CYAN-RECOVERY-01).
+Since WU-AUTH-22 (HD-AUTH-13) also: a registration contact (address, name,
+password; the one answer; then the login) only while
+`/auth/contacts.registration` is AVAILABLE; the PENDING state of `/auth/me`
+projected as "verify your address to continue" with the chamber's
+verification control (business reads answer 403 `IDENTITY_NOT_ESTABLISHED`).
 Must not: a recovery link while `/auth/contacts.recovery` is `UNAVAILABLE`;
-self-registration UI (bootstrap is the provider path, not a form); any local
+a registration contact while `registration` is `UNAVAILABLE`; any local
 truth about identity, session validity, role or authority (24 §24.3); raw
 protocol material (24 §24.6) — the mail token is presented to the API once and
 leaves the address bar, the DOM and storage.

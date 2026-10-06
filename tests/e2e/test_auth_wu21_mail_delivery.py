@@ -272,16 +272,19 @@ def test_a_failing_provider_keeps_recovery_start_at_the_one_answer_without_a_cha
 def test_the_public_contacts_name_what_this_deployment_serves(
     db_connection: sa.Connection, failing_client: TestClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    # WU-AUTH-22: `registration` follows the OPEN creation policy (absent here) × delivery
     assert failing_client.get("/auth/contacts").json() == {
         "kind": "ok",
         "recovery": "AVAILABLE",
         "emailVerification": "AVAILABLE",
+        "registration": "UNAVAILABLE",
     }
     configure_auth_runtime(auth_runtime_from_environment({"NQUIRY_ENVIRONMENT": "TEST"}))
     assert failing_client.get("/auth/contacts").json() == {
         "kind": "ok",
         "recovery": "UNAVAILABLE",
         "emailVerification": "UNAVAILABLE",
+        "registration": "UNAVAILABLE",
     }
     configure_auth_runtime(
         auth_runtime_from_environment(

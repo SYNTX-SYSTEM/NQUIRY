@@ -36,6 +36,11 @@ Settings (environment variables, read once at startup, same discipline as
 - `NQUIRY_PUBLIC_API_BASE_URL`: where a browser reaches this API (the test
   provider's authorize page and callback live under it); default
   `http://localhost:8000`.
+- `NQUIRY_REGISTRATION_ATTEMPTS` (WU-AUTH-22; default 5 per client and window):
+  self-registration attempts before the client is paused. Local self-registration
+  itself is admitted by `NQUIRY_ACCOUNT_CREATION_POLICY=SELF_REGISTRATION_ALLOWED`
+  (HD-AUTH-13, the open policy of 24 §11.14) together with a mail sink and a
+  declared environment — no switch of its own; `GET /auth/contacts` says so.
 - `NQUIRY_LOGIN_LOCKOUT_FAILURES` / `NQUIRY_LOGIN_LOCKOUT_MINUTES` (WU-AUTH-20,
   24 §21.16 / §36 #17): the CREDENTIAL-key lockout threshold and the window
   = lock duration; defaults 5 / 15 (`security.login_throttle`); the CLIENT
@@ -310,10 +315,24 @@ def _throttle_policy(source: Mapping[str, str]) -> ThrottlePolicy:
         raise ValueError(
             "NQUIRY_LOGIN_LOCKOUT_FAILURES / NQUIRY_LOGIN_LOCKOUT_MINUTES must be positive integers"
         ) from None
+    raw_registrations = source.get("NQUIRY_REGISTRATION_ATTEMPTS", "").strip()
+    try:
+        registrations = (
+            int(raw_registrations) if raw_registrations else defaults.registration_attempts
+        )
+        if registrations < 1:
+            raise ValueError
+    except ValueError:
+        raise ValueError("NQUIRY_REGISTRATION_ATTEMPTS must be a positive integer") from None
     if minutes is None:
-        return ThrottlePolicy(credential_failures=failures)
+        return ThrottlePolicy(credential_failures=failures, registration_attempts=registrations)
     window = timedelta(minutes=minutes)
-    return ThrottlePolicy(credential_failures=failures, window=window, lock=window)
+    return ThrottlePolicy(
+        credential_failures=failures,
+        window=window,
+        lock=window,
+        registration_attempts=registrations,
+    )
 
 
 __all__ = [

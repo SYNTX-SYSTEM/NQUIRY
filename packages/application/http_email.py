@@ -161,8 +161,15 @@ def dispatch_auth_contacts() -> tuple[int, dict[str, object]]:
     runtime = current_auth_runtime()
     delivery = runtime.mail_sink is not None and runtime.environment is not None
     recovery = delivery and runtime.recovery_policy is RecoveryPolicy.VERIFIED_EMAIL_SELF_SERVICE
+    from application.http_registration import registration_available  # WU-AUTH-22
+
     word = {True: "AVAILABLE", False: "UNAVAILABLE"}
-    return 200, {"kind": "ok", "recovery": word[recovery], "emailVerification": word[delivery]}
+    return 200, {
+        "kind": "ok",
+        "recovery": word[recovery],
+        "emailVerification": word[delivery],
+        "registration": word[registration_available()],
+    }
 
 
 def dispatch_test_mail_outbox() -> tuple[int, dict[str, object]]:

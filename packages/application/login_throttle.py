@@ -58,4 +58,40 @@ class LoginThrottle:
         )
 
 
-__all__ = ["LoginThrottle"]
+__all__ = ["LoginThrottle", "RegistrationThrottle"]
+
+
+class RegistrationThrottle:
+    """WU-AUTH-22: the per-client window over self-registration attempts (each
+    attempt costs a message and may create an identity). Every attempt counts,
+    successful or refused — a client that registers repeatedly is paused."""
+
+    def __init__(self, connection: Any, *, policy: ThrottlePolicy) -> None:
+        self._repo = SqlAlchemyAuthRateLimitRepository(connection)
+        self._policy = policy
+
+    @staticmethod
+    def _key(client: str) -> str:
+        return throttle_key(ThrottleKeyKind.REGISTRATION, client)
+
+    def locked(self, client: str | None, *, now: datetime) -> bool:
+        if not client:
+            return False
+        window = self._repo.get(ThrottleKeyKind.REGISTRATION, self._key(client))
+        return window is not None and window.locked(now)
+
+    def attempted(self, client: str | None, *, now: datetime) -> bool:
+        """Counts one attempt; True when the client is now locked."""
+        if not client:
+            return False
+        key_hash = self._key(client)
+        current = self._repo.get(ThrottleKeyKind.REGISTRATION, key_hash, for_update=True)
+        window = next_window(
+            current,
+            kind=ThrottleKeyKind.REGISTRATION,
+            key_hash=key_hash,
+            now=now,
+            policy=self._policy,
+        )
+        self._repo.put(window, now=now)
+        return window.locked(now)

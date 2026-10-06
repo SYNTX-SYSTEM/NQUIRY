@@ -58,7 +58,8 @@ class AddMemberBody(BaseModel):
 
 def _no_session_response(exc: NoValidSessionError) -> JSONResponse:
     return JSONResponse(
-        status_code=401, content={"kind": "denied", "result": "DENY", "reasonCode": str(exc)}
+        status_code=exc.status_code,
+        content={"kind": "denied", "result": "DENY", "reasonCode": str(exc)},
     )
 
 

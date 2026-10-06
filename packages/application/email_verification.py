@@ -32,6 +32,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any
 
+from persistence.identity_repository import SqlAlchemyIdentityRepository
 from persistence.security_event_repository import SqlAlchemySecurityEventRepository
 from persistence.verification_repository import (
     SqlAlchemyChallengeRepository,
@@ -241,6 +242,22 @@ def complete_challenge(
         now=now,
         facts={"challengeId": str(challenge_id), "emailHash": _email_hash(consumed.email)},
     )
+    # WU-AUTH-22 (HD-AUTH-13): a self-registered identity becomes established for
+    # normal use when ITS OWN address (the canonical one) is verified — another
+    # verified address does not establish it. One conditional write; an already
+    # established identity is untouched and no event is recorded.
+    identities = SqlAlchemyIdentityRepository(connection)
+    if identities.canonical_email(user_id) == consumed.email and identities.establish(
+        user_id, now=now
+    ):
+        _event(
+            connection,
+            event_type="IDENTITY_ESTABLISHED",
+            user_id=user_id,
+            environment=env,
+            now=now,
+            facts={"by": "EMAIL_VERIFICATION", "challengeId": str(challenge_id)},
+        )
     return relation
 
 

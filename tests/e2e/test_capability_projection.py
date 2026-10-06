@@ -84,6 +84,7 @@ def _insert_user(connection: sa.Connection, *, email: str) -> UserId:
             name="Real Human",
             record_version=1,
             created_at=_NOW,
+            established_at=_NOW,  # WU-AUTH-22: established
             updated_at=_NOW,
         )
     )

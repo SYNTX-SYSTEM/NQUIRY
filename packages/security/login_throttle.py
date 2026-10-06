@@ -24,6 +24,10 @@ the fail-closed defaults, overridable per deployment through
 CREDENTIAL key, and ten times the failures for the CLIENT key):
 CREDENTIAL 5 failures / 15 min → locked 15 min; CLIENT 50 failures / 15 min →
 locked 15 min.
+
+WU-AUTH-22 (HD-AUTH-13): REGISTRATION — a CLIENT-address key counting every
+self-registration attempt (each one costs a message): 5 attempts / 15 min →
+locked 15 min (`NQUIRY_REGISTRATION_ATTEMPTS` overrides the count).
 """
 
 from __future__ import annotations
@@ -37,11 +41,13 @@ DEFAULT_CREDENTIAL_FAILURES = 5
 DEFAULT_WINDOW = timedelta(minutes=15)
 DEFAULT_LOCK = timedelta(minutes=15)
 CLIENT_FAILURE_MULTIPLIER = 10
+DEFAULT_REGISTRATION_ATTEMPTS = 5
 
 
 class ThrottleKeyKind(Enum):
     CREDENTIAL = "CREDENTIAL"
     CLIENT = "CLIENT"
+    REGISTRATION = "REGISTRATION"  # WU-AUTH-22: self-registration attempts per client
 
 
 @dataclass(frozen=True, slots=True)
@@ -49,16 +55,19 @@ class ThrottlePolicy:
     credential_failures: int = DEFAULT_CREDENTIAL_FAILURES
     window: timedelta = DEFAULT_WINDOW
     lock: timedelta = DEFAULT_LOCK
+    registration_attempts: int = DEFAULT_REGISTRATION_ATTEMPTS
 
     def __post_init__(self) -> None:
-        if self.credential_failures < 1:
-            raise ValueError("credential_failures must be >= 1")
+        if self.credential_failures < 1 or self.registration_attempts < 1:
+            raise ValueError("credential_failures and registration_attempts must be >= 1")
         if self.window <= timedelta(0) or self.lock <= timedelta(0):
             raise ValueError("window and lock must be positive")
 
     def threshold(self, kind: ThrottleKeyKind) -> int:
         if kind is ThrottleKeyKind.CREDENTIAL:
             return self.credential_failures
+        if kind is ThrottleKeyKind.REGISTRATION:
+            return self.registration_attempts
         return self.credential_failures * CLIENT_FAILURE_MULTIPLIER
 
 
@@ -112,6 +121,7 @@ __all__ = [
     "CLIENT_FAILURE_MULTIPLIER",
     "DEFAULT_CREDENTIAL_FAILURES",
     "DEFAULT_LOCK",
+    "DEFAULT_REGISTRATION_ATTEMPTS",
     "DEFAULT_WINDOW",
     "ThrottleKeyKind",
     "ThrottlePolicy",

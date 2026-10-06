@@ -143,6 +143,7 @@ def _local_identity(db: sa.Connection, *, name: str = "Local Person") -> tuple[U
             name=name,
             record_version=1,
             created_at=_NOW,
+            established_at=_NOW,  # WU-AUTH-22: established
             updated_at=_NOW,
         )
     )

@@ -135,7 +135,10 @@ def create_identity_by_host_operator(
         raise IdentityCreationRefused("IDENTITY_ALREADY_EXISTS")
     user_id = UserId(uuid.uuid4())
     event_id = SecurityEventId(uuid.uuid4())
-    identities.create(user_id=user_id, email=normalized, name=clean_name, now=now)
+    # HD-28: the operator's creation establishes the identity (WU-AUTH-22)
+    identities.create(
+        user_id=user_id, email=normalized, name=clean_name, now=now, established_at=now
+    )
     SqlAlchemyLocalCredentialRepository(connection).create(
         user_id=user_id, password_hash=hash_password(password), now=now
     )

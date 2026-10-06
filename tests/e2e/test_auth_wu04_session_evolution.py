@@ -75,6 +75,7 @@ def _seed(db: sa.Connection, *, email: str) -> UserId:
             name="WU-AUTH-04",
             record_version=1,
             created_at=_NOW,
+            established_at=_NOW,  # WU-AUTH-22: established
             updated_at=_NOW,
         )
     )

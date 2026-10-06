@@ -144,6 +144,11 @@ users_table = sa.Table(
     # WU-AUTH-13 (migration b9d2f4a6c8e1): 24 §18.2 account disable, one-way.
     sa.Column("disabled_at", sa.DateTime(timezone=True), nullable=True),
     sa.Column("disabled_provenance", sa.Text(), nullable=True),
+    # WU-AUTH-22 (migration a7c9e1b3d5f7; HD-AUTH-13): when the identity became
+    # established for normal use — at creation for operator-created and
+    # provider-bootstrapped identities, at the verification of its own address
+    # for a self-registered one; NULL = PENDING_EMAIL_VERIFICATION.
+    sa.Column("established_at", sa.DateTime(timezone=True), nullable=True),
     sa.CheckConstraint(
         "(disabled_at IS NULL) = (disabled_provenance IS NULL) "
         "AND (disabled_provenance IS NULL OR disabled_provenance <> '')",

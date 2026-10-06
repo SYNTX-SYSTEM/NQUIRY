@@ -108,6 +108,7 @@ def _local_user(db: sa.Connection) -> tuple[UserId, str]:
             name="Recoverer",
             record_version=1,
             created_at=_NOW,
+            established_at=_NOW,  # WU-AUTH-22: established
             updated_at=_NOW,
         )
     )
@@ -290,6 +291,7 @@ def test_requests_that_cannot_recover_answer_identically_and_send_nothing(
                 name="P",
                 record_version=1,
                 created_at=_NOW,
+                established_at=_NOW,  # WU-AUTH-22: established
                 updated_at=_NOW,
             )
         )

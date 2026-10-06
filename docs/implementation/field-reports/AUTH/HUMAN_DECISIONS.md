@@ -393,6 +393,35 @@ production actions in this scope): `FIELD_CLOSURE.md` "Closure #4",
 `evidence/mail_01_02_production_proof.txt`. 24 §36 #16 is thereby decided and
 materialized: the deployment's own MTA with one application sending identity.
 
+## HD-AUTH-13 — HA-AUTH-08 resolved: open local self-registration (2026-10-07)
+
+**Question put (reconstructed 2026-10-07):** may a person without an
+external-provider account create a NQUIRY identity themselves in PRODUCTION?
+(24 §36 #3 / #4 in their local/open sense; NQ-DEC-056 had established "no
+public or self-service registration"; 24 §11.14 carried creation semantics
+for provider proof only.)
+
+**Decision (human operator, verbatim):** "OPEN_LOCAL_SELF_REGISTRATION = YES.
+A person may create a NQUIRY identity in production using a local e-mail
+address and password. Registration establishes identity only. Registration
+does not grant Workspace ownership, Workspace membership, roles, grants,
+governance authority, Session authority, or any other domain authority. The
+e-mail address must be verified through the existing verified-email relation
+before the local identity becomes fully established for normal use."
+
+**What it establishes (persisted):** 24 §36 #3 = allowed, #4 = open
+(`SELF_REGISTRATION_ALLOWED`, the open policy of §11.14, now covers a local
+address and password as it covers a verified provider subject since
+HD-AUTH-08). NQ-DEC-056's "no self-service registration" clause is superseded
+for the self-service case; its operator path, separation and credential
+clauses stand. The system distinguishes an identity that EXISTS from one that
+is ESTABLISHED: `users.established_at`; every pre-existing identity is
+established (backfill); a self-registered one becomes established when the
+verification of its own address completes; until then it authenticates and
+uses the authentication surface but holds no business relation
+(403 `IDENTITY_NOT_ESTABLISHED`). Materialized by WU-AUTH-22 (`WU-AUTH-22.md`).
+Ledger reconciliation into 16 §41 stays deferred as for every HD-AUTH-n.
+
 ## Open boundaries (OPEN, awaiting the operator)
 
 | # | Boundary | Home | What it blocks | Default in force | Status |
@@ -410,7 +439,8 @@ Touched and left undecided, not blocking any Work Unit: 24 §36 #9
 #16 (production email delivery: the sink is materialized by WU-AUTH-21; the
 provider, sender identity and credentials are the operator's facts), #18
 (multi-account UX). Resolved by HD-AUTH-09: #1, #2, #6; by HD-AUTH-08: #3–#5;
-by HD-AUTH-10: #11; #15 is governed by HARD-DEP-001 Option A (16 §41 REC-001).
+by HD-AUTH-10: #11; by HD-AUTH-13: #3 / #4 (local, open); #15 is governed by
+HARD-DEP-001 Option A (16 §41 REC-001).
 
 ## Ledger reconciliation (deferred, disclosed)
 

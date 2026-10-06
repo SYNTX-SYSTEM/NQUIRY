@@ -61,6 +61,7 @@ def _insert_user(connection: sa.Connection, *, email: str) -> UserId:
             name="Test User",
             record_version=1,
             created_at=datetime.now(timezone.utc),
+            established_at=datetime.now(timezone.utc),  # WU-AUTH-22: established
             updated_at=datetime.now(timezone.utc),
         )
     )

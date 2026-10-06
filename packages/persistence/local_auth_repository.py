@@ -224,6 +224,13 @@ class SqlAlchemyLocalSessionRepository:
     def __init__(self, connection: sa.Connection) -> None:
         self._connection = connection
 
+    @property
+    def connection(self) -> sa.Connection:
+        """The request's connection, so a caller that already holds this
+        repository can read a sibling relation in the same transaction
+        (WU-AUTH-22: the identity's establishment)."""
+        return self._connection
+
     def create(
         self,
         *,
