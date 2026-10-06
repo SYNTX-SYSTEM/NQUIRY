@@ -267,6 +267,22 @@ verified emails) → `a8c1e3f5b7d9` (WU-AUTH-12 recovery challenges, `CREDENTIAL
 `d2f4a6b8c1e3` (PROVIDER_BOOTSTRAP `PROVIDER_PROFILE_INCOMPLETE` failure class) →
 `e3a5c7d9f1b4` (WU-AUTH-20 `auth_rate_limits`, grants).
 
+### Cross-lineage facts reconstructed 2026-10-06 (publication effect of other Fields)
+
+`pfc-integration` `b0a5101 → 0885ebf` (20 §12A / 16 §41 REC-033: SFE-PEO/1
+proof execution observability as a Level-1 relation) and
+`orange-proof-lineage` `194adf4 → 8dae323` (the contract's lineage, TF-PX-10)
+were pushed. Neither touches an AUTH relation, neither integrates
+`auth-identity` (4ae1bc0 is not an ancestor of 0885ebf) — integration stays
+the human/integration act (FIELD_CLOSURE section C). §12A "binds no Field to
+adopt at a given time … changes no existing proof claim": closure #4 stands.
+Consumer relation recorded, not yet materialized: `scripts/auth_regression_run.sh`
+captures the pytest output and is opaque for the ~47 min of a closure
+regression; its adoption of SFE-PEO/1 (by reference to an
+`orange-proof-lineage` commit, never a copy) is an own Work Unit for the next
+closure regression. No value of the proof environment is in any evidence file
+(the runner prints `DATABASE_URL=<isolated test db>`).
+
 ## Upstream dependencies
 
 RED `checkpoint-PFC-AC1.1` (pinned producer of the runtime, the local
