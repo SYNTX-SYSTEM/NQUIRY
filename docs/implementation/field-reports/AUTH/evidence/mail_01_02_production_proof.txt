@@ -49,4 +49,4 @@ signalled; opendkim shows no activity at all; postfix journal: "warning: connect
 unix:/run/opendkim/opendkim.sock: No such file or directory" on every submission — smtpd/submission/cleanup run chrooted
 and the socket is outside /var/spool/postfix; milter_default_action=accept -> unsigned delivery. Pre-existing for every
 sender of the host. DMARC still passes on SPF alignment (envelope condyn.eu from 49.13.3.21). Ownership: host/Deployment
-Field; delta emitted in FIELD_CLOSURE.md.
+Field; the delta was handed to its owner directly (not recorded here).
