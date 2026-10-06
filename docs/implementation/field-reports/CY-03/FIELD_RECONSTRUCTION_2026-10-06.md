@@ -44,12 +44,12 @@ propagation; do not preserve an old boundary merely because it was pending.
 ## 4. Resulting Field state
 | Surface | Tree | Status |
 |---|---|---|
-| production root `https://nquiry.condyn.eu/` | web `2fb7bfa` (ACCOUNT-02), api `28e6620` | PUBLISHED by PURPLE's closure (ASP-02); **ACCOUNT-02 surfaces without a recorded Human Frontend Acceptance; RAIL-01 absent (the rail overlap is live)** |
+| production root `https://nquiry.condyn.eu/` | **web `7d214e6` (ACCOUNT-02 + RECOVERY-01), api `d03d5ce` — ASP-03 live since 2026-10-05T23:53Z (HD-AUTH-11, executed by PURPLE's session; `ASP-03_VERIFICATION_2026-10-06.md`)** | recovery UNAVAILABLE until the operator's mail facts exist; ACCOUNT-02 / RECOVERY-01 surfaces without a recorded Human Frontend Acceptance; RAIL-01 absent (the rail overlap is live) |
 | `origin/frontend-symbiotic` | `9f950c4` = `checkpoint-CYAN-INTEGRATION-02b` | one lineage: production auth state + ACCOUNT-02 + RECOVERY-01 + PCPG-06 + RAIL-01 + `5109e20`; proven |
 | staged `/cy-review/` | `7f42d8e` | SUPERSEDED; rebuild from `9f950c4` prepared, human-run |
 | `127.0.0.1:13500` | `9f950c4` + RED `checkpoint-PFC-PCPG-18` | PCPG-06 with a real producer reviewable only here; RAIL-01 reviewable here too |
-| `auth-cyan-reconstruction` (PURPLE's worktree) | `7d214e6`, moving | consumed up to `7d214e6`; later commits are the next propagation |
-| PURPLE `auth-identity` | origin `5674fba`; local `d03d5ce` (WU-AUTH-21, HD-AUTH-10) unpublished, undeployed | RECOVERY-01 inert on production until ASP-03 |
+| `auth-cyan-reconstruction` (PURPLE's worktree) | `572e2fd` (docs only after `7d214e6`) | consumed up to `7d214e6`; `572e2fd` is the next, trivial propagation |
+| PURPLE `auth-identity` | origin `4ae1bc0` (closure #4, HD-AUTH-10/11) — `d03d5ce` deployed by ASP-03 | RECOVERY-01 live but UNAVAILABLE (external mail dependency) |
 | erroneous tag `checkpoint-CYAN-INTEGRATION-02` → `7e2afa9` | on origin | deletion left to the human (refused to the session) |
 
 ## 5. The current legitimate Human Review boundary — HUMAN_AUTHORITY_REQUIRED

@@ -458,4 +458,5 @@ Workspace until it founds one. On production today: `tobi` is CASE LOCAL (the Go
   IDENTITY-01 acceptance, ACCOUNT-01 acceptance, real Google E2E) are closed or superseded by HD-AUTH-09 and the
   2026-10-04/05 records. **Open now:** Human Frontend Acceptance of ACCOUNT-02 (live without one), RAIL-01, PCPG-06;
   the review-mount rebuild from `9f950c4` (prepared, human-run); root cutover of `9f950c4` after acceptance.
+- **2026-10-06 ASP-03 (HD-AUTH-11):** executed by PURPLE's session 23:53Z; production web = `7d214e6` (ACCOUNT-02 + RECOVERY-01), api `d03d5ce`; recovery UNAVAILABLE until the operator's mail-provider facts exist (external, never a session's). CYAN verification: `CY-03/ASP-03_VERIFICATION_2026-10-06.md`. `7d214e6` is an ancestor of `frontend-symbiotic` `9f950c4`.
 
