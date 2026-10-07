@@ -6,6 +6,19 @@ because additional features are conceivable". Supersedes the status line of
 `FIELD_REVIEW.md` (the first closure of 2026-10-01); every proof listed there
 stands and is not repeated.
 
+## Post-closure #4 — HD-AUTH-13 (2026-10-07): open local self-registration
+
+The human decided the entry path for a person without an external-provider
+account (HA-AUTH-08 → HD-AUTH-13): local self-registration, identity only,
+established by verifying its own address. Materialized and proven: PURPLE
+WU-AUTH-22 (`6dbc411` + pins `d21aeef`; regression 2548 / 2; migration
+`a7c9e1b3d5f7`) and CYAN AUTH/CYAN-REGISTRATION-01 (`33f01a2`; real lane
+16 / 16). Production awaits **ASP-04** (api with the migration, then web);
+registration becomes AVAILABLE under the live open policy and mail sink. The
+external port-25 boundary applies to its verification messages exactly as to
+recovery. Section E's "INVITATION_REQUIRED / PRE_PROVISIONED / GOVERNANCE_MEDIATED"
+stay future; NQ-DEC-056's self-service clause is superseded (HD-AUTH-13).
+
 ## Closure #4 (2026-10-06, HD-AUTH-10: the recovery boundary resolved; ASP-03 live)
 
 The one closure-critical boundary of closures #2/#3 (section A, the block at

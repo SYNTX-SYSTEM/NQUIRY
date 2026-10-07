@@ -14,6 +14,17 @@ Session control, capability or governance root.
 
 ## Status
 
+**WU-AUTH-22 (2026-10-07, HD-AUTH-13: open local self-registration) PROVEN —
+awaiting propagation (ASP-04).** `POST /auth/register` (identity only, the one
+answer), `users.established_at` (migration `a7c9e1b3d5f7`), the generic
+`IDENTITY_NOT_ESTABLISHED` gate, establishment by verifying the identity's own
+address, `/auth/me.establishment`, `/auth/contacts.registration`; regression
+2548 / 2 on `d21aeef` (`evidence/wu22_regression.txt`); CYAN
+AUTH/CYAN-REGISTRATION-01 `33f01a2` (real lane 16 / 16). Production still
+serves closure #4 (`d03d5ce` / `7d214e6`, head `e3a5c7d9f1b4`); ASP-04 = api
+with the migration first, then web. Earlier status, kept:
+
+
 **CLOSURE #4 (2026-10-06) — HD-AUTH-10 (HA-AUTH-02 resolved); closure regression 2538 / 2 on `accb976` (`evidence/field_closure_4_regression.txt`):**
 self-service recovery through verified e-mail is part of the product.
 Materialized: WU-AUTH-21 (`d03d5ce`: SMTP sink STARTTLS/TLS + SASL, rendered
@@ -118,7 +129,7 @@ persistence scoped). Open Human Authority: HA-AUTH-02 (recovery), HA-AUTH-03 (la
 | Lane | Result |
 |---|---|
 | Live PostgreSQL (`nquiry_purple_test`, head `e8c2a5f1b7d4`) | 2007 passed, 2 skipped (0:38:39) |
-| Migrations | `MIGRATION_STATIC_CHECK::PASS (32 revisions, single head e8c2a5f1b7d4)`; `MIGRATION_LIVE_CHECK::PASS` |
+| Migrations | `MIGRATION_STATIC_CHECK::PASS (32 revisions, single head e8c2a5f1b7d4)`; `MIGRATION_LIVE_CHECK::PASS` (now 45 revisions, head `a7c9e1b3d5f7`) |
 
 RED's record at WU-PFC-AC1 was 2005 / 2; AC1.1 added 2 packaging tests.
 The baseline run overlapped with the creation of WU-AUTH-02 files; collection
@@ -151,6 +162,7 @@ preceded them, so the counts are those of the pin.
 | WU-AUTH-20 Login Lockout Boundary (2026-10-05) | PROVEN (6 falsifiers; auth radius 802 / 1; migration `e3a5c7d9f1b4`) | `WU-AUTH-20.md` |
 | WU-AUTH-18 Authentication Audit Events (2026-10-05) | PROVEN at the affected radius (752 / 1); closed vocabulary; ids and classes only; same transaction as the effect | `WU-AUTH-18.md` |
 | WU-AUTH-21 Production E-mail Delivery + Recovery Admission (2026-10-05/06, HD-AUTH-10) | PROVEN (9 falsifiers incl. the real STARTTLS + AUTH transport; radius WU-11/12/15/18 + sweep 189); no migration | `d03d5ce` / `WU-AUTH-21.md` |
+| WU-AUTH-22 Local Self-Registration (2026-10-07, HD-AUTH-13) | PROVEN (10 falsifiers; full regression 2548 / 2; migration `a7c9e1b3d5f7`) | `6dbc411` + `d21aeef` / `WU-AUTH-22.md` |
 | PROVIDER_BOOTSTRAP_01 (post-closure Field, 2026-10-04) | PROVEN in TEST: generic provider-driven identity (24 §11.14) — no name invention (`PROVIDER_PROFILE_INCOMPLETE`), provenance of name/email, re-bootstrap after unlink, collision refusal; production policy still DENIED (HA-AUTH-01) | this commit |
 
 ### Current First Broken Relation

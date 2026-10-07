@@ -1,0 +1,16 @@
+HEAD: d21aeeffcf592f6f80cf202404a11e9879776ec1 (auth-identity)
+PRE_RUN_GIT_STATUS:
+PRE_RUN_TREE_HASH: 9e3d2a25490c341019decc7b009f8fe474ec19fcfdb23125f73d6e8416cdc374
+LIVE_COMMAND: DATABASE_URL=<isolated test db> /home/codi/Entwicklung/nquiry/.venv/bin/python -m pytest -q -p no:cacheprovider
+LIVE_RESULT: 2548 passed, 2 skipped in 1802.42s (0:30:02)
+LIVE_EXIT_CODE: 0
+NO_DB_COMMAND: env -u DATABASE_URL /home/codi/Entwicklung/nquiry/.venv/bin/python -m pytest -q -p no:cacheprovider
+NO_DB_RESULT: 1030 passed, 1520 skipped in 27.64s
+NO_DB_EXIT_CODE: 0
+MIGRATIONS: MIGRATION_STATIC_CHECK::PASS (45 revision(s), single head ['a7c9e1b3d5f7']) MIGRATION_LIVE_CHECK::PASS (db head matches {'a7c9e1b3d5f7'}) 
+POST_RUN_GIT_STATUS:
+POST_RUN_TREE_HASH: 9e3d2a25490c341019decc7b009f8fe474ec19fcfdb23125f73d6e8416cdc374
+TREE_UNCHANGED_DURING_RUN: true
+
+# first run on 6dbc411 (same code; 2542 passed): 6 failures, all pre-decision pins moved to HD-AUTH-13 in d21aeef —
+# /auth/me shape in WU-04/08/09/10, the isolation sweep's route table, the HD-28 'no register route' law.
