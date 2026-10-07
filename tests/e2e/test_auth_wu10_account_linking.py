@@ -215,7 +215,11 @@ def test_an_authenticated_user_links_a_provider_method_and_the_session_rotates(
         .one()
     )
     assert old_row["revoked_reason"] == "ROTATED"
-    assert client.get("/auth/me").json() == {"kind": "ok", "userId": str(user_id.value)}
+    assert client.get("/auth/me").json() == {
+        "kind": "ok",
+        "userId": str(user_id.value),
+        "establishment": "ESTABLISHED",  # WU-AUTH-22
+    }
 
     event = (
         db_connection.execute(

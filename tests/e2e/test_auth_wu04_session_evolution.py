@@ -557,7 +557,11 @@ def test_login_replaces_a_planted_cookie_with_a_fresh_session(
         assert issued != planted
         assert "httponly" in response.headers["set-cookie"].lower()
         me = http_client.get("/auth/me")
-        assert me.json() == {"kind": "ok", "userId": str(victim.value)}
+        assert me.json() == {
+            "kind": "ok",
+            "userId": str(victim.value),
+            "establishment": "ESTABLISHED",  # WU-AUTH-22
+        }
         assert issued not in response.text and planted not in response.text
 
 

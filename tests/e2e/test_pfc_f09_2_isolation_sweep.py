@@ -205,6 +205,9 @@ _UNAUTHENTICATED = {
     # its own proof: tests/e2e/test_auth_wu12_recovery.py.
     ("POST", "/auth/recovery/start"),
     ("POST", "/auth/recovery/complete"),
+    # AUTH WU-AUTH-22 (HD-AUTH-13): self-registration is entered without any session; its own proof:
+    # tests/e2e/test_auth_wu22_local_registration.py (one answer, login-CSRF class, per-client window).
+    ("POST", "/auth/register"),
     ("GET", "/auth/test-provider/authorize"),
     ("POST", "/auth/test-provider/authorize"),
 }

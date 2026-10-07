@@ -347,12 +347,22 @@ def test_dev_provisioning_still_works_for_local_development() -> None:
 
 
 def test_no_http_route_creates_identities(db_app: sa.Connection) -> None:
-    """Option A: no public, self-service, in-app admin or Workspace-owner creation."""
+    """Option A: no in-app admin, Workspace-owner or invitation creation route. HD-AUTH-13
+    (2026-10-07) superseded Option A's "no self-service registration" clause: exactly ONE
+    self-service contact exists, `POST /auth/register` (WU-AUTH-22), and without the open
+    creation policy it creates nothing (503 REGISTRATION_NOT_AVAILABLE)."""
     paths = {getattr(r, "path", "") for r in app.routes}
-    forbidden = ("register", "signup", "sign-up", "invit", "/users", "/identities", "/accounts")
+    forbidden = ("signup", "sign-up", "invit", "/users", "/identities", "/accounts")
     assert not [p for p in paths if any(f in p.lower() for f in forbidden)]
+    assert [p for p in paths if "register" in p.lower()] == ["/auth/register"]
     client = TestClient(app)
-    for path in ("/auth/register", "/auth/signup", "/users", "/identities"):
+    for path in ("/auth/signup", "/users", "/identities"):
         r = client.post(path, json={"email": "x@condyn.eu", "password": PASSWORD, "name": "X"})
         assert r.status_code in (404, 405)
+    r = client.post(
+        "/auth/register",
+        json={"email": "x@condyn.eu", "password": PASSWORD, "name": "X"},
+        headers={"Origin": "http://testserver"},
+    )
+    assert r.status_code == 503 and r.json()["reasonCode"] == "REGISTRATION_NOT_AVAILABLE"
     assert _user(db_app, "x@condyn.eu") is None

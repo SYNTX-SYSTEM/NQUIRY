@@ -331,7 +331,11 @@ def test_an_existing_binding_logs_in_with_a_fresh_session_traceable_to_the_metho
     assert row["user_id"] == user_id.value
     assert row["authentication_method_id"] == method.method_id.value
     assert _transaction_state(db_connection, params["state"])["state"] == "COMPLETED"
-    assert client.get("/auth/me").json() == {"kind": "ok", "userId": str(user_id.value)}
+    assert client.get("/auth/me").json() == {
+        "kind": "ok",
+        "userId": str(user_id.value),
+        "establishment": "ESTABLISHED",  # WU-AUTH-22
+    }
 
     after = SqlAlchemyAuthenticationMethodRepository(db_connection).get(method.method_id)
     assert after is not None and after.last_authenticated_at is not None

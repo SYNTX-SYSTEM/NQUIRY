@@ -248,7 +248,11 @@ def test_under_self_registration_an_unknown_verified_subject_becomes_an_identity
     assert method.method_type is AuthenticationMethodType.TEST_PROVIDER
     assert method.status is AuthenticationMethodStatus.ACTIVE
     assert method.method_id == binding.method_id
-    assert open_client.get("/auth/me").json() == {"kind": "ok", "userId": str(user["id"])}
+    assert open_client.get("/auth/me").json() == {
+        "kind": "ok",
+        "userId": str(user["id"]),
+        "establishment": "ESTABLISHED",  # WU-AUTH-22: bootstrapped = established at creation
+    }
 
     # WU-AUTH-18: the login's own event (PROVIDER_LOGIN_SUCCEEDED) stands next to the creation event
     events = {
